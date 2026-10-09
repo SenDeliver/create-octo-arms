@@ -1,6 +1,6 @@
 # Octo Arms
 
-Create: Octo Arms (mod id `tentaworks`, from its working name Tentaworks) is a Create addon: a worn Tentacle Rig, built from a Backtank, that carries the player on pneumatic tentacles across floors, walls and ceilings, Doc Ock style. Depends only on Create.
+Create: Octo Arms (mod id `tentaworks`, from its working name Tentaworks) is a Create addon: a worn Tentacle Rig, built from a Backtank, that carries the player on pneumatic tentacles across floors, walls and ceilings, Doc Ock style. Depends only on Create; Sable (optional) adds Ships.
 
 ## Language
 
@@ -17,7 +17,7 @@ The Backtank's air, the only fuel of a Rig. Idle holding drains a trickle, movin
 _Avoid_: pressure, fuel, charge, energy
 
 **Grip**:
-A spot on any solid block face (floor, wall or ceiling, including the underside of a ledge) that a Tentacle tip holds on to. The only place a Tentacle meets the world. Tentacles never push, hit or damage anything (fighting with them is a v2 idea).
+A spot on any solid block face (floor, wall or ceiling, including the underside of a ledge) that a Tentacle tip holds on to. The only place a Tentacle meets the world. Tentacles never push, hit or damage anything (fighting with them is a v2 idea). A Grip on a Ship block is stored in that Ship's plot coordinates; the Ship is implied by the block, so the Grip stays put while the Ship moves.
 _Avoid_: foothold, anchor, foot, contact
 
 **Held**:
@@ -88,6 +88,20 @@ _Avoid_: ceiling mode, climb mode
 **Tiers**:
 Copper Tentacle Rig and Netherite Tentacle Rig, made from the matching Backtank. They differ only in Reach and Air use.
 
+## Ships
+
+**Ship**:
+A Sable sub-level: a group of blocks that moves and turns as one body (Create Aeronautics builds its Ships on Sable). Its blocks are Grips like world blocks, if Sable is installed, the server config `ships.grip` is on and the Ship's scale is 1.
+_Avoid_: contraption, vehicle, sub-level (in player text)
+
+**Frame**:
+Where a point lives: the world, or one Ship. Ship blocks sit at far-away plot coordinates of the same level; the Ship's pose maps them into the world. A Grip on a Ship is kept in the Ship's Frame.
+_Avoid_: space, coordinate system
+
+**Carry Ship**:
+The Ship that holds most of the wearer's valid Grips (at least two). Each tick the Rig moves the wearer with it, rotation included. The wearer's own move (speed checks, Air) is the move minus the carry. When Sable already moves the wearer (standing on its deck), the Rig adds no carry of its own.
+_Avoid_: parent ship, host, anchor ship
+
 ## Enchanting
 
 **Rig Enchantments**:
@@ -96,5 +110,5 @@ A Rig wears like armor but never breaks (elytra-style): at 1 durability it can't
 _Avoid_: upgrades, modifiers
 
 **Server Config**:
-Admin-set caps per tier: Reach, top Speed, Air costs and enchantment strengths. Rig Settings are clamped to them.
+Admin-set caps per tier: Reach, top Speed, Air costs and enchantment strengths; also whether Ships are Grips (`ships.grip`). Rig Settings are clamped to them.
 _Avoid_: balance file, limits

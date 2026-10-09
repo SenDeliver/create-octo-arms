@@ -1,0 +1,212 @@
+# Phase 9 timeline. Ship velocity steps via /tentaworks ship <name> drive vx vy vz [wx wy wz] (b/s, deg/s, world axes); tentaworks pos <tag> stamps the server gt (SPOS).
+# W world baseline
+tp Dev 6017.5 -60 0.5 -90 0
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 1
+#signal w
+#await wdone
+# A parked ship turned 30 degrees (tp first, then swap the Rig: no fall from the hang)
+tp Dev 6058.7 -60 0.5 -90 0
+item replace entity Dev armor.chest with air
+#sleep 0.5
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+sable info @e[name=p9a]
+#sleep 1
+#signal a
+#await adone
+# B moving ship
+tp Dev 6095.5 -60 0.5 -90 0
+item replace entity Dev armor.chest with air
+#sleep 0.5
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+sable info @e[name=p9b]
+#sleep 1
+#signal b
+#await b4
+tentaworks ship p9b drive 4 0 0
+tentaworks pos b4on
+#signal b4on
+#await b4stop
+tentaworks ship p9b drive 0 0 0
+tentaworks pos b4off
+#signal b4off
+#await b15
+tentaworks air 900
+tentaworks ship p9b drive 15 0 0
+tentaworks pos b15on
+#signal b15on
+#await b15stop
+tentaworks ship p9b drive 0 0 0
+tentaworks pos b15off
+#signal b15off
+#await bz
+tentaworks air 900
+tentaworks ship p9b drive 0 0 4
+tentaworks pos bzon
+#signal bzon
+#await bzstop
+tentaworks ship p9b drive 0 0 0
+tentaworks pos bzoff
+#signal bzoff
+#await bup
+tentaworks air 900
+tentaworks ship p9b drive 0 3 0
+tentaworks pos bupon
+#signal bupon
+#await bupstop
+tentaworks ship p9b drive 0 0 0
+tentaworks pos bupoff
+#signal bupoff
+#await bdone
+sable info @e[name=p9b]
+# C rotating ship
+tp Dev 6395.5 -60 0.5 -90 0
+item replace entity Dev armor.chest with air
+#sleep 0.5
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 1
+#signal c
+#await cyaw
+tentaworks ship p9c drive 0 0 0 0 20 0
+tentaworks pos cyawon
+#signal cyawon
+#await cyawstop
+tentaworks ship p9c drive 0 0 0
+tentaworks pos cyawoff
+#signal cyawoff
+#await croll
+tentaworks ship p9c drive 0 0 0 0 0 10
+tentaworks pos crollon
+#signal crollon
+#await crollstop
+tentaworks ship p9c drive 0 0 0
+tentaworks pos crolloff
+#signal crolloff
+#await cdone
+sable info @e[name=p9c]
+# D world <-> ship
+tp Dev 6497.5 -60 -6.5 -90 0
+item replace entity Dev armor.chest with air
+#sleep 0.5
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 1
+#signal d
+#await dleave
+tentaworks ship p9d drive 2 0 0
+tentaworks pos dleaveon
+#signal dleaveon
+#await dstop
+tentaworks ship p9d drive 0 0 0
+tentaworks pos dstopped
+#signal dstopped
+#await ddone
+# E ship removed mid-grip
+tp Dev 6595.5 -60 0.5 -90 0
+item replace entity Dev armor.chest with air
+#sleep 0.5
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+effect give Dev minecraft:instant_health 1 5
+#sleep 1
+#signal e
+#await erm
+tentaworks pos erm
+sable remove @e[name=p9e]
+tentaworks pos ermd
+#signal ermd
+#await edone
+data get entity Dev Health
+effect give Dev minecraft:instant_health 1 5
+# F deck ride: standing on the roof of p9f (top face y=-45)
+tp Dev 6703.5 -45 0.5 -90 0
+item replace entity Dev armor.chest with air
+#sleep 0.5
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 1
+#signal f
+#await fgo
+tentaworks ship p9f drive 4 0 0
+tentaworks pos fgoon
+#signal fgoon
+#await fstop
+tentaworks ship p9f drive 0 0 0
+tentaworks pos fstopped
+#signal fstopped
+#await fdone
+# G bow case: hang on p9g's west wall, the ship drives -x toward the wearer
+tp Dev 7295.5 -60 0.5 -90 0
+item replace entity Dev armor.chest with air
+#sleep 0.5
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 1
+#signal g
+#await g4
+tentaworks ship p9g drive -4 0 0
+tentaworks pos g4on
+#signal g4on
+#await g4stop
+tentaworks ship p9g drive 0 0 0
+tentaworks pos g4off
+#signal g4off
+#await g15
+tentaworks air 900
+tentaworks ship p9g drive -15 0 0
+tentaworks pos g15on
+#signal g15on
+#await g15stop
+tentaworks ship p9g drive 0 0 0
+tentaworks pos g15off
+#signal g15off
+#await gdone
+# H under p9h's floor: up 3 b/s (floor leaves), down 3 b/s (floor comes at the head)
+tp Dev 6995.5 -60 0.5 -90 0
+item replace entity Dev armor.chest with air
+#sleep 0.5
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 1
+#signal h
+#await hup
+tentaworks air 900
+tentaworks ship p9h drive 0 3 0
+tentaworks pos hupon
+#signal hupon
+#await hupstop
+tentaworks ship p9h drive 0 0 0
+tentaworks pos hupoff
+#signal hupoff
+#await hdn
+tentaworks ship p9h drive 0 -3 0
+tentaworks pos hdnon
+#signal hdnon
+#await hdnstop
+tentaworks ship p9h drive 0 0 0
+tentaworks pos hdnoff
+#signal hdnoff
+#await hdone
+# R roof edge of p9h: Stowed on the roof, the ship rises, the Rig activates on the rising deck (lift), then the ship goes down
+tp Dev 7001.0 -44.5 0.5 -90 0
+item replace entity Dev armor.chest with air
+#sleep 0.5
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 1
+#signal r
+#await rup
+tentaworks air 900
+tentaworks ship p9h drive 0 3 0
+tentaworks pos rupon
+#signal rupon
+#await rupstop
+tentaworks ship p9h drive 0 0 0
+tentaworks pos rupoff
+#signal rupoff
+#await rdn
+tentaworks ship p9h drive 0 -3 0
+tentaworks pos rdnon
+#signal rdnon
+#await rdnstop
+tentaworks ship p9h drive 0 0 0
+tentaworks pos rdnoff
+#signal rdnoff
+#await rdone
+sable info @e
+#signal end
+#sleep 2

@@ -2,9 +2,12 @@ package dev.tentaworks.dev;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.content.equipment.armor.BacktankUtil;
 import dev.tentaworks.TentaworksIds;
+import dev.tentaworks.compat.Frame;
+import dev.tentaworks.compat.ShipFrames;
 import dev.tentaworks.network.RigMotionPacket;
 import dev.tentaworks.rig.Grip;
 import dev.tentaworks.rig.TentacleGait;
@@ -25,6 +28,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.NeoForgeMod;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -35,6 +39,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -47,7 +52,7 @@ import java.util.List;
  * (east) face of the wall column at x=X; Grips on a block at x=20047 whose outer neighbour is in unloaded chunk 1253 when only 20000 0 is forceloaded), burst N (each fake packet
  * sent N times per tick), netstats TAG (NETSTATS: motion packets handled, relays, server tick time), probe X Y Z (reads a block:
  * CHUNKLOAD control), fake slideN (real Grips, zero claimed motion, the server moves the player N blocks per second: speed check),
- * ghost FROM TO (air on the server only: a client ghost block). Logs CHUNKLOAD for chunks at x ≥ 1250. Logs FALL (LivingFallEvent distance) and HURT (damage taken) lines for fall-damage checks.
+ * ghost FROM TO (air on the server only: a client ghost block). With Sable: ship NAME drive|stop and SSHIP lines ({@link DevShips}). Logs CHUNKLOAD for chunks at x ≥ 1250. Logs FALL (LivingFallEvent distance) and HURT (damage taken) lines for fall-damage checks.
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID)
 public final class DevTools {
@@ -73,7 +78,9 @@ public final class DevTools {
     static void onCommands(RegisterCommandsEvent event) {
         DevRecipes.register(event.getDispatcher());
         DevPonder.register(event.getDispatcher());
-        event.getDispatcher().register(Commands.literal("tentaworks").requires(s -> s.hasPermission(2))
+        LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("tentaworks").requires(s -> s.hasPermission(2));
+        if (ModList.get().isLoaded("sable")) DevShips.attach(root);
+        event.getDispatcher().register(root
                 .then(Commands.literal("trace").then(Commands.argument("on", StringArgumentType.word()).executes(c -> {
                     trace = StringArgumentType.getString(c, "on").equals("on");
                     return reply(c.getSource(), "trace " + trace);
@@ -256,14 +263,38 @@ public final class DevTools {
         for (ServerPlayer p : event.getServer().getPlayerList().getPlayers()) LOG.info("STRACE {}", line(p));
     }
 
+    static boolean tracing() {
+        return trace;
+    }
+
     private static String line(ServerPlayer p) {
         var flight = p.getAttribute(NeoForgeMod.CREATIVE_FLIGHT);
-        return String.format("gt=%d %s pos=%.3f,%.3f,%.3f v=%.3f,%.3f,%.3f state=%s grips=%d cf=%.0f flying=%b fall=%.2f hp=%.1f ground=%b air=%d mv=%.3f,%.3f,%.3f",
+        return String.format("gt=%d %s pos=%.3f,%.3f,%.3f v=%.3f,%.3f,%.3f state=%s grips=%d cf=%.0f flying=%b fall=%.2f hp=%.1f ground=%b air=%d mv=%.3f,%.3f,%.3f%s",
                 p.level().getGameTime(), p.getName().getString(), p.getX(), p.getY(), p.getZ(),
                 p.getDeltaMovement().x, p.getDeltaMovement().y, p.getDeltaMovement().z,
                 RigServer.state(p), RigServer.grips(p).size(), flight == null ? -1 : flight.getValue(),
                 p.getAbilities().flying, p.fallDistance, p.getHealth(), p.onGround(), BacktankUtil.getAir(p.getItemBySlot(EquipmentSlot.CHEST)),
-                RigServer.motion(p).x, RigServer.motion(p).y, RigServer.motion(p).z);
+                RigServer.motion(p).x, RigServer.motion(p).y, RigServer.motion(p).z, shipFields(p));
+    }
+
+    /** {@code sgrips}: valid Grips on a Ship; {@code carry}: the Ship holding most of them (at least {@link Grips#HELD}), as RigServer picks it. */
+    private static String shipFields(ServerPlayer p) {
+        ShipFrames ships = ShipFrames.get();
+        List<Frame> frames = new ArrayList<>();
+        Frame best = null;
+        int bestCount = Grips.HELD - 1;
+        for (Grip g : RigServer.grips(p)) {
+            Frame f = ships.isPlot(p.level(), g.block()) ? ships.containing(p.level(), g.block()) : null;
+            if (f == null) continue;
+            frames.add(f);
+            int n = 0;
+            for (Frame o : frames) if (f.equals(o)) n++;
+            if (n > bestCount) {
+                bestCount = n;
+                best = f;
+            }
+        }
+        return " sgrips=" + frames.size() + " carry=" + (best == null ? "-" : best.id());
     }
 
     private static int reply(CommandSourceStack source, String msg) {

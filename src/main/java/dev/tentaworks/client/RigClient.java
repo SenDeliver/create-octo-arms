@@ -2,6 +2,8 @@ package dev.tentaworks.client;
 
 import com.simibubi.create.AllSoundEvents;
 import dev.tentaworks.TentaworksIds;
+import dev.tentaworks.compat.Frame;
+import dev.tentaworks.compat.ShipFrames;
 import dev.tentaworks.network.RigMotionPacket;
 import dev.tentaworks.network.RigStatePacket;
 import dev.tentaworks.rig.Grip;
@@ -21,6 +23,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -40,6 +43,7 @@ import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
 import net.neoforged.neoforge.common.NeoForgeMod;
 import net.neoforged.neoforge.network.PacketDistributor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -47,6 +51,10 @@ import java.util.List;
  * and tells the server. Vanilla jump, sneak and walk input are swallowed while the Rig carries.
  * Air and the Rig Settings come from the synced Rig stack; the server has the last word and corrects the state with a RigStatePacket.
  * The on/off input is the Double Jump, or the toggle key when the Rig's Activation Mode is key only.
+ * Riding a Ship: while carrying, the carry Ship (the one holding most current Grips, at least two, as on the server) moves
+ * the wearer by its own move this tick on top of the Rig's motion, unless Sable already does (feet on its deck). Held is tested
+ * where the body really ends up. The motion sent to the server and fed to the gait is the Rig's own, never the carry.
+ * A Standing Height lift over a Ship deck aims at that deck where it is now, not where it was at activation.
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public final class RigClient {
@@ -55,6 +63,8 @@ public final class RigClient {
     private static RigState state = RigState.STOWED;
     private static final TentacleGait GAIT = new TentacleGait();
     private static int heldCount;
+    private static Frame carryShip;
+    private static int shipGrips;
     private static Vec3 motion = Vec3.ZERO;
     private static boolean jumpWasDown;
     private static boolean jumpPressed;
@@ -62,6 +72,9 @@ public final class RigClient {
     private static int lastPress = -100;
     private static int activatedAt = -100;
     private static double liftTo = Double.NaN;
+    private static BlockPos liftBlock;
+    private static Vec3 liftLocal;
+    private static double liftHeight;
     private static boolean noRegrab;
     private static int warnedAt = -100;
 
@@ -84,8 +97,19 @@ public final class RigClient {
         return heldCount;
     }
 
+    /** The Rig's own motion this tick (without the Ship carry). */
     public static Vec3 motion() {
         return motion;
+    }
+
+    /** The Ship the current Grips ride with (null: the world). */
+    public static Frame carryShip() {
+        return carryShip;
+    }
+
+    /** How many of the current Grips are on a Ship. */
+    public static int shipGrips() {
+        return shipGrips;
     }
 
     public static boolean jumpPressed() {
@@ -128,9 +152,14 @@ public final class RigClient {
 
         double reach = TentacleRigItem.reach(player);
         double step = settings.speed() * RigEnchants.swift(RigAir.worn(player)) / 20.0;
+        Level level = player.level();
+        ShipFrames ships = ShipFrames.get();
         Vec3 body = Grips.body(player);
-        List<Grips.Face> faces = Grips.faces(player.level(), body, reach + Math.max(1.0, step + 0.5));
-        heldCount = Grips.count(faces, body, reach);
+        carryShip = carryShip(level, GAIT.grips());
+        Vec3 shipMove = carryShip == null ? Vec3.ZERO : carryShip.carry(player.position());
+        boolean tracked = carryShip != null && ships.tracking(player, carryShip);
+        List<Grips.Face> faces = Grips.faces(level, body, reach + Math.max(1.0, step + 0.5) + shipMove.length());
+        heldCount = Grips.count(faces, state.carries() ? body.add(shipMove) : body, reach);
         boolean held = heldCount >= Grips.HELD;
         boolean air = RigAir.has(player);
         boolean worn = TentacleRigItem.wornOut(RigAir.worn(player));
@@ -153,53 +182,59 @@ public final class RigClient {
         }
 
         if (state.carries() && player.isFallFlying()) player.stopFallFlying();
+        Vec3 shift = state.carries() ? shipMove : Vec3.ZERO;
+        Vec3 carry = tracked ? Vec3.ZERO : shift;
+        if (state.carries() && !tracked) ships.dropInherited(player);
         switch (state) {
             case ACTIVE -> {
                 Vec3 heading = heading(player, forward, left, up, down);
+                double feet = player.getY() + shift.y;
                 if (!Double.isNaN(liftTo)) {
-                    double dy = liftTo - player.getY();
-                    if (up || down || Math.abs(dy) < 0.01) liftTo = Double.NaN;
+                    liftTo = liftTarget(level);
+                    double dy = liftTo - feet;
+                    if (up || down || Double.isNaN(dy) || Math.abs(dy) < 0.01) liftTo = Double.NaN;
                     else heading = heading.add(0, Math.signum(dy), 0);
                 }
                 Vec3 wish = heading.lengthSqr() < 1.0E-6 ? Vec3.ZERO : heading.normalize().scale(step);
-                if (!Double.isNaN(liftTo) && Math.abs(wish.y) > Math.abs(liftTo - player.getY()))
-                    wish = new Vec3(wish.x, liftTo - player.getY(), wish.z);
-                motion = Grips.clampHeld(player.level(), player, wish, reach, faces);
+                if (!Double.isNaN(liftTo) && Math.abs(wish.y) > Math.abs(liftTo - feet))
+                    wish = new Vec3(wish.x, liftTo - feet, wish.z);
+                motion = Grips.clampHeld(level, player, wish, reach, faces, shift);
                 if (!Double.isNaN(liftTo) && Math.abs(motion.y) < 1.0E-4) liftTo = Double.NaN;
-                player.setDeltaMovement(motion);
+                player.setDeltaMovement(motion.add(carry));
                 player.resetFallDistance();
             }
             case SETTING_DOWN -> {
-                motion = Grips.clampHeld(player.level(), player, new Vec3(0, -step, 0), reach, faces);
+                motion = Grips.clampHeld(level, player, new Vec3(0, -step, 0), reach, faces, shift);
                 if (motion.y > -1.0E-4) {
                     setState(player, RigState.STOWED);
                     return;
                 }
-                player.setDeltaMovement(motion);
+                player.setDeltaMovement(motion.add(carry));
                 player.resetFallDistance();
             }
             case CRAWL -> {
-                motion = Grips.clampHeld(player.level(), player, new Vec3(0, -RigAir.crawlStep(), 0), reach, faces);
+                motion = Grips.clampHeld(level, player, new Vec3(0, -RigAir.crawlStep(), 0), reach, faces, shift);
                 if (worn && motion.y > -1.0E-4) {
                     setState(player, RigState.STOWED);
                     return;
                 }
-                player.setDeltaMovement(motion);
+                player.setDeltaMovement(motion.add(carry));
                 player.resetFallDistance();
             }
             case FALLING -> {
                 motion = player.getDeltaMovement();
-                Vec3 catchAt = noRegrab || worn ? null : Grips.firstHeld(player.level(), player, motion, reach);
+                Vec3 catchAt = noRegrab || worn ? null : Grips.firstHeld(level, player, motion, reach);
                 if (catchAt != null) {
                     motion = catchAt;
                     player.setDeltaMovement(motion);
+                    ships.dropInherited(player);
                 }
             }
             default -> motion = player.getDeltaMovement();
         }
         double overshoot = TentacleGait.overshoot(TentacleRigItem.topSpeed(RigAir.worn(player)) * 1.05 / 20.0);
-        Vec3 moved = Grips.collide(player.level(), player, motion);
-        GAIT.tick(player.level(), faces, body.add(moved), player.yBodyRot, moved, reach, overshoot);
+        Vec3 moved = Grips.collide(level, player, motion);
+        GAIT.tick(level, faces, body.add(shift).add(moved), player.yBodyRot, moved, reach, overshoot);
         noFlying(player);
         Tentacles wire = GAIT.wire();
         RigVisuals.local(player, state, wire);
@@ -248,8 +283,13 @@ public final class RigClient {
                 }
                 if (!RigAir.has(player)) return false;
                 activatedAt = ticks;
+                ShipFrames.get().dropInherited(player);
                 double h = settings.standingHeight();
-                liftTo = floorBelow(player, h) + h;
+                Floor floor = floorBelow(player, h);
+                liftTo = floor == null ? Double.NaN : floor.y() + h;
+                liftBlock = floor == null ? null : floor.plot();
+                liftLocal = floor == null ? null : floor.local();
+                liftHeight = h;
                 setState(player, RigState.ACTIVE);
                 return true;
             }
@@ -286,22 +326,78 @@ public final class RigClient {
         return look.scale(forward).add(leftDir.scale(left)).add(0, (up ? 1 : 0) - (down ? 1 : 0), 0);
     }
 
+    /** A floor hit: world Y, and for a Ship deck its plot block and the hit point in plot coords (else null). */
+    private record Floor(double y, BlockPos plot, Vec3 local) {
+    }
+
+    /** The lift target now: fixed for a world floor, the deck's current height + Standing Height for a Ship (NaN once it is gone). */
+    private static double liftTarget(Level level) {
+        if (liftBlock == null) return liftTo;
+        ShipFrames ships = ShipFrames.get();
+        Frame frame = ships.isPlot(level, liftBlock) ? ships.containing(level, liftBlock) : null;
+        return frame == null ? Double.NaN : frame.toWorld(liftLocal).y + liftHeight;
+    }
+
     /**
-     * World floor under the feet within Standing Height + 1.5. Traces world blocks only: with Sable loaded, {@code Level.clip}
-     * also hits Ships and reports those hits in plot coordinates, and Ship blocks are not Grips.
+     * Floor under the feet within Standing Height + 1.5: a world block or a Ship deck. {@code Level.clip} also hits Ships
+     * (with Sable) and reports those hits in plot coordinates, so a Ship hit is moved into the world by its pose; a plot hit
+     * with no Ship to resolve it (Ships off in the config) traces world blocks only. Null when there is none.
      */
-    private static double floorBelow(LocalPlayer player, double standingHeight) {
+    private static Floor floorBelow(LocalPlayer player, double standingHeight) {
         Level level = player.level();
         Vec3 from = player.position().add(0, 0.1, 0);
         Vec3 to = player.position().subtract(0, standingHeight + 1.5, 0);
         ClipContext ctx = new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player);
-        BlockHitResult hit = BlockGetter.traverseBlocks(from, to, ctx, (c, pos) -> {
+        BlockHitResult hit = level.clip(ctx);
+        if (hit.getType() != HitResult.Type.BLOCK) return null;
+        Vec3 at = hit.getLocation();
+        BlockPos plot = null;
+        Vec3 local = null;
+        ShipFrames ships = ShipFrames.get();
+        if (ships.isPlot(level, hit.getBlockPos())) {
+            Frame frame = ships.containing(level, hit.getBlockPos());
+            if (frame != null) {
+                plot = hit.getBlockPos();
+                local = at;
+                at = frame.toWorld(at);
+            } else {
+                hit = worldClip(level, from, to, ctx);
+                if (hit == null || hit.getType() != HitResult.Type.BLOCK) return null;
+                at = hit.getLocation();
+            }
+        }
+        double y = at.y;
+        return y <= from.y + 1.0E-6 && y >= to.y - 1.0E-6 ? new Floor(y, plot, local) : null;
+    }
+
+    private static BlockHitResult worldClip(Level level, Vec3 from, Vec3 to, ClipContext ctx) {
+        return BlockGetter.traverseBlocks(from, to, ctx, (c, pos) -> {
             BlockState s = level.getBlockState(pos);
             return level.clipWithInteractionOverride(from, to, pos, c.getBlockShape(s, level, pos), s);
         }, c -> null);
-        if (hit == null || hit.getType() != HitResult.Type.BLOCK) return Double.NaN;
-        double y = hit.getLocation().y;
-        return y <= from.y + 1.0E-6 && y >= to.y - 1.0E-6 ? y : Double.NaN;
+    }
+
+    /** The Ship holding most of these Grips, if at least {@link Grips#HELD}: the server's carry Ship rule, in slot order. */
+    private static Frame carryShip(Level level, Grip[] grips) {
+        ShipFrames ships = ShipFrames.get();
+        List<Frame> frames = new ArrayList<>(grips.length);
+        Frame best = null;
+        int bestCount = Grips.HELD - 1;
+        shipGrips = 0;
+        for (Grip g : grips) {
+            if (g == null) continue;
+            Frame f = ships.isPlot(level, g.block()) ? ships.containing(level, g.block()) : null;
+            frames.add(f);
+            if (f == null) continue;
+            shipGrips++;
+            int n = 0;
+            for (Frame o : frames) if (f.equals(o)) n++;
+            if (n > bestCount) {
+                bestCount = n;
+                best = f;
+            }
+        }
+        return best;
     }
 
     private static void setState(LocalPlayer player, RigState next) {
@@ -310,7 +406,10 @@ public final class RigClient {
             GAIT.clear();
             motion = Vec3.ZERO;
             liftTo = Double.NaN;
+            liftBlock = null;
             heldCount = 0;
+            carryShip = null;
+            shipGrips = 0;
             noRegrab = false;
             noFlying(player);
             RigVisuals.local(player, next, Tentacles.NONE);
@@ -330,7 +429,10 @@ public final class RigClient {
         GAIT.clear();
         motion = Vec3.ZERO;
         liftTo = Double.NaN;
+        liftBlock = null;
         heldCount = 0;
+        carryShip = null;
+        shipGrips = 0;
         lastPress = -100;
         noRegrab = false;
     }

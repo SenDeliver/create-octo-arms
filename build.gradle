@@ -14,6 +14,17 @@ base {
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 repositories {
+    exclusiveContent {
+        forRepository { maven { url = "https://maven.ryanhcode.dev/releases" } }
+        filter {
+            includeGroup "dev.ryanhcode.sable"
+            includeGroup "dev.ryanhcode.sable-companion"
+        }
+    }
+    exclusiveContent {
+        forRepository { maven { url = "https://api.modrinth.com/maven" } }
+        filter { includeGroup "maven.modrinth" }
+    }
     maven { url = "https://maven.createmod.net" }
     exclusiveContent {
         forRepository { maven { url = "https://maven.blamejared.com" } }
@@ -112,9 +123,38 @@ dependencies {
     runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}")
     implementation("com.tterrag.registrate:Registrate:${registrate_version}")
 
+    compileOnly("dev.ryanhcode.sable-companion:sable-companion-common-${minecraft_version}:${sable_companion_version}")
+    compileOnly("dev.ryanhcode.sable:sable-neoforge-${minecraft_version}:${sable_version}") {
+        exclude group: "dev.ryanhcode.sable-companion"
+        exclude group: "foundry.veil"
+        exclude group: "com.simibubi.create"
+        exclude group: "net.createmod.ponder"
+        exclude group: "dev.engine-room.flywheel"
+        exclude group: "com.tterrag.registrate"
+    }
+    if (project.hasProperty('withSable')) {
+        runtimeOnly("dev.ryanhcode.sable:sable-neoforge-${minecraft_version}:${sable_version}") {
+            exclude group: "dev.ryanhcode.sable-companion"
+            exclude group: "foundry.veil"
+            exclude group: "com.simibubi.create"
+            exclude group: "net.createmod.ponder"
+            exclude group: "dev.engine-room.flywheel"
+            exclude group: "com.tterrag.registrate"
+        }
+        runtimeOnly "maven.modrinth:create-aeronautics:${aero_bundle_version}"
+    }
+
     compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
     compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
     if (!project.hasProperty('noJei')) devRuntimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
+
+    testImplementation(platform("org.junit:junit-bom:5.10.1"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
@@ -148,6 +188,7 @@ sourceSets {
 }
 
 neoForge.addModdingDependenciesTo(sourceSets.prodclient)
+neoForge.addModdingDependenciesTo(sourceSets.test)
 
 tasks.register('devJar', Jar) {
     group = 'build'

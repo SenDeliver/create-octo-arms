@@ -3,7 +3,6 @@ package dev.tentaworks.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.tentaworks.TentaworksIds;
-import dev.tentaworks.rig.Grip;
 import dev.tentaworks.rig.TentacleRigItem;
 import dev.tentaworks.rig.Tentacles;
 import net.minecraft.client.renderer.culling.Frustum;
@@ -64,14 +63,14 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
         });
     }
 
-    /** Culling box of a Rig's Tentacles: the body plus every Grip it holds. */
+    /** Culling box of a Rig's Tentacles: the body plus every Grip it holds (world coords, over this frame's Ship motion). */
     public static boolean inView(Player player, Frustum frustum) {
         RigVisuals.Visual v = RigVisuals.get(player);
         if (v == null || !v.visible()) return false;
         AABB box = player.getBoundingBox();
         for (int i = 0; i < Tentacles.SLOTS; i++) {
-            Grip g = v.slot(i).target();
-            if (g != null) box = box.minmax(new AABB(g.point(), g.point()));
+            RigVisuals.Slot s = v.slot(i);
+            if (s.target() != null) box = box.minmax(new AABB(s.point(0), s.point(1)));
         }
         return frustum.isVisible(box.inflate(0.6));
     }

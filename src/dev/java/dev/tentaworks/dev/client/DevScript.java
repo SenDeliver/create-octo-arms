@@ -29,7 +29,9 @@ import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
+import net.neoforged.fml.ModList;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.content.equipment.armor.BacktankBlockEntity;
@@ -121,6 +123,8 @@ public final class DevScript {
     private static String lastSubtitle;
     private static boolean toastsCleared;
     private static String forge;
+    private static final boolean SABLE = ModList.get() != null && ModList.get().isLoaded("sable");
+    private static List<String> shipPoses;
 
     private DevScript() {
     }
@@ -136,6 +140,7 @@ public final class DevScript {
     /** Forged client (phase 8): "zero" sends a second motion packet per tick claiming no motion; the server keeps the latest. */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     static void onInputLast(MovementInputUpdateEvent event) {
+        if (trace && SABLE && event.getEntity() instanceof LocalPlayer p) shipPoses = DevShipsClient.poses((ClientLevel) p.level());
         if (forge == null || !(event.getEntity() instanceof LocalPlayer) || RigClient.state() == RigState.STOWED) return;
         if (forge.equals("zero")) PacketDistributor.sendToServer(new RigMotionPacket(RigClient.state(), Vec3.ZERO, RigClient.gait().wire()));
     }
@@ -628,9 +633,14 @@ public final class DevScript {
         Vec3 pos = p.position();
         Vec3 d = lastPos == null ? Vec3.ZERO : pos.subtract(lastPos);
         lastPos = pos;
-        LOG.info("TRACE t={} gt={} pos={} d={} cmd={} held={} state={} fly={} mayfly={} press={} jumpkey={} ground={} hp={} air={} ff={}",
+        LOG.info("TRACE t={} gt={} pos={} d={} cmd={} held={} state={} fly={} mayfly={} press={} jumpkey={} ground={} hp={} air={} ff={} sheld={} carry={}",
                 clientTicks, mc.level.getGameTime(), fmt(pos), fmt(d), fmt(RigClient.motion()), RigClient.heldCount(), RigClient.state(),
-                p.getAbilities().flying, p.mayFly(), RigClient.jumpPressed(), mc.options.keyJump.isDown(), p.onGround(), p.getHealth(), BacktankUtil.getAir(p.getItemBySlot(EquipmentSlot.CHEST)), p.isFallFlying());
+                p.getAbilities().flying, p.mayFly(), RigClient.jumpPressed(), mc.options.keyJump.isDown(), p.onGround(), p.getHealth(), BacktankUtil.getAir(p.getItemBySlot(EquipmentSlot.CHEST)), p.isFallFlying(),
+                RigClient.shipGrips(), RigClient.carryShip() == null ? "-" : RigClient.carryShip().id());
+        if (!SABLE) return;
+        List<String> poses = shipPoses != null ? shipPoses : DevShipsClient.poses(mc.level);
+        shipPoses = null;
+        for (String pose : poses) LOG.info("CSHIP gt={} {}", mc.level.getGameTime(), pose);
     }
 
     /** Picks a source in the open Display Link screen through its own selector (reflection on the screen's fields). */

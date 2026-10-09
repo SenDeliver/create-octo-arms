@@ -8,6 +8,7 @@ import dev.tentaworks.rig.Grip;
 import dev.tentaworks.rig.TentacleGait;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -23,8 +24,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Dev-only Rig render/sound probes: GAIT lines (own gait per tick), CPERF (Tentacle draw cost per frame),
- * CSOUND (Rig sounds that reached the sound engine, muted or not; plants each visual saw).
+ * Dev-only Rig render/sound probes: GAIT lines (own gait per tick, Grip points in world coords), CPERF (Tentacle draw cost per frame),
+ * CSOUND (Rig sounds that reached the sound engine, muted or not; plants each visual saw), CSOUNDAT (each whir, hiss and piston sound, with gait trace on).
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public final class DevRigStats {
@@ -46,8 +47,12 @@ public final class DevRigStats {
     static void onSound(PlaySoundEvent event) {
         if (event.getSound() == null) return;
         String id = event.getSound().getLocation().toString();
-        if (id.equals("create:slime_added") || id.equals("create:steam") || id.equals("create:cogs") || id.startsWith("minecraft:block.piston."))
+        if (id.equals("create:slime_added") || id.equals("create:steam") || id.equals("create:cogs") || id.startsWith("minecraft:block.piston.")) {
             HEARD.merge(id, 1, Integer::sum);
+            Minecraft mc = Minecraft.getInstance();
+            if (gaitTrace && mc.level != null && !id.equals("create:slime_added"))
+                LOG.info("CSOUNDAT gt={} id={} at={}", mc.level.getGameTime(), id, String.format("%.2f,%.2f,%.2f", event.getSound().getX(), event.getSound().getY(), event.getSound().getZ()));
+        }
     }
 
     @SubscribeEvent
@@ -111,14 +116,15 @@ public final class DevRigStats {
         StringBuilder sb = new StringBuilder();
         int planted = 0;
         double minPair = Double.NaN;
+        Vec3[] at = new Vec3[4];
+        for (int i = 0; i < 4; i++) at[i] = g.grip(i) == null ? null : g.grip(i).world(mc.level);
         for (int i = 0; i < 4; i++) {
             Grip gr = g.grip(i);
             if (gr != null && g.phase(i) >= 1) planted++;
-            sb.append(i == 0 ? "" : ";").append(gr == null ? "-" : String.format("%.2f,%.2f,%.2f@%s/%.2f", gr.point().x, gr.point().y, gr.point().z, gr.face().getName().charAt(0), g.phase(i)));
+            sb.append(i == 0 ? "" : ";").append(gr == null ? "-" : String.format("%.2f,%.2f,%.2f@%s/%.2f", at[i].x, at[i].y, at[i].z, gr.face().getName().charAt(0), g.phase(i)));
             for (int j = i + 1; j < 4; j++) {
-                Grip o = g.grip(j);
-                if (gr == null || o == null) continue;
-                double d = gr.point().distanceTo(o.point());
+                if (at[i] == null || at[j] == null) continue;
+                double d = at[i].distanceTo(at[j]);
                 if (Double.isNaN(minPair) || d < minPair) minPair = d;
             }
         }

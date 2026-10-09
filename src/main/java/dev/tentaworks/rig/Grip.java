@@ -1,14 +1,17 @@
 package dev.tentaworks.rig;
 
+import dev.tentaworks.compat.ShipFrames;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 /**
  * A Tentacle tip on one face of one block. The block is explicit: points on a face edge sit on the boundary of two blocks.
+ * On a Ship, point and block are in the Ship's plot coords (the block names the Ship); see {@link #world}.
  */
 public record Grip(Vec3 point, BlockPos block, Direction face) {
     public static final StreamCodec<ByteBuf, Grip> STREAM_CODEC = StreamCodec.composite(
@@ -18,4 +21,9 @@ public record Grip(Vec3 point, BlockPos block, Direction face) {
             BlockPos.STREAM_CODEC, Grip::block,
             Direction.STREAM_CODEC, Grip::face,
             (x, y, z, b, f) -> new Grip(new Vec3(x, y, z), b, f));
+
+    /** The point in world coords under the Ship's current pose; unchanged for a world Grip or when the Ship is gone. */
+    public Vec3 world(Level level) {
+        return ShipFrames.get().toWorld(level, block, point);
+    }
 }

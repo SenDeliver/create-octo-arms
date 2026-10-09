@@ -57,11 +57,11 @@ The component is network-synced (stream codec: float, float, UTF-8 string). A pl
 
 Phase 7 adds no keys: a placed Rig Block only syncs this NBT to clients more often (every 10 ticks while its Air changes) so goggles show Air rising. The network protocol is unchanged (registrar stays `6`).
 
-## Network (play phase, registrar version `6`)
+## Network (play phase, registrar version `8`)
 
 | Payload | Direction | Fields |
 |---|---|---|
-| `tentaworks:rig_motion` | client → server | `RigState` enum ordinal, motion `Vec3`, Tentacles: 4 fixed slots (front left, front right, back left, back right), each a present flag, then Grip (point `Vec3`, block pos, face) + Step phase byte (255 = planted) |
+| `tentaworks:rig_motion` | client → server | `RigState` enum ordinal, motion `Vec3`, Tentacles: 4 fixed slots (front left, front right, back left, back right), each a present flag, then Grip (point `Vec3`, block pos, face) + Step phase byte (255 = planted). A Grip on a Sable Ship has point and block in the Ship's plot coords; the block names the Ship |
 | `tentaworks:rig_state` | server → client | entity id, `RigState` enum ordinal, Tentacles (same 4 slots; slots whose Grip the server rejected are empty) |
 | `tentaworks:rig_settings` | client → server | slot var-int (`0` main hand, `1` off hand, `2` chest), Rig Settings (stream codec above). The server clamps and writes the component to the Rig in that slot; anything else in the slot is ignored. |
 
@@ -71,6 +71,8 @@ Phase 3 added `tentaworks:rig_settings` and bumped the registrar to `3`: phase-2
 Phase 4 kept every payload as is but bumped the registrar to `4`: Reach and Speed now depend on enchantments on both sides, and a phase-3 server would reject a phase-4 client's Far Reach Grips (forced Falling mid-hang).
 Phase 5 kept every payload as is but bumped the registrar to `5`: the worn-out rule must match on both sides (a phase-4 client would keep claiming Active on a worn-out Rig and be forced to Setting Down every tick). The new items and recipes would block mixed versions anyway (registry sync).
 Phase 6 changed both Rig payloads to the fixed 4-slot Tentacles with a Step phase per slot (other clients animate each Tentacle by slot) and bumped the registrar to `6`: phase-5 and phase-6 clients and servers cannot mix.
+Phase 8 kept every payload as is but bumped the registrar to `7` (server packet handling changed); 1.0.0 shipped with `7`.
+1.1.0 keeps every payload byte-identical but bumps the registrar to `8`: a Grip point and block may now be in a Ship's plot coords, and the `rig_motion` motion is the Rig's own move without the carry Ship's. 1.0 clients cannot join a 1.1 server, and the other way round.
 
 ## Server Config (`tentaworks-server.toml`, per world in `serverconfig/`)
 
@@ -87,6 +89,7 @@ Phase 6 changed both Rig payloads to the fixed 4-slot Tentacles with a Step phas
 | `enchant.farReachPerLevel` | 1.0 | 0–8 (blocks of Reach per Far Reach level; Reach with Far Reach is capped at 16) |
 | `enchant.thriftPerLevel` | 0.15 | 0–0.3 (Air use cut per Thrift level; the total cut never exceeds 0.9) |
 | `enchant.swiftPerLevel` | 0.15 | 0–1 (Speed and top Speed gain per Swift level) |
+| `ships.grip` | true | true/false (1.1.0: Rigs grip Sable Ships; off = Ship blocks are never Grips. No effect without Sable) |
 
 Enchantment levels above an enchantment's `max_level` (e.g. from `/give`) count as the max level.
 

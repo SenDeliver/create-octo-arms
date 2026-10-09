@@ -15,6 +15,7 @@ public final class TentaworksConfig {
     public static final ModConfigSpec.DoubleValue ENCHANT_FAR_REACH;
     public static final ModConfigSpec.DoubleValue ENCHANT_THRIFT;
     public static final ModConfigSpec.DoubleValue ENCHANT_SWIFT;
+    public static final ModConfigSpec.BooleanValue SHIPS_GRIP;
 
     static {
         ModConfigSpec.Builder b = new ModConfigSpec.Builder();
@@ -39,6 +40,9 @@ public final class TentaworksConfig {
         ENCHANT_THRIFT = b.comment("Thrift: Air use cut per level (0.15 = -15 %). Level III stays above zero").defineInRange("thriftPerLevel", 0.15, 0.0, 0.3);
         ENCHANT_SWIFT = b.comment("Swift: extra Speed per level (0.15 = +15 %)").defineInRange("swiftPerLevel", 0.15, 0.0, 1.0);
         b.pop();
+        b.push("ships");
+        SHIPS_GRIP = b.comment("Rigs grip Sable Ships like world blocks. Ignored without Sable").define("grip", true);
+        b.pop();
         SPEC = b.build();
     }
 
@@ -46,6 +50,14 @@ public final class TentaworksConfig {
     }
 
     public static double value(ModConfigSpec.DoubleValue v) {
+        try {
+            return v.get();
+        } catch (IllegalStateException e) {
+            return v.getDefault();
+        }
+    }
+
+    public static boolean value(ModConfigSpec.BooleanValue v) {
         try {
             return v.get();
         } catch (IllegalStateException e) {
