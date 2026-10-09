@@ -32,7 +32,7 @@ Only `p9` is built with `GRADLE_ARGS=-PwithSable` (Sable runtime bundle). It run
 
 One suite alone: `GRADLE_ARGS=-PwithSable TIMELINE=tools/scen/p9-timeline.txt tools/run_split.sh tools/scen/scene-p9.txt tools/scen/p9-client.txt tools/logs/x-p9 && python3 tools/p9_metrics.py tools/logs/x-p9`
 
-Ships are hollow 7x5x7 stone boxes (`scene-p9.txt`), x 6000..6720:
+Ships are hollow 7x5x7 stone boxes (`scene-p9.txt`), x 6000..7320:
 
 | Zone | Ship | What | Checks |
 |---|---|---|---|
@@ -43,6 +43,13 @@ Ships are hollow 7x5x7 stone boxes (`scene-p9.txt`), x 6000..6720:
 | D | `p9d` on the floor, flush with a world wall | climb the world wall, move sideways onto the hull and back, then straddle while the ship leaves at 2 b/s | ship Grips 0 -> >= 2 -> 0, Held across the seam, ends Active on the world wall |
 | E | `p9e` floating | hang, `sable remove` | lets go within 10 ticks, falls >= 5 to the floor, ship gone, no exception |
 | F | `p9f` floating | Rig Active standing on the roof, ship +x 4 b/s | stays Active, ship-frame displacement < 0.75 (no double carry, not left behind) |
+| G | `p9g` floating | bow case: mid-air catch on the west wall (face normal -x), press against it (no gap), ship -x at 4 then 15 b/s toward the wearer | per step: ship speed, Held (ship Grips 100 %), server lag-free ride <= 0.1, client ride <= 0.1 with no one-tick step > 0.05 (a server correction would jump), Air, drift; INFO: player box vs hull (server and client, > 0 inside), kick/wrong-move lines |
+| H | `p9h` floating | under the floor (head pressed to it): ship up 3 b/s, then down 3 b/s (floor comes at the head) | as G |
+| R | `p9h` | Stowed on the roof by its west edge, ship up 3 b/s, Double Jump on the rising deck (Standing Height lift), then ship down 3 b/s | R1 feet 1.5 +-0.1 above the roof (lift target follows the deck), then as G |
+
+Sounds (`sounds <tag>` CSOUND lines): an idle rider hears no whir (`create:cogs`) and no height hiss (`create:steam`) start over B (`b0..bend`), G and H: the Rig's motion is measured in the carry Ship's frame.
+
+Sable never logs "moved wrongly" (it redirects `isCreative()` in `handleMovePlayer` to true) and Ship hulls are not in `level.getCollisions`, so a lagging Ship rider can only show up as a position jump: hence the client ride and one-tick step checks.
 
 Floating ships have their bottom 10 above the floor (out of Copper Reach 4). Mid-air catch as in p2 MJ1: `cmd tp`, `wait 2`, `doublejump`.
 

@@ -25,7 +25,7 @@ import java.util.TreeMap;
 
 /**
  * Dev-only Rig render/sound probes: GAIT lines (own gait per tick, Grip points in world coords), CPERF (Tentacle draw cost per frame),
- * CSOUND (Rig sounds that reached the sound engine, muted or not; plants each visual saw).
+ * CSOUND (Rig sounds that reached the sound engine, muted or not; plants each visual saw), CSOUNDAT (each whir, hiss and piston sound, with gait trace on).
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public final class DevRigStats {
@@ -47,8 +47,12 @@ public final class DevRigStats {
     static void onSound(PlaySoundEvent event) {
         if (event.getSound() == null) return;
         String id = event.getSound().getLocation().toString();
-        if (id.equals("create:slime_added") || id.equals("create:steam") || id.equals("create:cogs") || id.startsWith("minecraft:block.piston."))
+        if (id.equals("create:slime_added") || id.equals("create:steam") || id.equals("create:cogs") || id.startsWith("minecraft:block.piston.")) {
             HEARD.merge(id, 1, Integer::sum);
+            Minecraft mc = Minecraft.getInstance();
+            if (gaitTrace && mc.level != null && !id.equals("create:slime_added"))
+                LOG.info("CSOUNDAT gt={} id={} at={}", mc.level.getGameTime(), id, String.format("%.2f,%.2f,%.2f", event.getSound().getX(), event.getSound().getY(), event.getSound().getZ()));
+        }
     }
 
     @SubscribeEvent

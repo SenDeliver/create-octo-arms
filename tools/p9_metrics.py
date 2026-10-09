@@ -1,5 +1,5 @@
 """Phase-9 (v1.1) numbers and pass/fail from a p9 suite log set: Rig Grips on Sable Ships (parked turned, moving, rotating,
-world <-> ship, ship removed mid-grip, deck ride). Log contract (dev source set, trace on): see tools/README.md "p9 log contract".
+world <-> ship, ship removed mid-grip, deck ride, ship moving toward the wearer, vertical rides, Standing Height lift on a rising deck, idle-ride sounds). Log contract (dev source set, trace on): see tools/README.md "p9 log contract".
 usage: p9_metrics.py tools/logs/<tag>-p9"""
 import math
 import re
@@ -26,6 +26,15 @@ LET_GO_TICKS = 10         # ship removed: Grips gone / state left ACTIVE within 
 FALL_MIN = 5.0            # ship removed: feet drop at least this much
 FLOOR = -60.0             # flat world: feet on the floor
 CATCH_MAX = 3.2           # a falling Rig with Air catches the floor at the edge of Copper Reach: feet 3.10 above it (spike S7)
+RIDE_TIGHT = 0.1          # G/H/R: ship-frame displacement of an idle rider (server lag-free and client)
+STEP_MAX = 0.05           # G/H/R: client ship-frame move per tick of an idle rider (a server correction would jump)
+ZONE_RIDE = 0.15          # B: client ship-frame displacement over the whole zone incl. velocity steps; vanilla zeroes per-axis moves < 0.003,
+                          # so a ship settling by < 0.003/tick leaves an idle rider that much behind (0.079 over B's steps)
+PUSH = 0.04               # G/H: a one-tick client ship-frame step above this is Sable's client collision pushing a wearer that touches
+                          # a hull starting to move toward it (one tick of hull motion, then a gap): Sable, not the Rig
+LIFT_TOL = 0.1            # R: Standing Height above a rising deck
+STANDING = 1.5            # default Standing Height
+HALF = (3.5, 2.5, 3.5)    # hull half size of the 7x5x7 ships around their rotation point (ship frame)
 
 
 def check(name, ok, text):
@@ -55,6 +64,10 @@ for m in re.finditer(r'SSHIP gt=(\d+) name=(\S+) id=(\S+) pos=' + num + r' q=' +
     sship.setdefault(m[2], {})[int(m[1])] = (tuple(map(float, m.group(4, 5, 6))), tuple(map(float, m.group(7, 8, 9, 10))),
                                              tuple(map(float, m.group(11, 12, 13))), tuple(map(float, m.group(14, 15, 16))))
     ids[m[3]] = m[2]
+sounds = {}  # tag -> {sound id: count}
+for m in re.finditer(r'CSOUND (\S+) heard=\{([^}]*)\}', c):
+    sounds[m[1]] = {k.strip(): int(v) for k, v in (x.split('=') for x in m[2].split(',') if '=' in x)}
+spos = {m[1]: m.start() for m in re.finditer(r'SPOS (\S+) gt=\d+ Dev', s)}
 cship = {}   # name -> {gt: (pos, q)}
 for m in re.finditer(r'CSHIP gt=(\d+) id=(\S+) pos=' + num + r' q=' + q4, c):
     cship.setdefault(ids.get(m[2], m[2]), {})[int(m[1])] = (tuple(map(float, m.group(3, 4, 5))), tuple(map(float, m.group(6, 7, 8, 9))))
@@ -114,23 +127,23 @@ def need(*tags):
 
 # --- setup / contract --------------------------------------------------------------------------------------------------
 print('== Setup and log contract')
-NAMES = ['p9a', 'p9b', 'p9c', 'p9d', 'p9e', 'p9f']
+NAMES = ['p9a', 'p9b', 'p9c', 'p9d', 'p9e', 'p9f', 'p9g', 'p9h']
 assembled = r.count('Assembled a region')
 named = r.count('Set name of sub-level')
 bad_cmd = [l for l in r.splitlines() if re.search(r'Unknown or incomplete command|Incorrect argument|Unknown command|Invalid|Expected', l)]
 no_ship = [l for l in r.splitlines() if re.search(r'=> no ship', l)]
-check('S0 Sable commands (needs -PwithSable)', assembled == 6 and named == 6 and not bad_cmd,
-      f'{assembled}/6 "Assembled a region", {named}/6 named, {len(bad_cmd)} command errors' + (f': {bad_cmd[0][:160]}' if bad_cmd else ''))
+check('S0 Sable commands (needs -PwithSable)', assembled == len(NAMES) and named == len(NAMES) and not bad_cmd,
+      f'{assembled}/{len(NAMES)} "Assembled a region", {named}/{len(NAMES)} named, {len(bad_cmd)} command errors' + (f': {bad_cmd[0][:160]}' if bad_cmd else ''))
 seen = [n for n in NAMES if n in sship]
-check('S1 SSHIP lines per ship', len(seen) == 6, f'ships traced {seen} (want {NAMES})')
+check('S1 SSHIP lines per ship', len(seen) == len(NAMES), f'ships traced {seen} (want {NAMES})')
 check('S2 STRACE sgrips/carry + TRACE sheld/carry fields', any(x['sgrips'] is not None for x in st.values()) and any(x['sheld'] is not None for x in tr.values()),
       f"STRACE with sgrips {sum(1 for x in st.values() if x['sgrips'] is not None)}/{len(st)}, TRACE with sheld {sum(1 for x in tr.values() if x['sheld'] is not None)}/{len(tr)}")
-check('S3 /tentaworks ship drive', len(drives) >= 16 and not no_ship, f'{len(drives)} SHIPDRIVE lines (>= 16), {len(no_ship)} "no ship" replies')
+check('S3 /tentaworks ship drive', len(drives) >= 30 and not no_ship, f'{len(drives)} SHIPDRIVE lines (>= 30), {len(no_ship)} "no ship" replies')
 CENTRES = {'p9a': (6063.5, -57.5, 0.5), 'p9b': (6103.5, -47.5, 0.5), 'p9c': (6403.5, -47.5, 0.5), 'p9d': (6503.5, -57.5, 3.5),
-           'p9e': (6603.5, -47.5, 0.5), 'p9f': (6703.5, -47.5, 0.5)}
+           'p9e': (6603.5, -47.5, 0.5), 'p9f': (6703.5, -47.5, 0.5), 'p9g': (7303.5, -47.5, 0.5), 'p9h': (7003.5, -47.5, 0.5)}
 first = {n: sship[n][min(sship[n])][0] for n in CENTRES if sship.get(n)}
 off = {n: math.dist(first[n], CENTRES[n]) for n in first}
-check('S4 named ships start at their box centres', len(off) == 6 and max(off.values()) <= 0.6,
+check('S4 named ships start at their box centres', len(off) == len(NAMES) and max(off.values()) <= 0.6,
       ', '.join(f'{n} {d:.2f}' for n, d in off.items()) + ' (<= 0.6; checks names and that pose position = box centre = rotation point)')
 if not cship:
     info('no CSHIP lines: client/server drift falls back to world frame with one tick of ship motion allowed')
@@ -252,6 +265,63 @@ def section(title, *tags):
     return not miss
 
 
+def client_local(ship, a, b):
+    return [(g, local(tr[g]['p'], ship_pose(ship, g, 'c'))) for g in sorted(tr) if a <= g <= b and ship_pose(ship, g, 'c')]
+
+
+def pushes(ship, a, b):
+    """One-tick client ship-frame steps above PUSH: [(gt, step)]."""
+    loc = client_local(ship, a, b)
+    return [(g1, math.dist(x0, x1)) for (g0, x0), (g1, x1) in zip(loc, loc[1:]) if g1 == g0 + 1 and math.dist(x0, x1) > PUSH]
+
+
+def ride_client(name, ship, a, b, limit=RIDE_TIGHT):
+    """Client ship-frame displacement (TRACE + CSHIP, same gt) over the window and the largest one-tick step: a server
+    correction (teleport back) or a Sable push shows as a jump."""
+    loc = client_local(ship, a, b)
+    if len(loc) < 2:
+        check(name, False, f'no CSHIP {ship} / TRACE overlap in {a}..{b}')
+        return
+    d = max(math.dist(loc[0][1], x) for _, x in loc)
+    step = max(math.dist(x0, x1) for (g0, x0), (g1, x1) in zip(loc, loc[1:]) if g1 == g0 + 1)
+    check(name, d <= limit and step <= STEP_MAX, f'client ship-frame displacement max {d:.4f} (<= {limit}), largest one-tick step {step:.4f} (<= {STEP_MAX}), {len(loc)} ticks')
+
+
+def depth(p, pose):
+    """Player box vs the hull box in the ship frame: > 0 overlap depth (inside the hull), < 0 the gap."""
+    lp = local(p, pose)
+    lo = (lp[0] - 0.3, lp[1], lp[2] - 0.3)
+    hi = (lp[0] + 0.3, lp[1] + 1.8, lp[2] + 0.3)
+    o = [min(hi[i], HALF[i]) - max(lo[i], -HALF[i]) for i in range(3)]
+    return min(o)
+
+
+def inside(ship, a, b):
+    """Most-inside box position over the window, server (STRACE + SSHIP) and client (TRACE + CSHIP), same gt."""
+    sv = [depth(x['p'], ship_pose(ship, g)) for g, x in span(st, a, b) if ship_pose(ship, g)]
+    cl = [depth(x['p'], ship_pose(ship, g, 'c')) for g, x in span(tr, a, b) if ship_pose(ship, g, 'c')]
+    return (max(sv) if sv else None), (max(cl) if cl else None)
+
+
+def bad_lines(t0, t1):
+    """Kick / wrong-move warnings in the server log between two SPOS stamps."""
+    if t0 not in spos or t1 not in spos:
+        return None
+    part = s[spos[t0]:spos[t1]]
+    return sum(part.count(x) for x in ('moved wrongly', 'moved too quickly', 'forcing Falling', 'kicked', 'Flying is not enabled'))
+
+
+def quiet(name, t0, t1, ship=None):
+    """No whir (create:cogs) and no height hiss (create:steam) started between two CSOUND stamps of an idle rider: the Ship's
+    carry is not the Rig's motion. With {@code ship}: at most one of each per Sable contact push (a real one-tick body move)."""
+    if t0 not in sounds or t1 not in sounds:
+        check(name, False, f'no CSOUND {t0}/{t1} lines')
+        return
+    d = {k: sounds[t1].get(k, 0) - sounds[t0].get(k, 0) for k in ('create:cogs', 'create:steam')}
+    n = len(pushes(ship, mk[t0], mk[t1])) if ship else 0
+    check(name, max(d.values()) <= n, f"whir starts {d['create:cogs']}, hiss {d['create:steam']} (want 0" + (f", or <= {n} Sable contact push ticks)" if ship else ")"))
+
+
 # --- W world baseline --------------------------------------------------------------------------------------------------
 if section('W world wall baseline', 'wa', 'wb'):
     held('W held on the world wall', mk['wa'], mk['wb'], need_ship=False)
@@ -289,6 +359,8 @@ if section('B moving ship', 'b0', 'bend', *[k + x for k, _ in STEPS for x in ('a
         ride(f'B {k} rides along (stays on the hull)', 'p9b', a, b)
         air(f'B {k} Air (carry not counted as movement)', a, b)
         drift(f'B {k} client/server drift', 'p9b', a, b, sp)
+    ride_client('B client ride across all velocity steps', 'p9b', mk['b0'], mk['bend'], ZONE_RIDE)
+    quiet('B sounds: idle rider on the moving ship', 'b0', 'bend')
 
 # --- C rotating ship ----------------------------------------------------------------------------------------------------
 if section('C rotating ship', 'c0', 'cya', 'cyb', 'cra', 'crb', 'cend'):
@@ -350,6 +422,49 @@ if section('F deck ride', 'f0', 'fa', 'fb', 'f1'):
     check('F1 stays Active on the deck', w and all(x['state'] == 'ACTIVE' for _, x in w), f'server {states(w)}')
     ride('F2 rides the deck (no double carry, not left behind)', 'p9f', mk['fa'], mk['fb'])
     drift('F3 client/server drift', 'p9f', mk['fa'], mk['fb'], 4)
+
+# --- G ship moving toward the wearer (bow) ---------------------------------------------------------------------------------
+def bow(prefix, ship, steps):
+    for k, v, on, off in steps:
+        a, b = mk[k + 'a'], mk[k + 'b']
+        sp = math.hypot(*v)
+        moved(f'{prefix} {k} ship speed', ship, a, b, sp)
+        held(f'{prefix} {k} held', a, b)
+        ride(f'{prefix} {k} server ride (lag-free)', ship, a, b, RIDE_TIGHT)
+        ride_client(f'{prefix} {k} client ride', ship, a, b)
+        air(f'{prefix} {k} Air', a, b)
+        drift(f'{prefix} {k} client/server drift', ship, a, b, sp)
+        si, ci = inside(ship, mk[k + 'a'] - 20, b)
+        n = bad_lines(on, off)
+        info(f'{k}: player box vs hull, max (> 0 inside, < 0 gap): server {si:.3f}, client {ci:.3f}; kick/wrong-move lines {n}')
+
+
+if section('G ship moving toward the wearer', 'g0', 'gend', 'g4a', 'g4b', 'g15a', 'g15b'):
+    w = span(st, mk['g0'], mk['gend'])
+    stow = [g for g, x in w if x['state'] != 'ACTIVE']
+    check('G0 no stow', w and not stow, f'server {states(w)} over {len(w)} ticks')
+    bow('G', 'p9g', [('g4', (-4, 0, 0), 'g4on', 'g4off'), ('g15', (-15, 0, 0), 'g15on', 'g15off')])
+    info(f"G Sable contact pushes (client ship-frame one-tick steps > {PUSH}): {[(g, round(x, 3)) for g, x in pushes('p9g', mk['g0'], mk['gend'])]}")
+    quiet('G sounds: idle rider on the moving ship', 'g0', 'gend', 'p9g')
+
+# --- H under the floor ---------------------------------------------------------------------------------------------------
+if section('H under the floor, ship up and down', 'h0', 'hend', 'hupa', 'hupb', 'hdna', 'hdnb'):
+    w = span(st, mk['h0'], mk['hend'])
+    stow = [g for g, x in w if x['state'] != 'ACTIVE']
+    check('H0 no stow', w and not stow, f'server {states(w)} over {len(w)} ticks')
+    bow('H', 'p9h', [('hup', (0, 3, 0), 'hupon', 'hupoff'), ('hdn', (0, -3, 0), 'hdnon', 'hdnoff')])
+    info(f"H Sable contact pushes (client ship-frame one-tick steps > {PUSH}): {[(g, round(x, 3)) for g, x in pushes('p9h', mk['h0'], mk['hend'])]}")
+    quiet('H sounds: idle rider on the moving ship', 'h0', 'hend', 'p9h')
+
+# --- R roof edge ---------------------------------------------------------------------------------------------------------
+if section('R roof edge, lift on a rising deck', 'rupa', 'rupb', 'rdna', 'rdnb', 'rend'):
+    a, b = mk['rupa'], mk['rupb']
+    hs = [local(x['p'], ship_pose('p9h', g, 'c'))[1] - HALF[1] for g, x in span(tr, a, b) if ship_pose('p9h', g, 'c')]
+    check('R1 Standing Height above the rising deck', hs and abs(sum(hs) / len(hs) - STANDING) <= LIFT_TOL,
+          f'feet above the roof {min(hs):.3f}..{max(hs):.3f} (want {STANDING} +-{LIFT_TOL})' if hs else 'no TRACE/CSHIP')
+    w = span(st, mk['rupa'], mk['rend'])
+    check('R0 no stow', w and all(x['state'] == 'ACTIVE' for _, x in w), f'server {states(w)}')
+    bow('R', 'p9h', [('rup', (0, 3, 0), 'rupon', 'rupoff'), ('rdn', (0, -3, 0), 'rdnon', 'rdnoff')])
 
 # --- whole run ----------------------------------------------------------------------------------------------------------
 print('== Whole run')

@@ -132,6 +132,81 @@ tentaworks ship p9f drive 0 0 0
 tentaworks pos fstopped
 #signal fstopped
 #await fdone
+# G bow case: hang on p9g's west wall, the ship drives -x toward the wearer
+tp Dev 7295.5 -60 0.5 -90 0
+item replace entity Dev armor.chest with air
+#sleep 0.5
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 1
+#signal g
+#await g4
+tentaworks ship p9g drive -4 0 0
+tentaworks pos g4on
+#signal g4on
+#await g4stop
+tentaworks ship p9g drive 0 0 0
+tentaworks pos g4off
+#signal g4off
+#await g15
+tentaworks air 900
+tentaworks ship p9g drive -15 0 0
+tentaworks pos g15on
+#signal g15on
+#await g15stop
+tentaworks ship p9g drive 0 0 0
+tentaworks pos g15off
+#signal g15off
+#await gdone
+# H under p9h's floor: up 3 b/s (floor leaves), down 3 b/s (floor comes at the head)
+tp Dev 6995.5 -60 0.5 -90 0
+item replace entity Dev armor.chest with air
+#sleep 0.5
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 1
+#signal h
+#await hup
+tentaworks air 900
+tentaworks ship p9h drive 0 3 0
+tentaworks pos hupon
+#signal hupon
+#await hupstop
+tentaworks ship p9h drive 0 0 0
+tentaworks pos hupoff
+#signal hupoff
+#await hdn
+tentaworks ship p9h drive 0 -3 0
+tentaworks pos hdnon
+#signal hdnon
+#await hdnstop
+tentaworks ship p9h drive 0 0 0
+tentaworks pos hdnoff
+#signal hdnoff
+#await hdone
+# R roof edge of p9h: Stowed on the roof, the ship rises, the Rig activates on the rising deck (lift), then the ship goes down
+tp Dev 7001.0 -44.5 0.5 -90 0
+item replace entity Dev armor.chest with air
+#sleep 0.5
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 1
+#signal r
+#await rup
+tentaworks air 900
+tentaworks ship p9h drive 0 3 0
+tentaworks pos rupon
+#signal rupon
+#await rupstop
+tentaworks ship p9h drive 0 0 0
+tentaworks pos rupoff
+#signal rupoff
+#await rdn
+tentaworks ship p9h drive 0 -3 0
+tentaworks pos rdnon
+#signal rdnon
+#await rdnstop
+tentaworks ship p9h drive 0 0 0
+tentaworks pos rdnoff
+#signal rdnoff
+#await rdone
 sable info @e
 #signal end
 #sleep 2

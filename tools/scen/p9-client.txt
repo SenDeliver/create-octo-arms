@@ -43,6 +43,7 @@ wait 2
 doublejump
 wait 40
 mark b0
+sounds b0
 # B1 +x 4 b/s (wall moves away from the wearer)
 signal b4
 await b4on
@@ -88,6 +89,7 @@ signal bupstop
 await bupoff
 wait 40
 mark bend
+sounds bend
 signal bdone
 # C rotating ship p9c: yaw 20 deg/s about +Y, then roll 10 deg/s about +Z (the wall tilts)
 await c
@@ -184,5 +186,99 @@ await fstopped
 wait 20
 mark f1
 signal fdone
+# G bow case: mid-air catch on p9g's west wall (face normal -x), press against it, then the ship drives -x toward the wearer at 4 and 15 b/s
+await g
+cmd tp @s 7298.9 -47.5 0.5 -90 0
+wait 2
+doublejump
+wait 30
+# press against the wall: no gap left between the body and the hull
+hold up on
+wait 10
+hold up off
+wait 20
+mark g0
+sounds g0
+signal g4
+await g4on
+wait 20
+mark g4a
+wait 100
+mark g4b
+signal g4stop
+await g4off
+wait 40
+signal g15
+await g15on
+wait 20
+mark g15a
+wait 100
+mark g15b
+signal g15stop
+await g15off
+wait 40
+mark gend
+sounds gend
+signal gdone
+# H vertical: mid-air catch under p9h's floor, rise until the head touches it, ship up 3 b/s then down 3 b/s (floor comes at the head)
+await h
+cmd tp @s 7003.5 -51.9 0.5 -90 0
+wait 2
+doublejump
+wait 30
+# rise until the head touches the floor
+hold jump on
+wait 15
+hold jump off
+wait 20
+mark h0
+sounds h0
+signal hup
+await hupon
+wait 20
+mark hupa
+wait 40
+mark hupb
+signal hupstop
+await hupoff
+wait 30
+signal hdn
+await hdnon
+wait 20
+mark hdna
+wait 40
+mark hdnb
+signal hdnstop
+await hdnoff
+wait 30
+mark hend
+sounds hend
+signal hdone
+# R roof edge: Stowed on p9h's roof by its west edge; the ship rises, the Rig activates on the rising deck and lifts to Standing Height 1.5, then the ship goes down
+await r
+look -90 0
+wait 10
+signal rup
+await rupon
+wait 10
+doublejump
+wait 30
+mark rupa
+wait 40
+mark rupb
+signal rupstop
+await rupoff
+wait 30
+signal rdn
+await rdnon
+wait 20
+mark rdna
+wait 40
+mark rdnb
+signal rdnstop
+await rdnoff
+wait 20
+mark rend
+signal rdone
 await end
 quit
