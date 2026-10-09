@@ -370,6 +370,6 @@ quick = re.findall(r'\[(\d\d:\d\d:\d\d)\] \[Server thread/WARN\].*?: (\w+) moved
 unexplained = [(t, n) for t, n in quick if not any(0 <= secs(t) - pt <= 2 for pt in tps)]
 check('K moved too quickly', not unexplained, f'{len(quick)} total, unexplained (not within 2 s after a tp) {len(unexplained)} {unexplained[:3]}')
 exc = [l for l in (c + s).splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'authlib' not in l and 'neoforge-client.new.tmp.toml' not in l
-       and 'mixin/]: Error loading class' not in l]
+       and 'Error loading class: net/irisshaders/' not in l]
 check('E exceptions', not exc, f'{len(exc)} exception lines' + (f': {exc[0][:200]}' if exc else ''))
 print('RESULT', 'PASS' if not fails else 'FAIL ' + ', '.join(fails))
