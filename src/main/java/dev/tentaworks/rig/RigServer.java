@@ -96,6 +96,12 @@ public final class RigServer {
         Tentacles relayed;
         Anchor tickAnchor;
         Anchor posAnchor;
+        final Vec3[] carryWindow = new Vec3[SPEED_WINDOW];
+        int carryAt;
+
+        Wearer() {
+            Arrays.fill(carryWindow, Vec3.ZERO);
+        }
     }
 
     /** The carry Ship's pose when a reference position was taken: {@code block} is one of its Grip blocks (plot coords). */
@@ -492,10 +498,12 @@ public final class RigServer {
      */
     private static void trackRealMove(ServerPlayer player, Wearer w) {
         Vec3 pos = player.position();
+        boolean carried = w.tickPos != null && w.tickAnchor != null;
         Vec3 d = w.tickPos == null ? Vec3.ZERO : pos.subtract(w.tickPos).subtract(carried(player.level(), w.tickAnchor, w.tickPos));
         w.tickPos = pos;
         w.tickAnchor = anchor(player.level(), w.grips);
-        w.realMove = d.lengthSqr() < REAL_STILL * REAL_STILL ? Vec3.ZERO : d;
+        w.realMove = still(carried ? carriedMove(w, d) : d);
+        if (!carried) Arrays.fill(w.carryWindow, Vec3.ZERO);
         w.window[w.windowAt] = d.length();
         w.windowAt = (w.windowAt + 1) % SPEED_WINDOW;
         if (!w.state.carries()) {
@@ -506,6 +514,22 @@ public final class RigServer {
         for (double v : w.window) sum += v;
         if (sum > maxStep(player) * SPEED_WINDOW * SPEED_SLACK + SPEED_EXTRA) w.overSpeed++;
         else w.overSpeed = 0;
+    }
+
+    private static Vec3 still(Vec3 d) {
+        return d.lengthSqr() < REAL_STILL * REAL_STILL ? Vec3.ZERO : d;
+    }
+
+    /**
+     * Own move of a carried wearer for Air: the mean over the last {@value #SPEED_WINDOW} ticks. The client moves with its
+     * interpolated Ship pose, so the per-tick difference to the server's carry jitters by a few hundredths (cancels out over the window).
+     */
+    private static Vec3 carriedMove(Wearer w, Vec3 d) {
+        w.carryWindow[w.carryAt] = d;
+        w.carryAt = (w.carryAt + 1) % SPEED_WINDOW;
+        Vec3 sum = Vec3.ZERO;
+        for (Vec3 v : w.carryWindow) sum = sum.add(v);
+        return sum.scale(1.0 / SPEED_WINDOW);
     }
 
     private static void drain(ServerPlayer player, Wearer w) {
