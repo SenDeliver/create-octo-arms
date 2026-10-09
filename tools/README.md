@@ -51,7 +51,7 @@ Sounds (`sounds <tag>` CSOUND lines): an idle rider hears no whir (`create:cogs`
 
 Sable never logs "moved wrongly" (it redirects `isCreative()` in `handleMovePlayer` to true), Ship hulls are not in `level.getCollisions` and Sable's entity collision returns a `ServerPlayer`'s move unchanged, so the server takes a lagging rider's position even inside the hull (G 15 b/s: box 0.6 inside, no effect). A problem could only show up as a position jump: hence the client ride and one-tick step checks.
 
-On the client Sable does push a body that touches a hull starting to move toward it, once, by about one tick of hull motion (G 4 b/s: 0.215 off the wall; H down: 0.083): `PUSH` in `p9_metrics.py` reports those ticks and allows one whir/hiss each.
+On the client Sable can push a body that touches a hull starting to move toward it, once, by about one tick of hull motion (intermittent; seen G 4 b/s: 0.215 off the wall, H down: 0.083): `PUSH` in `p9_metrics.py` reports those ticks; a whir or hiss is allowed only within 2 ticks of one (`CSOUNDAT` gt).
 
 Floating ships have their bottom 10 above the floor (out of Copper Reach 4). Mid-air catch as in p2 MJ1: `cmd tp`, `wait 2`, `doublejump`.
 

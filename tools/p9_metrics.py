@@ -68,6 +68,7 @@ sounds = {}  # tag -> {sound id: count}
 for m in re.finditer(r'CSOUND (\S+) heard=\{([^}]*)\}', c):
     sounds[m[1]] = {k.strip(): int(v) for k, v in (x.split('=') for x in m[2].split(',') if '=' in x)}
 spos = {m[1]: m.start() for m in re.finditer(r'SPOS (\S+) gt=\d+ Dev', s)}
+sound_at = [(int(m[1]), m[2]) for m in re.finditer(r'CSOUNDAT gt=(\d+) id=(\S+)', c)]
 cship = {}   # name -> {gt: (pos, q)}
 for m in re.finditer(r'CSHIP gt=(\d+) id=(\S+) pos=' + num + r' q=' + q4, c):
     cship.setdefault(ids.get(m[2], m[2]), {})[int(m[1])] = (tuple(map(float, m.group(3, 4, 5))), tuple(map(float, m.group(6, 7, 8, 9))))
@@ -313,13 +314,20 @@ def bad_lines(t0, t1):
 
 def quiet(name, t0, t1, ship=None):
     """No whir (create:cogs) and no height hiss (create:steam) started between two CSOUND stamps of an idle rider: the Ship's
-    carry is not the Rig's motion. With {@code ship}: at most one of each per Sable contact push (a real one-tick body move)."""
+    carry is not the Rig's motion. With {@code ship}: one that starts within 2 ticks of a Sable contact push (a real one-tick
+    body move, CSOUNDAT gt) is allowed."""
     if t0 not in sounds or t1 not in sounds:
         check(name, False, f'no CSOUND {t0}/{t1} lines')
         return
     d = {k: sounds[t1].get(k, 0) - sounds[t0].get(k, 0) for k in ('create:cogs', 'create:steam')}
-    n = len(pushes(ship, mk[t0], mk[t1])) if ship else 0
-    check(name, max(d.values()) <= n, f"whir starts {d['create:cogs']}, hiss {d['create:steam']} (want 0" + (f", or <= {n} Sable contact push ticks)" if ship else ")"))
+    if not ship:
+        check(name, not any(d.values()), f"whir starts {d['create:cogs']}, hiss {d['create:steam']} (want 0)")
+        return
+    push = [g for g, _ in pushes(ship, mk[t0], mk[t1])]
+    at = [(g, i) for g, i in sound_at if mk[t0] <= g <= mk[t1] and i in ('create:cogs', 'create:steam')]
+    stray = [(g, i) for g, i in at if not any(abs(g - p) <= 2 for p in push)]
+    check(name, not stray and len(at) == sum(d.values()), f"whir starts {d['create:cogs']}, hiss {d['create:steam']}, at gt {at}, "
+                                                          f"Sable contact pushes at {push}; not at a push: {stray} (want none)")
 
 
 # --- W world baseline --------------------------------------------------------------------------------------------------
