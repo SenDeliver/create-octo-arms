@@ -1,7 +1,6 @@
 package dev.tentaworks.client;
 
 import com.simibubi.create.AllSoundEvents;
-import dev.tentaworks.rig.Grip;
 import dev.tentaworks.rig.RigState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
@@ -24,12 +23,13 @@ public final class RigSounds {
     private RigSounds() {
     }
 
-    static boolean plant(Player player, Grip grip) {
-        return at(player, grip.point(), AllSoundEvents.SLIME_ADDED.getMainEvent(), 0.3F, 0.75F + 0.1F * player.getRandom().nextFloat());
+    /** {@code p}: the Grip point in world coords. */
+    static boolean plant(Player player, Vec3 p) {
+        return at(player, p, AllSoundEvents.SLIME_ADDED.getMainEvent(), 0.3F, 0.75F + 0.1F * player.getRandom().nextFloat());
     }
 
-    static void lift(Player player, Grip grip) {
-        at(player, grip.point(), AllSoundEvents.SLIME_ADDED.getMainEvent(), 0.12F, 0.5F);
+    static void lift(Player player, Vec3 p) {
+        at(player, p, AllSoundEvents.SLIME_ADDED.getMainEvent(), 0.12F, 0.5F);
     }
 
     static void hiss(Player player, float volume, float pitch) {
