@@ -156,17 +156,20 @@ public final class Grips {
      */
     public static boolean valid(Level level, Grip grip, Vec3 centre, double reach) {
         ShipFrames ships = ShipFrames.get();
-        if (!ships.isPlot(level, grip.block())) return validIn(level, grip, List.of(centre), reach);
+        if (!ships.isPlot(level, grip.block())) return validIn(level, grip, List.of(centre), reach, false);
         Frame frame = ships.containing(level, grip.block());
         if (frame == null || !frame.unitScale()) return false;
         List<Pose> poses = ships.recent(frame);
         List<Vec3> centres = new ArrayList<>(poses.size());
         for (Pose pose : poses) centres.add(pose.toLocal(centre));
-        return validIn(level, grip, centres, reach);
+        return validIn(level, grip, centres, reach, true);
     }
 
-    /** {@code centres}: the body centre in the Grip's frame, one per candidate pose. */
-    private static boolean validIn(Level level, Grip grip, List<Vec3> centres, double reach) {
+    /**
+     * {@code centres}: the body centre in the Grip's frame, one per candidate pose. Unloaded counts as solid in the world
+     * (it may be a wall) but as empty in plot space, where it is just space no Ship owns.
+     */
+    private static boolean validIn(Level level, Grip grip, List<Vec3> centres, double reach, boolean plot) {
         BlockPos b = grip.block();
         Direction face = grip.face();
         Vec3 p = grip.point();
@@ -174,21 +177,22 @@ public final class Grips {
         if (!faceRect(b, face).inflate(0.02).contains(p)) return false;
         if (centres.stream().noneMatch(c -> p.distanceToSqr(c) <= r2)) return false;
         BlockPos out = b.relative(face);
-        if (!level.isLoaded(b) || !level.isLoaded(out)) return false;
-        if (!level.getBlockState(b).isCollisionShapeFullBlock(level, b) || level.getBlockState(out).isCollisionShapeFullBlock(level, out)) return false;
+        boolean outLoaded = level.isLoaded(out);
+        if (!level.isLoaded(b) || (!outLoaded && !plot)) return false;
+        if (!level.getBlockState(b).isCollisionShapeFullBlock(level, b) || (outLoaded && level.getBlockState(out).isCollisionShapeFullBlock(level, out))) return false;
         double plane = face.getAxisDirection() == Direction.AxisDirection.POSITIVE ? b.get(face.getAxis()) + 1 : b.get(face.getAxis());
-        for (Vec3 c : centres) if (p.distanceToSqr(c) <= r2 && !throughBlock(level, face, plane, c)) return true;
+        for (Vec3 c : centres) if (p.distanceToSqr(c) <= r2 && !throughBlock(level, face, plane, c, plot)) return true;
         return false;
     }
 
     /** The body sits behind the face's plane with a solid block between: the Tentacle would have to pass through the wall. */
-    private static boolean throughBlock(Level level, Direction face, double plane, Vec3 centre) {
+    private static boolean throughBlock(Level level, Direction face, double plane, Vec3 centre, boolean plot) {
         Direction.Axis axis = face.getAxis();
         int step = face.getAxisDirection().getStep();
         if ((centre.get(axis) - plane) * step >= -THROUGH) return false;
         double inside = plane - step * 0.5;
         BlockPos p = BlockPos.containing(axis == Direction.Axis.X ? inside : centre.x, axis == Direction.Axis.Y ? inside : centre.y, axis == Direction.Axis.Z ? inside : centre.z);
-        return !level.isLoaded(p) || level.getBlockState(p).isCollisionShapeFullBlock(level, p);
+        return level.isLoaded(p) ? level.getBlockState(p).isCollisionShapeFullBlock(level, p) : !plot;
     }
 
     private static AABB faceRect(BlockPos b, Direction d) {

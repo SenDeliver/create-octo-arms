@@ -71,7 +71,7 @@ Phase 3 added `tentaworks:rig_settings` and bumped the registrar to `3`: phase-2
 Phase 4 kept every payload as is but bumped the registrar to `4`: Reach and Speed now depend on enchantments on both sides, and a phase-3 server would reject a phase-4 client's Far Reach Grips (forced Falling mid-hang).
 Phase 5 kept every payload as is but bumped the registrar to `5`: the worn-out rule must match on both sides (a phase-4 client would keep claiming Active on a worn-out Rig and be forced to Setting Down every tick). The new items and recipes would block mixed versions anyway (registry sync).
 Phase 6 changed both Rig payloads to the fixed 4-slot Tentacles with a Step phase per slot (other clients animate each Tentacle by slot) and bumped the registrar to `6`: phase-5 and phase-6 clients and servers cannot mix.
-1.0.0 shipped with registrar `7` (payloads as in phase 6).
+Phase 8 kept every payload as is but bumped the registrar to `7` (server packet handling changed); 1.0.0 shipped with `7`.
 1.1.0 keeps every payload byte-identical but bumps the registrar to `8`: a Grip point and block may now be in a Ship's plot coords, and the `rig_motion` motion is the Rig's own move without the carry Ship's. 1.0 clients cannot join a 1.1 server, and the other way round.
 
 ## Server Config (`tentaworks-server.toml`, per world in `serverconfig/`)
