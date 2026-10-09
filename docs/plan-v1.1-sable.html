@@ -25,6 +25,16 @@ ul{margin:4px 0 10px;padding-left:22px}li{margin:2px 0}
 <h1>Octo Arms v1.1: Rig grips Sable Ships</h1>
 <div class="sub">Plan, 2026-10-09. Goal: the Tentacle Rig holds, climbs and rides Sable Ships (sub-levels) exactly like world blocks. Sable becomes an <b>optional</b> dependency. Aeronautics not required.</div>
 
+<h2 style="margin-top:16px">Result (2026-10-09)</h2>
+<div class="box ok"><b>Implemented in 1.1.0, p9 Sable Ships suite passed.</b> Option A (server pose history) was enough; option B not needed.
+<ul>
+<li>Tested: parked and rotated 30°; moving 4 and 15 b/s; yaw 20°/s + roll 10°/s; world ↔ Ship moves; Ship removed mid-grip (wearer falls); standing on deck (no double carry); no-Sable path unchanged (all other suites run without Sable).</li>
+<li>Measured client/server lag: ~1.5 ticks on localhost (~0.5 tick Sable pose interpolation + 1 tick player position). Server keeps the last <b>10</b> poses per Ship → room for ~400 ms ping.</li>
+<li>Air on a Ship: own move as a 10-tick mean (per-tick carry jitter cancels out).</li>
+<li>Shipped as planned: optional Sable <code>[2.0.5,2.1)</code>, registrar <code>7 → 8</code>, config <code>ships.grip</code> (default true), scale ≠ 1 ignored, no save change.</li>
+<li>Known limits: remote players on fast Ships render ~1.5 ticks behind; small extra Air when the Ship changes speed; hulls not seen by movement prediction (real move still collides); not tested over a real network.</li>
+</ul></div>
+
 <div class="box ok"><b>Verdict:</b> feasible with Sable 2.0.5 + sable-companion 1.6.0 alone. Ship blocks are real blocks of the same Level at far-away "plot" coordinates; Sable's chunk mixins make <code>getBlockState</code>/<code>isLoaded</code> work there on both sides. Most work is frame bookkeeping (world ↔ plot). Two hard parts: server anti-cheat vs moving ships, and client/server pose lag.</div>
 
 <div class="box warn"><b>Backward compat (prod):</b> Grip meaning changes (points may be in plot coords) → bump network registrar 7 → 8. Old 1.0 clients can't join a 1.1 server. No NBT/save change (Grips are in-memory only). Config: new key <code>ships.grip</code> with default = compatible. Ships with scale ≠ 1 unsupported (rejected safely).</div>

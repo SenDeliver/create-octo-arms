@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Octo Arms Design v1</title>
+<title>Octo Arms Design</title>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
 <style>
 :root{--bg:#fafaf7;--panel:#fff;--ink:#1d2330;--muted:#5b6474;--line:#e3e6ea;--accent:#b5561b;--accent-soft:#fbeee4;--blue:#1f5fa8;--blue-soft:#e8f0fa;--green:#2d7a46;--green-soft:#e6f4ea;--warn-soft:#fff5d6;--code:#f3f4f6}
@@ -33,10 +33,10 @@ ul li{margin:3px 0}
 </head>
 <body>
 <main>
-<h1>Octo Arms — design v1</h1>
+<h1>Octo Arms — design v1 (+ v1.1 Ships)</h1>
 <p class="sub">A Create addon for NeoForge 1.21.1. A worn Tentacle Rig, built from a Backtank, carries the player on four pneumatic Tentacles over floors, walls and ceilings. Decisions come from the design session on 2026-10-08. v1 is the full feature set; nothing here is deferred.</p>
-<p><span class="pill">mod_id: tentaworks</span><span class="pill">dep: Create only</span><span class="pill">MC 1.21.1 · NeoForge 21.1.250 · Create 6.0.10</span></p>
-<div class="box info">Terms: <code>CONTEXT.md</code>. Decisions: <code>adr/0001</code> (client-driven movement, cosmetic Tentacles), <code>adr/0002</code> (Rig = Backtank subclass + own block). Build setup, Create datagen and Ponder patterns: reused from the sibling mod Create Aeronautics: Landing Legs (mod id <code>legworks</code>), minus the Aeronautics/Sable deps.</div>
+<p><span class="pill">mod_id: tentaworks</span><span class="pill">dep: Create (Sable optional since v1.1)</span><span class="pill">MC 1.21.1 · NeoForge 21.1.250 · Create 6.0.10</span></p>
+<div class="box info">Terms: <code>CONTEXT.md</code>. Decisions: <code>adr/0001</code> (client-driven movement, cosmetic Tentacles), <code>adr/0002</code> (Rig = Backtank subclass + own block). Build setup, Create datagen and Ponder patterns: reused from the sibling mod Create Aeronautics: Landing Legs (mod id <code>legworks</code>). Sable is an optional dependency since v1.1 (§10); Aeronautics is not needed.</div>
 
 <h2>1. Scope</h2>
 <div class="grid">
@@ -48,11 +48,11 @@ ul li{margin:3px 0}
 <li>Enchantable: vanilla chest + Capacity + Far Reach, Thrift, Swift.</li>
 <li>Tentacle item via Sequenced Assembly, Rig via Mechanical Crafting; Rig Block for refill.</li>
 <li>Stepping-gait animation visible to everyone, Sticker sounds, goggles tooltips, Ponder scene, JEI via Create's recipe categories.</li>
+<li><b>v1.1:</b> grip and ride Sable Ships (also Create Aeronautics Ships), §10.</li>
 </ul></div>
 <div class="card"><h3>Not in v1</h3><ul>
 <li>Fighting mobs with Tentacles (v2 idea).</li>
 <li>Pushing entities, moving blocks, any world force.</li>
-<li>Gripping Sable Ships as moving bodies. Without Aeronautics there is nothing to grip; with it, Ship blocks are just blocks and the Rig does not follow a moving Ship.</li>
 <li>Other-mod tiers (no extra materials).</li>
 </ul></div>
 </div>
@@ -171,6 +171,7 @@ flowchart LR
 <tr><td>air.netheriteFactor</td><td>0.5</td></tr>
 <tr><td>enchant.farReachPerLevel / thriftPerLevel / swiftPerLevel</td><td>+1 block / −15 % / +15 %</td></tr>
 <tr><td>crawl.speed</td><td>1 b/s</td></tr>
+<tr><td>ships.grip (v1.1; no effect without Sable)</td><td>true</td></tr>
 </table>
 <p>Keybinds: open Rig Settings while worn (unbound by default), activate (optional, for key-only mode).</p>
 
@@ -189,7 +190,56 @@ flowchart LR
 <li>Rig Block: backtank model with folded Tentacles.</li>
 </ul>
 
-<h2>10. Open for later sessions</h2>
+<h2>10. Ships (v1.1, Sable)</h2>
+<div class="box ok"><b>Ship blocks are Grips like world blocks, and a Held wearer rides the Ship.</b> Sable is optional (<code>[2.0.5,2.1)</code>); Create Aeronautics Ships are Sable Ships, so they work too. Without Sable, or with <code>ships.grip = false</code>, the Rig behaves exactly as in v1. Plan and steps: <code>plan-v1.1-sable.html</code>.</div>
+<div class="grid">
+<div class="card"><h3>Frames</h3><ul>
+<li>Ship blocks are real blocks of the same Level at far-away plot coords; the Ship's pose maps them to the world.</li>
+<li>All Sable calls sit in <code>compat/sable/SableShips</code> behind <code>ShipFrames</code>; <code>NoShips</code> when Sable is absent.</li>
+<li>A <code>Frame</code> is one Ship at one tick: id, this pose, last pose. Only scale-1 Ships take Grips.</li>
+</ul></div>
+<div class="card"><h3>Grips and Held</h3><ul>
+<li>Faces are scanned per Ship in plot coords around <code>pose⁻¹(body)</code>, plus the normal world scan.</li>
+<li>A Grip on a Ship keeps point and block in plot coords; the Ship is found from the block. Packets are byte-identical, registrar <code>7 → 8</code>.</li>
+<li>Quadrant test for Ship faces: the face rect is clipped by the body's quadrant planes, then distance to the polygon.</li>
+<li>Gait scores and distances compare world points.</li>
+</ul></div>
+<div class="card"><h3>Riding</h3><ul>
+<li><b>Carry Ship</b> = the Ship holding most valid Grips (≥ 2). Carry per tick = <code>pose · last⁻¹ · body − body</code> (rotation included).</li>
+<li>No carry while Sable already tracks the wearer (feet on deck): no double carry. Sable's leftover deck velocity is dropped on activation, on a mid-air catch and every carried tick off the deck.</li>
+<li>The server checks speed, Air, Crawl and Setting Down on the wearer's own move (move − carry). Air on a Ship uses a 10-tick mean.</li>
+<li>Server keeps the last 10 poses of every Ship near a player; a client Grip is valid against any of them.</li>
+</ul></div>
+</div>
+<h3>Per client tick</h3>
+<div class="mermaid">
+flowchart LR
+  A["body centre (world)"] --> B["Ships near body<br>box + Reach"]
+  B --> C{"per Ship<br>scale 1?"}
+  C --> D["bodyPlot = pose⁻¹ · body"]
+  D --> E["face scan in plot coords<br>Faces tagged with Ship"]
+  A --> F["world face scan"]
+  E --> G["Held? quadrants<br>clipped polygon for Ship faces"]
+  F --> G
+  G --> H["clampHeld(wish)"]
+  H --> I{"Sable tracks wearer<br>(on deck)?"}
+  I -- no --> J["+ carry of Carry Ship<br>pose · last⁻¹ · body − body"]
+  I -- yes --> K
+  J --> K["move + RigMotionPacket<br>own move, Grips in plot coords"]
+  K --> L["server: Grips vs last 10 poses<br>speed / Air on own move"]
+</div>
+<h3>Render</h3>
+<ul>
+<li>Tentacle tips, culling, sounds and particles turn plot points into world points each frame with the Ship's render pose (last → current, lerped), so tips stay on the hull at speed.</li>
+</ul>
+<h3>Tested and measured</h3>
+<ul>
+<li>Parked and rotated 30°; moving 4 and 15 b/s; yaw 20°/s + roll 10°/s; world ↔ Ship moves; Ship removed mid-grip (wearer falls); standing on deck (no double carry). Sable 2.0.5, Aeronautics 1.3.2.</li>
+<li>Client vs server lag on localhost: about 1.5 ticks (≈ 0.5 tick Sable pose interpolation + 1 tick player position). 10 server poses leave room for about 400 ms ping (not tested over a real network).</li>
+</ul>
+<div class="box warn"><b>Known limits:</b> other players on fast Ships render ~1.5 ticks behind; a little extra Air when the Ship changes speed; the Rig's own path prediction (<code>clampHeld</code>, gait) does not see Ship hulls, the real move still collides; Ships with scale ≠ 1 are ignored.</div>
+
+<h2>11. Open for later sessions</h2>
 <ul>
 <li>Spike first: Held check + client motion + server mirror + float-kick silence in a bare world. This is the risk; everything else is Create plumbing already proven in Landing Legs.</li>
 <li>Exact gait timings and IK look.</li>
