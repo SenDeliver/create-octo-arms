@@ -5,6 +5,7 @@ import dev.tentaworks.compat.Frame;
 import dev.tentaworks.compat.ShipFrames;
 import dev.tentaworks.network.RigStatePacket;
 import dev.tentaworks.rig.Grip;
+import dev.tentaworks.rig.Grips;
 import dev.tentaworks.rig.RigState;
 import dev.tentaworks.rig.Tentacles;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -24,6 +25,8 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
  * through the same pipe. Updated once per client tick (previous and current values, interpolated with partialTick when drawn).
  * A Grip on a Ship is in its plot coords: each point is kept in the frame it sits on (the target's Ship, re-resolved every tick)
  * and taken into the world with the Ship's render pose when drawn, so tips stay on a moving hull.
+ * The Rig's own motion (whir, height hiss) is measured in the frame of the Ship holding most of its Grips (at least two):
+ * a Rig riding a Ship idle is still.
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public final class RigVisuals {
@@ -83,6 +86,8 @@ public final class RigVisuals {
         Tentacles pending = Tentacles.NONE;
         RigState pendingState = RigState.STOWED;
         Vec3 lastPos;
+        Vec3 lastLocal;
+        Object lastRide;
         double speed;
         int vertTicks, stillVertTicks;
         int plants, plantSounds, lifts;
@@ -105,6 +110,7 @@ public final class RigVisuals {
             return deployO + (deploy - deployO) * pt;
         }
 
+        /** Smoothed own move per tick: the world move minus the carry Ship's. */
         public double speed() {
             return speed;
         }
@@ -192,21 +198,6 @@ public final class RigVisuals {
         boolean out = v.state != RigState.STOWED;
         v.deployO = v.deploy;
         v.deploy = out ? Math.min(1, v.deploy + DEPLOY_PER_TICK) : Math.max(0, v.deploy - DEPLOY_PER_TICK);
-        Vec3 pos = player.position();
-        if (v.lastPos != null) {
-            Vec3 d = pos.subtract(v.lastPos);
-            v.speed = v.speed * 0.6 + d.length() * 0.4;
-            boolean vert = out && Math.abs(d.y) > 0.04;
-            if (vert) {
-                if (v.vertTicks == 0 && v.stillVertTicks > 6) RigSounds.hiss(player, 0.12F, 1.3F);
-                v.vertTicks++;
-                v.stillVertTicks = 0;
-            } else {
-                v.vertTicks = 0;
-                v.stillVertTicks++;
-            }
-        }
-        v.lastPos = pos;
         if (was == RigState.STOWED && out) RigSounds.activate(player, true);
         if (was != RigState.STOWED && !out) RigSounds.activate(player, false);
         if (was != v.state && v.state == RigState.FALLING) RigSounds.letGo(player);
@@ -256,7 +247,48 @@ public final class RigVisuals {
                 RigParticles.puff(player, at, normalToWorld(s.frame, faceNormal(next.face()), 1));
             }
         }
+        ownMove(player, v, out);
         RigSounds.whir(player, v);
+    }
+
+    /** Speed and height hiss from the move in the carry Ship's frame; a world move when there is none or it just changed. */
+    private static void ownMove(Player player, Visual v, boolean out) {
+        Vec3 pos = player.position();
+        Frame ride = carryFrame(v);
+        Vec3 local = ride == null ? null : ride.toLocal(pos);
+        if (v.lastPos != null) {
+            Vec3 d = ride != null && ride.id().equals(v.lastRide) ? ride.normalToWorld(local.subtract(v.lastLocal)) : pos.subtract(v.lastPos);
+            v.speed = v.speed * 0.6 + d.length() * 0.4;
+            boolean vert = out && Math.abs(d.y) > 0.04;
+            if (vert) {
+                if (v.vertTicks == 0 && v.stillVertTicks > 6) RigSounds.hiss(player, 0.12F, 1.3F);
+                v.vertTicks++;
+                v.stillVertTicks = 0;
+            } else {
+                v.vertTicks = 0;
+                v.stillVertTicks++;
+            }
+        }
+        v.lastPos = pos;
+        v.lastLocal = local;
+        v.lastRide = ride == null ? null : ride.id();
+    }
+
+    /** The Ship holding most of the drawn Grips, if at least {@link Grips#HELD} (RigClient's carry Ship rule). */
+    private static Frame carryFrame(Visual v) {
+        Frame best = null;
+        int bestCount = Grips.HELD - 1;
+        for (int i = 0; i < Tentacles.SLOTS; i++) {
+            Frame f = v.slots[i].frame;
+            if (f == null || v.slots[i].target == null) continue;
+            int n = 0;
+            for (int j = 0; j <= i; j++) if (f.equals(v.slots[j].frame)) n++;
+            if (n > bestCount) {
+                bestCount = n;
+                best = f;
+            }
+        }
+        return best;
     }
 
     static double smooth(double t) {
