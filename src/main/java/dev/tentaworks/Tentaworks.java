@@ -6,6 +6,7 @@ import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipModifier;
 import net.createmod.catnip.lang.FontHelper;
+import dev.tentaworks.compat.ShipFrames;
 import dev.tentaworks.config.TentaworksConfig;
 import dev.tentaworks.data.TentaworksDatagen;
 import dev.tentaworks.network.TentaworksNetwork;
@@ -46,5 +47,6 @@ public class Tentaworks {
                 TentaworksBlocks.COPPER_TENTACLE_RIG.get(), TentaworksBlocks.NETHERITE_TENTACLE_RIG.get()));
         container.registerConfig(ModConfig.Type.SERVER, TentaworksConfig.SPEC);
         RigServer.init();
+        ShipFrames.init();
     }
 }
