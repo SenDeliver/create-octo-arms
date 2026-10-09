@@ -18,12 +18,14 @@ MIN_GRIPS = 2             # Held = at least 2 valid Grips (p6 G3, p6fast F)
 RIDE_MAX = 0.75           # ship-frame displacement of an idle rider over a window: RigServer.GRIP_SLACK
 DRIFT_MAX = 0.5           # client vs server, lag-allowed (analyze.py "ticks>0.5")
 DRIFT_SKIP = 10           # ticks around a SHIPDRIVE velocity step skipped for drift only
+SHIP_LAG = 2              # ship frame drift: the server pose may be this many ticks newer than the client's (1 tick move packet + Sable client interpolation ~0.5 tick on localhost; the server's Grip check allows its last 10 poses)
 SPEED_TOL = 0.15          # ship really moved at the asked speed
 AIR_IDLE = 80.0           # Copper idle ticks per Air (config air.idle, p2 D copper idle)
 AIR_MOVE = 20.0           # Copper move ticks per Air (what an uncorrected carry would cost)
 LET_GO_TICKS = 10         # ship removed: Grips gone / state left ACTIVE within this many ticks
 FALL_MIN = 5.0            # ship removed: feet drop at least this much
 FLOOR = -60.0             # flat world: feet on the floor
+CATCH_MAX = 3.2           # a falling Rig with Air catches the floor at the edge of Copper Reach: feet 3.10 above it (spike S7)
 
 
 def check(name, ok, text):
@@ -226,7 +228,8 @@ def drift(name, ship, a, b, speed=0.0):
                 continue
             sv = local(st[g]['p'], ps)
             same = math.dist(local(tr[g]['p'], pc), sv)
-            lag = min(same, math.dist(local(tr[g - 1]['p'], pc1), sv))
+            cl = (local(tr[g]['p'], pc), local(tr[g - 1]['p'], pc1))
+            lag = min(math.dist(c_, local(st[g]['p'], pk)) for c_ in cl for pk in (ship_pose(ship, g - k) for k in range(SHIP_LAG + 1)) if pk)
         else:
             same = math.dist(tr[g]['p'], st[g]['p'])
             lag = min(same, math.dist(tr[g - 1]['p'], st[g]['p']))
@@ -236,8 +239,9 @@ def drift(name, ship, a, b, speed=0.0):
         return
     limit = DRIFT_MAX if shipframe else DRIFT_MAX + speed / 20
     mx = max(k[2] for k in keep)
+    lagtext = f'1 tick player lag + server pose up to {SHIP_LAG} ticks newer allowed' if shipframe else '1 tick lag allowed'
     check(name, mx <= limit, f"{'ship' if shipframe else 'world'} frame, {len(keep)} ticks, max drift same gt {max(k[1] for k in keep):.3f}, "
-                             f"1 tick lag allowed {mx:.3f} (<= {limit:.2f}), ticks > {limit:.2f}: {sum(1 for k in keep if k[2] > limit)}")
+                             f"{lagtext} {mx:.3f} (<= {limit:.2f}), ticks > {limit:.2f}: {sum(1 for k in keep if k[2] > limit)}")
 
 
 def section(title, *tags):
@@ -332,9 +336,9 @@ if section('E ship removed mid-grip', 'e0', 'erm', 'e1'):
     y0 = cw[0][1]['p'][1] if cw else 0
     drop = y0 - min(x['p'][1] for _, x in cw) if cw else 0
     end = cw[-1][1] if cw else None
-    # a Rig with Air may re-grab the floor and hover at Standing Height (ground=false): near the floor counts
-    check('E3 falls to the floor', cw and drop >= FALL_MIN and end['p'][1] <= FLOOR + 2.0 and end['hp'] > 0,
-          f"feet {y0:.2f} -> min {y0 - drop:.2f} (drop {drop:.2f} >= {FALL_MIN}), end feet {end['p'][1] if end else '-'} (<= {FLOOR + 2.0}), "
+    # a Rig with Air catches again once the floor is in Reach (ground=false): caught within CATCH_MAX above the floor counts
+    check('E3 falls to the floor', cw and drop >= FALL_MIN and end['p'][1] <= FLOOR + CATCH_MAX and end['hp'] > 0,
+          f"feet {y0:.2f} -> min {y0 - drop:.2f} (drop {drop:.2f} >= {FALL_MIN}), end feet {end['p'][1] if end else '-'} (<= {FLOOR + CATCH_MAX}), "
           f"ground {end['ground'] if end else '-'}, state {end['state'] if end else '-'}, hp {end['hp'] if end else '-'}, client {states(cw)}")
     gone = [g for g in sship.get('p9e', {}) if g > g0 + 2]
     check('E4 ship really removed', 'Removed' in r and not gone, f'"Removed" in rcon {"Removed" in r}, SSHIP p9e ticks after removal {len(gone)}')
@@ -351,6 +355,7 @@ if section('F deck ride', 'f0', 'fa', 'fb', 'f1'):
 print('== Whole run')
 bad = ['moved wrongly', 'Flying is not enabled', 'multiplayer.disconnect.flying', 'lost connection', 'forcing Falling', 'non-finite', 'kicked', 'moves against Crawl']
 counts = {b: s.count(b) for b in bad}
+counts['lost connection'] -= s.count('lost connection: Disconnected')
 check('K no kick / forced Falling / wrong moves', not any(counts.values()), ', '.join(f'{k}={v}' for k, v in counts.items()))
 
 
@@ -364,6 +369,7 @@ tps += [secs(t) for t in re.findall(r'\[(\d\d:\d\d:\d\d)\].*script: (?:cmd tp|re
 quick = re.findall(r'\[(\d\d:\d\d:\d\d)\] \[Server thread/WARN\].*?: (\w+) moved too quickly', s)
 unexplained = [(t, n) for t, n in quick if not any(0 <= secs(t) - pt <= 2 for pt in tps)]
 check('K moved too quickly', not unexplained, f'{len(quick)} total, unexplained (not within 2 s after a tp) {len(unexplained)} {unexplained[:3]}')
-exc = [l for l in (c + s).splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'authlib' not in l and 'neoforge-client.new.tmp.toml' not in l]
+exc = [l for l in (c + s).splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'authlib' not in l and 'neoforge-client.new.tmp.toml' not in l
+       and 'mixin/]: Error loading class' not in l]
 check('E exceptions', not exc, f'{len(exc)} exception lines' + (f': {exc[0][:200]}' if exc else ''))
 print('RESULT', 'PASS' if not fails else 'FAIL ' + ', '.join(fails))

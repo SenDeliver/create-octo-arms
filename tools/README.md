@@ -62,12 +62,15 @@ New fields go at the end of existing lines only: p1..p8 and `analyze.py` match b
 | Side | Line | Notes |
 |---|---|---|
 | server | `STRACE … mv=x,y,z sgrips=<n> carry=<uuid\|->` | `sgrips`: valid Grips whose block is on a ship; `carry`: carry ship (most valid Grips, >= 2) or `-` |
-| client | `TRACE … ff=<bool> sheld=<n> carry=<uuid\|->` | `sheld`: held Grips on a ship; `carry`: ship the client carries the wearer with, or `-` |
+| client | `TRACE … ff=<bool> sheld=<n> carry=<uuid\|->` | `sheld`: held Grips on a ship (`RigClient.shipGrips()`); `carry`: the carry Ship's id (`RigClient.carryShip()`, same rule as the server), or `-`. It names the carry Ship also while Sable tracks the wearer (feet on its deck) and the Rig adds no carry of its own |
 | server | `SSHIP gt=<gt> name=<name\|-> id=<uuid> pos=x,y,z q=x,y,z,w v=x,y,z w=x,y,z` | every sub-level of the overworld, each tick; `pos`/`q` = `logicalPose().position()` / `orientation()`; `v` b/s, `w` deg/s, world |
-| client | `CSHIP gt=<gt> id=<uuid> pos=x,y,z q=x,y,z,w` | every client sub-level, each tick, from `DevScript` trace: the pose the client used for this tick's Grips (logical pose at `ClientTickEvent.Post`) |
+| client | `CSHIP gt=<gt> id=<uuid> pos=x,y,z q=x,y,z,w` | every client sub-level, each tick, from `DevScript` trace: the pose the client used for this tick's Grips (logical pose read in `MovementInputUpdateEvent` at LOWEST priority, after `RigClient`), printed with the TRACE line at `ClientTickEvent.Post` under its `gt` |
 | server | `SHIPDRIVE gt=<gt> name=<name> v=x,y,z w=x,y,z` | once per `drive` call |
+| server | `SHIPSTOP gt=<gt> name=<name>` | once per `stop` call |
 
 Numbers `%.3f` (`q` `%.5f`). `p9_metrics.py` maps `id` to `name` through SSHIP. Ship frame = `q^-1 * (p - pos)`. Without CSHIP the drift check falls back to world frame with one tick of ship motion allowed.
+
+Ship-frame drift allows one tick of player lag and a server pose up to 2 ticks newer than the client's (`SHIP_LAG`): on localhost the client's Ship pose trails the server's by ~0.5 tick (Sable interpolation) and the server's player position is the client's from 1 tick earlier, so at 15 b/s the same-tick ship-frame gap is ~1.1 blocks while the server's Grip check (last 10 poses) still matches. `E3` accepts a catch up to 3.2 above the floor (a falling Copper Rig with Air re-grabs at the edge of Reach, spike S7 3.10).
 
 ## Asset generators
 
