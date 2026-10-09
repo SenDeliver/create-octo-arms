@@ -1,0 +1,62 @@
+{
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "item": "create:piston_extension_pole"
+  },
+  "loops": 2,
+  "results": [
+    {
+      "id": "tentaworks:tentacle"
+    }
+  ],
+  "sequence": [
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "tentaworks:incomplete_tentacle"
+        },
+        {
+          "item": "create:sticker"
+        }
+      ],
+      "results": [
+        {
+          "id": "tentaworks:incomplete_tentacle"
+        }
+      ]
+    },
+    {
+      "type": "create:pressing",
+      "ingredients": [
+        {
+          "item": "tentaworks:incomplete_tentacle"
+        }
+      ],
+      "results": [
+        {
+          "id": "tentaworks:incomplete_tentacle"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "tentaworks:incomplete_tentacle"
+        },
+        {
+          "item": "create:andesite_casing"
+        }
+      ],
+      "results": [
+        {
+          "id": "tentaworks:incomplete_tentacle"
+        }
+      ]
+    }
+  ],
+  "transitional_item": {
+    "id": "tentaworks:incomplete_tentacle"
+  }
+}

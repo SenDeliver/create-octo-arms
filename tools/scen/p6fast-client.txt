@@ -1,0 +1,28 @@
+# Phase 6 fast config: speed.max 20 (TW_SPEED_MAX=20) + Swift II + Speed 20 = 26 b/s. Grips must stay valid for the server. TIMELINE p6fast-timeline.txt
+trace on
+gait on
+hud off
+await a
+reach fast
+look -90 0
+doublejump
+wait 20
+mark fasta
+hold up on
+wait 30
+hold up off
+mark fastb
+wait 5
+signal climb
+await c
+wait 20
+look -90 -60
+mark climba
+hold up on
+wait 12
+hold up off
+mark climbb
+wait 10
+signal end
+wait 5
+quit

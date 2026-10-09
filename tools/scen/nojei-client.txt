@@ -1,0 +1,12 @@
+# No-JEI smoke run (GRADLE_ARGS=-PnoJei): join, open the creative inventory on the Tentaworks tab, quit.
+wait 20
+jei tentaworks:tentacle recipes create:sequenced_assembly
+key key.keyboard.e
+wait 10
+tab tentaworks:main
+wait 5
+mouse 2 2
+shot p5_nojei_creative
+close
+wait 5
+quit

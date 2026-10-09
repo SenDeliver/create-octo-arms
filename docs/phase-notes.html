@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Octo Arms Phase Notes</title>
+<style>
+:root{--bg:#fafaf7;--panel:#fff;--ink:#1d2330;--muted:#5b6474;--line:#e3e6ea;--accent:#b5561b;--accent-soft:#fbeee4;--blue:#1f5fa8;--blue-soft:#e8f0fa;--green:#2d7a46;--green-soft:#e6f4ea;--warn-soft:#fff5d6;--code:#f3f4f6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif}
+main{padding:28px 40px 80px;width:100%}
+h1{margin:0 0 4px;font-size:30px}
+.sub{color:var(--muted);margin:0 0 18px}
+h2{font-size:21px;margin:30px 0 10px;padding-top:8px;border-top:2px solid var(--accent-soft)}
+h3{font-size:16px;margin:16px 0 6px}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font:13px ui-monospace,SFMono-Regular,Menlo,monospace}
+table{border-collapse:collapse;width:100%;background:var(--panel);margin:8px 0 14px;font-size:14px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#f1f2f4}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+.card h3{margin-top:2px}
+.mermaid{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0}
+.box{border-radius:8px;padding:10px 14px;margin:10px 0;border:1px solid}
+.info{background:var(--blue-soft);border-color:#c5d8f0}
+.warn{background:var(--warn-soft);border-color:#f0dc9a}
+.ok{background:var(--green-soft);border-color:#bfe0c9}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:1px 8px;border-radius:10px;background:var(--accent-soft);color:var(--accent);margin-right:4px}
+ul li{margin:3px 0}
+@media (max-width:800px){main{padding:18px 16px 60px}}
+</style>
+</head>
+<body>
+<main>
+<h1>Octo Arms — phase notes</h1>
+<p class="sub">One section per phase (1–8): what was built, test numbers, open issues. Phase 8 ends with the v1 status. Spike: <code>spike-notes.html</code>. Frozen ids: <code>save-format.md</code>.</p>
+
+<h2>Phase 1 — Rig items and Rig Blocks (2026-10-08)</h2>
+<p><span class="pill">regression: tools/run_all.sh &lt;tag&gt;</span><span class="pill">final run: tools/logs/p1final-*</span><span class="pill">numbers: tools/p1_metrics.py</span></p>
+
+<div class="grid">
+<div class="card"><h3>Rig items</h3>
+<ul>
+<li><code>tentaworks:copper_tentacle_rig</code>: <code>TentacleRigItem extends BacktankItem</code>, Create copper armor material, texture <code>create:copper_diving</code>.</li>
+<li><code>tentaworks:netherite_tentacle_rig</code>: <code>TentacleRigItem.Layered</code> (<code>LayeredArmorItem</code>), vanilla netherite material, fire resistant.</li>
+<li>Tags <code>create:pressurized_air_sources</code> + <code>minecraft:chest_armor</code> → Create Air HUD, diving helmet, Capacity, chest enchantables, netherite diving set.</li>
+<li>Air = Create's <code>create:banktank_air</code>; bar = Air (no durability).</li>
+</ul></div>
+<div class="card"><h3>Rig Blocks</h3>
+<ul>
+<li><code>RigBlock extends BacktankBlock</code>, same ids as the items; placeable <code>*_placeable</code> <code>BacktankBlockItem</code> (barrier model, not in the tab).</li>
+<li>Added to <code>create:backtank</code> via <code>BlockEntityTypeAddBlocksEvent</code>: Create's renderer, Flywheel visual and shaft refill.</li>
+<li>Loot = Rig item + copy <code>create:banktank_air</code>; Create's <code>getDrops</code> re-applies enchantments + name. Stress impact 4 (<code>BlockStressValues</code>).</li>
+<li>Placeholder art: Create backtank models by path. Mixins: netherite cogs/shaft (<code>BacktankRenderer</code>, client) and default name (<code>BacktankBlockEntity.getDefaultName</code>).</li>
+</ul></div>
+<div class="card"><h3>Movement, config, tab</h3>
+<ul>
+<li>Movement needs a worn <code>TentacleRigItem</code>; Reach from its <code>RigTier</code> on client and server (<code>TentacleRigItem.reach</code>).</li>
+<li>Server Config (existing): <code>reach.copper</code> 4, <code>reach.netherite</code> 7, <code>speed.max</code> 8.</li>
+<li>Registrate (default tab null) + datagen (<code>runData</code>, <code>--existing-mod create</code>). Creative tab <code>tentaworks:main</code>: both Rigs, empty and full.</li>
+<li>Spike item <code>tentaworks:tentacle_rig</code> removed. Grip debug lines kept.</li>
+</ul></div>
+</div>
+
+<h3>Results (dedicated server + client over localhost, survival, allow-flight=false)</h3>
+<table>
+<tr><th>Suite / check</th><th>Result</th><th>Measured (final run p1final)</th></tr>
+<tr><td>Spike regression (main, life, creative) with the Copper Rig</td><td>PASS</td><td>All spike numbers identical: S1 5.69 b/s, S2 1.80 s, S3 y range 0.0000, S5 stop 174.200 = predicted, S6 Falling 18 ticks, S7 max feet 3.10, S8 never flying. 0 moved wrongly, 0 unexplained moved too quickly, 0 exceptions; kick / forcing Falling / non-finite only in the negative controls.</td></tr>
+<tr><td>N1 Netherite Reach (Space to max)</td><td>PASS</td><td>Max feet 6.10 above floor (body 7.00 = Reach), copper 3.10. Idle 3 s at top, server Active, flight modifier 1.</td></tr>
+<tr><td>N2 Netherite hang from a ceiling only</td><td>PASS</td><td>Platform removed: ceiling 6.60 above body, ground 12.4 below. 5 s hang, y range 0.0000, 4 Grips, server Active, no kick.</td></tr>
+<tr><td>N2 control: Copper Rig in the same spot</td><td>PASS (falls)</td><td>Active → Falling → Active, re-grabbed at feet −57.08 when the ground came into Reach 4.</td></tr>
+<tr><td>Rig Block placement (real client: right click for Copper, sneak + right click for Netherite)</td><td>PASS</td><td>Block entity got Capacity 3, custom name "Rigby", component patch; Air 0. Sneak-placed Netherite: Capacity 1, "Nethy".</td></tr>
+<tr><td>Refill vs Create copper backtank (same 256 RPM creative motor)</td><td>PASS</td><td>After 5 s: Rig 495 / Create 495 (identical rate, 5 Air/tick). After 15 s: Rig 1495 / Create 900 (Capacity 3 → max 1800 reached the block entity).</td></tr>
+<tr><td>Pickup (empty hand, empty chest slot)</td><td>PASS</td><td>Chest slot = <code>tentaworks:copper_tentacle_rig</code>, air 1630, Capacity 3, name "Rigby".</td></tr>
+<tr><td>Break (loot path, <code>setblock … destroy</code>) of a Netherite Rig Block</td><td>PASS</td><td>Drop = <code>tentaworks:netherite_tentacle_rig</code>, air 560, Capacity 1, name "Nethy".</td></tr>
+<tr><td>Diving helmet under water draws Rig Air</td><td>PASS</td><td>Rig air 899 → 894 in ~5 s, player Air 300. Create Air HUD shown (<code>p1_dive_hud.png</code>).</td></tr>
+<tr><td>Cogs / shaft / default name (<code>BACKTANK</code> lines)</td><td>PASS</td><td>Netherite Rig → netherite cogs + shaft, Copper Rig → copper; names "Copper/Netherite Tentacle Rig". Create's own netherite backtank still says "Copper Backtank" (Create bug, untouched).</td></tr>
+<tr><td>Worn render, creative tab</td><td>PASS</td><td>Backtank layer + diving armor on the player for both tiers; creative inventory opens, tab on page 2 with 4 Rigs (empty / full per tier).</td></tr>
+</table>
+
+<h3>Screenshots (tools/shots/)</h3>
+<ul>
+<li><code>p1_rig_block_netherite.png</code>: left Netherite Rig Block (netherite shaft collar), middle Create netherite backtank, right Create copper backtank; <code>p1_rig_block_copper.png</code> same row with the Copper Rig.</li>
+<li><code>p1_worn_copper.png</code>, <code>p1_worn_netherite.png</code>: third person, Rig on the back. <code>p1_netherite_hang.png</code>: Netherite Rig hanging from the ceiling (Grip lines).</li>
+<li><code>p1_dive_hud.png</code>: Create Air HUD (bottom right, 14:52). <code>p1_creative_tab.png</code>: Octo Arms tab.</li>
+</ul>
+
+<h3>Open issues</h3>
+<ul>
+<li><code>BacktankItem.supportsEnchantment</code> refuses Mending and Unbreaking; the design wants them. Enchantment phase. <i>Resolved in phase 4: <code>TentacleRigItem</code> override + durability.</i></li>
+<li><s>No Air gate or drain yet</s>: resolved in phase 2.</li>
+<li>Right click on any block with a Rig in hand places it (Create backtank behaviour); right click in air or the inventory equips it.</li>
+<li>Placeable items show as "Copper/Netherite Tentacle Rig Placeable" if someone <code>/give</code>s one (same as Create).</li>
+<li>Create's Air HUD shows only while diving with a helmet; outside water only the item bar shows Air.</li>
+<li><code>addLayer(cutoutMipped)</code> is deprecated in Registrate (Create uses it too).</li>
+<li>Life suite L5: one flight-modifier sample read 1.0 in a pre-final run (p1a); its STRACE shows the real client Active with 4 valid Grips for 2 ticks at that moment, so the modifier was legit. <code>spike_metrics</code> L5 (not client-carried) stays 0. Harness timing, not a Rig bug.</li>
+<li><s>Setting Down with no floor / mid-air Double Jump</s>: built in phase 2.</li>
+</ul>
+
+<h2>Phase 2 — Air, Crawl, Setting Down, mid-air catch (2026-10-08)</h2>
+<p><span class="pill">regression: tools/run_all.sh &lt;tag&gt;</span><span class="pill">final run: tools/logs/p2final-*</span><span class="pill">numbers: tools/p2_metrics.py (prints RESULT PASS/FAIL)</span></p>
+
+<div class="grid">
+<div class="card"><h3>Air (design §5)</h3>
+<ul>
+<li><code>RigAir</code>: worn Rig stack, Air via Create <code>BacktankUtil</code>, use class from the mirrored motion (climb = y &gt; 0, move = any other motion incl. Setting Down, idle = none).</li>
+<li>Drain on the server only, in the player tick, while Active or Setting Down and Held: per-wearer double accumulator, whole units through <code>BacktankUtil.consumeAir</code> (Create's low and depleted titles come with it).</li>
+<li>Cost per tick = tier factor × <code>thrift(rig)</code> / ticks-per-Air. <code>thrift</code> returns 1.0: the hook for the enchantment phase.</li>
+<li>Activating needs Air &gt; 0, on the floor and mid-air. Same rule in creative (Create drains diving Air in creative too).</li>
+<li>Diving helmet keeps drawing the same Rig Air.</li>
+</ul></div>
+<div class="card"><h3>Crawl and Setting Down</h3>
+<ul>
+<li>New <code>RigState.CRAWL</code> (wire ordinal 4, registrar <code>"2"</code>). Active or Setting Down with 0 Air → Crawl, on client and server; Crawl never goes back to Active.</li>
+<li>Crawl: automatic straight-down descent at <code>crawl.speed</code>, Held-clamped, inputs zeroed, float fix on, no drain. Floor → Stowed. No floor in Reach → holds at the lowest Held point.</li>
+<li>Setting Down: Held descent; floor → Stowed on feet; blocked before a floor → lets go (Stowed), vanilla fall from there. The spike's "back to Active" is gone.</li>
+<li>Mid-air Double Jump with Air: Falling until a Grip is in Reach, then Active, fall reset. The fall step is swept (<code>Grips.firstHeld</code>) so a fast fall cannot step over a thin Held band. Falling with 0 Air never grabs again.</li>
+</ul></div>
+<div class="card"><h3>Server checks</h3>
+<ul>
+<li>Order: worn/alive, finite, Air, Held. New wearer claiming a carry with 0 Air → told Stowed. Carrying with 0 Air → Crawl (wearer told).</li>
+<li>Crawl mirror: x = z = 0, y in [−1.05·crawl, 0]. Claim or server-seen move up / sideways faster than crawl → count; &gt; 10 → forced Falling, sticky until Stowed (warn "moves against Crawl").</li>
+<li>Crawl dropped only by the 10-tick silence timeout resumes on the next Crawl claim (a client hitch no longer drops the wearer).</li>
+<li>Vanilla float counter (<code>aboveGroundTickCount</code>) reset whenever the Rig carries (accessor mixin): a still wearer sends no move packets, so a catch after a long fall used to be kicked.</li>
+<li>Kept: sticky Held reject, Held check in every carrying state, finite checks, silence timeout.</li>
+</ul></div>
+</div>
+
+<div class="mermaid">
+stateDiagram-v2
+  [*] --> Stowed
+  Stowed --> Active: Double Jump, Air &gt; 0 (floor or mid-air)
+  Active --> SettingDown: Double Jump
+  SettingDown --> Stowed: floor reached (on feet)
+  SettingDown --> Stowed: Held stops the descent (lets go, vanilla fall)
+  Active --> Crawl: Air = 0
+  SettingDown --> Crawl: Air = 0
+  Crawl --> Stowed: floor reached
+  Active --> Falling: fewer than 2 Grips
+  Crawl --> Falling: fewer than 2 Grips, or forced (moves against Crawl)
+  Falling --> Active: Held again and Air &gt; 0
+  Falling --> Stowed: landed
+</div>
+
+<h3>Server Config (new keys, frozen in save-format.md)</h3>
+<table>
+<tr><th>Key</th><th>Default</th><th>Meaning</th></tr>
+<tr><td><code>air.idle</code> / <code>air.move</code> / <code>air.climb</code></td><td>80 / 20 / 10</td><td>Copper ticks per 1 Air</td></tr>
+<tr><td><code>air.netheriteFactor</code></td><td>0.5</td><td>Netherite Air use relative to Copper (so 160 / 40 / 20 ticks per Air)</td></tr>
+<tr><td><code>crawl.speed</code></td><td>1.0</td><td>Crawl descent, blocks per second</td></tr>
+</table>
+
+<h3>Results (final run p2final: dedicated server + client over localhost, survival, allow-flight=false)</h3>
+<table>
+<tr><th>Check</th><th>Result</th><th>Measured</th></tr>
+<tr><td>Spike regression (main, life, creative) + p1</td><td>PASS</td><td>All numbers identical to phase 1 (S1 5.69 b/s, S5 174.200 = predicted, S6 Falling 18 ticks, N1 6.10, N2 y range 0). 0 moved wrongly, 0 unexplained moved too quickly, 0 exceptions; kick / forcing Falling / non-finite only in the negative controls.</td></tr>
+<tr><td>Drain, Copper idle / move / climb</td><td>PASS</td><td>80.0 / 20.0 / 10.0 ticks per Air (config 80 / 20 / 10, ±0.0 %), ticks between STRACE Air decrements, 5–7 decrements each.</td></tr>
+<tr><td>Drain, Netherite idle / move / climb</td><td>PASS</td><td>160.0 / 40.0 / 20.0 ticks per Air (config × 0.5 use, ±0.0 %).</td></tr>
+<tr><td>Empty Rig cannot activate (E1)</td><td>PASS</td><td>Air 0, Double Jump on the floor: client and server Stowed, flight modifier 0, rise 1.252 = two plain vanilla jumps.</td></tr>
+<tr><td>Air runs out mid-climb (C1)</td><td>PASS</td><td>Air 5, climbed 12.4 blocks; Air 0, server Crawl and client Crawl at the same game tick; Crawl 1.000 b/s straight down the wall over 241 ticks; floor → Stowed, hp 20.</td></tr>
+<tr><td>Air runs out under a ceiling (C2)</td><td>PASS</td><td>Air 1 → 0 while hanging: Crawl to body −49.00 (= ceiling −45 − Reach 4) and holds 124 ticks, y range 0.0000, 4 Grips, flight modifier 1, no kick. A pillar (top −52) brings a floor into Reach: Crawl down, Stowed at −52.000.</td></tr>
+<tr><td>Client hitch in Crawl (C2, DevScript <code>freeze 800</code>)</td><td>PASS</td><td>Server Crawl → Falling (silence) → Crawl, client stays Crawl, y range 0.0000, modifier back to 1.</td></tr>
+<tr><td>Setting Down on a floor (SD1)</td><td>PASS</td><td>Active → Setting Down → Stowed on feet (−60.000), hp 20.</td></tr>
+<tr><td>Setting Down under a ceiling 15 above the floor (SD2)</td><td>PASS</td><td>Lets go at feet −49.900 (body −49.000, lowest Held point), server fall 0.03 and modifier 0 at let-go; landing fall distance 10.06, damage 8 = ceil(10.06 − 3).</td></tr>
+<tr><td>Mid-air Double Jump next to a wall (MJ1)</td><td>PASS</td><td>tp to −40, Double Jump while falling: Falling → Active at feet −47.08 (wall top −50), no damage event; then Setting Down along the wall to the floor.</td></tr>
+<tr><td>Same with an empty Rig (MJ2)</td><td>PASS</td><td>No catch, fall 18.77, damage 16 = ceil(18.77 − 3).</td></tr>
+<tr><td>Fast fall past a one-block bar (MJ3)</td><td>PASS</td><td>120-block fall, step 2.89 b/tick vs a 2.38-high Held band: swept step cut to 2.036, caught with body at −18.41 (band −20.69 … −18.31), no damage, no kick.</td></tr>
+<tr><td>Create warnings</td><td>PASS</td><td>TITLE "⚠ Backtank pressure depleted" (C1) and "⚠ Backtank pressure low" (LW, Air 93 → 90); shot <code>p2_low_air.png</code>.</td></tr>
+<tr><td>Negative control NC1: forged Active climb packets (real Grips), Air 0, wearer on the floor</td><td>PASS</td><td>Server Stowed throughout, mirrored v.y max 0.000, modifier 0.</td></tr>
+<tr><td>Positive control: same forge with Air 900</td><td>PASS</td><td>Server Active, mirrored v.y 0.280, modifier 1, then silence → Falling, modifier 0 (the control tells the cases apart).</td></tr>
+<tr><td>Negative control NC2: forged Active climb packets while the real client Crawls, Air 0</td><td>PASS</td><td>Server never Active, mirrored v.y max 0.000, forced Falling after 11 ticks (1 warn line), client Crawl → Falling → Stowed, modifier 0.</td></tr>
+<tr><td>Client and server agree on Air</td><td>PASS</td><td>4290 ticks, 0 disagree on Air &gt; 0, max Air difference 0 (±2 ticks).</td></tr>
+</table>
+
+<h3>Screenshots (tools/shots/)</h3>
+<ul>
+<li><code>p2_low_air.png</code>: Create's "Backtank pressure low" title while climbing.</li>
+<li><code>p2_crawl_ceiling.png</code>: Crawl holding under ceiling A at the lowest Held point (Grip lines up).</li>
+<li><code>p2_nc2_end.png</code>: after the forged-climb control, wearer Stowed on the floor.</li>
+</ul>
+
+<h3>Open issues and design questions</h3>
+<ul>
+<li><b>Crawl under a ceiling has no exit</b> except a floor coming into Reach or taking the Rig off. <i>Resolved in phase 3: Double Jump (or the toggle key) in Crawl lets go.</i></li>
+<li>Falling with 0 Air never grabs again. <i>Resolved in phase 3: it re-grabs into Crawl.</i></li>
+<li>Creative players drain Air and need Air to activate. <i>Resolved in phase 3: creative uses no Air.</i></li>
+<li>Wire format: registrar <code>"1"</code> → <code>"2"</code> (CRAWL appended). A phase-1 client cannot join a phase-2 server and vice versa. Nothing is released yet.</li>
+<li>Position stays client-authoritative (adr/0001): a hacked client can still move while the server says Crawl/Falling; the gate is the flight modifier, fall reset and float kick, as in the spike.</li>
+<li>Vanilla kicks any player after 80 ticks of free air (the float check ignores the Y move), Rig or not: a very long fall can be kicked before a Grip comes into Reach. <i>Confirmed and fixed for Rig wearers in phase 3 (fall guard).</i></li>
+</ul>
+
+<h2>Phase 3 — Rig Settings, key-only mode, Server Config, tooltips; phase-2 fix-ups (2026-10-09)</h2>
+<p><span class="pill">regression: tools/run_all.sh &lt;tag&gt;</span><span class="pill">final runs: tools/logs/p3final-* (all suites), p3final2-p3 (p3 after the key reset)</span><span class="pill">numbers: tools/p3_metrics.py (prints RESULT PASS/FAIL)</span></p>
+
+<div class="grid">
+<div class="card"><h3>Rig Settings</h3>
+<ul>
+<li>Component <code>tentaworks:rig_settings</code> on each Rig item: <code>standing_height</code> (0 … Reach, default 1.5), <code>speed</code> (min(4.3, speed.max) … speed.max, default 5.6), <code>activation</code> (<code>double_jump</code> / <code>key</code>). All fields optional: old Rigs = defaults.</li>
+<li>Clamped on write (server, <code>RigSettingsPacket</code>) and on every read (client and server), so a lower config later still wins. Rounded to 0.1.</li>
+<li>Kept through drop/pick up, relog and Rig Block place/pick up (Create's <code>Components</code> patch).</li>
+</ul></div>
+<div class="card"><h3>Screen and keys</h3>
+<ul>
+<li><code>RigSettingsScreen</code> (AbstractSimiScreen): Create's wand panel stretched to 3 rows, ScrollInputs (Shift = steps of 0.5), SelectionScrollInput for the mode, Create scroll sound, confirm button, big Rig on the side. Footer: Reach and top Speed from the server; in key-only mode the toggle key or a "bind it" hint.</li>
+<li>Open: <b>sneak + use in the air</b> with a Rig in either hand (no equip). Sneak + use <i>on a block</i> still places the Rig Block. Or the <b>Rig Settings key</b> while worn.</li>
+<li>Keys (category Octo Arms), both <b>unbound by default</b> (design §7): <code>key.tentaworks.settings</code>, <code>key.tentaworks.toggle</code>.</li>
+<li>Close → packet with the slot (main hand, off hand, chest) → server clamps and writes the component.</li>
+</ul></div>
+<div class="card"><h3>Movement uses the settings</h3>
+<ul>
+<li>Standing Height: on activation from a floor the Rig moves the feet to floor + Standing Height (up or down); Idle then holds; Space/Shift move freely up to the Reach. The lift ends at the target, on any height key, or when Held stops it.</li>
+<li>Speed: Active and Setting Down step = Speed / 20; the server still clamps the mirrored motion to <code>speed.max</code>. Sprint key ignored.</li>
+<li>Key-only: the toggle key does what a Double Jump did (activate incl. mid-air catch, Set Down, let go in Crawl); Double Jump stays vanilla (two plain jumps; while Active, Space is just "up").</li>
+</ul></div>
+<div class="card"><h3>Phase-2 fix-ups</h3>
+<ul>
+<li>Double Jump (or toggle key) in Crawl lets go: Stowed, vanilla fall damage.</li>
+<li>Crawl losing Grips → Falling → re-grabs into <b>Crawl</b> at 0 Air (swept catch), into Active with Air. Server resets its Crawl-violation count on a legit re-grab. If the server forced Falling (moving against Crawl), the client does not re-grab until Stowed.</li>
+<li>Creative (server game mode, never a client claim): no drain, activation at 0 Air, never Crawl.</li>
+<li>Long fall: vanilla's float check zeroes the Y move (<code>if (d7 &gt; -0.5 || d7 &lt; 0.5) d7 = 0</code> is always true), so any 80 ticks in the air kick — confirmed by a negative control. <code>RigServer.fallGuard</code> resets the counter for Rig wearers whose server Y drops more than 0.1 per tick; a hovering client gains nothing.</li>
+</ul></div>
+</div>
+
+<h3>Server Config (all keys from design §7, frozen in save-format.md)</h3>
+<table>
+<tr><th>Key</th><th>Default</th><th>Note</th></tr>
+<tr><td>reach.copper / reach.netherite</td><td>4 / 7</td><td>also caps Standing Height</td></tr>
+<tr><td>speed.max</td><td>8 b/s</td><td>caps the Speed setting and the mirrored motion</td></tr>
+<tr><td>air.idle / air.move / air.climb, air.netheriteFactor, crawl.speed</td><td>80 / 20 / 10, 0.5, 1</td><td>unchanged from phase 2</td></tr>
+<tr><td>enchant.farReachPerLevel / thriftPerLevel / swiftPerLevel</td><td>1.0 / 0.15 / 0.15</td><td>new; keys only, effects in phase 4. Thrift capped at 0.3 so III stays above zero.</td></tr>
+</table>
+<p>No client config (the design lists none). Wire: new payload <code>tentaworks:rig_settings</code>, registrar <code>"2"</code> → <code>"3"</code>.</p>
+
+<h3>Results (dedicated server + client over localhost, survival, allow-flight=false unless noted)</h3>
+<table>
+<tr><th>Check</th><th>Result</th><th>Measured</th></tr>
+<tr><td>Spike + p1 + p2 regression (p3final)</td><td>PASS</td><td>Numbers identical to phase 2: S1 5.69 b/s, S5 stop 174.200 = predicted, S6 Falling 18 ticks, S7 3.10, N1 6.10, drain 80/20/10 and 160/40/20 ticks per Air (±0.0 %), SD2 damage 8, MJ3 caught in band. p2 RESULT PASS. 0 moved wrongly, 0 unexplained moved too quickly, 0 exceptions.</td></tr>
+<tr><td>Screen from the hand (sneak + use in the air)</td><td>PASS</td><td>Opens with defaults 1.5 / 5.6 / Double Jump; scrolled to 1.0 / 6.6; server main-hand Rig has them; chest stays empty (no equip).</td></tr>
+<tr><td>Drop + pick up; Rig Block place (sneak) + pick up</td><td>PASS</td><td>1.0 / 6.6 / Double Jump kept both ways (server SRIG + reopened screen).</td></tr>
+<tr><td>Screen from the key while worn</td><td>PASS</td><td>Key bound in the test opens it; mode → Key only saved on the chest Rig.</td></tr>
+<tr><td>Relog</td><td>PASS</td><td>Server and client still 1.0 / 6.6 / Key only.</td></tr>
+<tr><td>Forged settings packets</td><td>PASS</td><td>Height 50 / Speed 100 → 4.0 / 8.0 (Copper), 7.0 / 8.0 (Netherite); NaN / −3 → 1.5 / 4.3.</td></tr>
+<tr><td>Standing Height 1.0 vs 2.5</td><td>PASS</td><td>Idle feet 1.001 and 2.500 above the floor (difference 1.499).</td></tr>
+<tr><td>Speed 4.3 vs 8.0 (W, level look, 60 ticks)</td><td>PASS</td><td>4.30 and 8.00 b/s (±0.0 %), server mirror identical, y drift 0.</td></tr>
+<tr><td>Key-only mode</td><td>PASS</td><td>Double Jump: client and server Stowed, rise 1.252 (two vanilla jumps), modifier 0. Key: Active at 1.500; Double Jump while Active stays Active; key: Setting Down → Stowed. Mid-air key next to a wall: Falling → Active at −47.08, no damage; key sets down to the floor.</td></tr>
+<tr><td>A1 Double Jump in Crawl (and toggle key, key-only)</td><td>PASS</td><td>Crawl holding at body −49.00 (ceiling − Reach); let go → Stowed, modifier 0, fall 9.67, damage 7 = ceil(9.67 − 3). Same for the key.</td></tr>
+<tr><td>A2 Crawl loses its Grips (ceiling removed)</td><td>PASS</td><td>Client and server Crawl → Falling → Crawl → Stowed; re-grab at feet −57.03 (floor −60 in Reach 4), Crawl 1.00 b/s, no damage, 0 forced-Falling warns.</td></tr>
+<tr><td>A3 creative (gamemode creative on the server)</td><td>PASS</td><td>Air 0: activates, moves, climbs 3.10, never Crawl. Air 900: stays 900 over 252 ticks of moving, climbing, Setting Down. Creative inventory opens.</td></tr>
+<tr><td>A4 long fall</td><td>PASS</td><td>Stowed fall from y 600 for 132 ticks, Double Jump at feet 261, caught at the tall wall (top 100) at feet 102.92 after 176 ticks in the air: no kick, no damage.</td></tr>
+<tr><td>A4 negative control (fall guard off, plain fall)</td><td>PASS (kicked)</td><td>"kicked for floating too long" 80 ticks after the tp, at feet 437: the phase-2 claim is real; the guard is what prevents it.</td></tr>
+</table>
+
+<h3>Screenshots (tools/shots/)</h3>
+<ul>
+<li><code>p3_settings_hand_default.png</code>, <code>p3_settings_hand_edited.png</code>: screen from the hand, defaults and after scrolling.</li>
+<li><code>p3_settings_after_pickup.png</code>: reopened after drop + pick up (values kept).</li>
+<li><code>p3_settings_worn_key_unbound.png</code>, <code>p3_settings_worn_key_bound.png</code>: from the key while worn, Key only, with the "bind it" hint and with "Toggle key: R".</li>
+<li><code>p3_tooltip_noshift.png</code>, <code>p3_tooltip_shift.png</code>: Create ItemDescription of both Rigs.</li>
+<li><code>p3_creative_inventory.png</code>: creative inventory opens.</li>
+</ul>
+
+<h3>Decisions taken (docs did not say)</h3>
+<ul>
+<li>Standing Height = target height on activation from a floor (both directions); Idle then holds the spot, Space/Shift change it freely (design §3). No "spring back" to Standing Height: it would break hanging/climbing.</li>
+<li>Sprint key ignored while Active: the Speed setting is the one speed (walk … speed.max, default sprint 5.6).</li>
+<li>Sneak + use <i>in the air</i> opens the screen; sneak + use on a block places the Rig Block (phase-1 behaviour kept).</li>
+<li>Both keys unbound by default (design §7 for the settings key; the toggle key the same). The screen shows a hint when Key only is chosen without a bound key.</li>
+<li>Key-only toggle mirrors Double Jump everywhere (mid-air catch, Set Down, let go in Crawl); in Falling and Setting Down it does nothing, as Double Jump.</li>
+<li>Fall guard applies to every Rig wearer (also Stowed), only while the server sees them really falling (&gt; 0.1 block per tick); non-wearers keep vanilla behaviour.</li>
+<li>Creative switched on mid-Crawl turns Crawl back into Active.</li>
+</ul>
+
+<h3>Open issues</h3>
+<ul>
+<li>Wire: registrar <code>"3"</code>; phase-2 builds cannot join. Nothing released yet.</li>
+<li>Far Reach / Thrift / Swift config keys exist but have no effect until phase 4; <code>TentacleRigItem.reach(stack)</code> and <code>RigAir.thrift</code> are the hooks. <i>Resolved in phase 4.</i></li>
+<li>Netherite tooltip: Create's word wrap breaks "Standing Height," onto its own line (cosmetic, Create's wrapper).</li>
+<li>The p3 suite ends with a deliberate float kick (negative control), so it must stay the last scenario.</li>
+</ul>
+
+<h2>Phase 4 — Rig Enchantments (2026-10-09)</h2>
+<p><span class="pill">regression: tools/run_all.sh &lt;tag&gt;</span><span class="pill">final run: tools/logs/p4final-* (all suites)</span><span class="pill">numbers: tools/p4_metrics.py (prints RESULT PASS/FAIL)</span></p>
+
+<div class="grid">
+<div class="card"><h3>Three enchantments (data-driven)</h3>
+<ul>
+<li><code>data/tentaworks/enchantment/{far_reach,thrift,swift}.json</code>; <code>supported_items</code> = <code>primary_items</code> = item tag <code>tentaworks:enchantable/tentacle_rig</code> (both Rigs, datagen); slot <code>chest</code>; no exclusive set.</li>
+<li>In <code>minecraft:non_treasure</code> + <code>minecraft:in_enchanting_table</code> (so also tradeable and random loot).</li>
+<li>Lang: names + Enchantment Descriptions keys <code>enchantment.tentaworks.&lt;id&gt;.desc</code>.</li>
+</ul></div>
+<div class="card"><h3>Effects (<code>RigEnchants</code>, client and server)</h3>
+<ul>
+<li>Level from the stack's own holder via <code>EnchantmentHelper.getItemEnchantmentLevel</code>, clamped to the max level.</li>
+<li>Far Reach: <code>TentacleRigItem.reach(stack)</code> = tier + level × <code>farReachPerLevel</code> (cap 16): Held check both sides, Grip search, Standing Height clamp, screen.</li>
+<li>Thrift: <code>RigAir.thrift</code> = 1 − level × <code>thriftPerLevel</code> (cut ≤ 0.9).</li>
+<li>Swift: client step and server clamp × (1 + level × <code>swiftPerLevel</code>); <code>TentacleRigItem.topSpeed</code>. The stored Speed setting stays within walk … <code>speed.max</code>.</li>
+</ul></div>
+<div class="card"><h3>Vanilla chest enchants, durability</h3>
+<ul>
+<li>Create's <code>BacktankItem.supportsEnchantment</code> hard-refuses Mending and Unbreaking (its backtanks have no durability). <code>TentacleRigItem</code> overrides it with NeoForge's default (book or <code>isSupportedItem</code>); the vanilla tags already reach the Rig through <code>#minecraft:chest_armor</code>.</li>
+<li>Rigs got durability like Create's diving helmet/boots: Copper 112, Netherite 592. Air stays on the item bar; a damaged Rig shows "Durability x / y" in its tooltip (not covered by a test or shot).</li>
+<li>Settings screen footer: effective Reach and top Speed.</li>
+<li>Wire registrar <code>"3"</code> → <code>"4"</code> (no payload change).</li>
+</ul></div>
+</div>
+
+<table>
+<tr><th>Enchantment</th><th>Levels</th><th>Weight</th><th>Min cost (base / per level)</th><th>Max cost</th><th>Anvil cost</th><th>Effect per level (config)</th></tr>
+<tr><td>Far Reach</td><td>I–III</td><td>2</td><td>15 / 12</td><td>65 / 12</td><td>4</td><td>+1 block Reach</td></tr>
+<tr><td>Thrift</td><td>I–III</td><td>5</td><td>5 / 10</td><td>55 / 10</td><td>2</td><td>−15 % Air use</td></tr>
+<tr><td>Swift</td><td>I–II</td><td>2</td><td>15 / 15</td><td>65 / 15</td><td>4</td><td>+15 % Speed and top Speed</td></tr>
+</table>
+
+<h3>Results (final run p4final: dedicated server + client over localhost, survival, allow-flight=false)</h3>
+<table>
+<tr><th>Check</th><th>Result</th><th>Measured</th></tr>
+<tr><td>Spike + p1 + p2 + p3 regression</td><td>PASS</td><td>Same as phase 3 within thresholds: S1 5.69 b/s, S5 174.200 = predicted, S6 Falling 18 ticks, S7 3.10, N1 6.10, N2 y range 0, drain 80/20/10 and 160/40/20 (±0.0 %), SD2 damage 8, MJ3 caught in band; p2 and p3 RESULT PASS. p3 B6 Speed 4.3 measured 4.23 b/s (−1.6 %, server mirror 4.30; no Swift = factor 1.0): client sampling timing; p3 TRACE/STRACE ticks over 0.5 with 1-tick lag 7 vs 5 before, same max 0.906. 0 moved wrongly, 0 unexplained moved too quickly, 0 exceptions; kick / forcing Falling only in the negative controls.</td></tr>
+<tr><td>E table offers (vanilla <code>EnchantmentMenu</code> at a real table, 32 bookshelves)</td><td>PASS</td><td>Both Rigs can be offered Far Reach III, Thrift III, Swift II, Capacity III, Protection/Fire/Blast/Projectile IV, Thorns III, Unbreaking III; never Mending or curses. Clues over 300 seeds (Copper, slots 1–3): Far Reach 24, Thrift 142, Swift 26. Control: Create copper backtank gets none of ours and no Unbreaking.</td></tr>
+<tr><td>E real client at the table</td><td>PASS</td><td>Seed 28: offers Protection I (8), Unbreaking II (13), Far Reach II (30); clicked the third: Rig gets Far Reach II (3 lapis, 3 levels).</td></tr>
+<tr><td>A anvil + book (real client clicks)</td><td>PASS</td><td>Applied: Mending, Unbreaking III, Protection IV, Capacity III, Far Reach III, Thrift III, Swift II; Thorns III + Binding + Vanishing (Netherite); all seven on one Rig (cost 19). Refused (no result, cost 0): Blast Protection on Protection IV, Sharpness, Swift Sneak, Far Reach and Mending on a plain Create backtank.</td></tr>
+<tr><td>D durability + Mending</td><td>PASS</td><td>Worn Copper Rig: damage 0 → 2 / 112 after an 8-point mob hit → 0 after a 10-XP orb.</td></tr>
+<tr><td>B Rig Block place + pick up (real client)</td><td>PASS</td><td>Far Reach III, Thrift II, Swift I, Mending, Unbreaking III, Protection IV, Capacity II, damage 20, Air 300 identical before and after; placed block entity has our enchants in <code>Components</code>.</td></tr>
+<tr><td>Effective values, client = server</td><td>PASS</td><td>Far Reach X + Thrift X (counted as III) on Copper: Reach 7.00, Thrift ×0.55. Netherite Far Reach III: Reach 10.00. Copper Far Reach III + Swift II: Reach 7.00, top 10.40 b/s.</td></tr>
+<tr><td>F1 Standing Height clamp + max height</td><td>PASS</td><td>Forged height 50 → 7.0. Space to max: feet 6.10 above the floor vs 3.10 plain Copper (+3.00).</td></tr>
+<tr><td>F2 ceiling-only hang</td><td>PASS</td><td>Far Reach III Copper: ceiling 6.60 above the body, y range 0.0000, 4 Grips, server Active, 0 forced Falling. Plain Copper same spot: Falling, re-grabbed near the ground.</td></tr>
+<tr><td>T Thrift drain (ticks per Air)</td><td>PASS</td><td>I: idle 94.0 / move 23.7 / climb 11.6 (expected 94.1 / 23.5 / 11.8). III: 145.3 / 36.4 / 18.3 (expected 145.5 / 36.4 / 18.2). All within ±1.4 %.</td></tr>
+<tr><td>S Swift speed</td><td>PASS</td><td>Swift I at 5.6: 6.44 b/s; Swift II at 8.0: 10.40 b/s (±0.0 %), server mirror identical.</td></tr>
+<tr><td>S3 forged speed packets</td><td>PASS</td><td>Swift II: 10.4 b/s accepted (10.40), 20 b/s clamped to 10.92 (= 10.4 × 1.05). No Swift: 10.4 b/s clamped to 8.40.</td></tr>
+</table>
+
+<h3>Screenshots (tools/shots/)</h3>
+<ul>
+<li><code>p4_enchanting_table.png</code>: real table, third offer "Far Reach II . . . ?"; <code>p4_enchanting_done.png</code>: after enchanting.</li>
+<li><code>p4_anvil_combined.png</code>: all seven enchants on one Rig (tooltip); <code>p4_anvil_refused.png</code>: Blast Protection on a Protection IV Rig, red cross.</li>
+<li><code>p4_settings_enchanted.png</code>: footer "Reach 7.0, top Speed 10.4 b/s" (Far Reach III + Swift II).</li>
+<li><code>p4_far_reach_hang.png</code>: Far Reach III Copper hanging from the ceiling 6.6 above the body.</li>
+</ul>
+
+<h3>Decisions taken (docs did not say)</h3>
+<ul>
+<li>Weights and costs: vanilla-like values in the table above. All three non-treasure (table, trades, loot).</li>
+<li>No exclusive set: the design names none; Far Reach, Thrift and Swift stack with each other and with everything else.</li>
+<li>Durability added (glossary lists Unbreaking and Mending): Copper 112, Netherite 592, same formula as Create's diving helmet/boots. Rigs can now wear out and break.</li>
+<li>Levels above max count as max; Reach with Far Reach capped at 16 (config max); Thrift never cuts more than 90 %.</li>
+<li>Swift multiplies the stored Speed setting and <code>speed.max</code> at use time; the setting itself keeps the phase-3 range. Crawl speed unchanged.</li>
+<li>Registrar bumped to <code>"4"</code> although no payload changed: Reach/Speed math must match on both sides.</li>
+</ul>
+
+<h3>Open issues</h3>
+<ul>
+<li>Rigs now break at 0 durability, losing Air, enchants and settings with the item; the item bar shows Air, so wear only shows in the tooltip. Mending/repair (copper ingots / netherite) fix it.</li>
+<li>Wire: registrar <code>"4"</code>; phase-3 builds cannot join. Nothing released yet.</li>
+<li>No Create-style goggle/tooltip summary of enchant totals yet (design §8 lists it; optional in this phase).</li>
+<li>Capacity's <code>slots</code> is <code>mainhand</code> in Create's data (harmless: Create reads the level from the stack).</li>
+</ul>
+
+<h2>Phase 5 — Recipes + the Rig never breaks (2026-10-09)</h2>
+<p><span class="pill">regression: tools/run_all.sh &lt;tag&gt;</span><span class="pill">final run: tools/logs/p5final-* (all suites)</span><span class="pill">numbers: tools/p5_metrics.py (prints RESULT PASS/FAIL)</span></p>
+
+<div class="mermaid">
+flowchart LR
+  P[Piston Extension Pole] --> SA["Sequenced Assembly ×2: deploy Sticker, press, deploy Andesite Casing"]
+  SA --> T[Tentacle ×4]
+  T --> MC["Mechanical Crafting 3×3"]
+  PM[Precision Mechanism] --> MC
+  BC[Brass Casing ×2] --> MC
+  CS[Copper Sheet] --> MC
+  CB[Copper Backtank] --> MC
+  NB[Netherite Backtank] --> MC
+  MC --> CR[Copper Rig]
+  MC --> NR[Netherite Rig]
+  CR -->|"smithing: upgrade template + netherite ingot"| NR
+</div>
+
+<div class="grid">
+<div class="card"><h3>Part A: the Rig never breaks</h3>
+<ul>
+<li><code>TentacleRigItem.damageItem</code> caps wear at max − 1; <code>getDamage</code>/<code>setDamage</code> clamp to max − 1, so even a stored damage of 500 reads 111/112 and never breaks.</li>
+<li><code>wornOut(stack)</code> = damage ≥ max − 1, one predicate for client and server.</li>
+<li>Client: a Double Jump / toggle key on a worn-out Rig is refused (the presses stay plain jumps) with Create's backtank warning style: red ⚠ + grey subtitle "Tentacle Rig worn out: repair it" (debounced 2 s). An Active Rig turns to Setting Down; a Falling one does not catch again; a Crawl lets go once it cannot get lower.</li>
+<li>Server: first packet of a worn-out Rig gets STOWED back (like 0 Air); an Active claim becomes Setting Down; a Falling → carrying claim stays Falling.</li>
+<li>Tooltip: "Durability x / y" once damaged; at 1 a red line "Worn out: repair it with Copper Ingot / Netherite Ingot at an anvil, or by Mending".</li>
+<li>Repair: anvil with the armor material (Create copper armor = copper ingot, vanilla netherite = netherite ingot; no code needed) or Mending.</li>
+</ul></div>
+<div class="card"><h3>Part B: items, recipes, JEI</h3>
+<ul>
+<li><code>tentaworks:tentacle</code> (stack 64, tab, tooltip summary) and <code>tentaworks:incomplete_tentacle</code> (Create <code>SequencedAssemblyItem</code>). Placeholder 16×16 art from <code>tools/gen_item_textures.py</code> (final art: phase 6).</li>
+<li>Datagen (<code>dev.tentaworks.data</code>): <code>SequencedAssemblyRecipeGen</code>, <code>MechanicalCraftingRecipeGen</code> (pattern <code>TPT / BKB / TCT</code>, Copper Sheet = <code>c:plates/copper</code>), vanilla <code>SmithingTransformRecipeBuilder</code> (with its recipe-unlock advancement).</li>
+<li>Advancement <code>tentaworks:doc_rig</code> "Doc's Rig" (goal, get either Rig), child of Create's <code>create:backtank</code>; hand-written JSON.</li>
+<li>JEI 19.56.0.438: <code>compileOnly</code> API + <code>devRuntimeOnly</code> (<code>-PnoJei</code> drops it). No JEI code in the mod: Create's plugin shows everything. A dev-only <code>@JeiPlugin</code> keeps the runtime for DevScript <code>jei</code>.</li>
+<li>Wire registrar <code>"4"</code> → <code>"5"</code> (no payload change).</li>
+</ul></div>
+</div>
+
+<h3>Results (final run p5final: dedicated server + client over localhost, survival)</h3>
+<p>Recipe test path: <b>full in-world machines</b> plus recipe manager lookups. A dev command builds a real 20-block belt with 6 powered stations and drops a Piston Extension Pole on it; another builds two powered 3×3 Mechanical Crafter grids (meshing cogs, driven by one cogwheel) and inserts the 9 inputs through the crafters' item capability (as a funnel would). Create does the rest.</p>
+<table>
+<tr><th>Check</th><th>Result</th><th>Measured</th></tr>
+<tr><td>Regression spike + p1–p4</td><td>PASS</td><td>Same as phase 4 within thresholds: S1 5.69 b/s, S5 174.200 = predicted, S6 Falling 18 ticks, S7 3.10, N1 6.10, N2 y range 0; p2, p3, p4 RESULT PASS (B6 4.30 / 8.00 b/s). 0 moved wrongly, 0 unexplained moved too quickly, 0 client exceptions; kick / forcing Falling only in the negative controls. One life tick with 1.30 TRACE/STRACE drift: the L5 forged-Active control while the player falls at 1.3 b/tick (client turns Active one tick before the server's forced Falling), not a Rig move.</td></tr>
+<tr><td>R <code>/reload</code> + recipe manager</td><td>PASS</td><td>0 errors. 4 Octo Arms recipes. Create's crafter path (<code>RecipeGridHandler.tryToApplyRecipe</code>) gives Copper / Netherite Rig, 0 Air from a 700-Air backtank; upside-down grid and a missing Tentacle give nothing. Sequence: 2 loops, deploying / pressing / deploying, transitional Incomplete Tentacle. Smithing keeps Air 444, name, damage 30/592; a Netherite Rig base matches nothing. Tentacle stacks 64, Incomplete 1.</td></tr>
+<tr><td>SA real belt line</td><td>PASS</td><td>One Piston Extension Pole → one Tentacle on the Depot within 15 s; each of the 4 Deployers used exactly once (64 → 63: 2 Stickers, 2 Andesite Casings).</td></tr>
+<tr><td>MC real crafter grids</td><td>PASS</td><td>Both chains 9 crafters at ±128 RPM, all 9 inputs accepted, chest under the output crafter gets one Copper Rig (backtank had 900 Air → Rig has no Air) and one Netherite Rig (500 → none).</td></tr>
+<tr><td>Doc's Rig</td><td>PASS</td><td>Granted once ("Dev has reached the goal [Doc's Rig]") on the first Rig.</td></tr>
+<tr><td>W1 wear stops at 1</td><td>PASS</td><td>109/112 → 111 → 111 after two 8-point hits; damage 500 reads 111 and stays 111 after a hit; Air 900 kept.</td></tr>
+<tr><td>W2 activation refused</td><td>PASS</td><td>Two Double Jumps: client and server Stowed, plain jump 1.252, subtitle "⚠ Tentacle Rig worn out: repair it".</td></tr>
+<tr><td>W3 server validation</td><td>PASS</td><td>Forged Active packets with real Grips on the worn Rig: server stays Stowed. Control (damage 50): Active.</td></tr>
+<tr><td>W4 worn while Active on a floor</td><td>PASS</td><td>Setting Down 1 tick after the hit, Stowed 6 ticks later on the floor (y −60.0); server Active → Setting Down → Stowed.</td></tr>
+<tr><td>W5 worn while hanging (no floor)</td><td>PASS</td><td>Setting Down, lets go at the lowest Held point, falls; 8.0 fall damage.</td></tr>
+<tr><td>W6 worn in Crawl (no floor)</td><td>PASS</td><td>Crawl holding → lets go on the hit, falls; 7.0 fall damage.</td></tr>
+<tr><td>A anvil repair (real clicks)</td><td>PASS</td><td>Worn Copper + 2 copper ingots → 55/112 (cost 2), Air 600, 2 enchants, Rig Settings and name "Octo" kept. Copper + netherite ingot: no result. Worn Netherite + 1 netherite ingot → 443/592, Thrift kept.</td></tr>
+<tr><td>M Mending</td><td>PASS</td><td>Worn Rig refused; a 10-XP orb mends 111 → 91; then Active and Sets Down again.</td></tr>
+<tr><td>T real tooltips</td><td>PASS</td><td>Undamaged: no durability line. Damage 50: "Durability: 62 / 112" (closes the phase-4 gap). Worn Copper: "Durability: 1 / 112" + "Worn out: … Copper Ingot …"; Netherite names the Netherite Ingot.</td></tr>
+<tr><td>SM smithing (real clicks)</td><td>PASS</td><td>Copper Rig (Air 500, Far Reach II, settings, "Smithy", damage 40) → Netherite Rig with the same, damage 40/592.</td></tr>
+<tr><td>J JEI + creative tab</td><td>PASS</td><td>Sequenced Assembly 1, Mechanical Crafting 1 + 1, Smithing 1 (ours; JEI also lists 18 vanilla trim recipes for the Rig). Creative tab shows Tentacle + 4 Rigs. No-JEI run (<code>GRADLE_ARGS=-PnoJei</code>, logs <code>p5nojei-*</code>): joins, creative tab opens, recipes resolve, no exceptions.</td></tr>
+</table>
+
+<h3>Screenshots (tools/shots/)</h3>
+<ul>
+<li><code>p5_crafters.png</code> (two grids working), <code>p5_assembly_line.png</code> (belt + 6 stations).</li>
+<li><code>p5_jei_tentacle_sequenced.png</code>, <code>p5_jei_copper_rig_crafting.png</code>, <code>p5_jei_netherite_rig_crafting.png</code>, <code>p5_jei_netherite_rig_smithing.png</code>.</li>
+<li><code>p5_worn_refused.png</code> (warning subtitle), <code>p5_tooltip_damaged.png</code>, <code>p5_tooltip_worn.png</code>, <code>p5_anvil_repair.png</code>, <code>p5_smithing.png</code>, <code>p5_creative_tab.png</code>, <code>p5_nojei_creative.png</code>.</li>
+</ul>
+
+<h3>Decisions taken (docs did not say)</h3>
+<ul>
+<li>Netherite Rig also by smithing (Copper Rig + netherite upgrade template + <code>c:ingots/netherite</code>), like Create's own Netherite Backtank; vanilla smithing keeps every component (Air, enchants, settings, name, damage).</li>
+<li>Repair items = the armor materials: copper ingot (Create's copper armor, as its backtank/diving gear) and netherite ingot.</li>
+<li>A worn-out Rig refuses creative players too (elytra rule); Falling with a worn-out Rig does not catch again (that would be an activation).</li>
+<li>Worn out in Crawl: the Crawl keeps descending and lets go when it cannot get lower (Setting Down's rule), instead of holding forever.</li>
+<li>Warning on the client (Create subtitle style, 2 s debounce); the server only validates.</li>
+<li>Create's recipe gens make no recipe-unlock advancements (the recipe book does not show those types); only smithing has one.</li>
+<li>Doc's Rig sits in Create's tree under "Pressure to Go" (no lonely Octo Arms tab).</li>
+<li>Registrar <code>"5"</code> although no payload changed: the worn-out rule must match on both sides.</li>
+</ul>
+
+<h3>Open issues</h3>
+<ul>
+<li><s>Placeholder art for the two new items (phase 6).</s> Closed in phase 6 (3D item models).</li>
+<li>Rigs are in <code>#chest_armor</code>, so vanilla armor trims apply to them (as to Create's backtanks); not tested how a trim looks on the worn Rig.</li>
+<li>Wire: registrar <code>"5"</code>; phase-4 builds cannot join. Nothing released yet.</li>
+<li>Not covered by a test: key-only toggle on a worn-out Rig (same <code>toggle()</code> path as the Double Jump), a worn-out Rig refused in creative, and Mending keeping Air/enchants/settings (proven by the anvil and smithing cases, not by Mending).</li>
+<li>Life suite: one tick with 1.30 TRACE/STRACE drift in the L5 forged-Active control (p4final had 0); a timing artefact during a 1.3 b/tick fall, no threshold failed.</li>
+</ul>
+
+<h2>Phase 6 — Tentacle art, gait and sound (2026-10-09)</h2>
+<p><span class="pill">regression: tools/run_all.sh &lt;tag&gt;</span><span class="pill">final run: tools/logs/p6final-* (all suites)</span><span class="pill">numbers: tools/p6_metrics.py, tools/p6fast_metrics.py</span><span class="pill">art: tools/gen_textures.py, tools/gen_models.py</span></p>
+
+<div class="mermaid">
+flowchart LR
+  subgraph Wearer client
+    IN[keys + Heading] --> CL["Grips.clampHeld (unchanged Held rule)"]
+    CL --> G["TentacleGait: 4 body slots, spread targets, Steps"]
+    G --> V1[RigVisuals: own Rig]
+  end
+  G -->|"rig_motion: 4 slots (Grip + Step phase)"| S[RigServer: null invalid slots, Held = 2+ valid]
+  S -->|"rig_state: 4 slots"| V2[RigVisuals on every other client]
+  V1 --> R["TentacleLayer / first-person pass → TentacleRenderer"]
+  V2 --> R
+  V1 --> SND[RigSounds + RigParticles]
+  V2 --> SND
+</div>
+
+<div class="grid">
+<div class="card"><h3>Gait (<code>rig/TentacleGait</code>, client)</h3>
+<ul>
+<li>Four body-relative slots: 0 front-left, 1 front-right, 2 back-left, 3 back-right (= upper-left, upper-right, lower-left, lower-right shoulder). Each aims at a spread target out on its own body diagonal (0.5 × Reach, front slots raised, back slots lowered 0.35 × Reach), so floors, walls and ceilings all get four spread Grips.</li>
+<li>Candidates: every exposed full-block face that looks at the body; a point is pulled into reach. Score = distance² to the target + a separation penalty (8 × (1.7 − gap)²) against the other Grips.</li>
+<li>A planted Tentacle keeps its Grip until it is invalid or out of keep distance (forced Step), falls behind its target by 0.35 × Reach along the move (Step ahead by the same stride), or, Idle, a clearly better point exists (squared score gain ≥ 0.5).</li>
+<li>At most two steppers, always a diagonal pair (0+3, 1+2, alternating); a voluntary Step never leaves fewer than two planted. A slot never lifts on the tick it planted.</li>
+<li>Step time = clamp(round(1 / blocks per tick), 2, 7) ticks: 4 ticks at 5.6 b/s, 2 at 10.4, 7 when Idle. The arc (lift 0.3 + 0.3 × distance, max 1) is drawn only: the slot already carries its new Grip.</li>
+<li>Reach margins: picks ≤ Reach + overshoot (overshoot = clamp(0.68 − top speed per tick, 0, 0.3) = 0.26 by default) from the body after the move and at plant time; keep ≤ Reach + 0.68 from the body before <em>and</em> after the move (the server checks the packet against its pre-move position and its tick against the post-move one, allowing Reach + 0.75). The post-move body uses the collided move.</li>
+<li>On activation / after Falling (no Grip at all) all four Grips are taken at once; the arms unfold visually.</li>
+</ul></div>
+<div class="card"><h3>Wire and server</h3>
+<ul>
+<li><code>Tentacles</code>: 4 fixed slots, each a present flag, Grip (point, block, face) and a Step phase byte (255 = planted). Both <code>rig_motion</code> and <code>rig_state</code> carry it; registrar <code>"5"</code> → <code>"6"</code>.</li>
+<li>Server validation unchanged in meaning: each Grip is checked as before (block full, face exposed, point on face, ≤ Reach + 0.75); a rejected slot is now nulled in place instead of filtered out, Held = at least 2 valid Grips. The relay keeps slot identity, so other clients animate the right arm.</li>
+<li><code>Grips.pick</code> (spike Grip choice) removed; <code>count / held / clampHeld / firstHeld</code> untouched, so every movement number is the same (see results).</li>
+</ul></div>
+<div class="card"><h3>Renderer (<code>client/TentacleRenderer</code>)</h3>
+<ul>
+<li>Tank space = Create's backtank block model coordinates under its worn-layer transform, so shoulders sit on the drawn tank. <code>TentacleLayer</code> (player render layer, all players) maps world Grips into model space with the inverse pose; a GUI render (inventory preview) fails the "tank near the body" check and draws Stowed.</li>
+<li>Arm: shoulder hub + cog, telescoping upper segment (copper sleeve 3 px, brass collars, andesite rod 2 px), elbow hub with axle and two cogs (clevis), forearm (sleeve 2.4 px, collar, rod 1.5 px), wrist hub, Sticker pad (<code>create:block/sticker</code> by path, slime face 0.004 above the gripped face). Netherite: dark sleeves/rods, netherite collars, red-bolt hubs.</li>
+<li>IK: elbow at 40 % of shoulder→wrist plus a bend of clamp(0.4 × length, 0.18, 2.6) toward (1.5 × shoulder-outward + face normal + 0.3 up) made perpendicular to the arm: floor Grips arch up, ceiling Grips hang like spider legs.</li>
+<li>Stowed: four compact folded arms on the tank sides, pads facing down. Deploy/stow blends folded → active per slot over 8 ticks, staggered. Spare and Falling arms hang free with a slow sway.</li>
+<li>Lighting per part from its world position (shoulder, segment middles, elbow, wrist); entity cutout render type (directional shading). LOD: &lt; 24 blocks full, 24–48 no collars/cogs, &gt; 48 no hubs. Every value interpolated with partialTick (previous/current tick).</li>
+<li><code>EntityRendererMixin</code> (client): a player whose body is off screen still renders while their Tentacles reach into view.</li>
+</ul></div>
+<div class="card"><h3>Models, items, sounds</h3>
+<ul>
+<li>Rig Block: new blockstate property <code>arms</code> (default false; placement sets true). <code>arms=true</code> → <code>neoforge:composite</code> of Create's backtank model (by path) + <code>tentacle_arms_folded[_netherite]</code> (generated from the same fold numbers as the renderer). <code>arms=false</code> stays Create's plain model: that is what Create's worn Backtank layer draws, the Tentacle layer adds the arms.</li>
+<li>Rig items (and placeables): composite of Create's backtank item model + four Tentacles spread in an X (reads as "backtank with arms" at slot size). Tentacle / Incomplete Tentacle: 3D models (bent arm with Sticker pad; bare pole with pad). No Create texture copied: Create textures referenced by path, our textures generated.</li>
+<li>Sounds, played on every client that draws the Rig, positional at the Grip / body, players category, within 32 blocks: Create's Sticker squish (<code>create:slime_added</code>, 0.3) on each plant, a soft one on lift; Create steam hiss when the height starts changing and on activate / stow with vanilla piston extend / contract; a quiet looping <code>create:cogs</code> rumble while moving. Three slime particles on plant.</li>
+</ul></div>
+</div>
+
+<h3>Results (dedicated server + Dev client + Dev2 client over localhost, survival)</h3>
+<table>
+<tr><th>Check</th><th>Result</th><th>Measured</th></tr>
+<tr><td>G1 spread at max depth under a flat ceiling</td><td>PASS</td><td>Copper (body 4.00 below the ceiling): min pairwise Grip distance 1.71–2.04 over 42 Idle ticks in the runs of this phase (threshold 1.5); Netherite (body 7.00 below a 20-high ceiling): 2.56–2.64. Four Grips every tick, no Steps while Idle (0 gait changes in 42 ticks). Spike/phase-5 value: all four Grips on one point (0).</td></tr>
+<tr><td>G2 steppers</td><td>PASS</td><td>Max 2 simultaneous over ~1750 GAIT ticks (flat, wall, ceiling, cliff, both tiers).</td></tr>
+<tr><td>G3 Held while stepping</td><td>PASS</td><td>Planted (not stepping) ≥ 2 on every moving tick: flat walk 69 ticks / 21 plants, wall climb 31 / 10, ceiling walk 20 / 7, cliff edge 129 / 34 (p6final); server valid Grips ≥ 2 on every tick, never left Active.</td></tr>
+<tr><td>F fast config (<code>p6fast</code>: <code>speed.max 20</code> + Swift II + Speed 20)</td><td>PASS</td><td>26.00 b/s on the flat, 22 b/s up a wall; server valid Grips ≥ 4 / 4, 0 "forcing Falling". (Before the pre-move check and the collided move, the wall climb dropped to 0 valid Grips for 5 ticks.)</td></tr>
+<tr><td>P1 frame cost, two Active Rigs in view</td><td>PASS</td><td>Tentacle drawing ~55–85 µs per frame on Dev and Dev2 (max &lt; 1 ms), 103–105 fps; threshold 2 ms.</td></tr>
+<tr><td>S1–S3 sounds (counted with <code>PlaySoundEvent</code>, master volume 0)</td><td>PASS</td><td>Dev: gait plants = drawn plants = plant sounds (143–154 per run). Dev2 hears Dev: every plant of Dev seen within 32 blocks played (90–101), slime sounds reaching Dev2's engine ≥ that. Piston extend / contract, steam and the cog loop all heard.</td></tr>
+<tr><td>Regression spike + p1–p5 (final run p6final, same code as the p6 rows' last run)</td><td>PASS</td><td>Movement numbers unchanged (the Held clamp was not touched): S1 5.69 b/s, S2 1.80 s, S3 y range 0.0000, S5 stop 174.200 = predicted, S6 Falling 18 ticks, S7 3.10, N1 6.10, N2 y range 0, B6 4.30 / 8.00 b/s, Swift 6.44 / 10.40 b/s; p2–p6fast RESULT PASS. 0 moved wrongly, 0 unexplained moved too quickly, 0 client/server exceptions; kick / forcing Falling / non-finite only in the negative controls. S4 counts 93 over-edge ticks (phase 5: 94), pinned 17, same x max 145.198 and end point: a client game-time step inside the window (see open issues).</td></tr>
+</table>
+
+<h3>Screenshots (tools/shots/)</h3>
+<ul>
+<li><code>p6_d2_hang.png</code> (Dev2: Copper max-depth hang, spread Grips), <code>p6_d2_netherite_hang.png</code>, <code>p2_crawl_ceiling.png</code> (close up, same hang), <code>d2_hang.png</code> (main suite, Dev2).</li>
+<li><code>p6_stowed_back.png</code>, <code>p6_stowed_front.png</code>, <code>p6_d2_stowed_side.png</code>; <code>p6_active_back.png</code>, <code>p6_active_front.png</code>, <code>p6_d2_active_side.png</code>; <code>p6_walk_midstep.png</code>, <code>p6_d2_walk.png</code>.</li>
+<li><code>p6_climb.png</code>, <code>p6_d2_climb.png</code>, <code>p6_climb_fp.png</code> / <code>p6_climb_fp2.png</code> (first person), <code>p6_cliff.png</code>, <code>p6_d2_cliff.png</code>.</li>
+<li><code>p6_netherite_stowed.png</code>, <code>p6_netherite_hang.png</code>, <code>p6_netherite_hang_fp.png</code>; <code>p6_two_rigs.png</code>, <code>p6_d2_two_rigs.png</code>.</li>
+<li><code>p6_rig_blocks.png</code>, <code>p6_rig_blocks2.png</code> (Copper / Netherite Rig Blocks next to Create's backtank), <code>p6_icons.png</code> (slot size + 6×), <code>p6_creative_tab.png</code>, <code>p6_inventory_preview.png</code> (GUI preview = Stowed pose).</li>
+</ul>
+
+<h3>Decisions taken</h3>
+<ul>
+<li>Tentacle slots are body-relative quadrants (front/back × left/right), not the world quadrants of the Held rule: arms keep to their own shoulder side when the wearer turns. A slot whose own side has no face takes any valid face (all four go on a wall). The Held rule itself is unchanged.</li>
+<li>Steps in diagonal pairs (≤ 2 at once) instead of design §4's "one at a time" (task spec); CONTEXT.md "Step" updated.</li>
+<li>A stepping slot sends its new Grip at lift time (the arc is visual), so the server's Grip count stays what the spike measured (4 on flat ground). "Planted" (the gait metric) counts only arms not arcing.</li>
+<li>Grips may lie up to 0.26 past Reach (server slack 0.75 minus one tick of top speed): without it the max-depth ceiling has a single point in Reach and the arms must collapse.</li>
+<li>First person: the wearer's own Tentacles are drawn from the level stage with every part within ~0.6 block of the eye skipped (shoulders and upper segments behind the head); forearms and pads reaching into view are shown.</li>
+<li>Worn tank: Create's layer keeps drawing the plain backtank; Octo Arms draws all arms (Stowed fold included) in its own layer so unfolding animates. Placed Rig Blocks show the folded arms through the <code>arms</code> blockstate.</li>
+<li>Sounds are client-side on every client that sees the Rig (no extra packets: the relayed Step phases drive them); heard within 32 blocks.</li>
+<li>Rig item icon shows the arms spread (an X), the placed block shows them folded.</li>
+<li>Grip debug lines moved to the dev source set (DevScript <code>griplines on</code>), off by default.</li>
+</ul>
+
+<h3>Compatibility</h3>
+<div class="box warn">Registrar <code>"6"</code>: phase-5 and phase-6 clients/servers cannot mix. New Rig Block property <code>arms</code> (frozen): blocks placed before phase 6 load as <code>arms=false</code> (plain tank look, same function); break and place again to show the arms. Nothing released yet.</div>
+
+<h3>Open issues</h3>
+<ul>
+<li>Untested: Tentacles on non-full blocks are not possible by design (no Grip); underwater lighting/particles not shot; a remote Rig whose packets arrive in bursts can jump a Step phase by one tick (relay is once per tick).</li>
+<li>Lighting per part uses the block light at the part's centre: a sleeve passing through a dark block edge can look one shade off.</li>
+<li>The worn Rig in the creative inventory's player preview shows the Stowed pose even while Active (by design of the GUI check).</li>
+<li>Main-suite S2 / S4 are counted in client game time, which the server's time sync can step by ±1 inside a window: an intermediate run had S2 1.75 s and S4 93 ticks (phase 5: 1.80 / 94); counted in client ticks both are identical (35 and 96). The final run has S2 1.80 s and S4 93.</li>
+</ul>
+
+<h2>Phase 7 — Create integrations (2026-10-09)</h2>
+<p><span class="pill">regression: tools/run_all.sh &lt;tag&gt;</span><span class="pill">final run: tools/logs/p7final-* (all suites)</span><span class="pill">numbers: tools/p7_metrics.py</span><span class="pill">Ponder schematic: tools/gen_ponder.py</span></p>
+
+<div class="mermaid">
+flowchart LR
+  BE["Rig Block = Create backtank BE"] -->|"tick TAIL: sendData every 10 ticks while Air changes"| CL[client BE]
+  CL --> GOG["KineticBlockEntity.addToGoggleTooltip RETURN → RigGoggles (Air, fill rate, Reach, top Speed, Air use)"]
+  BE --> DS["Display Source tentaworks:rig_air (Air / percent / progress bar)"] --> DL[Display Link → board / nixie]
+  SCH["gen_ponder.py → /tentaworks schematic (real world)"] --> PS["Ponder scene tentacle_rig"]
+  PS --> PUP["RigPuppetElement: player model + backtank + TentacleRenderer.drawPosed"]
+  SCR["PuppetScript: body moves + mini gait at build time"] --> PUP
+</div>
+
+<div class="grid">
+<div class="card"><h3>Goggles</h3>
+<ul>
+<li>Rig Blocks live in Create's backtank BE type, so the goggle text comes from a client mixin on <code>KineticBlockEntity.addToGoggleTooltip</code> (RETURN, Rig Blocks only, lines inserted on top, returns true so an unpowered Rig still shows them). Create's kinetic stats follow.</li>
+<li>Lines: <i>Tentacle Rig</i> / Air <code>x / max (n%)</code> / <i>Filling: +n Air/s</i> (Create's refill formula from the RPM) or <i>Full</i> or <i>Not filling: needs a turning shaft above</i> / Reach / Top Speed / Air use (only when not 100 %). Reach, Speed and Air use come from the placed item's saved components (enchantments) via <code>RigStats</code>.</li>
+<li>Create syncs a filling backtank only when it is full: <code>BacktankBlockEntityMixin</code> sends the BE data every 10 ticks while a Rig Block's Air changes (server side, Rig Blocks only; Create's backtanks untouched).</li>
+<li>The Rig item tooltip now also lists Air, Reach, Top Speed and Air use (design §8 "goggles on the Rig item").</li>
+</ul></div>
+<div class="card"><h3>Display Link</h3>
+<ul>
+<li>Source <code>tentaworks:rig_air</code> ("Rig Air", frozen id in save-format.md) on both Rig Blocks, registered like Landing Legs (<code>REGISTRATE.displaySource</code> + block <code>.transform(DisplaySource.displaySource(...))</code>).</li>
+<li>Extends Create's <code>PercentOrProgressBarDisplaySource</code>: Show = Air (number) / Percent / Progress Bar, optional label, refresh every 20 ticks. Same base class as Create's fill-level source; tested on display boards only.</li>
+</ul></div>
+<div class="card"><h3>Ponder "Tentacle Rig"</h3>
+<ul>
+<li>One scene (1232 ticks) for the Copper and Netherite Rig, both placeables and the Tentacle; tag "Tentacle Rigs" in the Ponder index. Plugin added by <code>TentaworksClient</code> (<code>@Mod(dist = CLIENT)</code>); text from <code>PonderIndex.getLangAccess().provideLang</code> in the datagen LANG provider.</li>
+<li>Story: Mechanical Crafter grid (items go in, real crafter animation with <code>setCraftingResult</code>, the Rig lands on a depot) → placed Rig Block under a creative motor (spinning, air particles; pick-up hint) → wearer appears Stowed → Double Jump: four Grips, lift to Standing Height → walk → climb the wall → move under the ledge and hang → Set Down to the floor, Stow → Crawl / Air note.</li>
+<li>The wearer is a scene element (<code>RigPuppetElement</code>): default player model, the backtank drawn like Create's worn layer, Tentacles by the BE-free <code>TentacleRenderer.drawPosed</code> (same parts and IK as the worn Rig). Grips are mapped into tank space with the inverse of a body→tank matrix built on a fresh PoseStack.</li>
+<li><code>PuppetScript</code> runs a small gait while the scene is built (spread body-slot targets on the given faces, diagonal pairs, ≥ 2 planted, 5-tick Steps with an arc): every body move and Grip is an instruction, so rewind and seek replay it exactly.</li>
+<li>Schematic <code>assets/tentaworks/ponder/tentacle_rig.nbt</code> built in a real world by <code>tools/gen_ponder.py</code> and exported with the dev command <code>/tentaworks schematic</code> (crafter grid by <code>/tentaworks pondergrid</code>).</li>
+</ul></div>
+<div class="card"><h3>Placed Rig Block art</h3>
+<ul>
+<li>The placed block has its own compact fold (<code>BLOCK</code> in <code>tools/gen_models.py</code>): arms tucked against the tank sides (shoulders x 3.5 / 12.5), shorter segments, hubs at 75 %, no cog discs, pads inside the tank depth. Bounding box x 1.25..14.75, z ≤ 11.75 (tank 4..12), 0 px outside the block (script prints it).</li>
+<li>The worn Stowed fold (<code>TentacleRenderer.FOLD_*</code>, <code>WORN</code> in the script) is unchanged.</li>
+</ul></div>
+</div>
+
+<h3>Results (dedicated server + Dev client over localhost, survival; suite p7)</h3>
+<table>
+<tr><th>Check</th><th>Result</th><th>Measured</th></tr>
+<tr><td>G1 goggles on a Copper Rig Block under a 128 RPM shaft</td><td>PASS</td><td>Client goggle text 403 → 473 / 900 Air over 60 ticks (p7final; p7b 433 → 503): the synced value rises at the real 20 Air/s.</td></tr>
+<tr><td>G2 fill rate and enchant-derived stats (Far Reach II, Swift I)</td><td>PASS</td><td>"Filling: +20.0 Air/s", "Reach: 6.0 blocks" (4 + 2), "Top Speed: 9.2 b/s" (8 × 1.15), Create's kinetic stats below (512 su).</td></tr>
+<tr><td>G3 Netherite Rig Block, no shaft</td><td>PASS</td><td>"300 / 900 (33%)", "Not filling: needs a turning shaft above", Reach 7.0, Top Speed 8.0, Air use 50%.</td></tr>
+<tr><td>D1 display board follows the Rig's Air (Show = Air, label "Air")</td><td>PASS</td><td>(Rig Air, board) = (411, 399), (483, 479): the board lags the Rig by ≤ one 20-tick refresh (≤ 20 Air at 20 Air/s); read from the board controller's <code>Display0</code> sections.</td></tr>
+<tr><td>D2 percent mode</td><td>PASS</td><td>Board "59%" at 541 / 900 Air.</td></tr>
+<tr><td>D3 source stays valid</td><td>PASS</td><td>Link NBT keeps <code>Source.Id = tentaworks:rig_air</code> through every refresh (Create drops a source the block does not offer).</td></tr>
+<tr><td>D4 Display Link screen</td><td>PASS</td><td><code>DisplayLinkScreen</code> opens on the link: source "Rig Air", Show Air / Percent / Progress Bar.</td></tr>
+<tr><td>P1/P2 Ponder</td><td>PASS</td><td>Copper Rig, Netherite Rig and Tentacle all open scene <code>tentaworks:tentacle_rig</code> (1232 ticks); 10 seeks through every part; 0 client errors.</td></tr>
+<tr><td>H Ponder hint</td><td>PASS</td><td>Hovered Rig in the inventory: "Hold [W] to Ponder", then Air / Reach / Top Speed lines.</td></tr>
+<tr><td>Rig Block art</td><td>PASS (by eye)</td><td>Compact fold: 0 px outside the block, arms x 1.25..14.75 (tank 4..12), pads z ≤ 11.75 (tank depth 12); shots <code>p7_rig_blocks_close*.png</code>.</td></tr>
+<tr><td>Regression spike + p1–p6fast (final run p7final, same code)</td><td>PASS</td><td>Movement numbers unchanged: S1 5.69 b/s, S2 1.80 s, S3 y range 0.0000, S4 94 ticks / pinned 17 / x max 145.198, S5 stop 174.200 = predicted, S6 Falling 18 ticks, S7 3.10, N1 6.10, N2 y range 0, B6 4.30 / 8.00 b/s; p2–p7 RESULT PASS. 0 moved wrongly, 0 unexplained moved too quickly, 0 client/server exceptions; kick / forcing Falling / non-finite only in the negative controls.</td></tr>
+</table>
+
+<h3>Screenshots (tools/shots/)</h3>
+<ul>
+<li>Goggles: <code>p7_goggles.png</code> (Copper Rig Block filling under a 128 RPM shaft, Far Reach II + Swift I), <code>p7_goggles_a.png</code> (60 ticks earlier), <code>p7_goggles_netherite.png</code> (no shaft).</li>
+<li>Display Link: <code>p7_display_board.png</code> ("AIR 5xx"), <code>p7_display_percent.png</code> (percent mode), <code>p7_link_gui.png</code> (Display Link screen: source "Rig Air", Show Air / Percent / Progress Bar).</li>
+<li>Ponder: <code>p7_ponder_craft.png</code>, <code>p7_ponder_crafted.png</code>, <code>p7_ponder_refill.png</code>, <code>p7_ponder_stowed.png</code>, <code>p7_ponder_active.png</code>, <code>p7_ponder_walk.png</code>, <code>p7_ponder_climb.png</code>, <code>p7_ponder_hang.png</code>, <code>p7_ponder_setdown.png</code>, <code>p7_ponder_stowed_end.png</code>, <code>p7_ponder_netherite.png</code>, <code>p7_ponder_tentacle.png</code>; hint: <code>p7_ponder_hint.png</code>.</li>
+<li>Rig Blocks after the art polish: <code>p7_rig_blocks.png</code>, <code>p7_rig_blocks2.png</code>, <code>p7_rig_blocks_close.png</code>, <code>p7_rig_blocks_close2.png</code> (Copper / Netherite facing south, Netherite east, Copper west, Create's backtank between).</li>
+</ul>
+
+<h3>Decisions taken</h3>
+<ul>
+<li>No worn-Rig goggles HUD: design §8 lists goggles on the Rig item and Rig Block only, and Create has no worn-goggle overlay to match; the item bar already shows Air. The Rig item tooltip got the numbers instead.</li>
+<li>Goggles through a mixin on Create's <code>KineticBlockEntity</code> (the Rig Block uses Create's backtank BE type, no own BE); Rig lines come first, Create's kinetic stats after them.</li>
+<li>Own Display Source (Create 6.0.10 has no backtank source) with three modes; default Show = Air (a number), as the design asks for "Air level".</li>
+<li>Ponder wearer drawn as a scene element with the default player skin, not an armor stand, so the Tentacle parts and the tank match the worn Rig exactly; Ponder cannot move a player.</li>
+<li>Craft step uses the real Mechanical Crafter animation with a forced result (<code>setCraftingResult</code>), like Create's own crafter scene.</li>
+<li>Refill step: Ponder levels are client-side, so the Air number does not rise there; the scene shows the spinning shaft and Create's air particles, the text carries the rest.</li>
+<li>The placed Rig Block got its own fold instead of changing the worn Stowed fold (keeps every phase-6 visual and number as is).</li>
+<li>Phase-6 extras not done (not cheap): inventory preview always Stowed, light per part centre (see open issues).</li>
+</ul>
+
+<h3>Compatibility</h3>
+<div class="box warn">New frozen id: Display Source <code>tentaworks:rig_air</code> (saved in Display Link NBT). Payloads unchanged, registrar stays <code>"6"</code>; a mixed phase-6/phase-7 join was not tested (the new display-source registry entry may block it), and the goggle Air sync runs on the server: update server and clients together. Rig Block models changed (no state change). Nothing released yet.</div>
+
+<h3>Open issues</h3>
+<ul>
+<li>Display Link source is set by NBT in the test; the GUI opens and lists "Rig Air" with its modes, but choosing the source by clicking through the GUI was not automated.</li>
+<li>Ponder: the hang under the ledge is shown at the ledge's front edge (the camera looks down at 35°, a body deeper under the ledge is hidden); the scene is 62 s long.</li>
+<li>Still open from phase 6: inventory preview shows the Stowed pose; per-part light at part centres.</li>
+<li>Nixie tubes and progress-bar mode not shot (same Create code path as the board).</li>
+</ul>
+
+<h2>Phase 8 — Release readiness (2026-10-09)</h2>
+<p><span class="pill">jar: build/libs/tentaworks-1.0.0.jar</span><span class="pill">regression: tools/run_all.sh &lt;tag&gt; (now + p8, p8r16)</span><span class="pill">final run: tools/logs/p8final3-*</span><span class="pill">full-modpack harness: tools/prod/run_prod.sh, tools/prod/prod_metrics.py</span></p>
+
+<h3>Release metadata</h3>
+<ul>
+<li><code>mod_version</code> 1.0.0; mods.toml: description, authors, credits (Create team), license MIT (<code>LICENSE</code> also inside the jar), logo <code>tentaworks_logo.png</code> (cropped from the phase-6 item icon render), no URLs. Dependencies: neoforge <code>[21.1.228,)</code>, minecraft <code>[1.21.1]</code>, create <code>[6.0.10,6.1)</code>, all BOTH.</li>
+<li>Jar audit: 0 <code>dev/tentaworks/dev</code> classes, 0 <code>.cache</code>; has <code>tentaworks.mixins.json</code>, generated lang, recipes, advancements, enchantments, loot tables, tags, models, ponder schematic. NeoForge 1.21.1 runs Mojang names in production: no refmap is built or needed.</li>
+<li>Test-only <code>devJar</code> (<code>build/devlibs/tentaworks-devtools-1.0.0.jar</code>, mod id <code>tentaworks_devtools</code>, never shipped): the dev source set plus a small <code>src/devmod</code> bootstrap that registers DevScript/DevTools by hand.</li>
+</ul>
+
+<h3>Full-modpack harness</h3>
+<div class="mermaid">
+flowchart LR
+  subgraph Server["run-prod/server (NeoForge 21.1.250 installer)"]
+    S1[large modpack minus client-only<br/>xaero, Mouse Tweaks, IPN, libIPN] --- S2[tentaworks-1.0.0.jar only]
+  end
+  subgraph Client["run-prod/client (moddev clientProd, loadedMods = [])"]
+    C1[full modpack] --- C2[tentaworks-1.0.0.jar] --- C3[devtools jar: DevScript]
+  end
+  Client -- localhost:25619 --> Server
+  R[rcon_prod.py :25618] --> Server
+</div>
+<ul>
+<li>The client is a moddev run with no project mods and an empty source set: every mod, Octo Arms included, loads from <code>run-prod/client/mods</code> as a real jar (the release jar, not build output). Client log level DEBUG so the "Mixing … tentaworks.mixins.json" lines are visible.</li>
+<li><code>ALLOW_FLIGHT=true</code> mirrors servers that set <code>allow-flight=true</code>; default false (vanilla float kick on, strictest).</li>
+</ul>
+
+<h3>Full-modpack results (release jar)</h3>
+<table>
+<tr><th>Check</th><th>allow-flight=false (<code>ppfinal-prod</code>)</th><th>allow-flight=true (<code>ppfinalaf-prod</code>)</th><th>Evidence</th></tr>
+<tr><td>Boot, no Octo Arms errors</td><td>PASS</td><td>PASS</td><td>only known noise (Tracks tags/loot, copycats catwalk, ApiStatus WARN)</td></tr>
+<tr><td>Mixins in production</td><td>PASS</td><td>PASS</td><td>server 3 (Accessor ×2, BacktankBlockEntityMixin), client 3 (BacktankRenderer, EntityRenderer, KineticBlockEntityGoggle) "Mixing" lines</td></tr>
+<tr><td>Client joins, no kicks</td><td>PASS</td><td>PASS</td><td>only the final disconnect</td></tr>
+<tr><td>Activate, climb, hang, Set Down</td><td>PASS</td><td>PASS</td><td>server creative_flight 1.0 while carried, 0.0 after; <code>p8_prod_climb.png</code>, <code>p8_prod_hang.png</code></td></tr>
+<tr><td>Elytra Slot (elytra in back slot) + Rig</td><td>PASS</td><td>PASS</td><td>mid-air Double Jump next to a wall: caught, 0 gliding ticks while carried, server FallFlying 0b; <code>p8_prod_elytra_rig.png</code></td></tr>
+<tr><td>Sophisticated Backpack in back slot + Rig</td><td>PASS</td><td>PASS</td><td>climb + Set Down; <code>p8_prod_backpack.png</code></td></tr>
+<tr><td>Carry On</td><td>PASS</td><td>PASS</td><td>chest picked up, Rig activated and Set Down while carrying; a placed enchanted Rig Block carried and put down keeps Air 500 + Far Reach II</td></tr>
+<tr><td>Goggles, Netherite cogs</td><td>PASS</td><td>PASS</td><td>"340 / 900, Filling +2.5 Air/s" at 64 RPM; BACKTANK lines; <code>p8_prod_goggles.png</code></td></tr>
+<tr><td>JEI, Ponder, creative tab, Landing Legs 0.1.1</td><td>PASS</td><td>PASS</td><td><code>p8_prod_jei_rig.png</code>, <code>p8_prod_jei_tentacle.png</code>, <code>p8_prod_ponder.png</code>, <code>p8_prod_creative_tab.png</code></td></tr>
+<tr><td>Sable Ship (see below; Ship-wall case in <code>ppwall-prod</code>)</td><td>PASS</td><td>PASS</td><td><code>p8_prod_ship_hull.png</code>, <code>p8_prod_ship_deck.png</code>, <code>p8_prod_ship_moved.png</code></td></tr>
+</table>
+
+<h3>Sable Ships</h3>
+<ul>
+<li>Probe (<code>CCLIP</code>, full modpack): standing on a still 5×5 Ship deck, <code>Level.clip</code> straight down returns the Ship hit at <b>plot coordinates (20481034, 129, 20481034)</b>; the world-only trace returns the floor at y −60. The old <code>floorBelow</code> would have set the Standing Height lift to y ≈ 130.</li>
+<li>Fix: <code>RigClient.floorBelow</code> traces world blocks only (<code>BlockGetter.traverseBlocks</code> + <code>clipWithInteractionOverride</code>; Sable overwrites only <code>BlockGetter.clip</code>) and drops hits off the ray segment. No Sable dependency, no reflection.</li>
+<li>Grips: <code>Grips.faces</code>/<code>valid</code> read world blocks only, so Ship blocks are never Grips and no Grip can be at plot coordinates (800 GAIT Grip samples next to and on the Ship, 0 outside the test area).</li>
+<li>Activate on the deck: lifted to world floor + Standing Height (stays on the deck, Held by the floor under it). Walk Active into a Ship wall (1 thick, 3 high, assembled on the floor) at body height: stopped at x 3214.700 = hull face minus half the body width, still Active, no server warnings (<code>ppwall-prod</code>, <code>p8_prod_ship_wall.png</code>); the real move collides with the Ship although the gait's own collision check sees world blocks only. Ship pushed (translated up 1.5, impulse 600 sideways) while the wearer stands Active on it: carried ~11 blocks by the Ship's collision, stays Active on world Grips, no kick, no crash.</li>
+</ul>
+
+<h3>Code-review fixes (reviewer findings 1–12)</h3>
+<table>
+<tr><th>#</th><th>Finding</th><th>Fix</th><th>Test (p8 suite)</th></tr>
+<tr><td>1</td><td>Forged Grip near unloaded chunks reads/generates them</td><td><code>Grips.valid</code>: point-on-face and Reach first, then <code>isLoaded</code> for block and outer neighbour, no read before</td><td>E: forged Grips on x=20047 facing into unloaded chunk 1253: 0 loads; control probe loads it</td></tr>
+<tr><td>2</td><td>No rate limit on <code>rig_motion</code></td><td>latest packet per player, handled once per tick (<code>ServerTickEvent.Pre</code>); Stowed handled at once; relay only on state/Tentacle change (+ <code>StartTracking</code>); non-finite stows, logged once per 10 s</td><td>B: 50 packets/tick for 40 ticks → handled 1 per tick, 0 relays while unchanged, 2000 NaN packets → 1 log line</td></tr>
+<tr><td>3</td><td>Rejected client hears Falling once (ghost block)</td><td>resend Falling every 10 ticks while it claims to carry, plus block updates for the claimed Grip blocks</td><td>G: platform removed server-side only under a hanging wearer: client falls after ~43 ticks (before the 80-tick float kick), re-grabs the floor, client = server</td></tr>
+<tr><td>4</td><td>Air and speed from claimed motion only</td><td>Air rate = max(claimed, real server delta per tick, read in <code>ServerTickEvent.Post</code> after vanilla restores the player position; deltas &lt; 0.01 ignored); speed check on a 10-tick real-move window (×1.25 + 1 block), &gt; 10 bad windows → Stow; <code>EntityTeleportEvent</code> resets the window</td><td>A: client climbs 12 blocks while a forged packet claims 0 motion: 10 ticks per Air (climb rate); S: server-moved 20 b/s → stowed, 6 b/s → nothing</td></tr>
+<tr><td>5</td><td>Elytra Slot glide fights the Rig</td><td><code>stopFallFlying</code> on both sides every carried tick (jump input is already consumed while carried)</td><td>full modpack E</td></tr>
+<tr><td>6</td><td><code>Level.clip</code> returns Ship hits in plot coords</td><td>world-only floor trace</td><td>full modpack CCLIP + S checks</td></tr>
+<tr><td>7</td><td>Two face scans + allocations per tick</td><td>one face scan per input tick shared with <code>clampHeld</code>; quadrant distance without allocations</td><td>P: avg input cost Reach 4 / 10 / 16 = 262 / 461 / 1131 µs per tick (max 3.5 / 0.5 / 1.8 ms)</td></tr>
+<tr><td>8</td><td>Fall guard for any wearer</td><td>only for a Rig that can still catch: Stowed or Falling, with Air, not worn out</td><td>K: empty Rig falling from y 300 → vanilla float kick (p3 keeps the with-Air control)</td></tr>
+<tr><td>9</td><td>Held = any 2 valid Grips</td><td>through-wall check: a Grip is invalid when the body is behind its face with a solid block between (no read of unloaded positions). Distinct (block, face) pairs <b>not</b> required (see decisions)</td><td>T: forged Grips on the far face of a wall → forced Falling; real-Grip control → none</td></tr>
+<tr><td>10</td><td>Setting Down carries forever</td><td>mirrored motion clamped to straight down; a claimed or real rise for &gt; 10 ticks → Stow</td><td>W: forged rising Setting Down → stowed</td></tr>
+<tr><td>11</td><td>Goggle Air sync at low RPM</td><td><code>BacktankBlockEntityMixin</code> at <code>RETURN</code></td><td>L: 16 RPM, client 85 / 89 / 93 = server</td></tr>
+<tr><td>12</td><td>One bad field drops the stack</td><td><code>lenientOptionalFieldOf</code> for all Rig Settings fields</td><td>C: <code>activation:"bogus"</code> → default, other fields kept</td></tr>
+</table>
+
+<h3>Untested items from earlier phases (now tested, p8 U)</h3>
+<ul>
+<li>U1 key-only toggle on a worn-out Rig: refused, warning subtitle, stays Stowed.</li>
+<li>U2 Mending: damage 100 → 0, Air 500, enchantments and Rig Settings unchanged.</li>
+<li>U3 armor trim on the worn Rig: the trim draws on the chest strap of the copper diving texture (<code>p8_trim_front.png</code>, <code>p8_trim_back.png</code>).</li>
+<li>U4 nixie tube in Progress Bar mode: <code>█▒</code> at Air 450/900 (<code>p8_nixie_bar.png</code>).</li>
+<li>U5 Display Link source picked through its own GUI selector + confirm (<code>onClose</code>): saved <code>tentaworks:rig_air</code> (<code>p8_link_gui_pick.png</code>).</li>
+<li>U6 underwater: Active climbing a pool wall, art and particles by eye (<code>p8_underwater.png</code>, <code>p8_underwater_fp.png</code>).</li>
+</ul>
+
+<h3>Final regression</h3>
+<table>
+<tr><th>Run</th><th>Result</th><th>Notes</th></tr>
+<tr><td><code>tools/run_all.sh p8final3</code> (spike main/life/creative + p1–p8 + p8r16, final code)</td><td>PASS</td><td>223 PASS checks, 0 FAIL, every RESULT PASS. Movement numbers unchanged from phase 7: S1 5.69 b/s, S2 1.80 s, S3 y range 0.0000, S4 94 ticks / pinned 17 / x max 145.198, S5 stop 174.200 = predicted, S6 Falling 18 ticks, S7 3.10, W y range 0. Air drain exact (copper idle/move/climb 80/20/10, netherite 160/40/20 ticks per Air). 0 moved wrongly, 0 unexplained moved too quickly, 0 client/server exceptions; kicks only in the deliberate controls (life L-control, p3 long fall, p8 K empty-Rig fall).</td></tr>
+<tr><td>Full modpack, allow-flight=false / true (<code>ppfinal-prod</code>, <code>ppfinalaf-prod</code>)</td><td>PASS / PASS</td><td>release jar sha256 <code>e5799deb…f644444</code> (the 1.0.0 release jar).</td></tr>
+<tr><td>Intermediate</td><td>—</td><td>A first full run (<code>p8final</code>) failed p2 idle drain (28 instead of 80 ticks per Air): the real-move delta was read inside the player tick, where vanilla moves a ServerPlayer by its velocity and puts it back. Fixed (read in <code>ServerTickEvent.Post</code>), then p2/p4/p8/p6fast and the full run above.</td></tr>
+</table>
+
+<h3>Decisions taken</h3>
+<ul>
+<li>Ship blocks are never Grips (design §1: Gripping Ships is out of v1). Gripping a still Ship would need Sable's sub-level lookup and pose transforms on client and server (a Sable dependency or reflection); world blocks only is exact and dependency-free.</li>
+<li>Reviewer #9 distinct (block, face) pairs: not taken. At the very edge of Reach a single face legitimately holds two Tentacles (one face spans several quadrants); requiring two faces froze the S4 cliff descent at the edge of Reach and would force honest Falling. A forged duplicate gains nothing an honest client can't. The through-wall check was taken.</li>
+<li>Reviewer #8: the fall guard still covers Stowed wearers (the designed mid-air catch from a high fall needs it), but only with Air and not worn out.</li>
+<li>Speed and Setting Down violations Stow the Rig (the wearer falls, can Double Jump again) instead of a sticky Falling: a sticky Falling made an honest client re-grab and float into a kick. Crawl violations keep the phase-2 sticky Falling.</li>
+<li>Network registrar <code>"6"</code> → <code>"7"</code> (packet handling changed; nothing released).</li>
+<li>Full-modpack client via a moddev run without project mods instead of a launcher install: same release jar and pack jars, DevScript available; the server is a real installer install.</li>
+<li>neoforge dependency stays <code>[21.1.228,)</code> like Landing Legs (built and tested on 21.1.250).</li>
+</ul>
+
+<h3>Compatibility</h3>
+<div class="box warn">Registrar <code>"7"</code>: any earlier build cannot join. Required on both sides: a client without Octo Arms cannot join a server with it. Frozen ids unchanged (<code>save-format.md</code>). Nothing released yet.</div>
+
+<h3>v1 status</h3>
+<div class="grid">
+<div class="card"><h3>Done</h3><ul>
+<li>Everything in design §1 "In v1": Copper/Netherite Rig, Active movement on floors/walls/ceilings/underwater, Hang, Double Jump, Setting Down, Crawl, Falling, Rig Settings, Server Config, three enchantments + vanilla/Create ones, recipes, Rig Block refill, gait + art + sounds, goggles, Ponder, JEI, Display Link source.</li>
+<li>Release jar 1.0.0 tested on a real NeoForge 21.1.250 server and client running a large modpack (both allow-flight settings).</li>
+<li>Code review: 11 of 12 findings fixed with tests (one partly declined with reason).</li>
+</ul></div>
+<div class="card"><h3>Known limits</h3><ul>
+<li>Ship blocks are not Grips; Tentacles can reach world blocks through a still Ship's hull, and a moving Ship just pushes the wearer (the Rig keeps world Grips).</li>
+<li>Position stays client-authoritative (adr/0001); the server checks Grips, Air rate, speed, Setting Down/Crawl direction and the float/flight gates.</li>
+<li>Inventory preview shows the Stowed pose; per-part light at part centres; Ponder hang shown at the ledge's front edge.</li>
+<li>Tentacles grip full-block faces only (no slabs, stairs, fences).</li>
+<li>A server with <code>allow-flight=true</code> has vanilla's float kick off for everyone (a server setting, not an Octo Arms one). The Rig works with either value.</li>
+</ul></div>
+<div class="card"><h3>Untested</h3><ul>
+<li>Real multi-player load (more than two clients), real network latency/packet loss (only localhost).</li>
+<li>Clients with Sodium or Iris.</li>
+<li>Large existing worlds (many Ships and chunks).</li>
+<li>Gripping Ships while they fly at speed for a long time (only a short push tested).</li>
+</ul></div>
+</div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true,theme:"neutral"});</script>
+</body>
+</html>

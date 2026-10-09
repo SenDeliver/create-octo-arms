@@ -1,0 +1,17 @@
+# Phase 8 perf at Reach 16 (TW_REACH_NETHERITE=13 + Far Reach III). TIMELINE p8r16-timeline.txt
+trace on
+await p
+look -90 0
+doublejump
+wait 20
+input r16start
+look -90 -60
+hold up on
+wait 40
+hold up off
+wait 40
+input r16
+mark r16
+signal pdone
+wait 20
+quit

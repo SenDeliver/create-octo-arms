@@ -1,0 +1,15 @@
+# Phase 3 scenes. Flat world: ground top at y=-60.
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+gamerule doImmediateRespawn true
+gamerule keepInventory true
+time set noon
+forceload add 990 -30 1400 30
+# Ceilings (bottom face y=-45, floor 15 below): A1 Double Jump in Crawl, A1k key in Crawl, A2 Crawl loses its Grips
+fill 1100 -45 -8 1116 -45 8 stone
+fill 1130 -45 -8 1146 -45 8 stone
+fill 1160 -45 -8 1176 -45 8 stone
+# K2 mid-air activation by the key: wall x=1200 (east face x=1201), top face y=-50
+fill 1200 -60 -5 1200 -51 5 stone
+# A4 long fall: tall wall x=1300 (east face x=1301), top face y=100
+fill 1300 -60 -5 1300 99 5 stone

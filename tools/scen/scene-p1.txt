@@ -1,0 +1,12 @@
+# Phase 1 scenes. Flat world: ground top at y=-60.
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+gamerule doImmediateRespawn true
+time set noon
+forceload add 280 -20 500 20
+# W water pool: stone walls 298..306, water inside up to y=-52
+fill 298 -60 -4 306 -52 4 stone
+fill 299 -60 -3 305 -52 3 water
+# N2 platform (top face y=-50) under a ceiling (bottom face y=-41); ground 10 below the platform
+fill 439 -51 -1 441 -51 1 stone
+fill 430 -41 -8 450 -41 8 stone

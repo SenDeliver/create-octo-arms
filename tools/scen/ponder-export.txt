@@ -1,0 +1,95 @@
+forceload add 3290 290 3320 320
+#sleep 3
+fill 3299 -41 299 3309 -32 309 minecraft:air
+fill 3300 -41 300 3308 -41 308 minecraft:barrier
+setblock 3300 -40 300 minecraft:white_concrete
+setblock 3300 -40 301 minecraft:snow_block
+setblock 3300 -40 302 minecraft:white_concrete
+setblock 3300 -40 303 minecraft:snow_block
+setblock 3300 -40 304 minecraft:white_concrete
+setblock 3300 -40 305 minecraft:snow_block
+setblock 3300 -40 306 minecraft:white_concrete
+setblock 3300 -40 307 minecraft:snow_block
+setblock 3300 -40 308 minecraft:white_concrete
+setblock 3301 -40 300 minecraft:snow_block
+setblock 3301 -40 301 minecraft:white_concrete
+setblock 3301 -40 302 minecraft:snow_block
+setblock 3301 -40 303 minecraft:white_concrete
+setblock 3301 -40 304 minecraft:snow_block
+setblock 3301 -40 305 minecraft:white_concrete
+setblock 3301 -40 306 minecraft:snow_block
+setblock 3301 -40 307 minecraft:white_concrete
+setblock 3301 -40 308 minecraft:snow_block
+setblock 3302 -40 300 minecraft:white_concrete
+setblock 3302 -40 301 minecraft:snow_block
+setblock 3302 -40 302 minecraft:white_concrete
+setblock 3302 -40 303 minecraft:snow_block
+setblock 3302 -40 304 minecraft:white_concrete
+setblock 3302 -40 305 minecraft:snow_block
+setblock 3302 -40 306 minecraft:white_concrete
+setblock 3302 -40 307 minecraft:snow_block
+setblock 3302 -40 308 minecraft:white_concrete
+setblock 3303 -40 300 minecraft:snow_block
+setblock 3303 -40 301 minecraft:white_concrete
+setblock 3303 -40 302 minecraft:snow_block
+setblock 3303 -40 303 minecraft:white_concrete
+setblock 3303 -40 304 minecraft:snow_block
+setblock 3303 -40 305 minecraft:white_concrete
+setblock 3303 -40 306 minecraft:snow_block
+setblock 3303 -40 307 minecraft:white_concrete
+setblock 3303 -40 308 minecraft:snow_block
+setblock 3304 -40 300 minecraft:white_concrete
+setblock 3304 -40 301 minecraft:snow_block
+setblock 3304 -40 302 minecraft:white_concrete
+setblock 3304 -40 303 minecraft:snow_block
+setblock 3304 -40 304 minecraft:white_concrete
+setblock 3304 -40 305 minecraft:snow_block
+setblock 3304 -40 306 minecraft:white_concrete
+setblock 3304 -40 307 minecraft:snow_block
+setblock 3304 -40 308 minecraft:white_concrete
+setblock 3305 -40 300 minecraft:snow_block
+setblock 3305 -40 301 minecraft:white_concrete
+setblock 3305 -40 302 minecraft:snow_block
+setblock 3305 -40 303 minecraft:white_concrete
+setblock 3305 -40 304 minecraft:snow_block
+setblock 3305 -40 305 minecraft:white_concrete
+setblock 3305 -40 306 minecraft:snow_block
+setblock 3305 -40 307 minecraft:white_concrete
+setblock 3305 -40 308 minecraft:snow_block
+setblock 3306 -40 300 minecraft:white_concrete
+setblock 3306 -40 301 minecraft:snow_block
+setblock 3306 -40 302 minecraft:white_concrete
+setblock 3306 -40 303 minecraft:snow_block
+setblock 3306 -40 304 minecraft:white_concrete
+setblock 3306 -40 305 minecraft:snow_block
+setblock 3306 -40 306 minecraft:white_concrete
+setblock 3306 -40 307 minecraft:snow_block
+setblock 3306 -40 308 minecraft:white_concrete
+setblock 3307 -40 300 minecraft:snow_block
+setblock 3307 -40 301 minecraft:white_concrete
+setblock 3307 -40 302 minecraft:snow_block
+setblock 3307 -40 303 minecraft:white_concrete
+setblock 3307 -40 304 minecraft:snow_block
+setblock 3307 -40 305 minecraft:white_concrete
+setblock 3307 -40 306 minecraft:snow_block
+setblock 3307 -40 307 minecraft:white_concrete
+setblock 3307 -40 308 minecraft:snow_block
+setblock 3308 -40 300 minecraft:white_concrete
+setblock 3308 -40 301 minecraft:snow_block
+setblock 3308 -40 302 minecraft:white_concrete
+setblock 3308 -40 303 minecraft:snow_block
+setblock 3308 -40 304 minecraft:white_concrete
+setblock 3308 -40 305 minecraft:snow_block
+setblock 3308 -40 306 minecraft:white_concrete
+setblock 3308 -40 307 minecraft:snow_block
+setblock 3308 -40 308 minecraft:white_concrete
+setblock 3301 -39 301 tentaworks:copper_tentacle_rig[facing=north,arms=true]{Air:200}
+setblock 3301 -38 301 create:creative_motor[facing=down]{ScrollValue:64}
+tentaworks pondergrid 3303 -39 306
+setblock 3302 -39 306 create:depot
+fill 3307 -39 300 3307 -35 304 minecraft:stone_bricks
+fill 3304 -34 302 3307 -34 304 minecraft:stone_bricks
+#sleep 1
+tentaworks schematic tentacle_rig 3300 -40 300 3308 -33 308
+#sleep 1
+#signal a

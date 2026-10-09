@@ -1,0 +1,164 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.147'
+    id 'idea'
+}
+
+version = "${mod_version}+mc${minecraft_version}"
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+repositories {
+    maven { url = "https://maven.createmod.net" }
+    exclusiveContent {
+        forRepository { maven { url = "https://maven.blamejared.com" } }
+        filter { includeGroup "mezz.jei" }
+    }
+    maven { url = "https://maven.ithundxr.dev/snapshots" }
+}
+
+sourceSets {
+    main.resources {
+        srcDir 'src/generated/resources'
+        exclude '.cache'
+    }
+    prodclient {
+    }
+    dev {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+
+neoForge {
+    version = project.neo_version
+
+    parchment {
+        mappingsVersion = project.parchment_mappings_version
+        minecraftVersion = project.parchment_minecraft_version
+    }
+
+    runs {
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            project.properties.each { k, v -> if (k.startsWith('tentaworks.')) systemProperty k, v.toString() }
+            logLevel = org.slf4j.event.Level.INFO
+        }
+        client {
+            client()
+            sourceSet = sourceSets.dev
+            programArguments.addAll '--width', '1280', '--height', '720'
+            if (project.hasProperty('quickPlay')) {
+                programArguments.addAll '--quickPlaySingleplayer', project.property('quickPlay').toString()
+            }
+            if (project.hasProperty('connect')) {
+                programArguments.addAll '--quickPlayMultiplayer', project.property('connect').toString()
+            }
+        }
+        client2 {
+            client()
+            sourceSet = sourceSets.dev
+            gameDirectory = project.file('run2')
+            programArguments.addAll '--width', '1280', '--height', '720', '--username', 'Dev2'
+            if (project.hasProperty('tentaworks.script2')) systemProperty 'tentaworks.script', project.property('tentaworks.script2').toString()
+            if (project.hasProperty('connect')) {
+                programArguments.addAll '--quickPlayMultiplayer', project.property('connect').toString()
+            }
+        }
+        clientProd {
+            client()
+            sourceSet = sourceSets.prodclient
+            loadedMods = []
+            gameDirectory = project.file('run-prod/client')
+            logLevel = org.slf4j.event.Level.DEBUG
+            programArguments.addAll '--width', '1280', '--height', '720', '--username', 'Dev'
+            if (project.hasProperty('connect')) {
+                programArguments.addAll '--quickPlayMultiplayer', project.property('connect').toString()
+            }
+        }
+        server {
+            server()
+            sourceSet = sourceSets.dev
+            programArgument '--nogui'
+            gameDirectory = project.file('run/server')
+        }
+        data {
+            data()
+            gameDirectory = project.file('run/data')
+            programArguments.addAll '--mod', project.mod_id, '--all',
+                    '--output', file('src/generated/resources/').absolutePath,
+                    '--existing', file('src/main/resources/').absolutePath,
+                    '--existing-mod', 'create'
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+            sourceSet(sourceSets.dev)
+        }
+    }
+}
+
+dependencies {
+    implementation("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
+    implementation("net.createmod.ponder:ponder-neoforge:${ponder_version}+mc${minecraft_version}")
+    compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_version}")
+    runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}")
+    implementation("com.tterrag.registrate:Registrate:${registrate_version}")
+
+    compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
+    compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
+    if (!project.hasProperty('noJei')) devRuntimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
+}
+
+var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from "src/main/templates"
+    into "build/generated/sources/modMetadata"
+}
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
+tasks.named('jar', Jar) {
+    from('LICENSE')
+}
+
+sourceSets {
+    devmod {
+        compileClasspath += sourceSets.dev.output + sourceSets.dev.compileClasspath
+    }
+}
+
+neoForge.addModdingDependenciesTo(sourceSets.prodclient)
+
+tasks.register('devJar', Jar) {
+    group = 'build'
+    description = 'Test-only jar (dev source set as mod tentaworks_devtools) for prod-pack runs; never shipped.'
+    archiveBaseName = 'tentaworks-devtools'
+    archiveVersion = mod_version
+    destinationDirectory = layout.buildDirectory.dir('devlibs')
+    from sourceSets.dev.output
+    from sourceSets.devmod.output
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "arms=false,facing=east": {
+      "model": "create:block/copper_backtank/block",
+      "y": 90
+    },
+    "arms=false,facing=north": {
+      "model": "create:block/copper_backtank/block"
+    },
+    "arms=false,facing=south": {
+      "model": "create:block/copper_backtank/block",
+      "y": 180
+    },
+    "arms=false,facing=west": {
+      "model": "create:block/copper_backtank/block",
+      "y": 270
+    },
+    "arms=true,facing=east": {
+      "model": "tentaworks:block/copper_tentacle_rig",
+      "y": 90
+    },
+    "arms=true,facing=north": {
+      "model": "tentaworks:block/copper_tentacle_rig"
+    },
+    "arms=true,facing=south": {
+      "model": "tentaworks:block/copper_tentacle_rig",
+      "y": 180
+    },
+    "arms=true,facing=west": {
+      "model": "tentaworks:block/copper_tentacle_rig",
+      "y": 270
+    }
+  }
+}

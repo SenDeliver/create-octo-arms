@@ -1,0 +1,223 @@
+# Prod-pack suite: release jar + the live client pack (devtools jar only for this script). TIMELINE timeline.txt
+trace on
+hud off
+view third
+# M movement: activate, climb, Set Down
+await m
+clearchat
+look -90 0
+doublejump
+wait 20
+mark m_active
+signal m_active
+await m_active_ok
+look -90 -60
+hold up on
+wait 40
+hold up off
+mark m_climb
+look -40 15
+wait 5
+shot p8_prod_climb
+look -90 0
+doublejump
+wait 140
+mark m_down
+signal m_down
+# H hang under the ceiling, Set Down
+await h
+doublejump
+wait 20
+look 90 -60
+hold up on
+wait 70
+hold up off
+look -90 0
+hold up on
+wait 25
+hold up off
+wait 20
+mark h_hang
+look 30 -15
+wait 3
+shot p8_prod_hang
+signal h_hang
+await h_ok
+doublejump
+wait 200
+mark h_down
+signal h_down
+# E Elytra Slot: elytra in the back slot + Rig in chest; mid-air Double Jump catch next to the wall, then Space while Active
+await e
+wait 8
+doublejump
+wait 40
+mark e_catch
+signal e_catch
+await e_ok
+look -90 -30
+hold jump on
+wait 20
+hold jump off
+mark e_up
+look -40 15
+wait 5
+shot p8_prod_elytra_rig
+signal e_up
+await e_up_ok
+look -90 0
+doublejump
+wait 160
+mark e_down
+signal e_down
+# B Sophisticated Backpack in the back slot + Rig: climb, Set Down
+await b
+look -90 0
+doublejump
+wait 20
+look -90 -60
+hold up on
+wait 30
+hold up off
+mark b_climb
+look -40 15
+wait 5
+shot p8_prod_backpack
+look -90 0
+doublejump
+wait 160
+mark b_down
+signal b_down
+# C Carry On: pick up a chest (sneak + empty hand), activate, walk, Set Down, place it
+await c
+rigs c0
+hold shift on
+holdkey key.carry.desc on
+wait 3
+key key.mouse.right
+wait 5
+holdkey key.carry.desc off
+hold shift off
+wait 10
+mark c_carry
+shot p8_prod_carry
+signal c_carry
+await c_ok
+look 0 0
+doublejump
+wait 20
+mark c_active
+hold up on
+wait 20
+hold up off
+doublejump
+wait 80
+mark c_down
+look 0 60
+wait 3
+key key.mouse.right
+wait 10
+signal c_placed
+await c_rig
+hold shift on
+holdkey key.carry.desc on
+wait 3
+key key.mouse.right
+wait 5
+holdkey key.carry.desc off
+hold shift off
+wait 10
+mark c_rigcarry
+signal c_rigcarry
+await c_rigmoved
+goggles c_place
+key key.mouse.right
+wait 10
+signal c_rigplaced
+# G goggles on a filling Copper Rig Block, Netherite Rig Block cogs
+await g
+wait 10
+hud on
+clearchat
+goggles g1
+shot p8_prod_goggles
+backtanks
+hud off
+signal g_done
+# J JEI recipes, Ponder
+await j
+jei tentaworks:copper_tentacle_rig recipes create:mechanical_crafting
+wait 20
+mouse 2 2
+shot p8_prod_jei_rig
+close
+jei tentaworks:tentacle recipes create:sequenced_assembly
+wait 20
+mouse 2 2
+shot p8_prod_jei_tentacle
+close
+ponder tentaworks:copper_tentacle_rig
+wait 30
+ponderseek 850
+wait 5
+shot p8_prod_ponder
+close
+wait 5
+signal j_done
+# I creative inventory, Tentaworks tab
+await i
+key key.keyboard.e
+wait 10
+tab tentaworks:main
+wait 5
+shot p8_prod_creative_tab
+onclose
+signal i_done
+# S Sable: a still Ship next to the wearer, then on its deck, then the Ship moves
+await s
+rigs s0
+gait on
+look -90 0
+doublejump
+wait 20
+look -90 0
+hold up on
+wait 30
+hold up off
+mark s_hull
+look -60 20
+wait 3
+shot p8_prod_ship_hull
+signal s_hull
+await s_deck
+wait 10
+clip s_deck
+doublejump
+wait 30
+mark s_deck
+shot p8_prod_ship_deck
+signal s_deck_ok
+await s_moved
+wait 60
+mark s_moved
+shot p8_prod_ship_moved
+signal s_moved_ok
+await s_done
+# W walk into a Ship wall at body height
+await w
+look -90 0
+doublejump
+wait 20
+hold up on
+wait 40
+hold up off
+mark s_wall
+look -40 15
+wait 3
+shot p8_prod_ship_wall
+signal s_wall
+await s_wall_ok
+gait off
+signal end
+wait 20
+quit

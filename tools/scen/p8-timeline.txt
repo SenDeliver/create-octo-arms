@@ -1,0 +1,129 @@
+tp Dev 4557.5 -60 0.5 -90 0
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 1
+#signal a
+#await adone
+item replace entity Dev armor.chest with air
+tp Dev 4557.5 -60 0.5 -90 0
+#sleep 0.5
+item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900,enchantments={levels:{"tentaworks:far_reach":3}}]
+#sleep 1
+#signal p
+#await pdone
+item replace entity Dev armor.chest with air
+tp Dev 4641.5 -60 0.5 0 0
+#sleep 0.5
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 1
+#signal g
+#await ghang
+tentaworks ghost 4640 -53 -1 4642 -53 1
+#signal ghosted
+#await ghostdone
+item replace entity Dev armor.chest with air
+tp Dev 4518.5 -60 0.5 -90 0
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 1
+tentaworks netstats t0
+tentaworks fake through4520 20
+#sleep 2
+tentaworks fake held 20
+#sleep 2
+tentaworks netstats t1
+forceload add 20000 0
+#sleep 2
+tentaworks netstats e0
+tentaworks fake edge 5
+#sleep 1
+tentaworks netstats e1
+tentaworks probe 20048 -61 0
+#sleep 1
+tp Dev 4680.5 -60 0.5 -90 0
+#sleep 1
+tentaworks netstats b0
+tentaworks burst 50
+tentaworks fake held 40
+#sleep 3
+tentaworks netstats b1
+tentaworks fake nan 40
+#sleep 3
+tentaworks burst 1
+tentaworks netstats b2
+tentaworks fake slide6 40
+#sleep 3
+tp Dev 4680.5 -60 0.5 -90 0
+#sleep 1
+tentaworks fake slide20 40
+#sleep 3
+tp Dev 4680.5 -60 0.5 -90 0
+item replace entity Dev armor.chest with air
+#sleep 1
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 1
+tentaworks fake downrise 20
+#sleep 2
+give Dev tentaworks:copper_tentacle_rig[tentaworks:rig_settings={standing_height:2.5f,activation:"bogus"}]
+tentaworks rigs codec
+clear Dev tentaworks:copper_tentacle_rig
+#signal forgeddone
+item replace entity Dev armor.chest with air
+item replace entity Dev armor.head with create:goggles
+tp Dev 4600.5 -60 -2.5 0 20
+#sleep 1
+#signal l
+#await l1
+data get block 4600 -60 0 Air
+#signal l1d
+#await l2
+data get block 4600 -60 0 Air
+#signal l2d
+#await l3
+data get block 4600 -60 0 Air
+#signal l3d
+item replace entity Dev armor.head with air
+tp Dev 4580.5 -60 0.5 0 0
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[damage=500,create:banktank_air=900,tentaworks:rig_settings={activation:"key"}]
+#sleep 1
+#signal u1
+#await u1done
+item replace entity Dev armor.chest with air
+#sleep 0.5
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[damage=100,create:banktank_air=500,enchantments={levels:{"minecraft:mending":1,"tentaworks:far_reach":2}},tentaworks:rig_settings={standing_height:2.0f,speed:4.5f,activation:"key"}]
+#sleep 0.5
+tentaworks inv m0
+execute at Dev run summon experience_orb ~ ~0.5 ~ {Value:200}
+execute at Dev run summon experience_orb ~ ~0.5 ~ {Value:200}
+#sleep 3
+tentaworks inv m1
+#signal u2done
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900,trim={pattern:"minecraft:sentry",material:"minecraft:gold"}]
+tp Dev 4590.5 -60 0.5 0 0
+#sleep 1
+#signal u3
+#await u3done
+tp Dev 4611.5 -59 -3.5 0 20
+#sleep 6
+data get block 4611 -59 0
+data get block 4611 -60 0 Source
+#signal u4
+#await u4done
+tp Dev 4622 -60 -3.5 0 0
+#sleep 1
+#signal u5
+#await u5done
+#sleep 6
+data get block 4621 -60 0 Source
+data get block 4621 -59 0
+#signal u5ok
+tp Dev 4724.5 -60 0.5 -90 0
+item replace entity Dev armor.chest with air
+#sleep 0.3
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 1
+#signal u6
+#await u6done
+#await k
+item replace entity Dev armor.head with air
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=0]
+tp Dev 4700.5 300 0.5 0 0
+#sleep 15

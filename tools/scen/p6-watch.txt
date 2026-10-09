@@ -1,0 +1,35 @@
+# Dev2: side views of Dev, then wears a Rig next to Dev (two Rigs in view: frame cost), Rig sounds heard from Dev
+hud off
+await d2stowed
+wait 3
+shot p6_d2_stowed_side
+await d2active
+wait 5
+shot p6_d2_active_side
+await d2walk
+wait 8
+shot p6_d2_walk
+await d2climb
+wait 5
+shot p6_d2_climb
+await d2hang
+wait 5
+shot p6_d2_hang
+await d2cliff
+wait 2
+shot p6_d2_cliff
+await d2nhang
+wait 5
+shot p6_d2_netherite_hang
+await d2perf
+wait 10
+doublejump
+wait 30
+perf d2reset
+wait 100
+perf p6_d2_two_rigs
+shot p6_d2_two_rigs
+sounds p6_d2
+await end
+sounds p6_d2_end
+quit

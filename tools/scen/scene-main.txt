@@ -1,0 +1,22 @@
+# Scenes for the main run. Flat world: ground top at y=-60.
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+gamerule doImmediateRespawn true
+time set noon
+forceload add -20 -20 330 20
+# S2 wall (x=40, 20 high)
+fill 40 -60 -5 40 -41 5 stone
+# S3 wall + ceiling (bottom face y=-48)
+fill 80 -60 -5 80 -48 5 stone
+fill 80 -48 -5 92 -48 5 stone
+# S4 plateau 10 high, east edge at x=141
+fill 120 -60 -10 140 -51 10 stone
+# S5 gap: platforms 160..170 and 191..200, top y=-50
+fill 160 -60 -10 170 -51 10 stone
+fill 191 -60 -10 200 -51 10 stone
+# S6 wall + high ceiling (bottom face y=-40)
+fill 220 -60 -5 220 -40 5 stone
+fill 220 -40 -5 235 -40 5 stone
+# W water pool: stone walls 298..306, water inside up to y=-52
+fill 298 -60 -4 306 -52 4 stone
+fill 299 -60 -3 305 -52 3 water

@@ -1,0 +1,11 @@
+{
+ "parent": "tentaworks:block/tentacle_arms_folded",
+ "textures": {
+  "sleeve": "tentaworks:block/tentacle_sleeve_netherite",
+  "rod": "tentaworks:block/tentacle_rod_netherite",
+  "collar": "tentaworks:block/tentacle_collar_netherite",
+  "hub": "tentaworks:block/tentacle_hub_netherite",
+  "cog": "tentaworks:block/tentacle_cog_netherite",
+  "particle": "create:block/netherite_backtank"
+ }
+}

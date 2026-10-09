@@ -1,0 +1,44 @@
+tp Dev 3000.5 -60 0.5 0 0
+tp Dev2 2994.5 -58.2 2.5 -90 12
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 1
+#signal a
+#await stowed
+#signal d2stowed
+#await active
+#signal d2active
+#await walk
+tp Dev2 2993.5 -57 9.5 -90 10
+#signal d2walk
+#await climbready
+tp Dev2 3033.5 -52 -7.5 -45 10
+#signal d2climb
+#await hang
+tp Dev2 3085.5 -58.5 -6.5 0 -30
+execute as Dev2 at @s run tp @s ~ ~ ~ facing entity Dev eyes
+#sleep 0.3
+#signal d2hang
+#await cliff
+tp Dev2 3146.5 -55 -7.5 45 15
+execute as Dev2 at @s run tp @s ~ ~ ~ facing entity Dev eyes
+#sleep 0.3
+#signal d2cliff
+#await nhang
+tp Dev2 3166.5 -55 -8.5 0 -30
+execute as Dev2 at @s run tp @s ~ ~ ~ facing entity Dev eyes
+#sleep 0.3
+#signal d2nhang
+#await perf
+gamemode survival Dev2
+tp Dev2 3003.5 -60 4.5 135 20
+item replace entity Dev2 armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 1
+#signal d2perf
+#sleep 3
+execute as Dev2 at @s run tp @s ~ ~ ~ facing entity Dev eyes
+data get entity Dev2 Pos
+data get entity Dev Pos
+#await perfdone
+gamemode spectator Dev2
+#await end
+#signal end

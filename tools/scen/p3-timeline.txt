@@ -1,0 +1,115 @@
+op Dev
+tentaworks trace on
+gamemode survival Dev
+# B1 Rig Settings from the hand: sneak + use in the air
+tp Dev 1000.5 -60 0.5 -90 -90
+item replace entity Dev weapon.mainhand with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 1
+#signal b1
+#await b1done
+tentaworks rigs b1
+data get entity Dev Inventory
+# B3 drop and pick up the Rig, then place it as a Rig Block and pick it up (worn)
+#signal b3
+#await b3drop
+tentaworks rigs b3drop
+#signal b3place
+#await b3done
+tentaworks rigs b3block
+# B2 Rig Settings from the key while worn
+#signal b2
+#await b2done
+tentaworks rigs b2
+# R relog keeps the settings
+#signal relog
+#await relogdone
+tentaworks rigs relog
+# B4 forged settings packets are clamped on the server
+#signal b4
+#await b4a
+tentaworks rigs b4a
+#signal b4b
+#await b4b
+tentaworks rigs b4b
+item replace entity Dev weapon.mainhand with tentaworks:netherite_tentacle_rig
+#sleep 0.5
+#signal b4c
+#await b4c
+tentaworks rigs b4c
+item replace entity Dev weapon.mainhand with air
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 0.5
+# B5 Standing Height 1.0 vs 2.5, B6 Speed 4.3 vs 8.0
+#signal b5
+#await b5done
+tentaworks air 900
+#signal b6
+#await b6done
+tentaworks air 900
+# K key-only: Double Jump does nothing, the key toggles, mid-air catch by key
+#signal k1
+#await k1done
+tentaworks air 900
+#signal k2
+#await k2done
+data get entity Dev Health
+effect give Dev minecraft:instant_health 1 5
+# A1 Double Jump in Crawl lets go under ceiling 1 (floor 15 below)
+tentaworks air 900
+#signal a1
+#await a1up
+tentaworks air 1
+#await a1crawl
+#signal a1go
+#await a1done
+data get entity Dev Health
+effect give Dev minecraft:instant_health 1 5
+# A1k the toggle key in Crawl lets go (key-only mode), ceiling 2
+tentaworks air 900
+#signal a1k
+#await a1kup
+tentaworks air 1
+#await a1kcrawl
+#signal a1kgo
+#await a1kdone
+data get entity Dev Health
+effect give Dev minecraft:instant_health 1 5
+# A2 Crawl under ceiling 3, the ceiling goes: Falling, re-grab into Crawl near the floor, Stowed
+tentaworks air 900
+#signal a2
+#await a2up
+tentaworks air 1
+#await a2crawl
+fill 1160 -45 -8 1176 -45 8 air
+#signal a2cut
+#await a2done
+data get entity Dev Health
+effect give Dev minecraft:instant_health 1 5
+# A3 creative: activation with 0 Air, never Crawl, no drain; creative inventory
+gamemode creative Dev
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig
+#sleep 0.5
+#signal cr1
+#await cr1done
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 0.5
+#signal cr2
+#await cr2done
+gamemode survival Dev
+#sleep 0.5
+# T tooltips
+#signal tt
+#await ttdone
+# A4 long fall: 130 ticks Stowed from y 600, then a mid-air Double Jump; caught at the tall wall
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 0.5
+#signal a4
+#await a4done
+data get entity Dev Health
+# A4 negative control (last: kicks): fall guard off, plain Stowed fall from y 600
+tentaworks fallfix off
+#signal a4n
+#sleep 25
+tentaworks fallfix on
+#signal end
+#sleep 2

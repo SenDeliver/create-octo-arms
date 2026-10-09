@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Octo Arms Movement Spike</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+:root{--bg:#fafaf7;--panel:#fff;--ink:#1d2330;--muted:#5b6474;--line:#e3e6ea;--accent:#b5561b;--accent-soft:#fbeee4;--blue:#1f5fa8;--blue-soft:#e8f0fa;--green:#2d7a46;--green-soft:#e6f4ea;--warn-soft:#fff5d6;--code:#f3f4f6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif}
+main{padding:28px 40px 80px;width:100%}
+h1{margin:0 0 4px;font-size:30px}
+.sub{color:var(--muted);margin:0 0 18px}
+h2{font-size:21px;margin:30px 0 10px;padding-top:8px;border-top:2px solid var(--accent-soft)}
+h3{font-size:16px;margin:16px 0 6px}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font:13px ui-monospace,SFMono-Regular,Menlo,monospace}
+table{border-collapse:collapse;width:100%;background:var(--panel);margin:8px 0 14px;font-size:14px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#f1f2f4}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+.card h3{margin-top:2px}
+.mermaid{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0}
+.box{border-radius:8px;padding:10px 14px;margin:10px 0;border:1px solid}
+.info{background:var(--blue-soft);border-color:#c5d8f0}
+.warn{background:var(--warn-soft);border-color:#f0dc9a}
+.ok{background:var(--green-soft);border-color:#bfe0c9}
+.pass{color:#2d7a46;font-weight:700}.fail{color:#b3261e;font-weight:700}img{max-width:100%;border:1px solid var(--line);border-radius:8px}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:1px 8px;border-radius:10px;background:var(--accent-soft);color:var(--accent);margin-right:4px}
+ul li{margin:3px 0}
+@media (max-width:800px){main{padding:18px 16px 60px}}
+</style>
+</head>
+<body>
+<main>
+<h1>Octo Arms — movement spike notes</h1>
+<p class="sub">2026-10-08. The risk item from design §10: Held check + client motion + server mirror + float-kick silence, tested on a dedicated server (survival, <code>allow-flight=false</code>, peaceful, flat) with real clients over localhost. Verdict: the adr/0001 model works as designed. All scenarios pass; two log thresholds hold only after classification (see the box in §3).</p>
+<p><span class="pill">code: tentaworks/src/main</span><span class="pill">harness: tentaworks/src/dev + tools/</span><span class="pill">rerun: tools/run_all.sh &lt;tag&gt;</span><span class="pill">numbers: tools/spike_metrics.py</span></p>
+
+<h2>1. What was built</h2>
+<div class="grid">
+<div class="card"><h3>Main source set (spike, refactor later)</h3><ul>
+<li><code>tentaworks:tentacle_rig</code>: plain iron-material chest <code>ArmorItem</code>, no art/recipe/Air.</li>
+<li><code>Grips</code>: Held check, Grip choice, Held clamp of a move.</li>
+<li><code>RigClient</code>: Double Jump, Heading, clamp, state machine, C→S <code>RigMotionPacket</code> every tick while not Stowed.</li>
+<li><code>RigServer</code>: validation, velocity mirror, fall reset, transient <code>neoforge:creative_flight</code> modifier, lifecycle stows, S→C <code>RigStatePacket</code>.</li>
+<li><code>GripLineRenderer</code>: debug lines body → Grip for every player (own Grips locally, others from the server relay).</li>
+<li>Server Config: <code>reach.copper=4</code>, <code>reach.netherite=7</code>, <code>speed.max=8</code>.</li></ul></div>
+<div class="card"><h3>Dev source set (never in the jar; checked: 0 dev classes in <code>tentaworks-0.0.1.jar</code>)</h3><ul>
+<li><code>DevScript</code> (<code>-Ptentaworks.script</code>): <code>hold up|down|left|right|jump|shift|sprint on|off</code> (re-pressed every tick), <code>taps N</code>, <code>doublejump</code>, <code>look</code>, <code>trace on|off</code> (TRACE per tick), <code>mark</code>, <code>signal</code>, <code>rejoin</code>, <code>view</code>, <code>key</code>, <code>shot</code>, <code>quit</code>.</li>
+<li><code>/tentaworks trace|pos|floatfix|fake</code>: STRACE per tick, SPOS samples, negative controls.</li>
+<li><code>tools/run_split.sh</code> (server 25609, RCON 25608, optional Dev2 client in <code>run2/</code>), <code>rcon.py</code> (<code>#signal</code>/<code>#await</code> both ways), <code>analyze.py</code>, <code>spike_metrics.py</code>, <code>run_all.sh</code>.</li></ul></div>
+</div>
+
+<h2>2. Movement model as built</h2>
+<div class="grid">
+<div class="card"><h3>Held</h3>
+<p>Each of the four Tentacles owns one horizontal quadrant around the body (bbox centre). A quadrant has a Grip when an exposed face of a full-collision block lies in it, faces the body and has a point within Reach. <b>Held = at least 2 quadrants with a Grip.</b> This gives: floors, walls, ceilings, pillar sides and underwater faces all hold; a straight edge holds with the 2 quadrants behind it; an outside corner holds with 1 (so you stop there).</p>
+<p>The drawn Grip of a slot stays planted until it leaves Reach, its quadrant or its face; then it picks the face point nearest a spread target (0.45·Reach out on the slot diagonal).</p></div>
+<div class="card"><h3>Motion (client)</h3>
+<p>Heading = look vector (with pitch) × W/S + camera-left × A/D + world ±Y for Space/Shift, normalised to 5.6 b/s. The move is collided (<code>Entity.collideBoundingBox</code>), then clamped: full move if still Held, else bisection; also tries the move with one axis dropped and keeps the one with most progress along the Heading (slides along gap edges, goes straight down a cliff wall at Reach). No input = zero velocity. Vanilla jump/sneak/walk input is zeroed in <code>MovementInputUpdateEvent</code> after reading; <code>abilities.flying</code> forced false (with <code>onUpdateAbilities()</code>).</p></div>
+<div class="card"><h3>Server</h3>
+<p>Never trusts the client state: Rig must be worn and alive; NaN/Inf motion or Grip → Stow. Each client Grip is checked (block full-collision, face exposed, point on that face, within Reach + 0.75). Only with ≥2 valid Grips: <code>setDeltaMovement</code> (speed clamped to 8·1.05 b/s), <code>resetFallDistance</code>, flight modifier on, <code>flying=false</code>. Claims of Active/Setting Down without 2 valid Grips: 10-tick grace, then forced Falling (sticky until the server itself sees 2 valid Grips). Every server tick the stored Grips are revalidated; no packet for 10 ticks → Falling + modifier off. <code>hurtMarked</code> is never set; no <code>isChangingDimension</code> trick.</p></div>
+</div>
+<div class="mermaid">
+stateDiagram-v2
+  [*] --> Stowed
+  Stowed --> Active: Double Jump (2nd press within 7 ticks)
+  Active --> SettingDown: Double Jump
+  SettingDown --> Stowed: on floor
+  SettingDown --> Active: Held blocks any further descent
+  Active --> Falling: fewer than 2 Grips
+  SettingDown --> Falling: fewer than 2 Grips
+  Falling --> Active: 2 Grips again
+  Falling --> Stowed: landed with no Grip
+  Active --> Stowed: Rig off / logout / death / dimension change / creative 3rd tap
+</div>
+
+<h2>3. Results (final regression, fresh world per suite)</h2>
+<div class="box ok">Final run (<code>tools/logs/final-*</code>), all three suites: <b>0</b> <code>moved wrongly</code>; <b>0</b> exceptions (client or server; the only excluded lines are the known mixin <code>ApiStatus</code> warning and a NeoForge <code>neoforge-client.new.tmp.toml</code> NoSuchFileException that appeared once, on the very first client start with a fresh <code>run/config</code>, and in none of the final logs); <b>0</b> <code>Flying is not enabled</code> outside the negative control. Client TRACE vs server STRACE on every Rig tick (≈1800 ticks): drift ≤ <b>0.28</b> allowing the one-tick network lag (max 1.195 at the same game tick, during the 12-block fall in S6).</div>
+<div class="box warn"><b>Thresholds that needed classification.</b> <code>moved too quickly</code>: raw counts main 23, life 4, creative 1; all within 2 s after an RCON <code>tp</code>/<code>kill</code> or a client <code>cmd tp</code>, each with the teleport distance as the vector, and Dev2 (no Rig, the mod returns early for it) gets the same lines (8 in main). 0 unexplained. <code>lost connection</code>: main 2 = Dev and Dev2 quitting at the end; life 2 = the scenario 9 logout + the float-kick negative control; creative 1 = end quit. No other disconnects.</div>
+<table>
+<tr><th>#</th><th>Scenario</th><th>Result</th><th>Measured</th></tr>
+<tr><td>1</td><td>Flat ground, W 3 s</td><td class="pass">PASS</td><td>17.08 blocks in 60 ticks = 5.69 b/s (target 5.6), height constant at Standing Height 1.5, 4 Grips throughout.</td></tr>
+<tr><td>2</td><td>Look up 60° + W, climb a wall</td><td class="pass">PASS</td><td>Target 8.5 blocks up (y ≥ −50) reached in 1.80 s (limit 3 s); 15.2 blocks after 3 s (4.85 b/s vertical = sin 60°·5.6). 2 Grips on the wall.</td></tr>
+<tr><td>3</td><td>Hang under a ceiling, idle</td><td class="pass">PASS</td><td>Idle 12.2 s (244 ticks, > 3× the 80-tick float limit) in clear air (head 3.1 below the ceiling, feet 7.1 above the floor); y range 0.0000; 4 Grips; modifier on; no kick. RCON <code>Pos</code> identical to TRACE.</td></tr>
+<tr><td>4</td><td>W with look down 45° over a cliff edge</td><td class="pass">PASS</td><td>Slides along the top, goes over the edge, moves out until the wall is at Reach (x = 145.0), then 17 ticks straight down the wall (y −53.5 → −56.7), then continues once the floor is in Reach. Never Falling.</td></tr>
+<tr><td>5</td><td>Gap 20 wide, floor 10 below (out of Reach), W 4 s</td><td class="pass">PASS</td><td>Stops at x = 174.200; predicted 171 + √(4² − 2.4²) = 174.200. Height kept, never Falling, server Held.</td></tr>
+<tr><td>6</td><td>Hang under a high ceiling, RCON removes the Grip blocks</td><td class="pass">PASS</td><td>Active → Falling → Active: 18 ticks Falling, fell 12.0 blocks, re-grabbed when the floor came into Reach (feet 3.1 above it), modifier off while Falling, health 20 (fallDistance reset on re-grab). Vanilla fall damage when the Rig is not carrying: see L1/L2 (7.4-block fall = 4 HP).</td></tr>
+<tr><td>7</td><td>Space to max height, idle, Shift down</td><td class="pass">PASS</td><td>Max feet 3.10 above floor (body exactly at Reach 4.00), idle 5 s in clear air, no kick; Shift back to the floor.</td></tr>
+<tr><td>8</td><td>Double Jump on → Double Jump off</td><td class="pass">PASS</td><td>Active → Setting Down → Stowed; client <code>flying</code> never true; server <code>abilities.flying</code> 0b at on and off; <code>neoforge:creative_flight</code> 1.0 while Active, 0.0 after.</td></tr>
+<tr><td>W</td><td>Underwater: activate, climb the pool wall, idle</td><td class="pass">PASS</td><td>Double Jump works under water; climbed to feet −54.4 (2.6 under the surface), idle 3 s with y range 0.0000 (no sinking, no buoyancy).</td></tr>
+<tr><td>9</td><td>Logout mid-hang, rejoin</td><td class="pass">PASS</td><td>Modifier 1.0 before, 0.0 after rejoin; <code>flying</code> 0b; Stowed, falls 7.4 blocks, lands, takes 4 HP (normal vanilla). No flight.</td></tr>
+<tr><td>L</td><td>Rig taken off / death / nether tp, mid-hang</td><td class="pass">PASS</td><td>Each: modifier 1.0 → 0.0, <code>flying</code> 0b, client Stowed. Unequip fall: 4 HP damage.</td></tr>
+<tr><td>10</td><td>Creative</td><td class="pass">PASS</td><td>Double Jump → Rig Active (server flying 0b, modifier 1). Double Jump while Active → Setting Down → Stowed. <code>taps 3</code>: third press within 7 ticks of activation → Rig Stows, flying 1b. Double Jump while creative-flying with the Rig on → Rig wins (Active, flying 0b). Rig off → vanilla double-tap flight works (1b). Creative inventory opens.</td></tr>
+<tr><td>11</td><td>Second client (Dev2) watching</td><td class="pass">PASS</td><td>Dev2 sees Dev on the wall and under the ceiling with Grip lines (shots below); lines come from the server relay of validated Grips.</td></tr>
+</table>
+
+<h3>Negative controls (they must fail)</h3>
+<table>
+<tr><th>Control</th><th>Expected</th><th>Seen</th></tr>
+<tr><td><code>/tentaworks floatfix off</code>, hang in clear air</td><td>vanilla float kick</td><td class="pass">Kicked "Flying is not enabled" ≈ 80 ticks after hanging. So the 0-kick results above are meaningful.</td></tr>
+<tr><td><code>/tentaworks fake active 30</code>: forged Active packets with no Grips</td><td>no modifier, forced Falling</td><td class="pass">Modifier stays 0; after 10 ticks "forcing Falling" and the server ignores further Active claims until it sees 2 valid Grips.</td></tr>
+<tr><td><code>/tentaworks fake nan 1</code></td><td>Stow</td><td class="pass">"non-finite" warning, Stowed, modifier 0.</td></tr>
+<tr><td><code>/tentaworks fake held 1</code>: one forged packet with real Grips, then silence</td><td>modifier drops</td><td class="pass">Modifier 1 for 11 ticks, then Falling + 0.</td></tr>
+</table>
+
+<h3>Screenshots (in <code>tools/shots/</code>)</h3>
+<div class="grid">
+<div class="card"><img src="../tools/shots/d2_hang.png" alt="Dev2 view of Dev hanging"><p>Dev2's view: Dev under the ceiling, 4 Grips converge at max depth (see open issues).</p></div>
+<div class="card"><img src="../tools/shots/d2_climb.png" alt="Dev2 view of Dev climbing"><p>Dev2's view: Dev on the wall, 2 Grips on the wall face.</p></div>
+<div class="card"><img src="../tools/shots/s5_gap.png" alt="Gap stop"><p>Dev stopped over the gap, Grips back on the edge.</p></div>
+<div class="card"><img src="../tools/shots/s3_hang.png" alt="Hang third person"><p>Own view, third person, ceiling hang idle.</p></div>
+</div>
+
+<h2>4. Changes vs the design doc / decisions the doc left open</h2>
+<table>
+<tr><th>Topic</th><th>Design doc</th><th>Spike</th><th>Why</th></tr>
+<tr><td>Grip spread</td><td>"2 of 4 Tentacles can place a Grip"</td><td>One horizontal world quadrant per Tentacle</td><td>Without a spread rule one floor point would count four times. Quadrants are cheap, stateless (good for bisection) and give the right edge/corner behaviour.</td></tr>
+<tr><td>Grip data</td><td>grips[4] as points</td><td>Grip = point + block + face</td><td>Edge points lie on the boundary of two blocks; the server rejected every edge Grip until the block was explicit (gap scenario fell first time).</td></tr>
+<tr><td>Setting Down</td><td>lower to the nearest floor, then Stow</td><td>Held-clamped descent; if Held stops it before the floor, back to Active</td><td>An unclamped descent would be a free slow-fall from any height and the server (Held-gated) would count it as a fall. Over a deep pit you must climb down first. <b>Superseded:</b> design call 2026-10-08 (CONTEXT.md, commit d671571), built in phase 2: no floor before the Grips run out → the Rig lets go at the lowest Held point and Stows, vanilla fall damage from there (phase-notes.html, Phase 2).</td></tr>
+<tr><td>Falling → Stowed</td><td>landed, no Grip</td><td>same, but the floor is a Grip, so landing re-grabs and you stay Active</td><td>Rule followed literally; in practice Falling ends Active.</td></tr>
+<tr><td>Creative 3rd press</td><td>"third jump press while Active"</td><td>third press within 7 ticks of the activating press</td><td>Plain reading; a later double press is Setting Down.</td></tr>
+<tr><td>Server reject</td><td>reject → resync position + state</td><td>state only (forced Falling); position stays vanilla</td><td>Position is vanilla client-authoritative (adr/0001); the gate is the flight modifier + fall reset.</td></tr>
+<tr><td>Grips to other clients</td><td>RigStatePacket(active, grips[4], step phase)</td><td>server relays the validated Grips every tick</td><td>No step phase yet; other clients do not recompute.</td></tr>
+<tr><td>Speed</td><td>Rig Settings, default sprint 5.6</td><td>fixed 5.6, sprint ignored; server clamps at 8</td><td>Rig Settings not in scope.</td></tr>
+</table>
+
+<h2>5. Open issues</h2>
+<ul>
+<li><s>At full Reach all Grips collapse onto the nearest point (all four lines straight up under a ceiling).</s> Closed in phase 6: the gait keeps four spread Grips (min pairwise 1.7–2.0 at Copper max depth, 2.6 Netherite), see phase-notes.html, Phase 6.</li>
+<li>Setting Down over a deep pit: decided and built in phase 2 (lets go at the lowest Held point), see phase-notes.html.</li>
+<li>Untested surfaces: ladders/vines (vanilla <code>handleOnClimbable</code> clamps velocity), cobweb, soul sand, honey, slabs/stairs as Grips (non-full blocks are not Grips at all), entities in the way, other players riding.</li>
+<li>Elytra suppression only by zeroed jump input; no elytra test.</li>
+<li>Client-side face scan is 13³ block states per tick plus ~30 Held checks for the bisection; fine for one player, not profiled. Server cost per tick is only Grip validation.</li>
+<li>Hacked client can still move anywhere 2 real Grips exist (inherent to adr/0001); it cannot float without them (controls above).</li>
+<li>Air, Crawl, Netherite Reach, Rig Settings, gait, sounds: not in the spike.</li>
+<li>Harness noise, not Rig bugs: a NeoForge <code>neoforge-client.new.tmp.toml</code> NoSuchFileException on the first client start with a fresh <code>run/config</code>; vanilla logs <code>moved too quickly</code> 3–5 times after every RCON <code>tp</code>/<code>kill</code> (analyzer matches them to the command); after a dimension change the client falls a few ticks in not-yet-loaded chunks (Rig Stowed); peaceful heals fall damage within seconds, so use STRACE <code>hp</code>, not a later <code>Health</code> read.</li>
+</ul>
+
+<h2>6. How to rerun</h2>
+<p><code>tools/run_all.sh &lt;tag&gt;</code> (≈7 min, three fresh-world suites: <code>main</code> with Dev2, <code>life</code>, <code>creative</code>; prints <code>analyze.py</code> + <code>spike_metrics.py</code>). Single suite: <code>TIMELINE=tools/scen/main-timeline.txt SCRIPT2=tools/scen/main-watch.txt tools/run_split.sh tools/scen/scene-main.txt tools/scen/main-client.txt tools/logs/x</code>.</p>
+</main>
+<script>mermaid.initialize({startOnLoad:true,theme:'neutral'})</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.tentaworks.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "BacktankBlockEntityAccessor",
+    "BacktankBlockEntityMixin",
+    "ServerGamePacketListenerImplAccessor"
+  ],
+  "client": [
+    "BacktankRendererMixin",
+    "EntityRendererMixin",
+    "KineticBlockEntityGoggleMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

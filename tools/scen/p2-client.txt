@@ -1,0 +1,177 @@
+# Phase 2: Air drain, Crawl, Setting Down, mid-air catch, Air gate, warnings. TIMELINE p2-timeline.txt
+trace on
+hud off
+view third
+# D copper: idle 400, move 100, climb 80, Setting Down along the wall
+await dc
+look -90 0
+doublejump
+wait 40
+mark dci
+wait 400
+mark dcm
+hold up on
+wait 100
+mark dcw
+wait 60
+look -90 -60
+wait 10
+mark dcc
+wait 80
+hold up off
+mark dcd
+doublejump
+wait 120
+mark dcs
+signal dcdone
+# D netherite: idle 640, move 200, climb 120
+await dn
+look -90 0
+doublejump
+wait 40
+mark dni
+wait 640
+mark dnm
+hold up on
+wait 200
+mark dnw
+wait 100
+look -90 -60
+wait 10
+mark dnc
+wait 120
+hold up off
+mark dnd
+doublejump
+wait 160
+mark dns
+signal dndone
+# C1 climb with Air 5 until it runs out, Crawl down, Stowed
+await c1
+look -90 0
+doublejump
+wait 20
+mark c1a
+look -90 -60
+hold up on
+wait 60
+hold up off
+mark c1b
+wait 260
+mark c1end
+signal c1done
+# LW low-air title while climbing from Air 93
+await lw
+hud on
+view first
+look -90 0
+doublejump
+wait 20
+look -90 -60
+hold up on
+wait 45
+shot p2_low_air
+wait 15
+hold up off
+doublejump
+wait 80
+hud off
+view third
+mark lwend
+signal lwdone
+# C2 catch under ceiling A with Air 1, Crawl when it runs out, hold
+await c2
+cmd tp @s 708.5 -48 0.5 -90 0
+wait 3
+doublejump
+wait 30
+mark c2a
+wait 160
+mark c2h1
+wait 120
+shot p2_crawl_ceiling
+mark c2h2
+freeze 800
+wait 40
+mark c2h3
+signal c2hold
+await c2pillar
+wait 120
+mark c2end
+signal c2done
+# SD1 Setting Down on the floor
+await sd1
+cmd tp @s 740.5 -60 0.5 -90 0
+wait 10
+doublejump
+wait 30
+mark sd1a
+doublejump
+wait 30
+mark sd1b
+signal sd1done
+# SD2 Setting Down under ceiling B (floor 15 below)
+await sd2
+cmd tp @s 768.5 -48 0.5 -90 0
+wait 3
+doublejump
+wait 30
+mark sd2a
+doublejump
+wait 80
+mark sd2b
+signal sd2done
+# MJ1 mid-air Double Jump while falling next to the wall: caught, then Setting Down to the floor
+await mj1
+cmd tp @s 802.1 -40 0.5 90 0
+wait 2
+mark mj1a
+doublejump
+wait 60
+mark mj1b
+doublejump
+wait 60
+mark mj1c
+signal mj1done
+# MJ2 same with an empty Rig
+await mj2
+cmd tp @s 802.1 -40 2.5 90 0
+wait 2
+mark mj2a
+doublejump
+wait 60
+mark mj2b
+signal mj2done
+# E1 empty Rig on the floor
+await e1
+cmd tp @s 740.5 -60 4.5 -90 0
+wait 10
+mark e1a
+doublejump
+wait 30
+mark e1b
+signal e1done
+# NC2 hang under ceiling C; server empties the Rig and forges Active climb packets
+await nc2
+cmd tp @s 828.5 -48 0.5 -90 0
+wait 3
+doublejump
+wait 30
+mark nc2up
+signal nc2up
+await nc2go
+wait 120
+mark nc2b
+shot p2_nc2_end
+signal nc2done
+# MJ3 copper, 120-block fall past a one-block bar 3.94 from the body (Held band about 2.4 high), Double Jump high up
+await mj3
+cmd tp @s 854.94 100 0.5 90 0
+wait 2
+mark mj3a
+doublejump
+wait 160
+mark mj3b
+signal mj3done
+await end
+quit

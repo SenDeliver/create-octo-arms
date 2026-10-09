@@ -1,0 +1,200 @@
+# Phase 5: recipes in the world (crafters, assembly line), worn-out Rig, anvil/Mending repair, tooltips, smithing, JEI, creative tab. TIMELINE p5-timeline.txt
+trace on
+hud on
+view first
+await mc
+shot p5_crafters
+signal mcshot
+await sa
+shot p5_assembly_line
+signal sashot
+# W2 Double Jump twice on the ground with a worn-out Rig
+await w2
+look -90 0
+wait 5
+mark w2a
+doublejump
+wait 20
+mark w2b
+doublejump
+wait 20
+mark w2c
+clearchat
+shot p5_worn_refused
+signal w2done
+# W4 activate, then the server hit wears the Rig out
+await w4
+look -90 0
+doublejump
+wait 40
+mark w4up
+signal w4up
+await w4hit
+wait 60
+mark w4end
+signal w4done
+# W5 catch under ceiling 1 and hang
+await w5
+cmd tp @s 2108.5 -48 0.5 -90 0
+wait 3
+doublejump
+wait 40
+mark w5up
+signal w5up
+await w5hit
+wait 100
+mark w5end
+signal w5done
+# W6 catch under ceiling 2; Crawl once the server empties the Rig
+await w6
+cmd tp @s 2138.5 -48 0.5 -90 0
+wait 3
+doublejump
+wait 40
+mark w6up
+signal w6up
+await w6hit
+wait 100
+mark w6end
+signal w6done
+# W7 anvil
+await an1
+key key.mouse.right
+wait 8
+slot 30 quick
+slot 31 quick
+wait 5
+menu an1
+mouse 142 55
+wait 3
+shot p5_anvil_repair
+slot 2 quick
+wait 5
+slot 0 quick
+slot 1 quick
+close
+wait 3
+signal an1done
+await an2
+key key.mouse.right
+wait 8
+slot 30 quick
+slot 31 quick
+wait 5
+menu an2
+slot 2 quick
+wait 5
+slot 0 quick
+slot 1 quick
+close
+wait 3
+signal an2done
+await an3
+key key.mouse.right
+wait 8
+slot 30 quick
+slot 31 quick
+wait 5
+menu an3
+slot 2 quick
+wait 5
+slot 0 quick
+slot 1 quick
+close
+wait 3
+signal an3done
+# W8 Mending: refused while worn, active again after the orb
+await m1
+look -90 0
+wait 5
+mark m1a
+doublejump
+wait 20
+mark m1b
+signal m1done
+await m2
+doublejump
+wait 30
+mark m2up
+doublejump
+wait 40
+mark m2end
+signal m2done
+# W9 tooltips of the worn Rig
+await t0
+itemtip chest t0
+wait 3
+close
+signal t0done
+await t1
+itemtip chest t1
+wait 3
+shot p5_tooltip_damaged
+close
+signal t1done
+await t2
+itemtip chest t2
+wait 3
+shot p5_tooltip_worn
+close
+signal t2done
+await t3
+itemtip chest t3
+wait 3
+close
+signal t3done
+# SM smithing table
+await sm
+key key.mouse.right
+wait 8
+screen
+slot 31 quick
+slot 32 quick
+slot 33 quick
+wait 5
+menu sm
+mouse 106 56
+wait 3
+shot p5_smithing
+slot 3 quick
+wait 5
+close
+wait 3
+signal smdone
+# JEI
+await jei
+jei tentaworks:tentacle recipes create:sequenced_assembly
+wait 20
+mouse 2 2
+shot p5_jei_tentacle_sequenced
+close
+jei tentaworks:copper_tentacle_rig recipes create:mechanical_crafting
+wait 20
+mouse 2 2
+shot p5_jei_copper_rig_crafting
+close
+jei tentaworks:netherite_tentacle_rig recipes create:mechanical_crafting
+wait 20
+mouse 2 2
+shot p5_jei_netherite_rig_crafting
+close
+jei tentaworks:netherite_tentacle_rig recipes minecraft:smithing
+wait 20
+mouse 2 2
+shot p5_jei_netherite_rig_smithing
+close
+wait 5
+signal jeidone
+# Creative inventory, Tentaworks tab
+await cr
+wait 10
+key key.keyboard.e
+wait 10
+tab tentaworks:main
+wait 5
+mouse 2 2
+shot p5_creative_tab
+close
+signal crdone
+await end
+quit

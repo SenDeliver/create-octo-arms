@@ -1,0 +1,21 @@
+{
+  "anvil_cost": 4,
+  "description": {
+    "translate": "enchantment.tentaworks.far_reach"
+  },
+  "max_cost": {
+    "base": 65,
+    "per_level_above_first": 12
+  },
+  "max_level": 3,
+  "min_cost": {
+    "base": 15,
+    "per_level_above_first": 12
+  },
+  "primary_items": "#tentaworks:enchantable/tentacle_rig",
+  "slots": [
+    "chest"
+  ],
+  "supported_items": "#tentaworks:enchantable/tentacle_rig",
+  "weight": 2
+}

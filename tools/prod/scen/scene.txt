@@ -1,0 +1,28 @@
+# Prod-pack scenes (release jar + live pack). Flat world: ground top at y=-60.
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+gamerule doImmediateRespawn true
+time set noon
+forceload add 2980 -30 3260 40
+# W wall x=3040 (west face), 20 high
+fill 3040 -60 -6 3040 -41 6 stone
+# H wall x=3080 + ceiling (bottom face y=-48)
+fill 3080 -60 -8 3080 -48 8 stone
+fill 3080 -48 -8 3096 -48 8 stone
+# G goggles: Copper Rig Block filling under a 64 RPM motor; Netherite Rig Block (own cogs mixin)
+setblock 3010 -60 0 tentaworks:copper_tentacle_rig[facing=north,arms=true]{Air:100}
+setblock 3010 -59 0 create:creative_motor[facing=down]{ScrollValue:64}
+setblock 3013 -60 0 tentaworks:netherite_tentacle_rig[facing=north,arms=true]{Air:300}
+# C Carry On: a chest and an enchanted Copper Rig Block with Air 500
+setblock 3004 -60 6 minecraft:chest
+setblock 3008 -60 6 tentaworks:copper_tentacle_rig[facing=north,arms=true]{Air:500,Components:{"minecraft:enchantments":{levels:{"tentaworks:far_reach":2}}}}
+# S Sable: a 5x5 stone deck one block above the floor, assembled into a Ship (sits on the ground, still)
+fill 3200 -59 -2 3204 -59 2 minecraft:stone
+#sleep 1
+sable assemble area 3200 -59 -2 3204 -59 2
+# W a Ship that is a wall: 1 thick, 3 high, 5 wide, standing on the floor
+fill 3215 -60 -2 3215 -58 2 minecraft:stone
+#sleep 1
+sable assemble area 3215 -60 -2 3215 -58 2
+op Dev
+gamemode survival Dev

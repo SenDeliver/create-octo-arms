@@ -1,0 +1,386 @@
+# Phase 4: enchanting table, anvil, durability + Mending, Rig Block keeps enchantments, Far Reach, Thrift, Swift. TIMELINE p4-timeline.txt
+trace on
+hud on
+view first
+# E real enchanting table: Copper Rig + lapis, the third offer shows Far Reach (seed found by the server), enchant it
+await e1
+look 180 45
+wait 5
+key key.mouse.right
+wait 10
+screen
+slot 29 quick
+slot 30 quick
+wait 10
+menu e1
+mouse 114 61
+wait 5
+shot p4_enchanting_table
+enchbutton 2
+wait 10
+menu e2
+shot p4_enchanting_done
+slot 0 quick
+slot 1 quick
+close
+wait 5
+signal e1done
+# A anvil: one case per book
+await a1
+key key.mouse.right
+wait 8
+slot 30 quick
+slot 31 quick
+wait 5
+menu a1
+slot 2 quick
+wait 5
+slot 0 quick
+slot 1 quick
+close
+wait 3
+signal a1done
+await a2
+key key.mouse.right
+wait 8
+slot 30 quick
+slot 31 quick
+wait 5
+menu a2
+slot 2 quick
+wait 5
+slot 0 quick
+slot 1 quick
+close
+wait 3
+signal a2done
+await a3
+key key.mouse.right
+wait 8
+slot 30 quick
+slot 31 quick
+wait 5
+menu a3
+slot 2 quick
+wait 5
+slot 0 quick
+slot 1 quick
+close
+wait 3
+signal a3done
+await a4
+key key.mouse.right
+wait 8
+slot 30 quick
+slot 31 quick
+wait 5
+menu a4
+slot 2 quick
+wait 5
+slot 0 quick
+slot 1 quick
+close
+wait 3
+signal a4done
+await a5
+key key.mouse.right
+wait 8
+slot 30 quick
+slot 31 quick
+wait 5
+menu a5
+slot 2 quick
+wait 5
+slot 0 quick
+slot 1 quick
+close
+wait 3
+signal a5done
+await a6
+key key.mouse.right
+wait 8
+slot 30 quick
+slot 31 quick
+wait 5
+menu a6
+slot 2 quick
+wait 5
+slot 0 quick
+slot 1 quick
+close
+wait 3
+signal a6done
+await a7
+key key.mouse.right
+wait 8
+slot 30 quick
+slot 31 quick
+wait 5
+menu a7
+slot 2 quick
+wait 5
+slot 0 quick
+slot 1 quick
+close
+wait 3
+signal a7done
+await a8
+key key.mouse.right
+wait 8
+slot 30 quick
+slot 31 quick
+wait 5
+menu a8
+slot 2 quick
+wait 5
+slot 0 quick
+slot 1 quick
+close
+wait 3
+signal a8done
+await a9
+key key.mouse.right
+wait 8
+slot 30 quick
+slot 31 quick
+wait 5
+menu a9
+mouse 142 55
+wait 3
+shot p4_anvil_combined
+slot 2 quick
+wait 5
+slot 0 quick
+slot 1 quick
+close
+wait 3
+signal a9done
+await r1
+key key.mouse.right
+wait 8
+slot 30 quick
+slot 31 quick
+wait 5
+menu r1
+mouse 142 55
+wait 3
+shot p4_anvil_refused
+slot 2 quick
+wait 5
+slot 0 quick
+slot 1 quick
+close
+wait 3
+signal r1done
+await r2
+key key.mouse.right
+wait 8
+slot 30 quick
+slot 31 quick
+wait 5
+menu r2
+slot 2 quick
+wait 5
+slot 0 quick
+slot 1 quick
+close
+wait 3
+signal r2done
+await r3
+key key.mouse.right
+wait 8
+slot 30 quick
+slot 31 quick
+wait 5
+menu r3
+slot 2 quick
+wait 5
+slot 0 quick
+slot 1 quick
+close
+wait 3
+signal r3done
+await r4
+key key.mouse.right
+wait 8
+slot 30 quick
+slot 31 quick
+wait 5
+menu r4
+slot 2 quick
+wait 5
+slot 0 quick
+slot 1 quick
+close
+wait 3
+signal r4done
+await r5
+key key.mouse.right
+wait 8
+slot 30 quick
+slot 31 quick
+wait 5
+menu r5
+slot 2 quick
+wait 5
+slot 0 quick
+slot 1 quick
+close
+wait 3
+signal r5done
+# D durability + Mending: server side only
+# B place the enchanted Rig as a Rig Block (right click on the ground), pick it up with an empty hand (equips)
+await b1
+look -90 60
+wait 3
+key key.mouse.right
+wait 10
+signal b1placed
+await b2
+key key.mouse.right
+wait 10
+signal b2picked
+# FX / FN effective Reach, top Speed, Thrift, Swift of the worn Rig (client)
+await fx
+reach fx
+signal fxdone
+await fn
+reach fn
+signal fndone
+# F1 Rig Settings screen from the key (footer: effective Reach and top Speed), forged Standing Height 50, then Space to max
+await f1
+reach f1
+look -90 0
+bind key.tentaworks.settings key.keyboard.o
+key key.keyboard.o
+wait 10
+screen
+shot p4_settings_enchanted
+close
+wait 5
+rawsettings chest 50 100 double_jump
+wait 10
+signal f1clamp
+await f1go
+rawsettings chest 1.5 5.6 double_jump
+wait 10
+doublejump
+wait 20
+mark f1a
+hold jump on
+wait 80
+hold jump off
+mark f1top
+wait 60
+mark f1idle
+doublejump
+wait 80
+mark f1end
+signal f1done
+await f1c
+reach f1c
+doublejump
+wait 20
+mark f1ca
+hold jump on
+wait 80
+hold jump off
+mark f1ctop
+wait 60
+mark f1cidle
+doublejump
+wait 60
+signal f1cdone
+# F2 hang from the ceiling only; the plain Copper control falls
+await f2
+view third
+look -90 0
+doublejump
+wait 40
+mark f2a
+signal f2up
+await f2cut
+wait 100
+mark f2hang
+shot p4_far_reach_hang
+signal f2held
+await f2copper
+wait 60
+mark f2fell
+view first
+signal f2done
+# T1 Thrift I: idle 400, move 100, climb 80, Setting Down along the wall
+await t1
+look -90 0
+doublejump
+wait 40
+mark t1i
+wait 400
+mark t1m
+hold up on
+wait 100
+mark t1w
+wait 60
+look -90 -60
+wait 10
+mark t1c
+wait 80
+hold up off
+mark t1d
+doublejump
+wait 120
+signal t1done
+# T3 Thrift III: idle 640, move 200, climb 120
+await t3
+look -90 0
+doublejump
+wait 40
+mark t3i
+wait 640
+mark t3m
+hold up on
+wait 200
+mark t3w
+wait 100
+look -90 -60
+wait 10
+mark t3c
+wait 120
+hold up off
+mark t3d
+doublejump
+wait 160
+signal t3done
+# S1 Swift I at Speed 5.6, S2 Swift II at Speed 8.0: W for 60 ticks, level look
+await s1
+cmd tp @s 1700.5 -60 40.5 -90 0
+rawsettings chest 1.5 5.6 double_jump
+wait 10
+doublejump
+wait 40
+hold up on
+wait 10
+mark s1a
+wait 60
+mark s1b
+hold up off
+doublejump
+wait 40
+signal s1done
+await s2
+cmd tp @s 1700.5 -60 44.5 -90 0
+rawsettings chest 1.5 8.0 double_jump
+wait 10
+doublejump
+wait 40
+hold up on
+wait 10
+mark s2a
+wait 60
+mark s2b
+hold up off
+doublejump
+wait 40
+signal s2done
+await end
+quit

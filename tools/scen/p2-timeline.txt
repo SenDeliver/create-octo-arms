@@ -1,0 +1,104 @@
+op Dev
+tentaworks trace on
+gamemode survival Dev
+# D copper drain: idle, move, climb
+tp Dev 600.5 -60 0.5 -90 0
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 1
+#signal dc
+#await dcdone
+data get entity Dev Pos
+# D netherite drain
+item replace entity Dev armor.chest with air
+#sleep 0.5
+tp Dev 560.5 -60 20.5 -90 0
+#sleep 0.5
+item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900]
+#sleep 1
+#signal dn
+#await dndone
+data get entity Dev Pos
+# C1 Air runs out mid-climb: Crawl down the wall, Stowed on the floor
+item replace entity Dev armor.chest with air
+#sleep 0.5
+tp Dev 677.5 -60 0.5 -90 0
+#sleep 0.5
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=5]
+#sleep 1
+#signal c1
+#await c1done
+data get entity Dev Pos
+data get entity Dev Health
+# LW low-air title
+tp Dev 677.5 -60 10.5 -90 0
+tentaworks air 93
+#sleep 0.5
+#signal lw
+#await lwdone
+# C2 Air runs out hanging under ceiling A: Crawl holds; a pillar brings a floor into Reach
+tentaworks air 1
+#signal c2
+#await c2hold
+attribute Dev neoforge:creative_flight get
+data get entity Dev Pos
+fill 704 -60 -4 712 -53 4 stone
+#signal c2pillar
+#await c2done
+data get entity Dev Pos
+# SD1 Setting Down on a floor
+tentaworks air 900
+#signal sd1
+#await sd1done
+# SD2 Setting Down under ceiling B: lets go at the lowest Held point
+#signal sd2
+#await sd2done
+data get entity Dev Health
+effect give Dev minecraft:instant_health 1 5
+# MJ1 mid-air Double Jump next to a wall: caught
+#signal mj1
+#await mj1done
+# MJ2 same with an empty Rig: no catch
+tentaworks air 0
+#signal mj2
+#await mj2done
+data get entity Dev Health
+effect give Dev minecraft:instant_health 1 5
+# E1 empty Rig on the floor: no activation
+#signal e1
+#await e1done
+# NC1 forged Active climb packets with real Grips, Air 0 (Dev Stowed on the floor); positive control with Air
+tentaworks pos nc1a
+tentaworks fake climb 30
+#sleep 0.5
+attribute Dev neoforge:creative_flight get
+#sleep 1.5
+tentaworks pos nc1b
+attribute Dev neoforge:creative_flight get
+tentaworks air 900
+tentaworks pos nc1pa
+tentaworks fake climb 30
+#sleep 0.5
+attribute Dev neoforge:creative_flight get
+#sleep 2.5
+tentaworks pos nc1pb
+attribute Dev neoforge:creative_flight get
+# NC2 forged Active climb packets while the real client Crawls under ceiling C
+#signal nc2
+#await nc2up
+tentaworks air 0
+#sleep 4
+tentaworks pos nc2a
+tentaworks fake climb 40
+#signal nc2go
+#sleep 3
+tentaworks pos nc2b
+attribute Dev neoforge:creative_flight get
+#await nc2done
+data get entity Dev Health
+effect give Dev minecraft:instant_health 1 5
+tentaworks air 900
+#signal mj3
+#await mj3done
+effect give Dev minecraft:instant_health 1 5
+#signal end
+#sleep 2

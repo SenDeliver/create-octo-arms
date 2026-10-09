@@ -1,0 +1,16 @@
+{
+ "parent": "block/block",
+ "loader": "neoforge:composite",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "particle": "create:block/netherite_backtank"
+ },
+ "children": {
+  "tank": {
+   "parent": "create:block/netherite_backtank/block"
+  },
+  "arms": {
+   "parent": "tentaworks:block/tentacle_arms_folded_netherite"
+  }
+ }
+}

@@ -1,0 +1,4 @@
+# Joins, waits for the timeline, quits.
+await a
+wait 5
+quit

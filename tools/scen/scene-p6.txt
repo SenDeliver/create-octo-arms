@@ -1,0 +1,26 @@
+# Phase 6 scenes (x 2990..3200). Flat world: ground top at y=-60.
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+gamerule doImmediateRespawn true
+time set noon
+forceload add 2980 -30 3200 40
+# W wall x=3040 (west face), 20 high
+fill 3040 -60 -6 3040 -41 6 stone
+# H wall x=3080 + ceiling (bottom face y=-48)
+fill 3080 -60 -8 3080 -48 8 stone
+fill 3080 -48 -8 3096 -48 8 stone
+# N wall x=3160 + high ceiling (bottom face y=-40, 20 above the floor) for the Netherite max-depth hang
+fill 3160 -60 -8 3160 -40 8 stone
+fill 3160 -40 -8 3176 -40 8 stone
+# K plateau, east edge at x=3141, top y=-50
+fill 3120 -60 -10 3140 -51 10 stone
+# B Rig Blocks (placed state) next to Create's backtank
+setblock 3009 -60 3 tentaworks:copper_tentacle_rig[facing=south,arms=true]
+setblock 3011 -60 3 tentaworks:netherite_tentacle_rig[facing=south,arms=true]
+setblock 3013 -60 3 create:copper_backtank[facing=south]
+setblock 3015 -60 3 tentaworks:netherite_tentacle_rig[facing=east,arms=true]
+op Dev
+op Dev2
+tentaworks trace on
+gamemode survival Dev
+gamemode spectator Dev2

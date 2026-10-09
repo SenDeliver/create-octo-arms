@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_copper_tentacle_rig": {
+      "conditions": {
+        "items": [
+          {
+            "items": "tentaworks:copper_tentacle_rig"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "tentaworks:smithing/netherite_tentacle_rig"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_copper_tentacle_rig"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "tentaworks:smithing/netherite_tentacle_rig"
+    ]
+  }
+}

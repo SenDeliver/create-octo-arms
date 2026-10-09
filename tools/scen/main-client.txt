@@ -1,0 +1,152 @@
+# Dev: scenarios 1-8 + water. TIMELINE main-timeline.txt, SCRIPT2 main-watch.txt
+trace on
+hud off
+view third
+# S1 flat walk
+await s1
+look -90 0
+doublejump
+wait 20
+mark s1a
+hold up on
+wait 60
+hold up off
+wait 5
+mark s1b
+signal s1done
+# S2 wall climb (wall face x=40)
+await s2
+look -90 0
+doublejump
+wait 20
+mark s2a
+look -90 -60
+hold up on
+wait 60
+hold up off
+mark s2b
+signal s2idle
+await s2shot
+shot s2_climb
+mark s2c
+signal s2done
+# S3 climb wall x=80 to the ceiling (y=-48), out under it, lower to max depth, idle 12 s
+await s3
+look 90 0
+doublejump
+wait 20
+look 90 -60
+hold up on
+wait 70
+hold up off
+look -90 0
+hold up on
+wait 22
+hold up off
+hold shift on
+wait 25
+hold shift off
+mark s3a
+signal s3idle
+wait 120
+shot s3_hang
+mark s3mid
+wait 120
+mark s3b
+signal s3done
+# S4 plateau edge at x=141 (top y=-50), look down + W
+await s4
+look -90 0
+doublejump
+wait 20
+mark s4a
+look -90 45
+hold up on
+wait 120
+hold up off
+mark s4b
+signal s4done
+# S5 gap: platform edge x=171, top y=-50, 20 wide, W 4 s
+await s5
+look -90 0
+doublejump
+wait 20
+mark s5a
+hold up on
+wait 80
+hold up off
+mark s5b
+shot s5_gap
+signal s5done
+# S6 hang under the high ceiling (y=-40) away from the wall, grips broken by RCON
+await s6
+look 90 0
+doublejump
+wait 20
+look 90 -60
+hold up on
+wait 90
+hold up off
+look -90 0
+hold up on
+wait 22
+hold up off
+hold shift on
+wait 25
+hold shift off
+mark s6a
+signal s6hang
+await s6broken
+wait 100
+mark s6b
+signal s6done
+# S7 Space to max height, idle 5 s, Shift down
+await s7
+look -90 0
+doublejump
+wait 20
+mark s7a
+hold jump on
+wait 40
+hold jump off
+mark s7top
+signal s7top
+wait 100
+mark s7idle
+hold shift on
+wait 40
+hold shift off
+mark s7b
+signal s7done
+# S8 Double Jump on, then Double Jump = Setting Down -> Stowed
+await s8
+look -90 0
+doublejump
+wait 10
+hold jump on
+wait 10
+hold jump off
+mark s8on
+signal s8on
+await s8checked
+doublejump
+wait 40
+mark s8off
+signal s8off
+# W underwater: climb the pool wall (inner face x=306) and idle underwater
+await sw
+look -90 0
+doublejump
+wait 20
+mark swa
+look -90 -60
+hold up on
+wait 16
+hold up off
+mark swb
+signal swidle
+wait 60
+mark swc
+signal swdone
+await end
+quit

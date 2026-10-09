@@ -1,0 +1,16 @@
+#await disp1
+data get block 3510 -60 0 Air
+data get block 3512 -59 0
+data get block 3511 -60 0
+#signal disp1done
+#await disp2
+data get block 3510 -60 0 Air
+data get block 3512 -59 0
+data merge block 3511 -60 0 {Source:{Mode:1}}
+#signal disp2done
+#await disp3
+data get block 3510 -60 0 Air
+data get block 3512 -59 0
+data get block 3511 -60 0
+#signal disp3done
+#await end

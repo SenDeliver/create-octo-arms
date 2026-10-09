@@ -1,0 +1,10 @@
+# Dev2 watches Dev and takes shots
+hud off
+await shot2
+wait 5
+shot d2_climb
+await shot3
+wait 5
+shot d2_hang
+await end
+quit

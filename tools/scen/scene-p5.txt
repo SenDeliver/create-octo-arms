@@ -1,0 +1,15 @@
+# Phase 5 scenes. Flat world: ground top at y=-60.
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+gamerule doImmediateRespawn true
+gamerule keepInventory true
+time set noon
+forceload add 1990 -30 2200 60
+# W5 / W6 ceilings (bottom face y=-45, floor 15 below): worn while hanging (Setting Down lets go), worn in Crawl
+fill 2100 -45 -8 2116 -45 8 stone
+fill 2130 -45 -8 2146 -45 8 stone
+# SA viewpoint pillar
+setblock 2010 -57 9 stone
+op Dev
+tentaworks trace on
+gamemode survival Dev

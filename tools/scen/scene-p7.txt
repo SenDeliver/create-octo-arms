@@ -1,0 +1,27 @@
+# Phase 7 scenes (x 3500..3530). Flat world: ground top at y=-60.
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+gamerule doImmediateRespawn true
+time set noon
+forceload add 3490 -20 3540 20
+# G goggles: Copper Rig Block (Far Reach II, Swift I) filling under a 128 RPM motor; Netherite Rig Block without a shaft
+setblock 3502 -60 0 tentaworks:copper_tentacle_rig[facing=north,arms=true]{Air:100,Components:{"minecraft:enchantments":{levels:{"tentaworks:far_reach":2,"tentaworks:swift":1}}}}
+setblock 3502 -59 0 create:creative_motor[facing=down]{ScrollValue:128}
+setblock 3505 -60 0 tentaworks:netherite_tentacle_rig[facing=north,arms=true]{Air:300}
+# D Display Link: Copper Rig Block (empty) under a 128 RPM motor, link on its east side, two display boards above the link driven by a cogwheel
+setblock 3510 -60 0 tentaworks:copper_tentacle_rig[facing=north,arms=true]{Air:0}
+setblock 3510 -59 0 create:creative_motor[facing=down]{ScrollValue:128}
+setblock 3511 -59 0 create:display_board[facing=north]
+setblock 3512 -59 0 create:display_board[facing=north]
+setblock 3513 -59 0 create:cogwheel[axis=z]
+setblock 3513 -59 1 create:creative_motor[facing=north]{ScrollValue:32}
+setblock 3511 -60 0 create:display_link[facing=east]{TargetOffset:[I;0,1,0],TargetLine:0,Source:{Id:"tentaworks:rig_air",Mode:0,Label:"Air"}}
+# B Rig Blocks (art): Copper, Netherite, Create's backtank, Netherite facing east, Copper facing west
+setblock 3520 -60 6 tentaworks:copper_tentacle_rig[facing=south,arms=true]
+setblock 3522 -60 6 tentaworks:netherite_tentacle_rig[facing=south,arms=true]
+setblock 3524 -60 6 create:copper_backtank[facing=south]
+setblock 3526 -60 6 tentaworks:netherite_tentacle_rig[facing=east,arms=true]
+setblock 3528 -60 6 tentaworks:copper_tentacle_rig[facing=west,arms=true]
+op Dev
+gamemode survival Dev
+tp Dev 3500.5 -60 -4.5 0 0

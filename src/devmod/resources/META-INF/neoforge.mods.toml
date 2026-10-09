@@ -1,0 +1,16 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="MIT"
+
+[[mods]]
+modId="tentaworks_devtools"
+version="1.0.0"
+displayName="Tentaworks devtools (test only)"
+description='''DevScript and dev commands for prod-pack tests. Never ship.'''
+
+[[dependencies.tentaworks_devtools]]
+modId="tentaworks"
+type="required"
+versionRange="[1.0.0,)"
+ordering="AFTER"
+side="BOTH"

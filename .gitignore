@@ -1,0 +1,32 @@
+### Gradle ###
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+### IDE ###
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.run/
+.vscode/
+.classpath
+.project
+.settings/
+bin/
+
+### Mac OS ###
+.DS_Store
+
+### Minecraft Modding ###
+run/
+run2/
+run-prod/
+runs/
+src/generated/resources/.cache/
+__pycache__/
+*.log
+tools/logs/
+tools/shots/*.tmp
+tools/local.*

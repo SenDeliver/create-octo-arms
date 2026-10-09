@@ -1,0 +1,131 @@
+# Phase 8: review fixes. TIMELINE p8-timeline.txt
+trace on
+hud off
+view third
+# A forged client: a second packet per tick claims zero motion while the wearer climbs; Air must drain at the climb rate
+await a
+look -90 0
+doublejump
+wait 20
+mark aidle0
+wait 80
+mark aidle1
+forge zero
+look -90 -60
+hold up on
+mark aclimb0
+wait 50
+mark aclimb1
+hold up off
+forge off
+input r4
+# P perf: Reach 10 (Netherite + Far Reach III), climb + idle
+signal adone
+await p
+look -90 0
+doublejump
+wait 20
+input r10start
+look -90 -60
+hold up on
+wait 40
+hold up off
+wait 40
+input r10
+signal pdone
+# G ghost platform: hang under it, then it vanishes on the server only
+await g
+look 0 0
+doublejump
+wait 20
+hold jump on
+wait 60
+hold jump off
+wait 20
+mark ghang
+signal ghang
+await ghosted
+mark gghost
+wait 120
+mark gend
+signal ghostdone
+# F forged packets (timeline) while Dev stands Stowed
+await forgeddone
+# L goggles on a Rig Block filling at 16 RPM
+await l
+wait 10
+goggles l1
+signal l1
+await l1d
+wait 60
+goggles l2
+signal l2
+await l2d
+wait 60
+goggles l3
+signal l3
+await l3d
+# U1 key-only toggle on a worn-out Rig: refused (warning title), stays Stowed
+await u1
+bind key.tentaworks.toggle key.keyboard.g
+wait 5
+key key.keyboard.g
+wait 10
+mark u1_key
+signal u1done
+# U2 Mending on a worn Rig with Air, enchantments and settings (orbs from the timeline)
+await u2done
+# U3 armor trim on the worn Rig
+await u3
+view third
+look 180 10
+wait 5
+shot p8_trim_back
+view front
+wait 3
+shot p8_trim_front
+view third
+signal u3done
+# U4 nixie tube in progress-bar mode
+await u4
+wait 5
+shot p8_nixie_bar
+signal u4done
+# U5 Display Link source picked in its GUI
+await u5
+look 12.7 15.3
+wait 3
+key key.mouse.right
+wait 10
+screen
+linksource tentaworks:rig_air
+wait 3
+shot p8_link_gui_pick
+onclose
+wait 5
+signal u5done
+await u5ok
+# U6 underwater: activate and climb the pool wall
+await u6
+look -90 0
+doublejump
+wait 20
+look -90 -50
+hold up on
+wait 20
+hold up off
+wait 10
+mark u6_water
+look -30 10
+wait 5
+shot p8_underwater
+view first
+look -90 -20
+wait 5
+shot p8_underwater_fp
+view third
+signal u6done
+# K last: an empty Rig falls from y 300 (no fall guard for an empty Rig: vanilla float kick)
+signal k
+wait 400
+quit

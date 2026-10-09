@@ -1,0 +1,31 @@
+{
+  "type": "create:mechanical_crafting",
+  "accept_mirrored": true,
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "create:brass_casing"
+    },
+    "C": {
+      "tag": "c:plates/copper"
+    },
+    "K": {
+      "item": "create:netherite_backtank"
+    },
+    "P": {
+      "item": "create:precision_mechanism"
+    },
+    "T": {
+      "item": "tentaworks:tentacle"
+    }
+  },
+  "pattern": [
+    "TPT",
+    "BKB",
+    "TCT"
+  ],
+  "result": {
+    "count": 1,
+    "id": "tentaworks:netherite_tentacle_rig"
+  }
+}

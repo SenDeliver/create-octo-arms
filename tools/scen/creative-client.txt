@@ -1,0 +1,37 @@
+# Dev in creative: Rig owns the Double Jump, third tap = creative flight, vanilla flight without Rig
+trace on
+hud off
+await c1
+look -90 0
+doublejump
+wait 20
+mark c1on
+signal c1on
+await c1checked
+doublejump
+wait 40
+mark c1off
+signal c1off
+await c2
+taps 3
+wait 10
+mark c2fly
+signal c2fly
+await c2checked
+doublejump
+wait 20
+mark c3
+signal c3
+await c3checked
+wait 20
+doublejump
+wait 10
+mark c4
+signal c4
+await c4checked
+key key.keyboard.e
+wait 10
+shot c_inventory
+close
+wait 5
+quit

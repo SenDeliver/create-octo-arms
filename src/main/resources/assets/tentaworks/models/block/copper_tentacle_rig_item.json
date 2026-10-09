@@ -1,0 +1,69 @@
+{
+ "parent": "block/block",
+ "loader": "neoforge:composite",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "particle": "create:block/copper_backtank"
+ },
+ "children": {
+  "tank": {
+   "parent": "create:block/copper_backtank/item"
+  },
+  "arms": {
+   "parent": "tentaworks:block/tentacle_arms_spread"
+  }
+ },
+ "display": {
+  "gui": {
+   "rotation": [
+    30,
+    225,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.48,
+    0.48,
+    0.48
+   ]
+  },
+  "fixed": {
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.4,
+    0.4,
+    0.4
+   ]
+  },
+  "ground": {
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "translation": [
+    0,
+    3,
+    0
+   ],
+   "scale": [
+    0.2,
+    0.2,
+    0.2
+   ]
+  }
+ }
+}

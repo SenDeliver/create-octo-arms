@@ -1,0 +1,42 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+issueTrackerURL="https://github.com/SenDeliver/create-octo-arms/issues"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+authors="${mod_authors}"
+credits="Built on Create by the Create team (simibubi and contributors); uses Create's Backtank, Sticker and Ponder."
+displayURL="https://github.com/SenDeliver/create-octo-arms"
+logoFile="octo_arms_logo.png"
+logoBlur=false
+description='''Octo Arms, a Create addon: the Tentacle Rig, a Backtank fitted with four pneumatic Tentacles.
+Worn in the chest slot, it carries you over floors, walls and ceilings and lets you hang under ledges, powered by the Backtank's Air.
+Double Jump to activate, Double Jump again to be set down. Copper and Netherite tiers, three enchantments (Far Reach, Thrift, Swift),
+Sequenced Assembly and Mechanical Crafting recipes, goggles info, a Display Link source and a Ponder scene.'''
+
+[[dependencies.${mod_id}]]
+modId="neoforge"
+type="required"
+versionRange="[21.1.228,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="minecraft"
+type="required"
+versionRange="${minecraft_version_range}"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="create"
+type="required"
+versionRange="[6.0.10,6.1)"
+ordering="AFTER"
+side="BOTH"
+
+[[mixins]]
+config="tentaworks.mixins.json"

@@ -1,0 +1,206 @@
+# Phase 6: gait (spread Grips, diagonal Steps), Tentacle art, Rig Blocks, items, sounds. TIMELINE p6-timeline.txt SCRIPT2 p6-watch.txt
+trace on
+gait on
+hud off
+view third
+await a
+look 0 25
+wait 30
+shot p6_stowed_back
+view front
+wait 3
+shot p6_stowed_front
+view third
+signal stowed
+wait 20
+doublejump
+wait 30
+shot p6_active_back
+view front
+wait 3
+shot p6_active_front
+view third
+signal active
+wait 20
+# W flat walk 3 s (+z)
+look 0 25
+mark walka
+hold up on
+wait 10
+signal walk
+wait 6
+shot p6_walk_midstep
+wait 44
+hold up off
+mark walkb
+wait 5
+view first
+look 0 55
+hold up on
+wait 12
+shot p6_walk_fp
+hold up off
+view third
+# C wall climb (wall face x=3040)
+cmd tp @s 3037.5 -60 0.5 -90 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 20
+look -90 -60
+mark climba
+hold up on
+wait 30
+hold up off
+mark climbb
+look -40 15
+wait 5
+shot p6_climb
+signal climbready
+wait 20
+view first
+look -35 -45
+wait 5
+shot p6_climb_fp
+look -145 -40
+wait 5
+shot p6_climb_fp2
+view third
+# H hang under the ceiling (bottom face y=-48) at max depth, idle, then along it
+cmd tp @s 3082.5 -60 0.5 90 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 20
+look 90 -60
+hold up on
+wait 70
+hold up off
+look -90 0
+hold up on
+wait 25
+hold up off
+hold shift on
+wait 25
+hold shift off
+wait 20
+mark hanga
+wait 40
+mark hangb
+look 30 -15
+wait 3
+shot p6_hang
+signal hang
+wait 20
+look 180 0
+mark ceila
+hold up on
+wait 20
+hold up off
+mark ceilb
+wait 5
+# K cliff edge (plateau edge x=3141, top y=-50)
+cmd tp @s 3136.5 -50 0.5 -90 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 20
+look -90 45
+mark cliffa
+hold up on
+wait 40
+signal cliff
+wait 4
+shot p6_cliff
+wait 76
+hold up off
+mark cliffb
+# N netherite hang under the high ceiling (bottom face y=-40; Reach 7: max depth 7 below it, floor out of Reach)
+cmd tp @s 3162.5 -60 0.5 90 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900]
+wait 10
+look 90 25
+wait 3
+shot p6_netherite_stowed
+doublejump
+wait 20
+look 90 -60
+hold up on
+wait 90
+hold up off
+look -90 0
+hold up on
+wait 25
+hold up off
+hold shift on
+wait 45
+hold shift off
+wait 20
+mark nhanga
+wait 40
+mark nhangb
+look 30 -15
+wait 3
+shot p6_netherite_hang
+signal nhang
+wait 20
+view first
+look 20 -70
+wait 3
+shot p6_netherite_hang_fp
+view third
+# P two Rigs in view (Dev2 activates next to Dev): frame cost on both clients
+cmd tp @s 3000.5 -60 0.5 0 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 10
+look 45 20
+signal perf
+wait 60
+perf reset
+wait 100
+perf p6_two_rigs
+shot p6_two_rigs
+key key.keyboard.e
+wait 5
+shot p6_inventory_preview
+close
+wait 70
+signal perfdone
+# B Rig Blocks, item icons, creative tab
+cmd item replace entity @s armor.chest with air
+view first
+cmd tp @s 3012 -58.8 7.5 180 30
+wait 15
+shot p6_rig_blocks
+cmd tp @s 3017.5 -58.8 6.5 140 30
+wait 10
+shot p6_rig_blocks2
+icons tentaworks:tentacle tentaworks:incomplete_tentacle tentaworks:copper_tentacle_rig tentaworks:netherite_tentacle_rig create:copper_backtank
+wait 5
+shot p6_icons
+close
+cmd gamemode creative @s
+wait 5
+key key.keyboard.e
+wait 5
+tab tentaworks:main
+wait 5
+shot p6_creative_tab
+close
+cmd gamemode survival @s
+sounds p6
+signal end
+wait 20
+quit

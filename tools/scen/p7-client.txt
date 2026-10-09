@@ -1,0 +1,115 @@
+# Phase 7: goggles on Rig Blocks (Air rising under a shaft), Display Link "Rig Air", Rig Block art, Ponder scene frames, Ponder hint. TIMELINE p7-timeline.txt
+hud on
+wait 20
+cmd item replace entity @s armor.head with create:goggles
+cmd tp @s 3502.5 -60 -2.5 0 20
+wait 20
+clearchat
+goggles g1
+shot p7_goggles_a
+wait 60
+goggles g2
+shot p7_goggles
+cmd tp @s 3505.5 -60 -2.5 0 20
+wait 10
+clearchat
+goggles g3
+shot p7_goggles_netherite
+# D display board above the link (3511 -59 0), Rig Block filling at 20 Air/s
+cmd tp @s 3512 -60 -3.5 0 5
+wait 10
+clearchat
+signal disp1
+await disp1done
+wait 60
+clearchat
+shot p7_display_board
+signal disp2
+await disp2done
+wait 50
+clearchat
+shot p7_display_percent
+signal disp3
+await disp3done
+look 12.7 15.3
+wait 3
+key key.mouse.right
+wait 10
+screen
+shot p7_link_gui
+close
+wait 5
+# B Rig Blocks
+cmd item replace entity @s armor.head with air
+hud off
+cmd tp @s 3524 -58.8 9.5 180 30
+wait 15
+shot p7_rig_blocks
+cmd tp @s 3530.5 -58.8 8.5 135 30
+wait 10
+shot p7_rig_blocks2
+cmd tp @s 3521.5 -59 9.3 180 28
+wait 10
+shot p7_rig_blocks_close
+cmd tp @s 3527.5 -59 9.3 180 28
+wait 10
+shot p7_rig_blocks_close2
+# P Ponder scene frames
+ponder tentaworks:copper_tentacle_rig
+wait 30
+ponderseek 120
+wait 5
+shot p7_ponder_craft
+ponderseek 250
+wait 5
+shot p7_ponder_crafted
+ponderseek 520
+wait 5
+shot p7_ponder_refill
+ponderseek 690
+wait 5
+shot p7_ponder_stowed
+ponderseek 760
+wait 5
+shot p7_ponder_active
+ponderseek 800
+wait 5
+shot p7_ponder_walk
+ponderseek 850
+wait 5
+shot p7_ponder_climb
+ponderseek 930
+wait 5
+shot p7_ponder_hang
+ponderseek 1050
+wait 5
+shot p7_ponder_setdown
+ponderseek 1120
+wait 5
+shot p7_ponder_stowed_end
+close
+wait 5
+ponder tentaworks:netherite_tentacle_rig
+wait 20
+shot p7_ponder_netherite
+close
+wait 5
+ponder tentaworks:tentacle
+wait 20
+shot p7_ponder_tentacle
+close
+wait 5
+# H Ponder hint on a hovered Rig (hotbar slot 0 in the inventory screen)
+cmd item replace entity @s hotbar.0 with tentaworks:copper_tentacle_rig
+wait 5
+key key.keyboard.e
+wait 5
+mouse 16 150
+wait 15
+shot p7_ponder_hint
+itemtip 0 hint
+wait 5
+close
+signal end
+wait 20
+quit

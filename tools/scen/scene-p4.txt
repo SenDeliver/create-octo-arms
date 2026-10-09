@@ -1,0 +1,21 @@
+# Phase 4 scenes. Flat world: ground top at y=-60.
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+gamerule doImmediateRespawn true
+gamerule keepInventory true
+time set noon
+forceload add 1490 -30 1760 60
+# E enchanting table in a ring of 32 bookshelves (power capped at 15)
+fill 1498 -60 -2 1502 -59 2 bookshelf
+fill 1499 -60 -1 1501 -59 1 air
+setblock 1500 -60 0 enchanting_table
+# A anvil (reset before every case: survival use can chip or break it)
+setblock 1510 -60 0 anvil[facing=north]
+# F2 platform (top face y=-50) under a ceiling (bottom face y=-41); ground 10 below the platform
+fill 1559 -51 -1 1561 -51 1 stone
+fill 1550 -41 -8 1570 -41 8 stone
+# T Thrift lanes: wall x=1640 (top face y=-20); Thrift I from x=1600 z=0, Thrift III from x=1560 z=20
+fill 1640 -60 -5 1640 -21 25 stone
+op Dev
+tentaworks trace on
+gamemode survival Dev

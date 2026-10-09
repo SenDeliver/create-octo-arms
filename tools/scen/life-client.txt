@@ -1,0 +1,64 @@
+# Dev: lifecycle (logout/rejoin, unequip, death, dimension change), forged packets, float-kick negative control
+trace on
+hud off
+view third
+# L1 logout mid-hang, rejoin
+await l1
+cmd tp @s 87.5 -51 0.5 -90 0
+wait 3
+doublejump
+wait 30
+mark l1hang
+signal l1hang
+await l1go
+rejoin 40
+wait 60
+mark l1after
+signal l1back
+# L2 Rig taken off mid-hang
+await l2
+cmd tp @s 87.5 -51 0.5 -90 0
+wait 3
+doublejump
+wait 30
+mark l2hang
+signal l2hang
+await l2done
+mark l2after
+# L3 death mid-hang
+await l3
+cmd tp @s 87.5 -51 0.5 -90 0
+wait 3
+doublejump
+wait 30
+mark l3hang
+signal l3hang
+await l3done
+mark l3after
+# L4 dimension change mid-hang
+await l4
+cmd tp @s 87.5 -51 0.5 -90 0
+wait 3
+doublejump
+wait 30
+mark l4hang
+signal l4hang
+await l4done
+mark l4after
+signal l4back
+# L5/L6 forged Active packets (server side), Dev Stowed
+await l5done
+mark l5after
+await l6done
+mark l6after
+# L7 negative control: float fix off, hang in clear air until the kick
+await l7
+cmd tp @s 87.5 -51 0.5 -90 0
+wait 3
+doublejump
+wait 30
+mark l7hang
+signal l7hang
+wait 300
+mark l7end
+quit

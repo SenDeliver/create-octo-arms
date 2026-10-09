@@ -1,0 +1,95 @@
+# Phase 1: netherite reach, Rig Block place/refill/pickup, worn render, diving HUD, creative tab. TIMELINE p1-timeline.txt
+trace on
+backtanks
+hud off
+view third
+# N1 netherite: Space to max height, idle
+await n1
+look -90 0
+doublejump
+wait 20
+mark n1a
+hold jump on
+wait 80
+hold jump off
+mark n1top
+wait 60
+mark n1idle
+signal n1done
+# N2 netherite hang from the ceiling only; copper control falls
+await n2
+look -90 0
+doublejump
+wait 40
+mark n2a
+signal n2up
+await n2cut
+wait 100
+mark n2hang
+shot p1_netherite_hang
+signal n2held
+await n2copper
+wait 60
+mark n2fell
+signal n2done
+# R1 place the copper Rig (right click on the ground), wait for refill, pick up with an empty hand
+await r1
+view first
+hud on
+look -90 60
+key key.mouse.right
+wait 10
+signal r1placed
+await r1filled
+cmd tp @s 474.0 -60 -1.5 90 25
+wait 10
+shot p1_rig_block_copper
+cmd tp @s 470.5 -60 0.5 -90 60
+wait 10
+key key.mouse.right
+wait 10
+signal r1picked
+# R2 sneak-place the netherite Rig, shot, server breaks it
+await r2
+hold shift on
+wait 5
+key key.mouse.right
+wait 10
+hold shift off
+signal r2placed
+await r2filled
+cmd tp @s 474.0 -60 -1.5 90 25
+wait 10
+shot p1_rig_block_netherite
+signal r2shot
+# R3 worn Rigs from behind
+await r3
+cmd tp @s 470.5 -60 3.5 0 10
+view third
+wait 10
+shot p1_worn_copper
+signal r3copper
+await r3n
+wait 10
+shot p1_worn_netherite
+signal r3done
+# W diving: Air HUD from the Rig
+await w1
+view first
+look -90 -30
+wait 100
+shot p1_dive_hud
+signal w1done
+# C creative tab
+await c1
+wait 10
+key key.keyboard.e
+wait 10
+tab tentaworks:main
+wait 10
+shot p1_creative_tab
+close
+wait 5
+signal c1done
+wait 10
+quit

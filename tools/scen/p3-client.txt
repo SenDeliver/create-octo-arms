@@ -1,0 +1,296 @@
+# Phase 3: Rig Settings screen (hand + key), persistence, clamping, Standing Height, Speed, key-only mode,
+# Crawl let-go / re-grab, creative, tooltips, long fall. TIMELINE p3-timeline.txt
+trace on
+hud off
+# B1 sneak + use in the air with the Rig in hand opens Rig Settings; Height 1.5 -> 1.0, Speed 5.6 -> 6.6, mode stays
+await b1
+view first
+look -90 -90
+hold shift on
+wait 5
+key key.mouse.right
+wait 10
+hold shift off
+screen
+rigs b1open
+shot p3_settings_hand_default
+scroll 0 -5
+scroll 1 10
+wait 2
+rigs b1edit
+shot p3_settings_hand_edited
+close
+wait 10
+rigs b1closed
+screen
+signal b1done
+# B3 drop (look down) and pick up; reopen to show the values; place as a Rig Block (sneak) and equip it again
+await b3
+look -90 90
+wait 5
+key key.keyboard.q
+wait 70
+rigs b3pick
+hold shift on
+look -90 -90
+wait 5
+key key.mouse.right
+wait 10
+hold shift off
+rigs b3reopen
+shot p3_settings_after_pickup
+close
+wait 5
+signal b3drop
+await b3place
+look -90 60
+hold shift on
+wait 5
+key key.mouse.right
+wait 10
+hold shift off
+wait 5
+key key.mouse.right
+wait 10
+rigs b3block
+signal b3done
+# B2 Rig Settings key while worn (unbound by default; bound here to O): mode -> key only
+await b2
+bind key.tentaworks.settings key.keyboard.o
+look -90 0
+key key.keyboard.o
+wait 10
+screen
+rigs b2open
+scroll 2 -1
+wait 2
+shot p3_settings_worn_key_unbound
+bind key.tentaworks.toggle key.keyboard.r
+wait 2
+shot p3_settings_worn_key_bound
+close
+wait 10
+rigs b2closed
+signal b2done
+# relog
+await relog
+rejoin 40
+rigs relog
+signal relogdone
+# B4 forged settings packets
+await b4
+rawsettings chest 50 100 key
+wait 10
+signal b4a
+await b4b
+rawsettings chest NaN -3 double_jump
+wait 10
+signal b4b
+await b4c
+rawsettings mainhand 50 100 key
+wait 10
+signal b4c
+# B5 Standing Height 1.0 and 2.5 on the floor (Double Jump mode)
+await b5
+cmd tp @s 1000.5 -60 20.5 -90 0
+rawsettings chest 1.0 5.6 double_jump
+wait 10
+doublejump
+wait 50
+mark h10
+doublejump
+wait 50
+rawsettings chest 2.5 5.6 double_jump
+wait 10
+doublejump
+wait 60
+mark h25
+doublejump
+wait 60
+mark h25end
+signal b5done
+# B6 Speed 4.3 and 8.0: W for 60 ticks, level look
+await b6
+cmd tp @s 1000.5 -60 10.5 -90 0
+rawsettings chest 1.5 4.3 double_jump
+wait 10
+doublejump
+wait 40
+hold up on
+wait 10
+mark s43a
+wait 60
+mark s43b
+hold up off
+doublejump
+wait 40
+cmd tp @s 1000.5 -60 14.5 -90 0
+rawsettings chest 1.5 8.0 double_jump
+wait 10
+doublejump
+wait 40
+hold up on
+wait 10
+mark s80a
+wait 60
+mark s80b
+hold up off
+doublejump
+wait 40
+signal b6done
+# K1 key-only on the floor: Double Jump = vanilla jumps, the key activates, the key sets down
+await k1
+cmd tp @s 1000.5 -60 25.5 -90 0
+rawsettings chest 1.5 5.6 key
+wait 10
+mark k1a
+doublejump
+wait 30
+mark k1b
+key key.keyboard.r
+wait 40
+mark k1c
+doublejump
+wait 20
+mark k1d
+key key.keyboard.r
+wait 40
+mark k1e
+signal k1done
+# K2 key-only mid-air activation next to the wall: caught, then set down by the key
+await k2
+cmd tp @s 1202.1 -40 0.5 90 0
+wait 2
+mark k2a
+key key.keyboard.r
+wait 60
+mark k2b
+key key.keyboard.r
+wait 60
+mark k2c
+rawsettings chest 1.5 5.6 double_jump
+wait 5
+signal k2done
+# A1 Double Jump in Crawl lets go (ceiling 1)
+await a1
+cmd tp @s 1108.5 -48 0.5 -90 0
+wait 3
+doublejump
+wait 30
+mark a1up
+signal a1up
+wait 200
+mark a1crawl
+signal a1crawl
+await a1go
+doublejump
+wait 60
+mark a1end
+signal a1done
+# A1k toggle key in Crawl lets go (ceiling 2, key-only mode)
+await a1k
+rawsettings chest 1.5 5.6 key
+cmd tp @s 1138.5 -48 0.5 -90 0
+wait 5
+key key.keyboard.r
+wait 30
+mark a1kup
+signal a1kup
+wait 200
+mark a1kcrawl
+signal a1kcrawl
+await a1kgo
+key key.keyboard.r
+wait 60
+mark a1kend
+rawsettings chest 1.5 5.6 double_jump
+wait 5
+signal a1kdone
+# A2 Crawl loses its Grips (ceiling 3 removed): Falling, re-grab into Crawl, Stowed on the floor
+await a2
+cmd tp @s 1168.5 -48 0.5 -90 0
+wait 3
+doublejump
+wait 30
+mark a2up
+signal a2up
+wait 200
+mark a2crawl
+signal a2crawl
+await a2cut
+mark a2cut
+wait 140
+mark a2end
+signal a2done
+# A3 creative: Air 0 activates, holds, moves, never Crawls; then Air 900 does not drain; creative inventory opens
+await cr1
+cmd tp @s 1000.5 -60 5.5 -90 0
+wait 10
+mark cr1a
+doublejump
+wait 40
+mark cr1b
+hold up on
+wait 40
+hold up off
+hold jump on
+wait 20
+hold jump off
+wait 60
+mark cr1c
+signal cr1done
+await cr2
+mark cr2a
+hold up on
+wait 40
+hold up off
+hold jump on
+wait 20
+hold jump off
+wait 100
+mark cr2b
+doublejump
+wait 80
+mark cr2c
+key key.keyboard.e
+wait 10
+shot p3_creative_inventory
+close
+wait 5
+signal cr2done
+# T Create tooltips (Shift faked by rendering ItemDescription)
+await tt
+tooltips noshift tentaworks:copper_tentacle_rig tentaworks:netherite_tentacle_rig
+wait 5
+shot p3_tooltip_noshift
+tooltips shift tentaworks:copper_tentacle_rig tentaworks:netherite_tentacle_rig
+wait 5
+shot p3_tooltip_shift
+close
+wait 5
+signal ttdone
+# A4 long fall: Stowed from y 600 for 130 ticks, Double Jump mid-air, caught at the tall wall (top 100)
+await a4
+cmd tp @s 1302.1 600 0.5 90 0
+wait 2
+mark a4a
+wait 130
+mark a4dj
+doublejump
+wait 120
+mark a4b
+cmd tp @s 1310.5 -60 0.5 90 0
+wait 20
+doublejump
+wait 40
+mark a4end
+signal a4done
+# A4 negative control: plain Stowed fall from y 600 with the fall guard off (expect the vanilla float kick)
+await a4n
+cmd tp @s 1350.5 600 0.5 90 0
+wait 2
+mark a4na
+wait 200
+mark a4nb
+await end
+quit

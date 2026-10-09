@@ -1,0 +1,30 @@
+op Dev
+tentaworks trace on
+tp Dev 0.5 -60 0.5 -90 0
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 1
+#signal c1
+#await c1on
+data get entity Dev abilities.flying
+attribute Dev neoforge:creative_flight get
+#signal c1checked
+#await c1off
+data get entity Dev abilities.flying
+attribute Dev neoforge:creative_flight get
+data get entity Dev Pos
+#signal c2
+#await c2fly
+data get entity Dev abilities.flying
+attribute Dev neoforge:creative_flight get
+#signal c2checked
+#await c3
+data get entity Dev abilities.flying
+attribute Dev neoforge:creative_flight get
+item replace entity Dev armor.chest with air
+#sleep 1
+data get entity Dev abilities.flying
+attribute Dev neoforge:creative_flight get
+#signal c3checked
+#await c4
+data get entity Dev abilities.flying
+#signal c4checked

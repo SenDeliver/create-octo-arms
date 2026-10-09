@@ -1,0 +1,31 @@
+name: Feature request
+description: Suggest an idea or an improvement.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea. Please check the open issues first. Terms like Tentacle Rig, Grip, Reach and Air are explained in the [glossary](https://github.com/SenDeliver/create-octo-arms/blob/main/docs/CONTEXT.md).
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does it solve?
+      description: What do you want to do in game that is hard or impossible now?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: How should it work? Items, recipes, enchantments, settings, controls, ...
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Other options you thought about
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Sketches, screenshots, links to similar mods.

@@ -1,0 +1,19 @@
+# Phase 2 scenes. Flat world: ground top at y=-60.
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+gamerule doImmediateRespawn true
+gamerule keepInventory true
+time set noon
+forceload add 540 -30 860 30
+# D drain lanes: copper z=0 from x=600, netherite z=20 from x=560; wall x=640, top face y=-20
+fill 640 -60 -5 640 -21 25 stone
+# C1 Air runs out mid-climb (z=0) and LW low-air title (z=10): wall x=680, top face y=-30
+fill 680 -60 -5 680 -31 15 stone
+# Ceilings (bottom face y=-45, floor 15 below): A Crawl hang, B Setting Down let-go, C forged climb in Crawl
+fill 700 -45 -8 716 -45 8 stone
+fill 760 -45 -8 776 -45 8 stone
+fill 820 -45 -8 836 -45 8 stone
+# MJ mid-air catch: wall x=800 (east face x=801), top face y=-50
+fill 800 -60 -5 800 -51 5 stone
+# MJ3 thin bar (one block high, east face x=851) far up: a fast fall must not step over its Held band
+fill 850 -20 -5 850 -20 5 stone

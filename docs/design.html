@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Octo Arms Design v1</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+:root{--bg:#fafaf7;--panel:#fff;--ink:#1d2330;--muted:#5b6474;--line:#e3e6ea;--accent:#b5561b;--accent-soft:#fbeee4;--blue:#1f5fa8;--blue-soft:#e8f0fa;--green:#2d7a46;--green-soft:#e6f4ea;--warn-soft:#fff5d6;--code:#f3f4f6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif}
+main{padding:28px 40px 80px;width:100%}
+h1{margin:0 0 4px;font-size:30px}
+.sub{color:var(--muted);margin:0 0 18px}
+h2{font-size:21px;margin:30px 0 10px;padding-top:8px;border-top:2px solid var(--accent-soft)}
+h3{font-size:16px;margin:16px 0 6px}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font:13px ui-monospace,SFMono-Regular,Menlo,monospace}
+table{border-collapse:collapse;width:100%;background:var(--panel);margin:8px 0 14px;font-size:14px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#f1f2f4}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+.card h3{margin-top:2px}
+.mermaid{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0}
+.box{border-radius:8px;padding:10px 14px;margin:10px 0;border:1px solid}
+.info{background:var(--blue-soft);border-color:#c5d8f0}
+.warn{background:var(--warn-soft);border-color:#f0dc9a}
+.ok{background:var(--green-soft);border-color:#bfe0c9}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:1px 8px;border-radius:10px;background:var(--accent-soft);color:var(--accent);margin-right:4px}
+ul li{margin:3px 0}
+@media (max-width:800px){main{padding:18px 16px 60px}}
+</style>
+</head>
+<body>
+<main>
+<h1>Octo Arms — design v1</h1>
+<p class="sub">A Create addon for NeoForge 1.21.1. A worn Tentacle Rig, built from a Backtank, carries the player on four pneumatic Tentacles over floors, walls and ceilings. Decisions come from the design session on 2026-10-08. v1 is the full feature set; nothing here is deferred.</p>
+<p><span class="pill">mod_id: tentaworks</span><span class="pill">dep: Create only</span><span class="pill">MC 1.21.1 · NeoForge 21.1.250 · Create 6.0.10</span></p>
+<div class="box info">Terms: <code>CONTEXT.md</code>. Decisions: <code>adr/0001</code> (client-driven movement, cosmetic Tentacles), <code>adr/0002</code> (Rig = Backtank subclass + own block). Build setup, Create datagen and Ponder patterns: reused from the sibling mod Create Aeronautics: Landing Legs (mod id <code>legworks</code>), minus the Aeronautics/Sable deps.</div>
+
+<h2>1. Scope</h2>
+<div class="grid">
+<div class="card"><h3>In v1</h3><ul>
+<li>Copper and Netherite Tentacle Rig, worn in the chest slot, still a working Backtank (diving air, Capacity enchant, back render).</li>
+<li>Active movement over floors, walls, ceilings, ledges and underwater; Hanging anywhere two Grips exist.</li>
+<li>Double Jump activation, Setting Down, Crawl on empty Air, Falling when Grips are lost.</li>
+<li>Rig Settings screen (Standing Height, Speed, Activation Mode), Server Config caps.</li>
+<li>Enchantable: vanilla chest + Capacity + Far Reach, Thrift, Swift.</li>
+<li>Tentacle item via Sequenced Assembly, Rig via Mechanical Crafting; Rig Block for refill.</li>
+<li>Stepping-gait animation visible to everyone, Sticker sounds, goggles tooltips, Ponder scene, JEI via Create's recipe categories.</li>
+</ul></div>
+<div class="card"><h3>Not in v1</h3><ul>
+<li>Fighting mobs with Tentacles (v2 idea).</li>
+<li>Pushing entities, moving blocks, any world force.</li>
+<li>Gripping Sable Ships as moving bodies. Without Aeronautics there is nothing to grip; with it, Ship blocks are just blocks and the Rig does not follow a moving Ship.</li>
+<li>Other-mod tiers (no extra materials).</li>
+</ul></div>
+</div>
+
+<h2>2. Parts</h2>
+<table><tr><th>Part</th><th>Kind</th><th>Notes</th></tr>
+<tr><td>Tentacle</td><td>Item</td><td>One item, tier-less. Sequenced Assembly: Piston Extension Pole → deploy Sticker → press → deploy Andesite Casing, 2 loops. Tier comes from the Backtank.</td></tr>
+<tr><td>Copper Tentacle Rig</td><td>Item (chest armor, <code>BacktankItem</code> subclass)</td><td>Mechanical Crafting 3×3: Copper Backtank centre, Tentacles in the 4 corners, Precision Mechanism top centre, Brass Casing left/right, Copper Sheet bottom centre (§6). Netherite Rig also by smithing from a Copper Rig (phase 5). Tag <code>create:pressurized_air_sources</code> + <code>minecraft:chest_armor</code>.</td></tr>
+<tr><td>Netherite Tentacle Rig</td><td>Item (<code>BacktankItem.Layered</code>-style)</td><td>Same recipe with Netherite Backtank. Fire resistant. Reach 7, Air ×0.5.</td></tr>
+<tr><td>Rig Block (×2 tiers)</td><td>Block + placeable BlockItem</td><td><code>BacktankBlock</code> subclass, registered into BE type <code>create:backtank</code> via <code>BlockEntityTypeAddBlocksEvent</code>. Loot copies <code>create:banktank_air</code> (Create's typo'd id). Model: backtank with folded Tentacles.</td></tr>
+<tr><td>Rig Settings screen</td><td>Client screen (<code>AbstractSimiScreen</code>)</td><td>Symmetry-wand pattern: open client-side, packet on close writes a data component.</td></tr>
+<tr><td>Enchantments</td><td>3 new, data-driven (1.21 enchantment JSON)</td><td>Far Reach I–III, Thrift I–III, Swift I–II. Strength per level in Server Config.</td></tr>
+</table>
+
+<h2>3. States</h2>
+<div class="mermaid">
+stateDiagram-v2
+  [*] --> Stowed: Rig equipped
+  Stowed --> Active: Double Jump (Rig has Air)
+  Active --> SettingDown: Double Jump
+  SettingDown --> Stowed: floor reached (on feet)
+  SettingDown --> Stowed: lowest Held point, no floor (lets go, falls with damage)
+  Stowed --> Active: Double Jump mid-air (catches at first Grip, no fall damage)
+  Active --> Crawl: Air = 0
+  Crawl --> Stowed: floor reached
+  Active --> Falling: fewer than 2 Grips, none in Reach
+  Crawl --> Falling: fewer than 2 Grips, none in Reach
+  Falling --> Active: Grip found again (Air > 0)
+  Falling --> Stowed: landed, no Grip
+  Active --> Stowed: unequip / logout / dimension change
+  Crawl --> Stowed: unequip / logout / dimension change
+</div>
+<ul>
+<li><b>Active, no input (Idle):</b> held still at the current spot. On activation from a floor the Rig lifts to Standing Height first.</li>
+<li><b>Creative:</b> a worn Rig owns the Double Jump. Third jump press while Active, or the fly key, switches to creative flight (Rig Stows).</li>
+<li><b>Water:</b> no change. Grips work on underwater faces; diving helmet draws from the same Air.</li>
+</ul>
+
+<h2>4. Movement model</h2>
+<div class="box ok"><b>The wearer is a point that must stay Held.</b> Held = at least 2 of 4 Tentacles can place a Grip on a solid block face within Reach. Everything else follows from that one rule.</div>
+<h3>Heading</h3>
+<ul>
+<li>Forward/back = camera look vector (yaw and pitch). Strafe = camera-right, horizontal.</li>
+<li>Space adds world +Y, Shift adds world −Y. All inputs sum, then normalise to Speed.</li>
+<li>Blocked component (into a solid face) is removed and the rest slides along the face, so W into a wall climbs it when pitch is up and slides along it when pitch is level.</li>
+<li>If the next position would not be Held, the move is clamped to the last Held point along the heading. You never fall by walking; you fall only when Grips are destroyed.</li>
+<li>Player collision box still applies to blocks: you cannot clip through walls, the Rig moves you around them.</li>
+</ul>
+<h3>Grip selection (server validates, client proposes)</h3>
+<ul>
+<li>Candidate faces: solid block faces (full collision shape, any mod's blocks) within a sphere of radius Reach around the chest. Fluids, entities, non-solid blocks excluded.</li>
+<li>Each Tentacle keeps its Grip until it is out of Reach, destroyed, or the gait decides to Step. Steps happen one Tentacle at a time, preferring the Tentacle farthest behind the Heading.</li>
+<li>A Rig is Held if two Grips are valid; the other two Tentacles may be Stepping or hanging free.</li>
+</ul>
+<h3>Netcode (adr/0001)</h3>
+<div class="mermaid">
+sequenceDiagram
+  participant C as Client (wearer)
+  participant S as Server
+  participant O as Other clients
+  C->>C: read input, compute Heading, clamp to Held, setDeltaMovement
+  C->>S: RigMotionPacket(motion, grips[4], mode)
+  S->>S: validate Held (faces exist, within Reach), mirror velocity, reset fallDistance + float counters
+  S->>S: consumeAir(rate by mode), tier/enchant math
+  S-->>C: reject → resync position + state
+  S->>O: RigStatePacket(active, grips[4], step phase)
+  O->>O: animate Tentacles
+</div>
+<ul>
+<li>While Active the server applies a transient <code>NeoForgeMod.CREATIVE_FLIGHT</code> attribute modifier (or resets <code>aboveGroundTickCount</code>) so vanilla never kicks for floating. Never the <code>isChangingDimension</code> trick (invulnerability).</li>
+<li>Fall damage: off while Held; vanilla again in Falling.</li>
+<li>Elytra and creative flight are suppressed while Active.</li>
+</ul>
+
+<h2>5. Air</h2>
+<table><tr><th>Mode</th><th>Copper</th><th>Netherite</th><th>Note</th></tr>
+<tr><td>Idle / Hang</td><td>1 per 4 s</td><td>1 per 8 s</td><td>holding pistons</td></tr>
+<tr><td>Moving (level, down)</td><td>1 per s</td><td>1 per 2 s</td><td>same as diving</td></tr>
+<tr><td>Climbing (net +Y)</td><td>2 per s</td><td>1 per s</td><td></td></tr>
+<tr><td>Crawl</td><td>0</td><td>0</td><td>Sticker holds without Air; slow descent only</td></tr>
+</table>
+<ul>
+<li>Tank size is Create's: 900 + 300 × Capacity level. Thrift reduces the costs above. Diving helmet shares the tank.</li>
+<li>Low-air warning reuses Create's title via <code>BacktankUtil.consumeAir</code>.</li>
+<li>Refill: place the Rig (Rig Block) under a spinning shaft, like any Backtank. A crafted Rig starts empty.</li>
+</ul>
+
+<h2>6. Recipes (Create progression)</h2>
+<div class="mermaid">
+flowchart LR
+  P[Piston Extension Pole] --> SA[Sequenced Assembly ×2 loops]
+  ST[Sticker] -->|deploy| SA
+  PR[Mechanical Press] -->|press| SA
+  AC[Andesite Casing] -->|deploy| SA
+  SA --> T[Tentacle]
+  T --> MC[Mechanical Crafting]
+  CB[Copper / Netherite Backtank] --> MC
+  PM[Precision Mechanism] --> MC
+  MC --> R[Tentacle Rig]
+  R -->|place under shaft| RB[Rig Block: refill]
+  RB -->|pick up| R
+</div>
+<p>Mechanical Crafting pattern (3×3): Precision Mechanism top centre, Tentacles in the four corners, Backtank centre, Brass Casing left/right of centre, Copper Sheet bottom centre. Netherite Rig: same with Netherite Backtank. Numbers tunable; the shape is the point: tank in the middle, arms at the corners, brain on top.</p>
+<div class="box warn">Mechanical Crafting does not copy data components: a Rig made from a half-full Backtank starts empty. Accepted.</div>
+
+<h2>7. Rig Settings and Server Config</h2>
+<table><tr><th>Player setting</th><th>Range</th><th>Default</th></tr>
+<tr><td>Standing Height</td><td>0 … Reach</td><td>1.5</td></tr>
+<tr><td>Speed</td><td>walk … Server max</td><td>sprint (≈5.6 b/s)</td></tr>
+<tr><td>Activation Mode</td><td>Double Jump / key only</td><td>Double Jump</td></tr>
+</table>
+<table><tr><th>Server config</th><th>Default</th></tr>
+<tr><td>reach.copper / reach.netherite</td><td>4 / 7</td></tr>
+<tr><td>speed.max</td><td>8 b/s</td></tr>
+<tr><td>air.idle / air.move / air.climb (ticks per 1 air, copper)</td><td>80 / 20 / 10</td></tr>
+<tr><td>air.netheriteFactor</td><td>0.5</td></tr>
+<tr><td>enchant.farReachPerLevel / thriftPerLevel / swiftPerLevel</td><td>+1 block / −15 % / +15 %</td></tr>
+<tr><td>crawl.speed</td><td>1 b/s</td></tr>
+</table>
+<p>Keybinds: open Rig Settings while worn (unbound by default), activate (optional, for key-only mode).</p>
+
+<h2>8. Explaining the mod &amp; integrations</h2>
+<ul>
+<li>Goggles on the Rig item and Rig Block: Air, Reach, tier, enchant totals (Create <code>ItemDescription</code> tooltips: summary + conditions).</li>
+<li>Ponder: one scene "Tentacle Rig" (craft, refill under shaft, Double Jump, climb a wall, hang under a ledge, Set Down). Plugin via <code>PonderIndex.addPlugin</code>, same as Landing Legs.</li>
+<li>JEI: Sequenced Assembly and Mechanical Crafting show up through Create's categories automatically.</li>
+<li>Display Link source: Air level of a placed Rig Block (reuse Create's backtank source if it accepts the BE; else register one).</li>
+</ul>
+
+<h2>9. Art &amp; sound</h2>
+<ul>
+<li>Rig on the back: Create's <code>BacktankArmorLayer</code> draws the tank + cogs; Octo Arms adds a layer renderer for the four Tentacles (segmented piston poles, Sticker tip). Netherite needs its own cog/shaft parts (Create picks copper for non-Create blocks).</li>
+<li>Stowed: Tentacles folded against the tank. Active: IK-ish two-segment bend from shoulder to Grip, tip pad flush with the face. Step: lift, arc, plant with Sticker's slime sound; piston hiss on height change.</li>
+<li>Rig Block: backtank model with folded Tentacles.</li>
+</ul>
+
+<h2>10. Open for later sessions</h2>
+<ul>
+<li>Spike first: Held check + client motion + server mirror + float-kick silence in a bare world. This is the risk; everything else is Create plumbing already proven in Landing Legs.</li>
+<li>Exact gait timings and IK look.</li>
+<li>v2: Tentacle attacks on mobs.</li>
+</ul>
+<script>mermaid.initialize({startOnLoad:true,theme:'neutral'})</script>
+</main>
+</body>
+</html>

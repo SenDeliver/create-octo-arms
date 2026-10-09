@@ -1,0 +1,81 @@
+name: Bug report
+description: Something does not work as expected.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please check that the bug still happens with the latest version, and that it is not already reported.
+  - type: input
+    id: mod-version
+    attributes:
+      label: Octo Arms version
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: input
+    id: minecraft-version
+    attributes:
+      label: Minecraft version
+      placeholder: "1.21.1"
+    validations:
+      required: true
+  - type: input
+    id: neoforge-version
+    attributes:
+      label: NeoForge version
+      placeholder: "21.1.250"
+    validations:
+      required: true
+  - type: input
+    id: create-version
+    attributes:
+      label: Create version
+      placeholder: "6.0.10"
+    validations:
+      required: true
+  - type: dropdown
+    id: side
+    attributes:
+      label: Where does it happen?
+      options:
+        - Singleplayer
+        - Multiplayer (dedicated server)
+        - Multiplayer (LAN / open to LAN)
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: other-mods
+    attributes:
+      label: Other mods
+      description: Modpack name, or the other mods you use (a list is fine).
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Wear a Copper Tentacle Rig with full Air
+        2. Double Jump next to a wall and climb it
+        3. Hang under the ledge at the top and ...
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Log or crash report
+      description: |
+        Upload `logs/latest.log` or the file from `crash-reports/`, or paste a link (for example https://mclo.gs).
+        For a server-side problem, use the server's log.
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or video
+      description: Drag and drop images or videos here.
