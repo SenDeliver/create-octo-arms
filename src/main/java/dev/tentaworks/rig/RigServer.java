@@ -3,6 +3,9 @@ package dev.tentaworks.rig;
 import com.mojang.logging.LogUtils;
 import com.simibubi.create.content.equipment.armor.BacktankUtil;
 import dev.tentaworks.TentaworksIds;
+import dev.tentaworks.compat.Frame;
+import dev.tentaworks.compat.Pose;
+import dev.tentaworks.compat.ShipFrames;
 import dev.tentaworks.mixin.ServerGamePacketListenerImplAccessor;
 import dev.tentaworks.network.RigMotionPacket;
 import dev.tentaworks.network.RigStatePacket;
@@ -15,6 +18,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.NeoForgeMod;
@@ -39,6 +43,9 @@ import java.util.UUID;
  * mirrors the velocity and keeps the float kick quiet with a transient creative-flight modifier while the Rig carries.
  * Air is the server's call: it drains here, an empty Rig cannot activate and a carrying one drops to Crawl.
  * So is wear: a worn-out Rig (1 durability) cannot activate and an Active one Sets Down.
+ * Riding a Ship: the carry Ship (the one holding most valid Grips, at least two) moves the wearer too; every check on the
+ * real move (speed, Air, Crawl, Setting Down) subtracts that carry. The motion in {@link RigMotionPacket} is the Rig's own
+ * motion and never includes it.
  */
 public final class RigServer {
     private static final Logger LOG = LogUtils.getLogger();
@@ -87,6 +94,12 @@ public final class RigServer {
         Vec3 realMove = Vec3.ZERO;
         RigState relayedState;
         Tentacles relayed;
+        Anchor tickAnchor;
+        Anchor posAnchor;
+    }
+
+    /** The carry Ship's pose when a reference position was taken: {@code block} is one of its Grip blocks (plot coords). */
+    private record Anchor(BlockPos block, Object id, Pose pose) {
     }
 
     private RigServer() {
@@ -110,6 +123,7 @@ public final class RigServer {
             Wearer w = WEARERS.get(e.getEntity().getUUID());
             if (w != null) {
                 w.tickPos = null;
+                w.tickAnchor = null;
                 Arrays.fill(w.window, 0);
                 w.overSpeed = 0;
             }
@@ -275,6 +289,7 @@ public final class RigServer {
             }
         }
         w.lastPos = player.position();
+        w.posAnchor = anchor(player.level(), grips);
         if (state != packet.state()) {
             if (w.told != state || (state == RigState.FALLING && player.tickCount - w.resentAt >= RESEND_TICKS)) {
                 w.told = state;
@@ -354,7 +369,7 @@ public final class RigServer {
         double near = reach(player) + GRIP_SLACK + 2;
         for (Grip g : packet.tentacles().list()) {
             BlockPos b = g.block();
-            if (Vec3.atCenterOf(b).distanceToSqr(body) > near * near) continue;
+            if (ShipFrames.get().toWorld(player.level(), b, Vec3.atCenterOf(b)).distanceToSqr(body) > near * near) continue;
             for (BlockPos pos : new BlockPos[]{b, b.relative(g.face())})
                 if (player.level().isLoaded(pos)) player.connection.send(new ClientboundBlockUpdatePacket(player.level(), pos));
         }
@@ -390,7 +405,7 @@ public final class RigServer {
         double max = RigAir.crawlStep() * CRAWL_SLACK + 0.05;
         if (claimed.y > 1.0E-3 || claimed.horizontalDistance() > max) return true;
         if (w.lastPos == null) return false;
-        Vec3 d = player.position().subtract(w.lastPos);
+        Vec3 d = ownMove(player, w);
         return d.y > CRAWL_RISE || d.horizontalDistance() > max;
     }
 
@@ -398,8 +413,40 @@ public final class RigServer {
     private static boolean settingDownViolation(ServerPlayer player, Wearer w, Vec3 claimed) {
         if (claimed.y > 1.0E-3 || claimed.horizontalDistance() > 1.0E-3) return true;
         if (w.lastPos == null) return false;
-        Vec3 d = player.position().subtract(w.lastPos);
+        Vec3 d = ownMove(player, w);
         return d.y > CRAWL_RISE || d.horizontalDistance() > maxStep(player) * CRAWL_SLACK + 0.05;
+    }
+
+    /** Real move since the last handled packet, minus what the carry Ship did meanwhile. */
+    private static Vec3 ownMove(ServerPlayer player, Wearer w) {
+        return player.position().subtract(w.lastPos).subtract(carried(player.level(), w.posAnchor, w.lastPos));
+    }
+
+    /** The Ship holding most of these Grips, if at least {@link Grips#HELD}, with a copy of its current pose. */
+    private static Anchor anchor(Level level, List<Grip> grips) {
+        ShipFrames ships = ShipFrames.get();
+        Frame[] frames = new Frame[grips.size()];
+        Anchor best = null;
+        int bestCount = Grips.HELD - 1;
+        for (int i = 0; i < frames.length; i++) {
+            BlockPos b = grips.get(i).block();
+            if (!ships.isPlot(level, b) || (frames[i] = ships.containing(level, b)) == null) continue;
+            int n = 0;
+            for (int j = 0; j <= i; j++) if (frames[i].equals(frames[j])) n++;
+            if (n > bestCount) {
+                bestCount = n;
+                best = new Anchor(b, frames[i].id(), frames[i].pose());
+            }
+        }
+        return best;
+    }
+
+    /** How far the anchor's Ship moved the world point {@code from} since the anchor was taken; zero when it is gone. */
+    private static Vec3 carried(Level level, Anchor a, Vec3 from) {
+        if (a == null) return Vec3.ZERO;
+        Frame now = ShipFrames.get().containing(level, a.block());
+        if (now == null || !now.id().equals(a.id())) return Vec3.ZERO;
+        return now.pose().carrySince(a.pose(), from);
     }
 
     private static boolean finite(Vec3 v) {
@@ -441,12 +488,13 @@ public final class RigServer {
      * The server's own view of the wearer's move: position delta per server tick, read after all players ticked (during the
      * player tick vanilla moves a ServerPlayer by its velocity and then puts it back), teleport events reset it. Feeds the Air rate
      * (never below what the real move costs) and the speed check (a {@value #SPEED_WINDOW}-tick window, so bursty move
-     * packets after lag do not count as speeding).
+     * packets after lag do not count as speeding). The carry Ship's move since the last tick is not the wearer's.
      */
     private static void trackRealMove(ServerPlayer player, Wearer w) {
         Vec3 pos = player.position();
-        Vec3 d = w.tickPos == null ? Vec3.ZERO : pos.subtract(w.tickPos);
+        Vec3 d = w.tickPos == null ? Vec3.ZERO : pos.subtract(w.tickPos).subtract(carried(player.level(), w.tickAnchor, w.tickPos));
         w.tickPos = pos;
+        w.tickAnchor = anchor(player.level(), w.grips);
         w.realMove = d.lengthSqr() < REAL_STILL * REAL_STILL ? Vec3.ZERO : d;
         w.window[w.windowAt] = d.length();
         w.windowAt = (w.windowAt + 1) % SPEED_WINDOW;
