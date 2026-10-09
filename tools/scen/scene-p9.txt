@@ -1,0 +1,52 @@
+# Phase 9 (v1.1) Sable Ship scenes (x 6000..6720). Flat world: ground top at y=-60. Needs GRADLE_ARGS=-PwithSable.
+# Ships: hollow 7x5x7 stone boxes turned into Sable sub-levels with /sable assemble area, named with /sable name set @l <name>.
+# Floating ships (bottom y=-50, 10 above the floor: out of Copper Reach 4) are held in place by the dev command /tentaworks ship <name> drive 0 0 0.
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+gamerule doImmediateRespawn true
+time set noon
+forceload add 6000 -20 6110 20
+forceload add 6090 -20 6360 40
+forceload add 6380 -20 6720 20
+# W world baseline: wall x=6020, 20 high (idle hang Air)
+fill 6020 -60 -6 6020 -41 6 stone
+# A parked ship on the floor, turned 30 degrees about +Y (rotation point = its centre ~6063.5 -57.5 0.5)
+fill 6060 -60 -3 6066 -56 3 stone hollow
+sable assemble area 6060 -60 -3 6066 -56 3
+sable name set @l p9a
+sable forceload add @e[name=p9a]
+sable physics rotation @e[name=p9a] set axis 0 1 0 30
+# B moving ship (floating), lane +x to ~6330 and +z to ~30
+fill 6100 -50 -3 6106 -46 3 stone hollow
+sable assemble area 6100 -50 -3 6106 -46 3
+sable name set @l p9b
+tentaworks ship p9b drive 0 0 0
+sable forceload add @e[name=p9b]
+# C rotating ship (floating)
+fill 6400 -50 -3 6406 -46 3 stone hollow
+sable assemble area 6400 -50 -3 6406 -46 3
+sable name set @l p9c
+tentaworks ship p9c drive 0 0 0
+sable forceload add @e[name=p9c]
+# D world <-> ship: world wall x=6500 (z -12..-1, 11 high), parked ship on the floor right after it (z 0..6): one flat west face at x=6500
+fill 6500 -60 -12 6500 -50 -1 stone
+fill 6500 -60 0 6506 -56 6 stone hollow
+sable assemble area 6500 -60 0 6506 -56 6
+sable name set @l p9d
+sable forceload add @e[name=p9d]
+# E ship removed mid-grip (floating)
+fill 6600 -50 -3 6606 -46 3 stone hollow
+sable assemble area 6600 -50 -3 6606 -46 3
+sable name set @l p9e
+tentaworks ship p9e drive 0 0 0
+sable forceload add @e[name=p9e]
+# F deck ride (floating): Rig Active standing on the roof (top face y=-45) while the ship moves
+fill 6700 -50 -3 6706 -46 3 stone hollow
+sable assemble area 6700 -50 -3 6706 -46 3
+sable name set @l p9f
+tentaworks ship p9f drive 0 0 0
+sable forceload add @e[name=p9f]
+sable info @e
+op Dev
+tentaworks trace on
+gamemode survival Dev

@@ -1,0 +1,188 @@
+# Phase 9 (v1.1): Rig grips Sable Ships. TIMELINE p9-timeline.txt, GRADLE_ARGS=-PwithSable
+trace on
+gait on
+hud off
+view third
+# W world baseline: activate at the world wall x=6020, climb a little, idle hang 200 ticks (Air baseline for the ship hangs)
+await w
+look -90 0
+doublejump
+wait 20
+look -90 -60
+hold up on
+wait 20
+hold up off
+wait 20
+mark wa
+wait 200
+mark wb
+signal wdone
+# A parked ship turned 30 degrees: activate next to its wall, climb it, idle hang 200 ticks
+await a
+look -90 0
+doublejump
+wait 20
+look -90 -60
+mark aclimb0
+hold up on
+wait 8
+hold up off
+mark aclimb1
+wait 20
+mark aa
+wait 200
+mark ab
+look -40 15
+wait 3
+shot p9_parked
+signal adone
+# B moving ship p9b: mid-air catch on its west wall (floor out of Reach), then the timeline drives the ship
+await b
+cmd tp @s 6098.9 -47.5 0.5 -90 0
+wait 2
+doublejump
+wait 40
+mark b0
+# B1 +x 4 b/s (wall moves away from the wearer)
+signal b4
+await b4on
+wait 20
+mark b4a
+wait 200
+mark b4b
+signal b4stop
+await b4off
+wait 40
+# B2 +x 15 b/s (above speed.max 8: the server must not count the carry)
+signal b15
+await b15on
+wait 20
+mark b15a
+wait 100
+look -40 15
+shot p9_moving15
+look -90 0
+wait 100
+mark b15b
+signal b15stop
+await b15off
+wait 40
+# B3 +z 4 b/s (along the wall plane)
+signal bz
+await bzon
+wait 20
+mark bza
+wait 100
+mark bzb
+signal bzstop
+await bzoff
+wait 40
+# B4 up 3 b/s (carried up must not cost climb Air)
+signal bup
+await bupon
+wait 20
+mark bupa
+wait 60
+mark bupb
+signal bupstop
+await bupoff
+wait 40
+mark bend
+signal bdone
+# C rotating ship p9c: yaw 20 deg/s about +Y, then roll 10 deg/s about +Z (the wall tilts)
+await c
+cmd tp @s 6398.9 -47.5 0.5 -90 0
+wait 2
+doublejump
+wait 40
+mark c0
+signal cyaw
+await cyawon
+wait 20
+mark cya
+wait 160
+mark cyb
+signal cyawstop
+await cyawoff
+wait 40
+signal croll
+await crollon
+wait 10
+mark cra
+wait 40
+mark crb
+signal crollstop
+await crolloff
+wait 40
+mark cend
+look -40 15
+wait 3
+shot p9_rotated
+signal cdone
+# D world <-> ship (Speed 5.6 b/s): climb the world wall, move sideways (+z, 40 ticks: z -6.5 -> ~4.7) onto the ship hull and back, then straddle the seam (z ~ -0.3) while the ship leaves
+await d
+look -90 0
+doublejump
+wait 20
+look -90 -60
+hold up on
+wait 8
+hold up off
+look -90 0
+wait 20
+mark dw0
+hold right on
+wait 40
+hold right off
+wait 20
+mark ds0
+wait 40
+mark ds1
+hold left on
+wait 40
+hold left off
+wait 20
+mark dw1
+hold right on
+wait 22
+hold right off
+wait 20
+mark dstr
+signal dleave
+await dleaveon
+wait 80
+mark dend
+signal dstop
+await dstopped
+signal ddone
+# E ship removed mid-grip: hang on p9e (floor out of Reach), the timeline removes the ship, the wearer must fall to the floor
+await e
+cmd tp @s 6598.9 -47.5 0.5 -90 0
+wait 2
+doublejump
+wait 40
+mark e0
+signal erm
+await ermd
+wait 100
+mark e1
+signal edone
+# F deck ride: Rig Active standing on the roof of p9f while it moves +x 4 b/s (no double carry, not left behind)
+await f
+look -90 0
+doublejump
+wait 30
+mark f0
+signal fgo
+await fgoon
+wait 20
+mark fa
+wait 100
+mark fb
+signal fstop
+await fstopped
+wait 20
+mark f1
+signal fdone
+await end
+quit
