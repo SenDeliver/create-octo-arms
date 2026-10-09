@@ -70,7 +70,10 @@ public final class Frame {
         return pose.carrySince(last, world);
     }
 
-    /** Interpolated client pose for rendering (no client classes involved). */
+    /**
+     * Client pose for rendering: last → current pose at {@code partialTick}, as Sable's own ClientSubLevel.renderPose
+     * (whose shared cache is never touched). Valid for the client tick this Frame was taken in.
+     */
     public Pose renderPose(float partialTick) {
         return render == null ? pose : render.at(partialTick);
     }

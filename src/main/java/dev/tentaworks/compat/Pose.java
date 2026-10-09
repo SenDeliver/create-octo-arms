@@ -48,6 +48,12 @@ public final class Pose {
         return toWorld(then.toLocal(world)).subtract(world);
     }
 
+    /** Between {@code this} (t = 0) and {@code to} (t = 1): positions and pivots lerped, orientation slerped. */
+    public Pose lerp(Pose to, double t) {
+        return new Pose(new Vector3d(position).lerp(to.position, t), new Quaterniond(orientation).slerp(to.orientation, t),
+                new Vector3d(pivot).lerp(to.pivot, t));
+    }
+
     /** Local → world as a matrix, written into {@code dest}. */
     public Matrix4d matrix(Matrix4d dest) {
         return dest.translation(position).rotate(orientation).translate(-pivot.x, -pivot.y, -pivot.z);

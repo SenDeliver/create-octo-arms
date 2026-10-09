@@ -1,6 +1,5 @@
 package dev.tentaworks.compat.sable;
 
-import dev.ryanhcode.sable.companion.ClientSubLevelAccess;
 import dev.ryanhcode.sable.companion.SableCompanion;
 import dev.ryanhcode.sable.companion.SubLevelAccess;
 import dev.ryanhcode.sable.companion.math.BoundingBox3d;
@@ -123,10 +122,11 @@ public final class SableShips implements ShipFrames {
 
     private static Frame frame(Level level, SubLevelAccess s) {
         Pose3dc logical = s.logicalPose();
-        Pose3dc last = s.lastPose();
+        Pose3dc lastPose = s.lastPose();
         Pose pose = pose(logical);
-        Frame.RenderPoses render = s instanceof ClientSubLevelAccess c ? pt -> pose(c.renderPose(pt)) : null;
-        return new Frame(s.getUniqueId(), pose, last == null ? pose : pose(last), unit(logical.scale()), level.isClientSide(), render);
+        Pose last = lastPose == null ? pose : pose(lastPose);
+        Frame.RenderPoses render = level.isClientSide() ? pt -> last.lerp(pose, pt) : null;
+        return new Frame(s.getUniqueId(), pose, last, unit(logical.scale()), level.isClientSide(), render);
     }
 
     private static Pose pose(Pose3dc p) {
