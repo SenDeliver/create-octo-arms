@@ -46,7 +46,7 @@ Ships are hollow 7x5x7 stone boxes (`scene-p9.txt`), x 6000..6720:
 
 Floating ships have their bottom 10 above the floor (out of Copper Reach 4). Mid-air catch as in p2 MJ1: `cmd tp`, `wait 2`, `doublejump`.
 
-Sable 2.0.5 commands used (op level 2): `sable assemble area <from> <to>`, `sable name set <sub-levels> <name>`, `sable forceload add <sub-levels>`, `sable physics rotation <sub-levels> set axis <x y z> <degrees>`, `sable remove <sub-levels>`, `sable info <sub-levels>`. Selectors: `@e` all, `@l` latest, `@n` nearest (to the command source: world spawn for RCON, so not used), `@v` viewed, `@t` tracking, `@i` inside, with `[name=...]`, `[x=..,y=..,z=..]`, `[distance=..]`, `[sort=nearest]`, `[limit=N]` and more, or a UUID. Sable has no disassemble-to-world command; `remove` deletes the ship and its blocks.
+Sable 2.0.5 commands used (op level 2): `sable assemble area <from> <to>`, `sable name set <sub-levels> <name>`, `sable forceload add <sub-levels>`, `sable physics rotation <sub-levels> set axis <x y z> <degrees>`, `sable remove <sub-levels>`, `sable info <sub-levels>`. Selectors: `@e` all, `@l` latest, `@n` nearest pose position to the command source (RCON sits at world spawn, so the scene names each ship with `execute positioned <box centre> run sable name set @n <name>`), `@v` viewed, `@t` tracking, `@i` inside, with `[name=...]`, `[x=..,y=..,z=..]`, `[distance=..]`, `[sort=nearest]`, `[limit=N]` and more, or a UUID. Sable has no disassemble-to-world command; `remove` deletes the ship and its blocks.
 
 ### Dev command for ship motion (dev source set, Sable only)
 

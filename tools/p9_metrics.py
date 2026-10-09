@@ -23,6 +23,7 @@ AIR_IDLE = 80.0           # Copper idle ticks per Air (config air.idle, p2 D cop
 AIR_MOVE = 20.0           # Copper move ticks per Air (what an uncorrected carry would cost)
 LET_GO_TICKS = 10         # ship removed: Grips gone / state left ACTIVE within this many ticks
 FALL_MIN = 5.0            # ship removed: feet drop at least this much
+FLOOR = -60.0             # flat world: feet on the floor
 
 
 def check(name, ok, text):
@@ -77,8 +78,8 @@ def rot_inv(q, v):
 
 
 def angle_deg(q0, q1):
-    d = min(1.0, abs(sum(a * b for a, b in zip(q0, q1))))
-    return math.degrees(2 * math.acos(d))
+    x, y, z, w = qmul((-q0[0], -q0[1], -q0[2], q0[3]), q1)
+    return math.degrees(2 * math.atan2(math.sqrt(x * x + y * y + z * z), abs(w)))
 
 
 def local(p, pose):
@@ -123,6 +124,12 @@ check('S1 SSHIP lines per ship', len(seen) == 6, f'ships traced {seen} (want {NA
 check('S2 STRACE sgrips/carry + TRACE sheld/carry fields', any(x['sgrips'] is not None for x in st.values()) and any(x['sheld'] is not None for x in tr.values()),
       f"STRACE with sgrips {sum(1 for x in st.values() if x['sgrips'] is not None)}/{len(st)}, TRACE with sheld {sum(1 for x in tr.values() if x['sheld'] is not None)}/{len(tr)}")
 check('S3 /tentaworks ship drive', len(drives) >= 16 and not no_ship, f'{len(drives)} SHIPDRIVE lines (>= 16), {len(no_ship)} "no ship" replies')
+CENTRES = {'p9a': (6063.5, -57.5, 0.5), 'p9b': (6103.5, -47.5, 0.5), 'p9c': (6403.5, -47.5, 0.5), 'p9d': (6503.5, -57.5, 3.5),
+           'p9e': (6603.5, -47.5, 0.5), 'p9f': (6703.5, -47.5, 0.5)}
+first = {n: sship[n][min(sship[n])][0] for n in CENTRES if sship.get(n)}
+off = {n: math.dist(first[n], CENTRES[n]) for n in first}
+check('S4 named ships start at their box centres', len(off) == 6 and max(off.values()) <= 0.6,
+      ', '.join(f'{n} {d:.2f}' for n, d in off.items()) + ' (<= 0.6; checks names and that pose position = box centre = rotation point)')
 if not cship:
     info('no CSHIP lines: client/server drift falls back to world frame with one tick of ship motion allowed')
 
@@ -152,8 +159,14 @@ def ride(name, ship, a, b, limit=RIDE_MAX):
     if len(loc) < 2:
         check(name, False, f'no SSHIP {ship} / STRACE overlap in {a}..{b}')
         return None
-    d = max(math.dist(loc[0][1], l) for _, l in loc)
-    end = math.dist(loc[0][1], loc[-1][1])
+    ref = loc[0][1]
+
+    def lagfree(g, x):
+        # server position follows packet arrival: allow the ship pose of the tick before or after (analyze.py's 1-tick lag)
+        return min(math.dist(ref, local(x['p'], pz)) for pz in (ship_pose(ship, k) for k in (g - 1, g, g + 1)) if pz)
+    dl = [lagfree(g, st[g]) for g, _ in loc]
+    d = max(dl)
+    end = dl[-1]
     pos0 = ship_pose(ship, loc[-1][0])[0]
     far = math.dist(st[loc[-1][0]]['p'], pos0)
     check(name, d < limit, f'ship-frame displacement max {d:.3f} end {end:.3f} (< {limit}), end distance to ship rotation point {far:.2f}, {len(loc)} ticks')
@@ -165,7 +178,8 @@ def ship_speed(ship, a, b):
     if len(w) < 2:
         return None, None
     (g0, x0), (g1, x1) = w[0], w[-1]
-    return math.dist(x0[0], x1[0]) / ((g1 - g0) / 20), angle_deg(x0[1], x1[1]) / ((g1 - g0) / 20)
+    turned = sum(angle_deg(p0[1], p1[1]) for (_, p0), (_, p1) in zip(w, w[1:]))
+    return math.dist(x0[0], x1[0]) / ((g1 - g0) / 20), turned / ((g1 - g0) / 20)
 
 
 def moved(name, ship, a, b, want, rot=False):
@@ -318,8 +332,10 @@ if section('E ship removed mid-grip', 'e0', 'erm', 'e1'):
     y0 = cw[0][1]['p'][1] if cw else 0
     drop = y0 - min(x['p'][1] for _, x in cw) if cw else 0
     end = cw[-1][1] if cw else None
-    check('E3 falls to the floor', cw and drop >= FALL_MIN and end['ground'] and end['hp'] > 0,
-          f"feet {y0:.2f} -> min {y0 - drop:.2f} (drop {drop:.2f} >= {FALL_MIN}), on ground {end['ground'] if end else '-'}, hp {end['hp'] if end else '-'}, client {states(cw)}")
+    # a Rig with Air may re-grab the floor and hover at Standing Height (ground=false): near the floor counts
+    check('E3 falls to the floor', cw and drop >= FALL_MIN and end['p'][1] <= FLOOR + 2.0 and end['hp'] > 0,
+          f"feet {y0:.2f} -> min {y0 - drop:.2f} (drop {drop:.2f} >= {FALL_MIN}), end feet {end['p'][1] if end else '-'} (<= {FLOOR + 2.0}), "
+          f"ground {end['ground'] if end else '-'}, state {end['state'] if end else '-'}, hp {end['hp'] if end else '-'}, client {states(cw)}")
     gone = [g for g in sship.get('p9e', {}) if g > g0 + 2]
     check('E4 ship really removed', 'Removed' in r and not gone, f'"Removed" in rcon {"Removed" in r}, SSHIP p9e ticks after removal {len(gone)}')
 
