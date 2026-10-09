@@ -96,8 +96,16 @@ public final class Grips {
      * {@code faces} must cover Reach + |motion| + 0.5 around the body.
      */
     public static Vec3 clampHeld(Level level, Entity entity, Vec3 motion, double reach, List<Face> faces) {
+        return clampHeld(level, entity, motion, reach, faces, Vec3.ZERO);
+    }
+
+    /**
+     * As {@link #clampHeld(Level, Entity, Vec3, double, List)} for a body the carry Ship moves by {@code carry} this tick
+     * (world coords, before the Rig's own move): Held is tested where the body really ends up. {@code faces} must also cover the carry.
+     */
+    public static Vec3 clampHeld(Level level, Entity entity, Vec3 motion, double reach, List<Face> faces, Vec3 carry) {
         if (motion.lengthSqr() < 1.0E-8) return Vec3.ZERO;
-        Vec3 centre = body(entity);
+        Vec3 centre = body(entity).add(carry);
         Vec3 dir = motion.normalize();
         Vec3[] tries = {motion, new Vec3(0, motion.y, motion.z), new Vec3(motion.x, 0, motion.z), new Vec3(motion.x, motion.y, 0)};
         Vec3 best = Vec3.ZERO;
