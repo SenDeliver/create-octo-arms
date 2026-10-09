@@ -1,11 +1,13 @@
 package dev.tentaworks.rig;
 
+import dev.tentaworks.compat.Frame;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -16,6 +18,7 @@ import java.util.List;
  * At most two Tentacles step at once, a diagonal pair (0+3, 1+2), and a voluntary Step never leaves fewer than two planted.
  * A stepping slot already carries its new Grip (the arc is drawn only), so the server always sees every Grip.
  * Grips may lie a little past Reach (≤ {@link #overshoot}); the server allows Reach + 0.75.
+ * Candidates on a Ship are picked in its plot coords; distances between Grips and to the body compare world points.
  */
 public final class TentacleGait {
     public static final int SLOTS = Tentacles.SLOTS;
@@ -36,6 +39,9 @@ public final class TentacleGait {
     private final boolean[] lifted = new boolean[SLOTS];
     private int lastPair = -1;
     private Vec3 before = Vec3.ZERO;
+    private Level level;
+    private final Grip[] worldOf = new Grip[SLOTS];
+    private final Vec3[] world = new Vec3[SLOTS];
     private double keep;
     private int plants;
     private int steps;
@@ -102,6 +108,8 @@ public final class TentacleGait {
         double speed = motion.length();
         keep = reach + KEEP_SLACK;
         before = body.subtract(motion);
+        this.level = level;
+        Arrays.fill(worldOf, null);
         int stepTicks = speed < 0.02 ? 7 : Mth.clamp(Math.round((float) (1.0 / speed)), 2, 7);
         Vec3 ahead = body.add(motion.scale(stepTicks));
         for (int i = 0; i < SLOTS; i++) {
@@ -128,7 +136,7 @@ public final class TentacleGait {
         boolean[] ok = new boolean[SLOTS];
         int plantedOk = 0;
         for (int i = 0; i < SLOTS; i++) {
-            ok[i] = grips[i] != null && Grips.valid(level, grips[i], body, keep) && grips[i].point().distanceTo(before) <= keep;
+            ok[i] = grips[i] != null && Grips.valid(level, grips[i], body, keep) && world(i).distanceTo(before) <= keep;
             if (ok[i] && phase[i] >= 1) plantedOk++;
             if (grips[i] != null && !ok[i] && phase[i] < 1) {
                 grips[i] = best(faces, body, ahead, target[i], limit, i);
@@ -150,16 +158,16 @@ public final class TentacleGait {
             }
             Vec3 aim = dir == null ? target[i] : target[i].add(dir.scale(stride));
             if (dir != null) {
-                double behind = -grips[i].point().subtract(target[i]).dot(dir) - stride;
+                double behind = -world(i).subtract(target[i]).dot(dir) - stride;
                 if (behind <= 0) continue;
                 Grip cand = best(faces, body, ahead, aim, limit, i);
-                if (cand == null || cand.point().subtract(grips[i].point()).dot(dir) < 0.5) continue;
+                if (cand == null || cand.world(level).subtract(world(i)).dot(dir) < 0.5) continue;
                 next[i] = cand;
                 need[i] = behind;
             } else {
                 Grip cand = best(faces, body, ahead, aim, limit, i);
                 if (cand == null) continue;
-                double gain = score(grips[i].point(), aim, i) - score(cand.point(), aim, i);
+                double gain = score(world(i), aim, i) - score(cand.world(level), aim, i);
                 if (gain < IDLE_GAIN) continue;
                 next[i] = cand;
                 need[i] = gain;
@@ -202,6 +210,15 @@ public final class TentacleGait {
         }
     }
 
+    /** World point of slot {@code i}'s Grip, resolved once per tick per Grip. */
+    private Vec3 world(int i) {
+        if (worldOf[i] != grips[i]) {
+            worldOf[i] = grips[i];
+            world[i] = grips[i].world(level);
+        }
+        return world[i];
+    }
+
     private int otherStepper(int self) {
         for (int i = 0; i < SLOTS; i++) if (i != self && grips[i] != null && phase[i] < 1) return i;
         return -1;
@@ -230,13 +247,23 @@ public final class TentacleGait {
     /**
      * Face point nearest {@code aim} (spread from the other Grips) within {@code limit} of the body now and where it will be at
      * plant time, and within the keep distance of the body before this tick's move (what the server checks the packet against).
+     * All world points; each face is searched in its own frame.
      */
-    private Grip best(List<Grips.Face> faces, Vec3 body, Vec3 ahead, Vec3 aim, double limit, int slot) {
+    private Grip best(List<Grips.Face> faces, Vec3 worldBody, Vec3 worldAhead, Vec3 worldAim, double limit, int slot) {
         double k2 = keep * keep;
         double l2 = limit * limit;
         Grip out = null;
         double bestScore = Double.MAX_VALUE;
+        Frame frame = null;
+        Vec3 body = worldBody, ahead = worldAhead, aim = worldAim, before = this.before;
         for (Grips.Face f : faces) {
+            if (f.frame() != frame) {
+                frame = f.frame();
+                body = frame == null ? worldBody : frame.toLocal(worldBody);
+                ahead = frame == null ? worldAhead : frame.toLocal(worldAhead);
+                aim = frame == null ? worldAim : frame.toLocal(worldAim);
+                before = frame == null ? this.before : frame.toLocal(this.before);
+            }
             AABB r = f.rect();
             Direction d = f.dir();
             double plane = d.getAxisDirection() == Direction.AxisDirection.POSITIVE ? r.max(d.getAxis()) : r.min(d.getAxis());
@@ -252,7 +279,7 @@ public final class TentacleGait {
                 if (p.distanceToSqr(body) > l2) continue;
             }
             if (p.distanceToSqr(before) > k2) continue;
-            double s = score(p, aim, slot);
+            double s = score(frame == null ? p : frame.toWorld(p), worldAim, slot);
             if (s < bestScore) {
                 bestScore = s;
                 out = new Grip(p, f.block(), d);
@@ -261,11 +288,12 @@ public final class TentacleGait {
         return out;
     }
 
+    /** {@code p} and {@code aim} in world coords. */
     private double score(Vec3 p, Vec3 aim, int slot) {
         double s = p.distanceToSqr(aim);
         for (int j = 0; j < SLOTS; j++) {
             if (j == slot || grips[j] == null) continue;
-            double gap = Math.max(0, SEPARATION - p.distanceTo(grips[j].point()));
+            double gap = Math.max(0, SEPARATION - p.distanceTo(world(j)));
             s += SEPARATION_WEIGHT * gap * gap;
         }
         return s;
