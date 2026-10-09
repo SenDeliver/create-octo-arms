@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Octo Arms v1.1 plan: Ship Grips</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.4.1/mermaid.min.js"></script>
+<style>
+:root{--bg:#fff;--fg:#1b1b1b;--muted:#5c6370;--line:#e3e6ea;--accent:#0b5fff;--warn:#b45309;--warnbg:#fff7ed;--ok:#047857;--okbg:#ecfdf5;--code:#f4f6f8}
+*{box-sizing:border-box}
+body{margin:0;padding:24px 32px;background:var(--bg);color:var(--fg);font:15px/1.5 -apple-system,Segoe UI,Helvetica,Arial,sans-serif}
+h1{font-size:26px;margin:0 0 4px}h2{font-size:19px;margin:32px 0 10px;border-bottom:1px solid var(--line);padding-bottom:4px}h3{font-size:16px;margin:18px 0 6px}
+.sub{color:var(--muted);margin-bottom:16px}
+table{border-collapse:collapse;width:100%;margin:8px 0 16px}th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}th{background:#f7f8fa}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:13px}pre{background:var(--code);padding:10px 12px;border-radius:6px;overflow:auto;font-size:13px}
+.box{border-left:4px solid var(--accent);background:#f0f5ff;padding:10px 14px;margin:10px 0;border-radius:4px}
+.warn{border-left-color:var(--warn);background:var(--warnbg)}.ok{border-left-color:var(--ok);background:var(--okbg)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:18px}
+.mermaid{background:#fafbfc;border:1px solid var(--line);border-radius:6px;padding:8px;margin:8px 0}
+ul{margin:4px 0 10px;padding-left:22px}li{margin:2px 0}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border-radius:10px;background:#e8eefc;color:#1e40af;margin-left:4px}
+</style>
+</head>
+<body>
+<h1>Octo Arms v1.1: Rig grips Sable Ships</h1>
+<div class="sub">Plan, 2026-10-09. Goal: the Tentacle Rig holds, climbs and rides Sable Ships (sub-levels) exactly like world blocks. Sable becomes an <b>optional</b> dependency. Aeronautics not required.</div>
+
+<div class="box ok"><b>Verdict:</b> feasible with Sable 2.0.5 + sable-companion 1.6.0 alone. Ship blocks are real blocks of the same Level at far-away "plot" coordinates; Sable's chunk mixins make <code>getBlockState</code>/<code>isLoaded</code> work there on both sides. Most work is frame bookkeeping (world ↔ plot). Two hard parts: server anti-cheat vs moving ships, and client/server pose lag.</div>
+
+<div class="box warn"><b>Backward compat (prod):</b> Grip meaning changes (points may be in plot coords) → bump network registrar 7 → 8. Old 1.0 clients can't join a 1.1 server. No NBT/save change (Grips are in-memory only). Config: new key <code>ships.grip</code> with default = compatible. Ships with scale ≠ 1 unsupported (rejected safely).</div>
+
+<h2>1. Sable facts used</h2>
+<table>
+<tr><th>Need</th><th>API (companion 1.6.0 unless noted)</th></tr>
+<tr><td>Ships near body</td><td><code>SableCompanion.INSTANCE.getAllIntersecting(Level, BoundingBox3dc)</code> → <code>SubLevelAccess</code> (<code>logicalPose()</code>, <code>lastPose()</code>, <code>boundingBox()</code>, <code>getUniqueId()</code>)</td></tr>
+<tr><td>Plot pos → ship</td><td><code>getContaining(Level, Vec3i|Position)</code>; <code>isInPlotGrid(Level, Vec3i)</code></td></tr>
+<tr><td>Transforms</td><td><code>Pose3dc.transformPosition[Inverse]</code>, <code>transformNormal[Inverse]</code>, <code>scale()</code></td></tr>
+<tr><td>Client pose</td><td><code>ClientSubLevelAccess.renderPose(partialTick)</code></td></tr>
+<tr><td>Per-tick carry</td><td><code>logical·last⁻¹·body − body</code> (exact, handles rotation; better than <code>getVelocity</code>)</td></tr>
+<tr><td>Entity collision</td><td>Sable wraps only <code>Entity.collide</code> inside <code>Entity.move</code>. Static <code>collideBoundingBox</code> (our <code>Grips.collide</code>) does NOT see ships</td></tr>
+<tr><td>Ray cast</td><td><code>Level.clip</code> already hits ships (hits in plot coords)</td></tr>
+<tr><td>Dragging</td><td>Sable tracks an entity only while standing on deck; a hovering Rig wearer is left behind today</td></tr>
+<tr><td>No Sable</td><td><code>SableCompanion.INSTANCE</code> falls back to <code>DefaultSableCompanion</code> (empty results) — made for optional deps</td></tr>
+</table>
+
+<h2>2. Design</h2>
+<div class="grid">
+<div>
+<h3>Frames</h3>
+<ul>
+<li>New <code>Frame</code>: null = world, else ship access + this tick's pose.</li>
+<li><code>Grips.Face</code> gets a Frame. Grid scan runs unchanged in plot coords around <code>bodyPlot = pose⁻¹(body)</code> for each ship from <code>getAllIntersecting(bodyBox.inflate(radius))</code>.</li>
+<li>Rigid transform ⇒ reach/sphere tests unchanged. Skip ships with scale ≠ 1.</li>
+</ul>
+<h3>Held / quadrants</h3>
+<ul>
+<li>World quadrant planes (X, Z through body) become planes through <code>bodyPlot</code> with normals <code>transformNormalInverse(X|Z)</code>.</li>
+<li>Generalised <code>quadrantDist2</code>: clip 4-corner face rect by 2 half-spaces (Sutherland–Hodgman, ≤6 verts), closest-point distance to polygon. ~40 lines. Keep AABB fast path for world faces.</li>
+</ul>
+<h3>Grip record: no new field</h3>
+<ul>
+<li><code>point</code> + <code>block</code> stored in plot coords; ship implied by <code>getContaining(block)</code>. Codec/packets byte-identical, meaning changes → registrar "8".</li>
+<li>Bonus: plot point stays constant on a moving ship, so no relay spam.</li>
+<li>Add <code>Grip.world(level)</code> resolver for gait score/distance checks (compare world points).</li>
+</ul>
+</div>
+<div>
+<h3>Riding the ship</h3>
+<ul>
+<li>Carry ship = ship holding most valid Grips (≥2), else world.</li>
+<li>Client <code>onInput</code>: <code>motion = clampHeld(wish) + carry</code>. Skip carry if Sable already tracks that ship (feet on deck) → no double carry.</li>
+<li>On Rig activate on deck: zero Sable's leftover inherited velocity (internal <code>LivingEntityMovementExtension</code>, isolated).</li>
+<li>Server: <code>trackRealMove</code> overSpeed, <code>drain()</code> Air, crawl / Setting Down violations must subtract the server-side carry. Otherwise ship riders get stowed + drained.</li>
+</ul>
+<h3>Pose lag (client builds Grips from interpolated pose)</h3>
+<ul>
+<li>Error ≈ ship speed × latency (20 b/s × 100 ms = 2 blocks ≫ <code>GRIP_SLACK</code> 0.75).</li>
+<li><b>Option A (chosen):</b> server keeps ring buffer of last ~10 poses per ship; Grip valid against any, or slack widened by <code>|v|·lagTicks</code>.</li>
+<li>Option B (fallback after spike): force Sable tracking so Sable syncs pos relative to ship. Internal, fragile (tracking cleared every client move).</li>
+</ul>
+<h3>Render / FX</h3>
+<ul>
+<li><code>RigVisuals.Slot</code> tip/normal/from stored as frame+plot point; world via <code>renderPose(pt)</code> each frame.</li>
+<li>To world also in <code>TentacleLayer.inView</code>, <code>RigSounds</code>, <code>RigParticles</code>, <code>RigServer.resendFalling</code>.</li>
+<li><code>RigClient.floorBelow</code>: use <code>level.clip</code> + <code>getContaining</code> so Standing Height works on decks.</li>
+<li>Known: remote players on fast ships may jitter (packet vs ship snapshot delay).</li>
+</ul>
+</div>
+</div>
+
+<h3>Collision prediction</h3>
+<p><code>clampHeld</code>/<code>firstHeld</code>/gait predictions don't see ship hulls; the real move does. v1.1 accepts this (each tick restarts from real pos). Later: own box test vs ship full blocks.</p>
+
+<h2>3. Flow per client tick</h2>
+<div class="mermaid">
+flowchart LR
+  A[body centre] --> B[getAllIntersecting<br>box + reach]
+  B --> C{per ship}
+  C --> D[bodyPlot = pose⁻¹ body]
+  D --> E[grid scan in plot coords<br>Faces tagged ship]
+  A --> F[world grid scan<br>Faces tagged world]
+  E --> G[held? quadrants<br>polygon dist for ship faces]
+  F --> G
+  G --> H[clampHeld wish]
+  H --> I[+ carry of ship<br>logical·last⁻¹·body − body]
+  I --> J[move + RigMotionPacket<br>Grips in plot coords]
+  J --> K[server: valid vs pose ring buffer<br>speed/Air minus carry]
+</div>
+
+<h2>4. Optional dependency</h2>
+<ul>
+<li><code>compileOnly</code> sable-companion (+ sable for the 2 internal hooks). All calls in one class <code>compat/sable/SableShips</code>; <code>ModList.isLoaded("sable")</code> ? SableShips : <code>NoShips</code> stub.</li>
+<li>mods.toml: <code>[[dependencies.tentaworks]] modId="sable" type="optional" versionRange="[2.0.5,2.1)" ordering="AFTER"</code>.</li>
+<li>Build flag <code>-PwithSable</code> adds the Aero runtime bundle (copied from landing-legs build.gradle); default dev run tests no-Sable path.</li>
+<li>Don't bundle companion jar (Sable 2.0.5 marks companion &gt;1.6.0 incompatible; pinning is fragile).</li>
+</ul>
+
+<h2>5. Steps</h2>
+<table>
+<tr><th>#</th><th>Step</th><th>Files</th><th>Done when</th></tr>
+<tr><td>1</td><td>Spike: pose update order vs player tick, client/server pose gap at known speeds</td><td>scratch log lines</td><td>numbers for ring-buffer size</td></tr>
+<tr><td>2</td><td><code>ShipFrames</code> seam + <code>NoShips</code>; gradle, mods.toml</td><td>build.gradle, gradle.properties, mods.toml, compat/</td><td>builds with and without Sable</td></tr>
+<tr><td>3</td><td>faces() per frame; generalised quadrant test</td><td>Grips</td><td>held on parked rotated ship</td></tr>
+<tr><td>4</td><td>Grip.world; valid() in ship frame + pose ring buffer</td><td>Grip, Grips, RigServer</td><td>no false stows on parked ship</td></tr>
+<tr><td>5</td><td>Gait in plot space</td><td>TentacleGait</td><td>steps on ship look like world</td></tr>
+<tr><td>6</td><td>Client carry, inherited-velocity zero, floorBelow</td><td>RigClient</td><td>rides moving ship</td></tr>
+<tr><td>7</td><td>Server carry subtraction (speed, Air, crawl, Setting Down)</td><td>RigServer</td><td>no stow/drain while riding</td></tr>
+<tr><td>8</td><td>Render, sounds, particles, resendFalling</td><td>RigVisuals, TentacleLayer, RigSounds, RigParticles</td><td>tips glued to hull at speed</td></tr>
+<tr><td>9</td><td>Test matrix: no Sable / parked / moving / rotating / ship removed mid-grip / world↔ship split grips</td><td>—</td><td>all pass</td></tr>
+<tr><td>10</td><td>Registrar 8, config key, docs (CONTEXT Grip, design "Not in v1", save-format registrar fix 6→7→8), CHANGELOG 1.1.0</td><td>network, config, docs</td><td>release</td></tr>
+</table>
+
+<h2>6. Risks</h2>
+<ul>
+<li>Pose/tick ordering unknown until spike (step 1).</li>
+<li>Double carry when feet touch deck; leftover inherited velocity.</li>
+<li>Remote-player jitter on fast ships.</li>
+<li>Grips spanning world and ship stretch as ship leaves; expect natural Step/fall. Test.</li>
+<li>Sable internals (2 hooks) may change → pin <code>[2.0.5,2.1)</code>.</li>
+<li>Same-index quadrant from world and ship may be the same real sector (counts as 2). Acceptable.</li>
+</ul>
+<script>mermaid.initialize({startOnLoad:true,theme:'neutral'})</script>
+</body>
+</html>
