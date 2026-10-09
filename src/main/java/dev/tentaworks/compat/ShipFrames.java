@@ -3,6 +3,7 @@ package dev.tentaworks.compat;
 import dev.tentaworks.compat.sable.SableShips;
 import dev.tentaworks.config.TentaworksConfig;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -38,6 +39,12 @@ public interface ShipFrames {
      * last few server ticks (client Grips are built from a lagging pose).
      */
     List<Pose> recent(Frame frame);
+
+    /** Whether Sable already moves {@code entity} with this Ship (it stands on the deck), so the Rig must not carry it too. */
+    boolean tracking(Entity entity, Frame frame);
+
+    /** Drops the Ship velocity Sable keeps on an entity that left a deck: the Rig, not that momentum, moves a Held wearer. */
+    void dropInherited(Entity entity);
 
     /** World point of a point given in the frame of {@code block}: unchanged for world blocks or when the Ship is gone. */
     default Vec3 toWorld(Level level, BlockPos block, Vec3 point) {

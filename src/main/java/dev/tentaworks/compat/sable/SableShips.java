@@ -5,6 +5,7 @@ import dev.ryanhcode.sable.companion.SableCompanion;
 import dev.ryanhcode.sable.companion.SubLevelAccess;
 import dev.ryanhcode.sable.companion.math.BoundingBox3d;
 import dev.ryanhcode.sable.companion.math.Pose3dc;
+import dev.ryanhcode.sable.mixinterface.entity.entity_sublevel_collision.LivingEntityMovementExtension;
 import dev.tentaworks.compat.Frame;
 import dev.tentaworks.compat.Pose;
 import dev.tentaworks.compat.ShipFrames;
@@ -12,6 +13,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.common.NeoForge;
@@ -29,7 +31,8 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Sable 2.0 Ships through sable-companion: the only class that touches Sable. Loaded only when Sable is.
+ * Sable 2.0 Ships through sable-companion (plus one Sable internal, {@link #dropInherited}): the only class that touches
+ * Sable. Loaded only when Sable is.
  * Keeps, on the server thread, the poses of the last {@value #HISTORY} server ticks of every Ship near a player.
  */
 public final class SableShips implements ShipFrames {
@@ -84,6 +87,19 @@ public final class SableShips implements ShipFrames {
         History h = history.get((UUID) frame.id());
         if (h != null) out.addAll(h.poses);
         return out;
+    }
+
+    @Override
+    public boolean tracking(Entity entity, Frame frame) {
+        if (frame == null) return false;
+        SubLevelAccess s = SableCompanion.INSTANCE.getTrackingSubLevel(entity);
+        return s != null && frame.id().equals(s.getUniqueId());
+    }
+
+    /** Sable internal (its LivingEntity mixin), the only one used: pinned to Sable [2.0.5,2.1). */
+    @Override
+    public void dropInherited(Entity entity) {
+        if (entity instanceof LivingEntityMovementExtension m) m.sable$getInheritedVelocity().zero();
     }
 
     private void record(ServerTickEvent.Post e) {

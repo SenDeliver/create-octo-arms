@@ -1,6 +1,7 @@
 package dev.tentaworks.compat;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
@@ -31,5 +32,14 @@ public final class NoShips implements ShipFrames {
     @Override
     public List<Pose> recent(Frame frame) {
         return List.of(frame.pose());
+    }
+
+    @Override
+    public boolean tracking(Entity entity, Frame frame) {
+        return false;
+    }
+
+    @Override
+    public void dropInherited(Entity entity) {
     }
 }
