@@ -1,5 +1,8 @@
 package dev.tentaworks.rig;
 
+import dev.tentaworks.compat.Frame;
+import dev.tentaworks.compat.Pose;
+import dev.tentaworks.compat.ShipFrames;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
@@ -15,13 +18,16 @@ import java.util.List;
 /**
  * Held check. Each of the four Tentacles owns one horizontal quadrant around the body; a quadrant has a Grip when some
  * exposed full-block face that looks toward the body lies in it within Reach. Which Grip each Tentacle takes: {@link TentacleGait}.
+ * Faces of unit-scale Ships count too: they are scanned and stored in the Ship's plot coords ({@link Face#frame()});
+ * the body centre stays in world coords everywhere and is moved into a face's frame where needed.
  */
 public final class Grips {
     public static final int SLOTS = 4;
     public static final int HELD = 2;
     private static final double THROUGH = 0.3;
 
-    public record Face(BlockPos block, Direction dir, AABB rect) {
+    /** A face; {@code block} and {@code rect} are in {@code frame}'s plot coords, or world coords when it is null. */
+    public record Face(BlockPos block, Direction dir, AABB rect, Frame frame) {
     }
 
     private Grips() {
@@ -31,7 +37,15 @@ public final class Grips {
         return entity.getBoundingBox().getCenter();
     }
 
-    public static List<Face> faces(BlockGetter level, Vec3 centre, double radius) {
+    public static List<Face> faces(Level level, Vec3 centre, double radius) {
+        List<Face> faces = new ArrayList<>();
+        scan(level, centre, radius, null, faces);
+        for (Frame frame : ShipFrames.get().near(level, new AABB(centre, centre).inflate(radius + 1)))
+            if (frame.unitScale()) scan(level, frame.toLocal(centre), radius, frame, faces);
+        return faces;
+    }
+
+    private static void scan(BlockGetter level, Vec3 centre, double radius, Frame frame, List<Face> faces) {
         int r = Mth.ceil(radius) + 1;
         int n = 2 * r + 3;
         BlockPos origin = BlockPos.containing(centre).offset(-r - 1, -r - 1, -r - 1);
@@ -44,7 +58,6 @@ public final class Grips {
                     full[(x * n + y) * n + z] = level.getBlockState(pos).isCollisionShapeFullBlock(level, pos);
                 }
         double r2 = radius * radius;
-        List<Face> faces = new ArrayList<>();
         for (int x = 1; x < n - 1; x++)
             for (int y = 1; y < n - 1; y++)
                 for (int z = 1; z < n - 1; z++) {
@@ -53,18 +66,18 @@ public final class Grips {
                     if (new AABB(b).distanceToSqr(centre) > r2) continue;
                     for (Direction d : Direction.values()) {
                         if (full[((x + d.getStepX()) * n + y + d.getStepY()) * n + z + d.getStepZ()]) continue;
-                        faces.add(new Face(b, d, faceRect(b, d)));
+                        faces.add(new Face(b, d, faceRect(b, d), frame));
                     }
                 }
-        return faces;
     }
 
     public static int count(List<Face> faces, Vec3 centre, double reach) {
         double r2 = reach * reach;
         int held = 0;
+        View view = new View(centre);
         for (int q = 0; q < SLOTS; q++) {
             for (Face f : faces) {
-                if (quadrantDist2(f, centre, q) <= r2) {
+                if (view.quadrantDist2(f, q) <= r2) {
                     held++;
                     break;
                 }
@@ -138,17 +151,34 @@ public final class Grips {
      * A Grip is real when its point lies on the named face, within Reach of the body, on a loaded full block whose outer
      * neighbour is loaded and not full, and the body is not behind that face with solid blocks in between. The point check
      * comes first so a forged Grip can never make the server read an unloaded position.
+     * A Grip in plot coords needs a live unit-scale Ship there (Ships on in the config) and passes when it is real under any
+     * of the Ship's {@link ShipFrames#recent recent} poses: the client built it from a pose that lags the server's.
      */
     public static boolean valid(Level level, Grip grip, Vec3 centre, double reach) {
+        ShipFrames ships = ShipFrames.get();
+        if (!ships.isPlot(level, grip.block())) return validIn(level, grip, List.of(centre), reach);
+        Frame frame = ships.containing(level, grip.block());
+        if (frame == null || !frame.unitScale()) return false;
+        List<Pose> poses = ships.recent(frame);
+        List<Vec3> centres = new ArrayList<>(poses.size());
+        for (Pose pose : poses) centres.add(pose.toLocal(centre));
+        return validIn(level, grip, centres, reach);
+    }
+
+    /** {@code centres}: the body centre in the Grip's frame, one per candidate pose. */
+    private static boolean validIn(Level level, Grip grip, List<Vec3> centres, double reach) {
         BlockPos b = grip.block();
         Direction face = grip.face();
-        if (!faceRect(b, face).inflate(0.02).contains(grip.point())) return false;
-        if (grip.point().distanceToSqr(centre) > reach * reach) return false;
+        Vec3 p = grip.point();
+        double r2 = reach * reach;
+        if (!faceRect(b, face).inflate(0.02).contains(p)) return false;
+        if (centres.stream().noneMatch(c -> p.distanceToSqr(c) <= r2)) return false;
         BlockPos out = b.relative(face);
         if (!level.isLoaded(b) || !level.isLoaded(out)) return false;
+        if (!level.getBlockState(b).isCollisionShapeFullBlock(level, b) || level.getBlockState(out).isCollisionShapeFullBlock(level, out)) return false;
         double plane = face.getAxisDirection() == Direction.AxisDirection.POSITIVE ? b.get(face.getAxis()) + 1 : b.get(face.getAxis());
-        if (throughBlock(level, face, plane, centre)) return false;
-        return level.getBlockState(b).isCollisionShapeFullBlock(level, b) && !level.getBlockState(out).isCollisionShapeFullBlock(level, out);
+        for (Vec3 c : centres) if (p.distanceToSqr(c) <= r2 && !throughBlock(level, face, plane, c)) return true;
+        return false;
     }
 
     /** The body sits behind the face's plane with a solid block between: the Tentacle would have to pass through the wall. */
@@ -173,7 +203,40 @@ public final class Grips {
         };
     }
 
-    private static double quadrantDist2(Face f, Vec3 c, int q) {
+    /** The body centre as seen from each face's frame, moved into a frame once per run of faces from it. */
+    private static final class View {
+        private static final Vec3 X = new Vec3(1, 0, 0);
+        private static final Vec3 Z = new Vec3(0, 0, 1);
+        private final Vec3 centre;
+        private final double[] local = new double[9];
+        private Frame frame;
+
+        View(Vec3 centre) {
+            this.centre = centre;
+        }
+
+        double quadrantDist2(Face f, int q) {
+            if (f.frame == null) return worldDist2(f, centre, q);
+            if (f.frame != frame) {
+                frame = f.frame;
+                put(0, frame.toLocal(centre));
+                put(3, frame.normalToLocal(X));
+                put(6, frame.normalToLocal(Z));
+            }
+            AABB r = f.rect;
+            int step = f.dir.getAxisDirection().getStep();
+            return QuadrantClip.dist2(f.dir.getAxis().ordinal(), step, new double[]{r.minX, r.minY, r.minZ},
+                    new double[]{r.maxX, r.maxY, r.maxZ}, local, sx(q), sz(q));
+        }
+
+        private void put(int at, Vec3 v) {
+            local[at] = v.x;
+            local[at + 1] = v.y;
+            local[at + 2] = v.z;
+        }
+    }
+
+    private static double worldDist2(Face f, Vec3 c, int q) {
         AABB r = f.rect;
         Direction.Axis axis = f.dir.getAxis();
         double plane = f.dir.getAxisDirection() == Direction.AxisDirection.POSITIVE ? r.max(axis) : r.min(axis);
