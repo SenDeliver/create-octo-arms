@@ -23,6 +23,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -53,6 +54,7 @@ import java.util.List;
  * Riding a Ship: while carrying, the carry Ship (the one holding most current Grips, at least two, as on the server) moves
  * the wearer by its own move this tick on top of the Rig's motion, unless Sable already does (feet on its deck). Held is tested
  * where the body really ends up. The motion sent to the server and fed to the gait is the Rig's own, never the carry.
+ * A Standing Height lift over a Ship deck aims at that deck where it is now, not where it was at activation.
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public final class RigClient {
@@ -70,6 +72,9 @@ public final class RigClient {
     private static int lastPress = -100;
     private static int activatedAt = -100;
     private static double liftTo = Double.NaN;
+    private static BlockPos liftBlock;
+    private static Vec3 liftLocal;
+    private static double liftHeight;
     private static boolean noRegrab;
     private static int warnedAt = -100;
 
@@ -183,14 +188,16 @@ public final class RigClient {
         switch (state) {
             case ACTIVE -> {
                 Vec3 heading = heading(player, forward, left, up, down);
+                double feet = player.getY() + shift.y;
                 if (!Double.isNaN(liftTo)) {
-                    double dy = liftTo - player.getY();
-                    if (up || down || Math.abs(dy) < 0.01) liftTo = Double.NaN;
+                    liftTo = liftTarget(level);
+                    double dy = liftTo - feet;
+                    if (up || down || Double.isNaN(dy) || Math.abs(dy) < 0.01) liftTo = Double.NaN;
                     else heading = heading.add(0, Math.signum(dy), 0);
                 }
                 Vec3 wish = heading.lengthSqr() < 1.0E-6 ? Vec3.ZERO : heading.normalize().scale(step);
-                if (!Double.isNaN(liftTo) && Math.abs(wish.y) > Math.abs(liftTo - player.getY()))
-                    wish = new Vec3(wish.x, liftTo - player.getY(), wish.z);
+                if (!Double.isNaN(liftTo) && Math.abs(wish.y) > Math.abs(liftTo - feet))
+                    wish = new Vec3(wish.x, liftTo - feet, wish.z);
                 motion = Grips.clampHeld(level, player, wish, reach, faces, shift);
                 if (!Double.isNaN(liftTo) && Math.abs(motion.y) < 1.0E-4) liftTo = Double.NaN;
                 player.setDeltaMovement(motion.add(carry));
@@ -278,7 +285,11 @@ public final class RigClient {
                 activatedAt = ticks;
                 ShipFrames.get().dropInherited(player);
                 double h = settings.standingHeight();
-                liftTo = floorBelow(player, h) + h;
+                Floor floor = floorBelow(player, h);
+                liftTo = floor == null ? Double.NaN : floor.y() + h;
+                liftBlock = floor == null ? null : floor.plot();
+                liftLocal = floor == null ? null : floor.local();
+                liftHeight = h;
                 setState(player, RigState.ACTIVE);
                 return true;
             }
@@ -315,32 +326,48 @@ public final class RigClient {
         return look.scale(forward).add(leftDir.scale(left)).add(0, (up ? 1 : 0) - (down ? 1 : 0), 0);
     }
 
+    /** A floor hit: world Y, and for a Ship deck its plot block and the hit point in plot coords (else null). */
+    private record Floor(double y, BlockPos plot, Vec3 local) {
+    }
+
+    /** The lift target now: fixed for a world floor, the deck's current height + Standing Height for a Ship (NaN once it is gone). */
+    private static double liftTarget(Level level) {
+        if (liftBlock == null) return liftTo;
+        ShipFrames ships = ShipFrames.get();
+        Frame frame = ships.isPlot(level, liftBlock) ? ships.containing(level, liftBlock) : null;
+        return frame == null ? Double.NaN : frame.toWorld(liftLocal).y + liftHeight;
+    }
+
     /**
      * Floor under the feet within Standing Height + 1.5: a world block or a Ship deck. {@code Level.clip} also hits Ships
      * (with Sable) and reports those hits in plot coordinates, so a Ship hit is moved into the world by its pose; a plot hit
-     * with no Ship to resolve it (Ships off in the config) traces world blocks only.
+     * with no Ship to resolve it (Ships off in the config) traces world blocks only. Null when there is none.
      */
-    private static double floorBelow(LocalPlayer player, double standingHeight) {
+    private static Floor floorBelow(LocalPlayer player, double standingHeight) {
         Level level = player.level();
         Vec3 from = player.position().add(0, 0.1, 0);
         Vec3 to = player.position().subtract(0, standingHeight + 1.5, 0);
         ClipContext ctx = new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player);
         BlockHitResult hit = level.clip(ctx);
-        if (hit.getType() != HitResult.Type.BLOCK) return Double.NaN;
+        if (hit.getType() != HitResult.Type.BLOCK) return null;
         Vec3 at = hit.getLocation();
+        BlockPos plot = null;
+        Vec3 local = null;
         ShipFrames ships = ShipFrames.get();
         if (ships.isPlot(level, hit.getBlockPos())) {
             Frame frame = ships.containing(level, hit.getBlockPos());
             if (frame != null) {
+                plot = hit.getBlockPos();
+                local = at;
                 at = frame.toWorld(at);
             } else {
                 hit = worldClip(level, from, to, ctx);
-                if (hit == null || hit.getType() != HitResult.Type.BLOCK) return Double.NaN;
+                if (hit == null || hit.getType() != HitResult.Type.BLOCK) return null;
                 at = hit.getLocation();
             }
         }
         double y = at.y;
-        return y <= from.y + 1.0E-6 && y >= to.y - 1.0E-6 ? y : Double.NaN;
+        return y <= from.y + 1.0E-6 && y >= to.y - 1.0E-6 ? new Floor(y, plot, local) : null;
     }
 
     private static BlockHitResult worldClip(Level level, Vec3 from, Vec3 to, ClipContext ctx) {
@@ -379,6 +406,7 @@ public final class RigClient {
             GAIT.clear();
             motion = Vec3.ZERO;
             liftTo = Double.NaN;
+            liftBlock = null;
             heldCount = 0;
             carryShip = null;
             shipGrips = 0;
@@ -401,6 +429,7 @@ public final class RigClient {
         GAIT.clear();
         motion = Vec3.ZERO;
         liftTo = Double.NaN;
+        liftBlock = null;
         heldCount = 0;
         carryShip = null;
         shipGrips = 0;
