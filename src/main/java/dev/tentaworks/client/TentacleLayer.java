@@ -1,5 +1,6 @@
 package dev.tentaworks.client;
 
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.tentaworks.TentaworksIds;
@@ -12,7 +13,6 @@ import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
@@ -22,7 +22,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -39,6 +38,8 @@ import org.joml.Vector3f;
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
+    /** The first-person Rig's own buffer: ending a batch on the shared one mid-frame frees builders other layers still hold under batching mods. */
+    private static final ByteBufferBuilder FIRST_PERSON_BUFFER = new ByteBufferBuilder(256 * 1024);
     public TentacleLayer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent) {
         super(parent);
     }
@@ -113,11 +114,11 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
             ps.scale(0.9375F, 0.9375F, 0.9375F);
             ps.translate(0.0F, -1.501F, 0.0F);
             TentacleRenderer.toTankSpace(ps);
-            MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
+            MultiBufferSource.BufferSource buffers = MultiBufferSource.immediate(FIRST_PERSON_BUFFER);
             TentacleRenderer.drawRig(ps, buffers, player, rig.tier(), visual, pt,
                     new TentacleRenderer.Space(new Matrix4f(ps.last().pose()), cam, true, true, 0xF000F0, 0));
             ps.popPose();
-            buffers.endBatch(RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS));
+            buffers.endBatch();
         });
     }
 }

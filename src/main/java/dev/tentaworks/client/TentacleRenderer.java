@@ -190,7 +190,7 @@ public final class TentacleRenderer {
                         Vec3 n = slot.normal(pt);
                         Vector3f t = toTank.transformPosition((float) (tip.x - space.camera.x), (float) (tip.y - space.camera.y), (float) (tip.z - space.camera.z), new Vector3f());
                         Vector3f nt = toTank.transformDirection((float) n.x, (float) n.y, (float) n.z, new Vector3f()).normalize();
-                        out = reach(free.s, t, nt, i);
+                        if (t.isFinite() && t.distance(free.s) <= RigVisuals.MAX_GRIP_DISTANCE) out = reach(free.s, t, nt, i);
                     }
                     arm = blend(arm, out, k);
                 }
@@ -319,6 +319,9 @@ public final class TentacleRenderer {
 
     enum Mode { TUBE, BLOCK, BAND, AXLE }
 
+    /** Blocks of sleeve a TUBE may tile; a longer one is a bad pose (unresolved Ship), never a real arm. */
+    private static final int MAX_TUBE_RINGS = 64;
+
     /** Box in px around the current frame. TUBE: sides tile V once per block, U centred; BLOCK: whole texture per face; BAND: centre rows; AXLE: a rod along X. */
     private static void box(PoseStack.Pose p, VertexConsumer vc, TextureAtlasSprite s, int light, Space space,
                             float x0, float x1, float y0, float y1, float z0, float z1, Mode mode) {
@@ -346,8 +349,11 @@ public final class TentacleRenderer {
             }
             case TUBE -> {
                 caps(vc, p, s, light, X0, X1, Y0, Y1, Z0, Z1, 8 - w / 2, 8 + w / 2, 8 - d / 2, 8 + d / 2);
+                float span = Y1 - Y0;
+                if (!Float.isFinite(span) || span <= 0) return;
+                int rings = Math.min(MAX_TUBE_RINGS, (int) Math.ceil(span - 1.0E-4F));
                 float top = Y1;
-                while (top > Y0 + 1.0E-4F) {
+                for (int i = 0; i < rings; i++) {
                     float bottom = Math.max(Y0, top - 1);
                     float hv = (top - bottom) * 16;
                     sides(vc, p, s, light, X0, X1, bottom, top, Z0, Z1, 8 - w / 2, 8 + w / 2, 8 - d / 2, 8 + d / 2, 0, hv);
