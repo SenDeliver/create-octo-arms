@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Octo Arms listing</title>
+<style>
+  :root{--bg:#fff;--fg:#1a1a1a;--muted:#666;--line:#e3e3e3;--accent:#b5562a;--soft:#f8f4f1;--warn:#a15c00}
+  body{margin:0;padding:24px 16px;background:var(--bg);color:var(--fg);font:15px/1.5 -apple-system,Segoe UI,Helvetica,Arial,sans-serif}
+  h1{margin:0 0 4px;font-size:26px}h2{margin:32px 0 10px;font-size:19px;border-bottom:2px solid var(--accent);padding-bottom:4px}
+  .sub{color:var(--muted);margin-bottom:20px}
+  table{width:100%;border-collapse:collapse;margin:8px 0 16px}th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}th{background:var(--soft)}
+  code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13px}pre{background:var(--soft);padding:10px;overflow:auto}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:20px}
+  ol li,ul li{margin:4px 0}.tag{display:inline-block;background:var(--accent);color:#fff;border-radius:3px;padding:0 6px;font-size:12px}
+  .ok{color:#0b6e4f;font-weight:600}.weak{color:var(--warn);font-weight:600}
+</style>
+</head>
+<body>
+<h1>Create: Octo Arms, listing kit</h1>
+<div class="sub">Everything prepared for Modrinth + CurseForge. Files in <code>publishing/</code>. First public version: 1.1.0. Status 2026-10-12.</div>
+
+<h2>Shared metadata (paste on both sites)</h2>
+<table>
+<tr><th style="width:200px">Field</th><th>Value</th></tr>
+<tr><td>Name</td><td>Create: Octo Arms</td></tr>
+<tr><td>Slug / URL</td><td><code>octo-arms</code>. Free on Modrinth (checked 2026-10-12). CurseForge: <b>not verified</b>, check when creating the project. Must match <code>updateJSONURL</code> in <code>neoforge.mods.toml</code> and <code>modrinth-id</code> in <code>.github/workflows/publish.yml</code>. If CF gives another slug, only README and the Downloads links change.</td></tr>
+<tr><td>Summary (1 line)</td><td>A Create Backtank with four pneumatic Tentacles. Climb walls, hang from ceilings, ride Ships.</td></tr>
+<tr><td>Categories</td><td>Modrinth: <code>adventure</code>, <code>equipment</code>, <code>technology</code>, <code>transportation</code>. CurseForge: Armor, Tools, and Weapons; Player Transport; Addons → Create</td></tr>
+<tr><td>License</td><td>MIT</td></tr>
+<tr><td>Side</td><td>Client: required. Server: required.</td></tr>
+<tr><td>Loader / versions</td><td>NeoForge, Minecraft 1.21.1, Java 21</td></tr>
+<tr><td>Icon</td><td><code>publishing/icon-512.png</code> (Modrinth), <code>publishing/icon-400.png</code> (CurseForge)</td></tr>
+<tr><td>Gallery</td><td>See the gallery table below. Mark the hero as featured.</td></tr>
+<tr><td>Links</td><td>Source: github.com/SenDeliver/create-octo-arms · Issues: …/issues · Wiki: …/blob/main/README.md</td></tr>
+<tr><td>Version upload</td><td>File <code>build/libs/tentaworks-1.1.0+mc1.21.1.jar</code>, version number <code>1.1.0</code>, channel Release, changelog from <code>publishing/release-notes-1.1.0.md</code></td></tr>
+</table>
+
+<h2>Dependencies</h2>
+<table>
+<tr><th>Mod</th><th>Type</th><th>Modrinth</th><th>CurseForge</th></tr>
+<tr><td>Create</td><td>required</td><td><code>create</code> (LNytGWDc)</td><td><code>create</code> (328085)</td></tr>
+<tr><td>Sable</td><td>optional</td><td><code>sable</code> (T9PomCSv)</td><td><code>sable</code> (1312371)</td></tr>
+<tr><td>JEI</td><td>optional</td><td><code>jei</code> (u6dRKJwZ)</td><td><code>jei</code> (238222)</td></tr>
+</table>
+<p>Not listed: Create Aeronautics (its Ships work through Sable, said in the description), Jade (no integration in the code).</p>
+
+<h2>Gallery (order, captions, verdict)</h2>
+<table>
+<tr><th style="width:30px">#</th><th style="width:280px">File (<code>docs/images/</code>)</th><th>Caption</th><th>Verdict</th></tr>
+<tr><td>1</td><td><code>hero-carried-on-tentacles.png</code> <span class="tag">featured</span></td><td>Carried on four Tentacles</td><td><span class="ok">ok</span>. Clear subject. Plain superflat backdrop, legs cut at the bottom edge.</td></tr>
+<tr><td>2</td><td><code>climbing-a-wall.png</code></td><td>Climbing a wall</td><td><span class="ok">ok</span>. Best action shot, a few green particles.</td></tr>
+<tr><td>3</td><td><code>hanging-under-a-ceiling.png</code></td><td>Hanging under a ceiling</td><td><span class="weak">weak</span>. Underside is dark, player and Rig look almost black.</td></tr>
+<tr><td>4</td><td><code>ship-moving.png</code></td><td>Riding a Sable Ship at 15 blocks/s</td><td><span class="weak">weak</span>. Ship is a plain stone wall, nothing shows it is a Ship or moving. Caption must say it.</td></tr>
+<tr><td>5</td><td><code>ship-parked.png</code></td><td>Holding on to a parked Ship turned 30°</td><td><span class="weak">weak</span>. Ship is a plain stone block, turn barely visible, stray floating slab top left.</td></tr>
+<tr><td>6</td><td><code>ponder-tentacle-rig.png</code></td><td>Ponder scene for the Tentacle Rig</td><td><span class="ok">ok</span>.</td></tr>
+<tr><td>7</td><td><code>goggles-rig-block.png</code></td><td>Engineer's Goggles on a refilling Rig Block</td><td><span class="weak">weak</span>. Full vanilla HUD (hotbar, hearts, hunger, hand, crosshair) in shot. Usable, better cropped.</td></tr>
+<tr><td>8</td><td><code>jei-tentacle-sequenced-assembly.png</code></td><td>Tentacle Sequenced Assembly in JEI</td><td><span class="weak">weak</span>. Large unrelated wood item list on the right, odd 1600×1118 size.</td></tr>
+<tr><td>9</td><td><code>rig-tooltips.png</code></td><td>Copper and Netherite Rig tooltips</td><td><span class="weak">weak</span>. Netherite box: "Height," alone on its own line, box runs into the right edge.</td></tr>
+</table>
+<p><code>logo-512.png</code> is the icon source only, not a gallery image.</p>
+
+<div class="grid">
+<div>
+<h2>Modrinth steps</h2>
+<ol>
+<li>Make GitHub repo public (images in the description are raw.githubusercontent links).</li>
+<li>modrinth.com → sign in with GitHub → Create project → type Mod.</li>
+<li>Fill the shared metadata table. Description = paste <code>publishing/modrinth-description.md</code>.</li>
+<li>Upload icon + gallery images.</li>
+<li>Versions → Create version: jar, number <code>1.1.0</code>, Release, NeoForge, 1.21.1, dependencies from the table, changelog from release notes.</li>
+<li>Submit for review. First review takes 1 to 3 days. Project URL becomes modrinth.com/mod/octo-arms.</li>
+<li>Settings → create a PAT with "Create versions" scope → GitHub repo secret <code>MODRINTH_TOKEN</code>.</li>
+</ol>
+</div>
+<div>
+<h2>CurseForge steps</h2>
+<ol>
+<li>curseforge.com → Authors → Start a project → Minecraft → Mods.</li>
+<li>Name, slug <code>octo-arms</code>, summary, categories, license MIT, icon <code>icon-400.png</code>.</li>
+<li>Description: switch editor to Source/HTML and paste <code>publishing/curseforge-description.html</code>.</li>
+<li>Upload file: jar, display name <code>Octo Arms 1.1.0</code>, Release, 1.21.1 + NeoForge + Java 21, relations Create required, Sable/JEI optional.</li>
+<li>Submit. Note the numeric Project ID from the project page sidebar.</li>
+<li>API tokens page → create token → GitHub secrets <code>CURSEFORGE_TOKEN</code> and <code>CURSEFORGE_PROJECT_ID</code>.</li>
+</ol>
+</div>
+</div>
+
+<h2>Repo settings (GitHub)</h2>
+<table>
+<tr><th style="width:200px">State</th><th>Setting</th></tr>
+<tr><td><span class="ok">done</span> (API, checked 2026-10-12)</td><td>Squash merge only (merge commit and rebase off), delete branch on merge. Actions token read-only, Actions cannot approve pull requests.</td></tr>
+<tr><td><span class="weak">blocked while private</span></td><td>GitHub returns 403/404 on a private free-plan repo. Run <code>tools/github-lockdown.sh</code> once, right after making the repo public. It sets:
+<ul>
+<li>ruleset <code>main: PR only, owner merges</code>: squash only, 1 approval, code owner review, last-push approval, threads resolved, no deletion, no force push; bypass RepositoryRole 5 (admin).</li>
+<li>ruleset <code>tags: owner only</code> on <code>refs/tags/v*</code>: create, update, delete blocked except admin.</li>
+<li>private vulnerability reporting, secret scanning + push protection, outside PRs need approval to run Actions.</li>
+</ul>Run it only once: a second run adds duplicate rulesets.</td></tr>
+<tr><td><span class="tag">manual</span></td><td>Make repo public, run the lockdown script, create both projects, add 3 secrets <code>MODRINTH_TOKEN</code>, <code>CURSEFORGE_TOKEN</code>, <code>CURSEFORGE_PROJECT_ID</code>, tag <code>v1.1.0</code> + GitHub Release.</td></tr>
+</table>
+
+<h2>After listing: releases are automatic</h2>
+<p><code>.github/workflows/publish.yml</code> runs on every GitHub Release: builds the jar, uploads to Modrinth + CurseForge and attaches it to the GitHub release. Changelog: <code>publishing/release-notes-&lt;version&gt;.md</code> if it exists, else the latest <code>## [x.y.z]</code> section of CHANGELOG.md. For 1.1.0 that picks the full first-release notes, not the short 1.1.0 changelog section.</p>
+<pre>git tag v1.1.0 && git push origin main v1.1.0
+gh release create v1.1.0 --title "Octo Arms 1.1.0" --notes-file publishing/release-notes-1.1.0.md</pre>
+<p>For 1.1.0 you can either upload by hand on both sites (steps above) or create the GitHub Release after the projects exist and the secrets are set, and let the workflow upload. <code>.github/workflows/build.yml</code> builds every pull request and push to main.</p>
+
+<h2>Promotion after approval</h2>
+<ul>
+<li>Create Discord addon channel, Create Aeronautics Discord (Ship support).</li>
+<li>r/CreateMod post with the hero image + 20 s gif of climbing a wall and hanging under a ceiling.</li>
+</ul>
+
+<h2>Pending by you</h2>
+<ul>
+<li><span class="tag">manual</span> make repo public, run lockdown script, create both projects, add 3 GitHub secrets.</li>
+<li><span class="tag">nice</span> retake the weak gallery shots (Ship that looks like a Ship, cropped goggles, lit ceiling hang), record a short climb gif.</li>
+<li><span class="tag">nice</span> CHANGELOG still calls 1.0.0 the first public release and links <code>v1.0.0</code>, which will never be tagged.</li>
+<li><span class="tag">optional</span> Discord invite link for the project links section.</li>
+</ul>
+</body>
+</html>

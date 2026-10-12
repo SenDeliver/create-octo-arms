@@ -8,6 +8,17 @@ Thanks for helping with Create: Octo Arms. This page explains how to build the m
 - **Big feature or behaviour change?** Open an issue first, so we can agree on the design before you write code.
 - Read the [glossary](docs/CONTEXT.md). Code, comments, lang text and issues use its terms (Tentacle Rig, Tentacle, Grip, Held, Reach, Air, Active, Stowed, Double Jump, Setting Down, Crawl, Rig Block, ...).
 
+## Ground rules
+
+- Be kind. The [Code of Conduct](CODE_OF_CONDUCT.md) applies to issues, pull requests and discussions.
+- Everything is in English: code, comments, commits, issues.
+- One topic per issue or pull request. Unrelated refactors, reformatting or dependency bumps go in their own pull request, or not at all.
+- No new required dependencies, and no bundled mods or libraries, without an issue agreed first. Create stays the only required dependency.
+- Keep the mod's style: Create-like look, glossary names, no features that only work on a client or only on a server.
+- Code made with AI tools is fine, but you must understand it and test it in game before you send it. Untested pull requests are closed.
+- Do not open pull requests only to change versions, wording or formatting.
+- Security problems go through [SECURITY.md](SECURITY.md), not a public issue.
+
 ## Build and run
 
 You need **JDK 21 or newer**. Gradle uses a Java 21 toolchain.
@@ -61,5 +72,13 @@ At minimum, before a pull request:
 3. Describe **what** changed, **why**, and **how you tested it** (client or server, screenshots for visual changes).
 4. Add a line to `CHANGELOG.md` under `[Unreleased]`.
 5. Be ready for review comments.
+
+## Review and merge
+
+- Only the maintainer (@SenDeliver) reviews and merges. `main` accepts pull requests only; squash merge; release tags are made by the maintainer.
+- The **Build** check (`./gradlew build` on GitHub Actions) must pass before a pull request is merged.
+- Expect a first answer within about a week. Pull requests with no reply to review comments for 30 days may be closed, you can reopen later.
+- Accepted changes land in the next release and get a line in `CHANGELOG.md` with your GitHub name.
+- The maintainer may decline a change that does not fit the mod's goals, even if the code is fine. Open an issue first for anything big to avoid wasted work.
 
 By contributing, you agree that your work is released under the [MIT License](LICENSE).

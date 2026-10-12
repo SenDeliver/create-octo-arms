@@ -1,0 +1,73 @@
+<p><strong>A Create Backtank with four pneumatic Tentacles. Climb walls, hang from ceilings, ride Ships.</strong></p>
+<p><img src="https://raw.githubusercontent.com/SenDeliver/create-octo-arms/main/docs/images/hero-carried-on-tentacles.png" alt="A player lifted off the ground by the four copper Tentacles of a Tentacle Rig" width="800"></p>
+
+<h2>What it does</h2>
+<p>Craft a <strong>Tentacle Rig</strong>: a Backtank with four <strong>Tentacles</strong> and a Precision Mechanism. Wear it in the chest slot and <strong>Double Jump</strong>. The Tentacles grab nearby block faces and carry you where you look: across the floor, up a wall, under a ledge or a ceiling. Your hands stay free, so you can mine, build and fight while you hang. The Rig runs on the Backtank's <strong>Air</strong> and refills like any Backtank.</p>
+
+<h2>Features</h2>
+<ul>
+<li><strong>Climb anything solid</strong>: Tentacles grip any full block face: floor, wall, ceiling, the underside of a ledge, also underwater.</li>
+<li><strong>Move where you look</strong>: <code>Space</code> goes up, <code>Shift</code> goes down. The Rig only moves you where at least two Tentacles can hold, so you can't walk off an edge.</li>
+<li><strong>Double Jump</strong> to activate, also in mid-air: the Rig catches you with no fall damage. Double Jump again to be <strong>Set Down</strong>.</li>
+<li><strong>Crawl</strong>: out of Air, the Rig does not drop you. It slowly lowers you to the floor.</li>
+<li><strong>Hands free</strong>: mining, placing, fighting and using items all work while the Rig carries you.</li>
+<li><strong>Still a Backtank</strong>: it holds Air, feeds a Diving Helmet, takes Capacity and refills under a spinning shaft.</li>
+<li><strong>Two tiers</strong>: Copper (Reach 4) and Netherite (Reach 7, half the Air use, fire resistant).</li>
+<li><strong>Three enchantments</strong>: Far Reach, Thrift and Swift, plus vanilla chest armor enchantments.</li>
+<li><strong>Never breaks</strong>: like an Elytra, a worn-out Rig stops at 1 durability until you repair it.</li>
+<li><strong>Rig Settings</strong> screen: Standing Height, Speed and Activation Mode (Double Jump or a key).</li>
+<li><strong>Ride Ships</strong> (optional): with Sable installed, Tentacles grip Ship blocks and carry you along with a moving, turning Ship.</li>
+<li>A stepping gait everyone on the server sees, Sticker and piston sounds, and the "Doc's Rig" advancement.</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/SenDeliver/create-octo-arms/main/docs/images/climbing-a-wall.png" alt="A player climbing a stone wall on four Tentacles" width="800"></p>
+
+<h2>Quick start</h2>
+<ol>
+<li>Make <strong>Tentacles</strong> on a Sequenced Assembly line (Piston Extension Pole: deploy Sticker, press, deploy Andesite Casing, 2 loops).</li>
+<li>Craft a <strong>Copper Tentacle Rig</strong> on Mechanical Crafters: four Tentacles, a Precision Mechanism, Brass Casing, Copper Sheet and a Copper Backtank. A new Rig has no Air.</li>
+<li>Place the Rig as a block under a spinning shaft to fill it. Pick it up again with an empty hand.</li>
+<li>Wear it in the chest slot and Double Jump. Look where you want to go and walk.</li>
+<li>Double Jump again to be Set Down. Sneak + use the Rig in the air to open Rig Settings.</li>
+</ol>
+<p>Ponder (hold <code>W</code> over a Rig or Tentacle) shows all of this step by step.</p>
+
+<h2>Ships (Sable)</h2>
+<p>With Sable installed, the blocks of a Ship are Grips like world blocks. Create Aeronautics is not needed, but its Ships are Sable Ships, so they work too. Grip a Ship's floor, walls, hull or underside, parked or moving, and move between the world and a Ship both ways. Air use counts only your own move. Server admins can turn it off with <code>ships.grip = false</code>.</p>
+<p><img src="https://raw.githubusercontent.com/SenDeliver/create-octo-arms/main/docs/images/ship-moving.png" alt="A player gripping the side of a Ship moving at 15 blocks per second" width="800"></p>
+
+<h2>Compatibility</h2>
+<ul>
+<li><strong>Ponder</strong> scene for the Tentacle Rig.</li>
+<li><strong>Engineer's Goggles</strong>: Air, fill rate, Reach, Top Speed and Air use on a placed Rig Block.</li>
+<li><strong>Create Display Link</strong>: a Rig Block is a "Rig Air" source for Display Boards and Nixie Tubes.</li>
+<li><strong>JEI</strong> (optional): all recipes in Create's own categories and in Smithing.</li>
+<li><strong>Sable</strong> (optional): Ship Grips. Create Aeronautics Ships work through Sable.</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/SenDeliver/create-octo-arms/main/docs/images/goggles-rig-block.png" alt="Engineer's Goggles on a placed Rig Block" width="800"></p>
+
+<h2>Requirements</h2>
+<table border="1" cellpadding="4">
+<tr><th>Mod</th><th>Version</th></tr>
+<tr><td>Minecraft</td><td>1.21.1</td></tr>
+<tr><td>NeoForge</td><td>21.1.228+</td></tr>
+<tr><td><a href="https://www.curseforge.com/minecraft/mc-mods/create">Create</a></td><td>6.0.10+, below 6.1.0</td></tr>
+<tr><td><a href="https://www.curseforge.com/minecraft/mc-mods/sable">Sable</a></td><td>optional, 2.0.5+, below 2.1 (for Ships)</td></tr>
+<tr><td><a href="https://www.curseforge.com/minecraft/mc-mods/jei">JEI</a></td><td>optional</td></tr>
+</table>
+<p>Install on <strong>both</strong> client and server, same version on both.</p>
+
+<h2>Known limitations</h2>
+<ul>
+<li>Tentacles grip full block faces only. Slabs, stairs, fences and other partial blocks are not Grips.</li>
+<li>Mechanical Crafting does not copy the Backtank's Air, so a new Rig starts empty.</li>
+<li>Ships with a scale other than 1 are ignored.</li>
+<li>Movement is client-driven and checked by the server. Not tested with server anti-cheat plugins or real network latency yet.</li>
+</ul>
+
+<h2>Links</h2>
+<ul>
+<li><a href="https://github.com/SenDeliver/create-octo-arms">Source and docs</a></li>
+<li><a href="https://github.com/SenDeliver/create-octo-arms/issues">Issues</a></li>
+<li><a href="https://github.com/SenDeliver/create-octo-arms/blob/main/CHANGELOG.md">Changelog</a></li>
+</ul>
+<p>MIT License. Built on Create (not bundled); uses Create's Backtank, Sticker and Ponder. Ship support through Sable (optional, not bundled). Developed with AI assistance (Claude); design, testing and direction by SenDeliver.</p>

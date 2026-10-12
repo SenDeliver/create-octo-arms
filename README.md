@@ -136,6 +136,12 @@ Limits:
 
 Built and tested with NeoForge 21.1.250 and Create 6.0.10; Ships with Sable 2.0.5 and Create Aeronautics 1.3.2.
 
+## Downloads
+
+- [Modrinth](https://modrinth.com/mod/octo-arms)
+- [CurseForge](https://www.curseforge.com/minecraft/mc-mods/octo-arms)
+- [GitHub Releases](https://github.com/SenDeliver/create-octo-arms/releases)
+
 ## Install
 
 1. Install NeoForge and Create.

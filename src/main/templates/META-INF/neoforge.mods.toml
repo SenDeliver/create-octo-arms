@@ -2,6 +2,7 @@ modLoader="javafml"
 loaderVersion="${loader_version_range}"
 license="${mod_license}"
 issueTrackerURL="https://github.com/SenDeliver/create-octo-arms/issues"
+updateJSONURL="https://api.modrinth.com/updates/octo-arms/forge_updates.json?neoforge=only"
 
 [[mods]]
 modId="${mod_id}"
