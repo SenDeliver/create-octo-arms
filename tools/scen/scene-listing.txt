@@ -1,0 +1,64 @@
+# Listing screenshots (docs/images): hero, climb, ceiling, goggles, JEI, tooltips. x 7990..8100. Flat world: ground top y=-60.
+# TIMELINE listing-timeline.txt, SCRIPT2 listing-watch.txt (Dev2 = spectator camera). Run with or without -PwithSable.
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+gamerule doImmediateRespawn true
+gamerule doMobSpawning false
+time set noon
+weather clear
+forceload add 7970 -120 8110 60
+# T tower: stone bricks 9x9 (north face z=8), andesite casing corners and bands, wall crenellation
+fill 8020 -60 8 8028 -36 16 minecraft:stone_bricks hollow
+fill 8020 -60 8 8020 -36 8 create:andesite_casing
+fill 8028 -60 8 8028 -36 8 create:andesite_casing
+fill 8020 -60 16 8020 -36 16 create:andesite_casing
+fill 8028 -60 16 8028 -36 16 create:andesite_casing
+fill 8020 -49 8 8028 -49 16 create:andesite_casing outline
+fill 8021 -49 9 8027 -49 15 minecraft:air
+fill 8020 -36 8 8028 -36 16 create:andesite_casing outline
+fill 8021 -36 9 8027 -36 15 minecraft:air
+fill 8020 -35 8 8028 -35 16 minecraft:stone_brick_wall outline
+fill 8021 -35 9 8027 -35 15 minecraft:air
+fill 8023 -45 8 8025 -43 8 minecraft:glass
+fill 8023 -55 8 8025 -53 8 minecraft:glass
+fill 8028 -45 11 8028 -43 13 minecraft:glass
+setblock 8024 -60 8 minecraft:spruce_door[facing=north,half=lower]
+setblock 8024 -59 8 minecraft:spruce_door[facing=north,half=upper]
+# B bridge: two pillars, deck 5 wide (z -60..-56), calcite underside (bottom face y=-50) with flush sea lanterns
+fill 8048 -60 -60 8050 -50 -56 minecraft:stone_bricks
+fill 8060 -60 -60 8062 -50 -56 minecraft:stone_bricks
+fill 8048 -60 -60 8048 -50 -60 create:andesite_casing
+fill 8048 -60 -56 8048 -50 -56 create:andesite_casing
+fill 8062 -60 -60 8062 -50 -60 create:andesite_casing
+fill 8062 -60 -56 8062 -50 -56 create:andesite_casing
+fill 8048 -50 -60 8062 -50 -56 minecraft:calcite
+fill 8048 -49 -60 8062 -49 -56 minecraft:stone_bricks
+fill 8048 -48 -60 8062 -48 -60 minecraft:stone_brick_wall
+fill 8048 -48 -56 8062 -48 -56 minecraft:stone_brick_wall
+setblock 8052 -50 -58 minecraft:sea_lantern
+setblock 8055 -50 -58 minecraft:sea_lantern
+setblock 8058 -50 -58 minecraft:sea_lantern
+setblock 8055 -50 -60 minecraft:sea_lantern
+setblock 8055 -50 -56 minecraft:sea_lantern
+# G goggles (z -100): Copper Rig Block (Far Reach II, Swift I) filling under a 128 RPM creative motor, on a polished andesite pad, casing wall behind (north, z=-103); viewed from the south
+fill 8076 -61 -104 8084 -61 -96 minecraft:polished_andesite
+fill 8076 -60 -103 8084 -56 -103 create:andesite_casing
+fill 8077 -59 -103 8083 -57 -103 minecraft:stone_bricks
+setblock 8080 -60 -100 tentaworks:copper_tentacle_rig[facing=south,arms=true]{Air:100,Components:{"minecraft:enchantments":{levels:{"tentaworks:far_reach":2,"tentaworks:swift":1}}}}
+setblock 8080 -59 -100 create:creative_motor[facing=down]{ScrollValue:128}
+setblock 8078 -60 -102 tentaworks:netherite_tentacle_rig[facing=south,arms=true]
+# trees around (background)
+place feature minecraft:fancy_oak 8008 -60 22
+place feature minecraft:fancy_oak 8038 -60 26
+place feature minecraft:oak 8014 -60 30
+place feature minecraft:fancy_oak 8000 -60 6
+place feature minecraft:birch 8034 -60 12
+place feature minecraft:fancy_oak 8070 -60 24
+place feature minecraft:oak 8044 -60 20
+place feature minecraft:fancy_oak 8040 -60 -22
+place feature minecraft:oak 8066 -60 -20
+place feature minecraft:fancy_oak 8010 -60 -18
+place feature minecraft:birch 8026 -60 -26
+op Dev
+op Dev2
+tentaworks trace on

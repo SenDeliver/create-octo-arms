@@ -112,9 +112,9 @@ New in 1.1.0. With Sable installed, blocks of a Ship are Grips like world blocks
 
 Tested: parked and turned 30°, moving at 4 and 15 blocks/s, turning at 20°/s while rolling 10°/s, moving between world and Ship, Ship removed mid-hang, standing on the deck.
 
-| Holding on to a parked, turned Ship | Riding a Ship moving at 15 blocks/s |
+| Holding on to a parked, turned Ship | Riding a Ship moving at 4 blocks/s |
 |---|---|
-| ![A player holding on to the edge of a parked Ship turned by 30 degrees](docs/images/ship-parked.png) | ![A player gripping the side of a Ship moving at 15 blocks per second](docs/images/ship-moving.png) |
+| ![A player holding on to the edge of a parked Ship turned by 30 degrees](docs/images/ship-parked.png) | ![A player gripping the side of a Ship moving at 4 blocks per second](docs/images/ship-moving.png) |
 
 Limits:
 

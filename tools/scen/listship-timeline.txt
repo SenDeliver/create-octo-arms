@@ -1,0 +1,199 @@
+# Listing ship screenshots: hold, turn while held, parked shots, then bank and move +x with a cloud trail
+gamemode spectator Dev2
+gamemode survival Dev
+tp Dev2 9008 -48 -18
+#sleep 4
+#signal catch
+#await caught
+# turn 30 degrees about +Y while Held
+tentaworks ship lship drive 0 0 0 0 15 0
+#sleep 2
+tentaworks ship lship drive 0 0 0
+#sleep 2
+sable info @e[name=lship]
+execute at Dev anchored eyes run tp Dev2 ~-4 ~-0.5 ~-6.5 facing ~2 ~2.5 ~2
+#sleep 0.6
+#signal p1
+#sleep 1
+execute at Dev anchored eyes run tp Dev2 ~2 ~-1 ~-7.5 facing ~ ~2.5 ~2
+#sleep 0.6
+#signal p2
+#sleep 1
+execute at Dev anchored eyes run tp Dev2 ~-6 ~1 ~-5 facing ~2 ~2 ~2
+#sleep 0.6
+#signal p3
+#sleep 1
+# turn back, bank 9 degrees, then move +x 5 b/s
+tentaworks ship lship drive 0 0 0 0 -15 0
+#sleep 2
+tentaworks ship lship drive 0 0 0 6 0 0
+#sleep 2
+tentaworks ship lship drive 4 0 0
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev anchored eyes run tp Dev2 ~5 ~0 ~-8 facing ~-1 ~2 ~2
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+#signal m1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev anchored eyes run tp Dev2 ~1 ~-1 ~-7.5 facing ~-1 ~2.5 ~2
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+#signal m2
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev anchored eyes run tp Dev2 ~-5 ~0.5 ~-7 facing ~1 ~2 ~2
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+#signal m3
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+execute at Dev run particle minecraft:cloud ~-1 ~0.6 ~ 0.2 0.2 0.2 0 3 force
+execute at Dev run particle minecraft:cloud ~-8 ~1.5 ~3.5 0.4 0.3 0.4 0 4 force
+#sleep 0.1
+tentaworks ship lship drive 0 0 0
+sable info @e[name=lship]
+#signal end

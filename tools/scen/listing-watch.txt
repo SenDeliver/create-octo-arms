@@ -1,0 +1,31 @@
+# Dev2: spectator camera for the listing screenshots (timeline places it)
+hud off
+await h1
+wait 4
+shot l_hero1
+await h2
+wait 4
+shot l_hero2
+await h3
+wait 4
+shot l_hero3
+await h4
+wait 4
+shot l_hero4
+await c1
+wait 4
+shot l_climb1
+await c2
+wait 4
+shot l_climb2
+await k1
+wait 4
+shot l_ceil1
+await k2
+wait 4
+shot l_ceil2
+await k3
+wait 4
+shot l_ceil3
+await end
+quit

@@ -1,0 +1,50 @@
+# Listing screenshots: Dev2 spectator camera positions (relative to Dev), signals Dev2 to shoot.
+gamemode spectator Dev2
+gamemode survival Dev
+tp Dev2 8030 -55 -10
+#sleep 4
+#signal hero
+#await heroready
+execute at Dev anchored eyes run tp Dev2 ~3 ~-2.1 ~-5.5 facing ~ ~0.2 ~
+#sleep 0.5
+#signal h1
+#sleep 1
+execute at Dev anchored eyes run tp Dev2 ~-3.5 ~-2.1 ~-5 facing ~ ~0.2 ~
+#sleep 0.5
+#signal h2
+#sleep 1
+execute at Dev anchored eyes run tp Dev2 ~4.5 ~-1.6 ~-7 facing ~ ~0.4 ~
+#sleep 0.5
+#signal h3
+#sleep 1
+execute at Dev anchored eyes run tp Dev2 ~5.5 ~-2.0 ~-2 facing ~ ~0.2 ~
+#sleep 0.5
+#signal h4
+#sleep 1
+#signal herodone
+#await climbready
+execute at Dev anchored eyes run tp Dev2 ~4 ~-2.5 ~-5 facing ~ ~0.3 ~
+#sleep 0.5
+#signal c1
+#sleep 1
+execute at Dev anchored eyes run tp Dev2 ~-4.5 ~-1.5 ~-5.5 facing ~ ~0.3 ~
+#sleep 0.5
+#signal c2
+#sleep 1
+#signal climbdone
+#await ceilready
+execute at Dev anchored eyes run tp Dev2 ~3 ~-5 ~-6.5 facing ~ ~0.5 ~
+#sleep 0.5
+#signal k1
+#sleep 1
+execute at Dev anchored eyes run tp Dev2 ~-3 ~-4.5 ~-6 facing ~ ~0.5 ~
+#sleep 0.5
+#signal k2
+#sleep 1
+execute at Dev anchored eyes run tp Dev2 ~2 ~-4.5 ~-5 facing ~ ~0.6 ~
+#sleep 0.5
+#signal k3
+#sleep 1
+#signal ceildone
+#await end
+#signal end

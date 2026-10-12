@@ -1,0 +1,25 @@
+# Listing ship screenshots (Dev): mid-air catch on the north hull side of lship, then the timeline turns/moves the ship. GRADLE_ARGS=-PwithSable TIMELINE listship-timeline.txt SCRIPT2 listship-watch.txt
+trace on
+hud off
+view third
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+await catch
+cmd tp @s 9008.5 -53.5 -4.1 0 0
+wait 2
+doublejump
+wait 30
+hold up on
+wait 10
+hold up off
+look 0 -60
+hold up on
+wait 6
+hold up off
+look 0 0
+wait 30
+mark caught
+signal caught
+await end
+mark end
+wait 20
+quit

@@ -1,0 +1,92 @@
+# Listing screenshots (Dev). TIMELINE listing-timeline.txt SCRIPT2 listing-watch.txt
+trace on
+hud off
+view third
+await hero
+cmd tp @s 8024.5 -60 2.5 0 0
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 20
+doublejump
+wait 40
+mark hero
+signal heroready
+await herodone
+# climb the tower north face (z=8)
+cmd item replace entity @s armor.chest with air
+cmd tp @s 8024.5 -60 7.2 0 0
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 20
+look 0 -60
+hold up on
+wait 25
+hold up off
+look 0 0
+wait 30
+mark climb
+signal climbready
+await climbdone
+# hang under the bridge (underside y=-50): the Rig stays Active across the swap + tp and grips the ceiling, rise to it, hang a bit lower
+cmd item replace entity @s armor.chest with air
+cmd tp @s 8055.5 -52 -57.5 90 0
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 30
+hold jump on
+wait 15
+hold jump off
+wait 20
+hold shift on
+wait 15
+hold shift off
+look 90 0
+wait 30
+mark ceil
+signal ceilready
+await ceildone
+# goggles on the Rig Block (own HUD)
+cmd gamemode creative @s
+wait 5
+cmd item replace entity @s armor.chest with air
+cmd item replace entity @s armor.head with create:goggles
+cmd tp @s 8080.5 -60 -95.5 180 20
+view first
+hud on
+wait 20
+cmd setblock 8080 -60 -100 minecraft:air
+cmd setblock 8080 -60 -100 tentaworks:copper_tentacle_rig[facing=south,arms=true]{Air:300,Components:{"minecraft:enchantments":{levels:{"tentaworks:far_reach":2,"tentaworks:swift":1}}}}
+wait 30
+clearchat
+look 180 20
+wait 5
+shot l_goggles1
+look 180 18
+wait 5
+shot l_goggles2
+cmd tp @s 8080.5 -60 -96 180 21
+wait 5
+clearchat
+wait 5
+shot l_goggles3
+hud off
+# JEI recipe view
+jei tentaworks:tentacle recipes create:sequenced_assembly
+wait 20
+mouse 2 2
+shot l_jei
+close
+wait 5
+# tooltips (Shift view), one item each (no wrap)
+tooltips shift tentaworks:copper_tentacle_rig
+wait 5
+shot l_tip_copper
+close
+tooltips shift tentaworks:netherite_tentacle_rig
+wait 5
+shot l_tip_netherite
+close
+wait 5
+signal end
+wait 40
+quit
