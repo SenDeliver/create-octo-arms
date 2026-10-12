@@ -15,7 +15,7 @@ for name, log in (('client', c1), ('client2', c2), ('server', srv)):
     fails += bool(hits)
 TAGS = sys.argv[2].split(',') if len(sys.argv) > 2 else ['t1', 't2', 't3']
 for tag in TAGS:
-    seen = f'CPOS {tag} ' in c2
+    seen = f'CPOS {tag} ' in c2 or f'CPOS {tag}seen' in c2
     rig = re.search(r'CSOUND %s rig=Dev plants=(\d+)' % tag, c2)
     ok = seen and rig is not None
     print(('PASS' if ok else 'FAIL'), tag, 'Dev2 reached mark:', seen, "Dev's Rig visual on Dev2:", rig is not None, 'plants:', rig.group(1) if rig else '-')
