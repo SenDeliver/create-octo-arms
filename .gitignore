@@ -30,3 +30,7 @@ __pycache__/
 tools/logs/
 tools/shots/*.tmp
 tools/local.*
+
+# videos stay local (too big for git)
+publishing/*.mov
+publishing/*.mp4

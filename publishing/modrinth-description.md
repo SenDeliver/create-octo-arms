@@ -1,6 +1,6 @@
 # Create: Octo Arms
 
-**A Create Backtank with four pneumatic Tentacles. Climb walls, hang from ceilings, ride Ships.**
+**A Create Backtank with four pneumatic Tentacles. Climb walls, hang from ceilings, ride Sable and Create Aeronautics Ships.**
 
 ![A player lifted off the ground by the four copper Tentacles of a Tentacle Rig](https://raw.githubusercontent.com/SenDeliver/create-octo-arms/main/docs/images/hero-carried-on-tentacles.png)
 
@@ -20,7 +20,7 @@ Craft a **Tentacle Rig**: a Backtank with four **Tentacles** and a Precision Mec
 - **Three enchantments**: Far Reach, Thrift and Swift, plus vanilla chest armor enchantments.
 - **Never breaks**: like an Elytra, a worn-out Rig stops at 1 durability until you repair it.
 - **Rig Settings** screen: Standing Height, Speed and Activation Mode (Double Jump or a key).
-- **Ride Ships** (optional): with Sable installed, Tentacles grip Ship blocks and carry you along with a moving, turning Ship.
+- **Ride Ships**: works fully with Sable Ships, Create Aeronautics included. Tentacles grip Ship blocks like world blocks and carry you along with a moving, turning Ship.
 - A stepping gait everyone on the server sees, Sticker and piston sounds, and the "Doc's Rig" advancement.
 
 ![A player climbing a stone wall on four Tentacles](https://raw.githubusercontent.com/SenDeliver/create-octo-arms/main/docs/images/climbing-a-wall.png)
@@ -35,9 +35,9 @@ Craft a **Tentacle Rig**: a Backtank with four **Tentacles** and a Precision Mec
 
 Ponder (hold `W` over a Rig or Tentacle) shows all of this step by step.
 
-## Ships (Sable)
+## Ships (Sable, Create Aeronautics)
 
-With Sable installed, the blocks of a Ship are Grips like world blocks. Create Aeronautics is not needed, but its Ships are Sable Ships, so they work too. Grip a Ship's floor, walls, hull or underside, parked or moving, and move between the world and a Ship both ways. Air use counts only your own move. Server admins can turn it off with `ships.grip = false`.
+Octo Arms works fully with Sable Ships, and Create Aeronautics Ships are Sable Ships, so they are supported the same way. With Sable installed, the blocks of a Ship are Grips like world blocks. Grip a Ship's floor, walls, hull or underside, parked or moving, and move between the world and a Ship both ways. Air use counts only your own move. Server admins can turn it off with `ships.grip = false`.
 
 ![A player gripping the side of a Ship moving at 15 blocks per second](https://raw.githubusercontent.com/SenDeliver/create-octo-arms/main/docs/images/ship-moving.png)
 
@@ -47,7 +47,7 @@ With Sable installed, the blocks of a Ship are Grips like world blocks. Create A
 - **Engineer's Goggles**: Air, fill rate, Reach, Top Speed and Air use on a placed Rig Block.
 - **Create Display Link**: a Rig Block is a "Rig Air" source for Display Boards and Nixie Tubes.
 - **JEI** (optional): all recipes in Create's own categories and in Smithing.
-- **Sable** (optional): Ship Grips. Create Aeronautics Ships work through Sable.
+- **Sable** (optional): full Ship support, Create Aeronautics compatible.
 
 ![Engineer's Goggles on a placed Rig Block](https://raw.githubusercontent.com/SenDeliver/create-octo-arms/main/docs/images/goggles-rig-block.png)
 

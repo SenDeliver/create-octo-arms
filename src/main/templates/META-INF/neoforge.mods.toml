@@ -16,7 +16,8 @@ logoBlur=false
 description='''Octo Arms, a Create addon: the Tentacle Rig, a Backtank fitted with four pneumatic Tentacles.
 Worn in the chest slot, it carries you over floors, walls and ceilings and lets you hang under ledges, powered by the Backtank's Air.
 Double Jump to activate, Double Jump again to be set down. Copper and Netherite tiers, three enchantments (Far Reach, Thrift, Swift),
-Sequenced Assembly and Mechanical Crafting recipes, goggles info, a Display Link source and a Ponder scene.'''
+Sequenced Assembly and Mechanical Crafting recipes, goggles info, a Display Link source and a Ponder scene.
+Works fully with Sable Ships (Create Aeronautics compatible): grip and ride a parked or moving Ship.'''
 
 [[dependencies.${mod_id}]]
 modId="neoforge"
