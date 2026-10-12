@@ -26,6 +26,19 @@ RCON password: `$RCON_PASSWORD`, else the one already in `server.properties`, el
 
 Quick start: `tools/run_all.sh mytest` (one suite: see the matching line in `run_all.sh`).
 
+## Observer suites (obs, obs2, obs3; 1.1.1)
+
+Dev2 watches Dev's Rig on a Sable Ship at moments where the observer's client may lack the Ship pose. Needs `-PwithSable`, scene `scene-obs.txt`. Checks (`obs_metrics.py <log prefix> <tags>`): no render exception on either client, Dev2 reached each mark with Dev's Rig visual present.
+
+| Suite | Dev2 | Moments |
+|---|---|---|
+| obs | spectator | t1 far (ship untracked) -> next to Dev; t2 rejoin next to Dev; t3 the box Dev hangs on is assembled into a Ship and moved |
+| obs2 | spectator, then survival | t4a-d watching from 100/115/125/130 blocks; t8 standing on the deck; t5 Dev activates on the deck; t6 `sable remove` mid-Grip |
+| obs3 | survival with its own active Rig | f1 first person, f2 looking around, f3 third person (put ImmediatelyFast + Sodium jars into `run2/mods` to test the batching path) |
+
+`GRADLE_ARGS=-PwithSable TIMELINE=tools/scen/obs-timeline.txt SCRIPT2=tools/scen/obs-watch.txt tools/run_split.sh tools/scen/scene-obs.txt tools/scen/obs-client.txt tools/logs/x-obs && python3 tools/obs_metrics.py tools/logs/x-obs t1,t2,t3`
+(obs2: `obs2-*`, tags `t4a,t4b,t4c,t4d,t8,t5,t6`; obs3: `obs3-*`, tags `f1,f2,f3`.) None of them reproduced the 2026-10-12 observer crash on 1.1.0; they guard the 1.1.1 hardening.
+
 ## Sable Ships suite (p9, v1.1)
 
 Only `p9` is built with `GRADLE_ARGS=-PwithSable` (Sable runtime bundle). It runs last in `run_all.sh`; every other suite runs without the flag, so they keep testing the no-Sable path (`NoShips`) exactly as in 1.0. Without the flag p9 fails at `S0` (no `/sable` command).

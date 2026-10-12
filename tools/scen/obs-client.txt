@@ -1,0 +1,30 @@
+# Observer suite (Dev, the wearer): hang on ship obsA while Dev2 comes near and rejoins; then hang on the world box that becomes ship obsC. GRADLE_ARGS=-PwithSable TIMELINE obs-timeline.txt SCRIPT2 obs-watch.txt
+trace on
+hud off
+view third
+await a
+look -90 0
+doublejump
+wait 20
+look -90 -60
+hold up on
+wait 8
+hold up off
+wait 20
+mark ahang
+signal ahang
+await c
+look -90 0
+doublejump
+wait 20
+look -90 -60
+hold up on
+wait 8
+hold up off
+wait 20
+mark chang
+signal chang
+await end
+mark end
+wait 20
+quit

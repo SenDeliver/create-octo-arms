@@ -7,6 +7,7 @@ import dev.tentaworks.network.RigStatePacket;
 import dev.tentaworks.rig.Grip;
 import dev.tentaworks.rig.Grips;
 import dev.tentaworks.rig.RigState;
+import dev.tentaworks.rig.TentacleRigItem;
 import dev.tentaworks.rig.Tentacles;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
@@ -30,6 +31,11 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public final class RigVisuals {
+    /** Farthest a Grip may be from its wearer to be drawn: reach, a Ship's carry and lag. */
+    static final double MAX_GRIP_DISTANCE = TentacleRigItem.MAX_REACH * 2;
+    private static final org.slf4j.Logger LOG = com.mojang.logging.LogUtils.getLogger();
+    private static long lastDropLog;
+
     private static final float DEPLOY_PER_TICK = 0.125F;
     private static final Int2ObjectOpenHashMap<Visual> VISUALS = new Int2ObjectOpenHashMap<>();
     private static final int[] PLANTS_NEAR = new int[2];
@@ -209,6 +215,16 @@ public final class RigVisuals {
             Grip next = v.pending.grips()[i];
             Frame nextFrame = null;
             if (next != null && ships.isPlot(level, next.block()) && (nextFrame = ships.containing(level, next.block())) == null) next = null;
+            if (next != null && !plausible(player, toWorld(nextFrame, next.point(), 1))) {
+                if (System.currentTimeMillis() - lastDropLog > 1000) {
+                    lastDropLog = System.currentTimeMillis();
+                    LOG.warn("Grip of {} not drawn: point {} block {} plot={} frame={} is {} blocks from the wearer (max {}); Ship pose missing on this client?",
+                            player.getName().getString(), next.point(), next.block(), ships.isPlot(level, next.block()), nextFrame == null ? "none" : nextFrame.id(),
+                            (long) toWorld(nextFrame, next.point(), 1).distanceTo(player.position()), (long) MAX_GRIP_DISTANCE);
+                }
+                next = null;
+                nextFrame = null;
+            }
             float ph = next == null ? 1 : v.pending.phase(i);
             s.phaseO = s.phase;
             boolean moved = next != null && (s.target == null || s.target.point().distanceToSqr(next.point()) > 1.0E-6);
@@ -301,6 +317,12 @@ public final class RigVisuals {
     }
 
     /** {@code frame} null: the world (points pass through). */
+    /** Guard against a Ship pose this client does not have yet: a point there sits at raw plot coords, far from the player. */
+    static boolean plausible(Player player, Vec3 world) {
+        if (!Double.isFinite(world.x) || !Double.isFinite(world.y) || !Double.isFinite(world.z)) return false;
+        return world.distanceToSqr(player.position()) <= MAX_GRIP_DISTANCE * MAX_GRIP_DISTANCE;
+    }
+
     static Vec3 toWorld(Frame frame, Vec3 p, float pt) {
         return frame == null ? p : frame.renderPose(pt).toWorld(p);
     }

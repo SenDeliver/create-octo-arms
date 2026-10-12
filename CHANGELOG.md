@@ -7,6 +7,13 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-10-12
+
+### Fixed
+
+- Client crash (`InternalError: a fault occurred in an unsafe memory access operation` in `TentacleRenderer.sides`) for players watching a wearer grip a Ship whose pose their client had not received yet. The Grip point was taken at raw plot coordinates (about 1.28 million blocks out), each such arm was about 1.5 GB of vertices and two of them overflowed the vertex buffer, so it crashed only some of the time. Both guards log a warning when they trigger. Grips beyond twice the max reach, or with a non-finite point, are no longer drawn, and a sleeve never tiles more than 64 blocks.
+- First-person Rig drawing no longer ends a batch on the shared buffer source mid-frame; it uses its own buffer. Avoids freeing builders other render layers still hold under batching mods (ImmediatelyFast).
+
 ## [1.1.0] - 2026-10-09
 
 First public release (Modrinth, CurseForge).
