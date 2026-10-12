@@ -33,6 +33,8 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 public final class RigVisuals {
     /** Farthest a Grip may be from its wearer to be drawn: reach, a Ship's carry and lag. */
     static final double MAX_GRIP_DISTANCE = TentacleRigItem.MAX_REACH * 2;
+    private static final org.slf4j.Logger LOG = com.mojang.logging.LogUtils.getLogger();
+    private static long lastDropLog;
 
     private static final float DEPLOY_PER_TICK = 0.125F;
     private static final Int2ObjectOpenHashMap<Visual> VISUALS = new Int2ObjectOpenHashMap<>();
@@ -214,6 +216,12 @@ public final class RigVisuals {
             Frame nextFrame = null;
             if (next != null && ships.isPlot(level, next.block()) && (nextFrame = ships.containing(level, next.block())) == null) next = null;
             if (next != null && !plausible(player, toWorld(nextFrame, next.point(), 1))) {
+                if (System.currentTimeMillis() - lastDropLog > 1000) {
+                    lastDropLog = System.currentTimeMillis();
+                    LOG.warn("Grip of {} not drawn: point {} block {} plot={} frame={} is {} blocks from the wearer (max {}); Ship pose missing on this client?",
+                            player.getName().getString(), next.point(), next.block(), ships.isPlot(level, next.block()), nextFrame == null ? "none" : nextFrame.id(),
+                            (long) toWorld(nextFrame, next.point(), 1).distanceTo(player.position()), (long) MAX_GRIP_DISTANCE);
+                }
                 next = null;
                 nextFrame = null;
             }

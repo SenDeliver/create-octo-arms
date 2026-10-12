@@ -321,6 +321,8 @@ public final class TentacleRenderer {
 
     /** Blocks of sleeve a TUBE may tile; a longer one is a bad pose (unresolved Ship), never a real arm. */
     private static final int MAX_TUBE_RINGS = 64;
+    private static final org.slf4j.Logger LOG = com.mojang.logging.LogUtils.getLogger();
+    private static long lastCapLog;
 
     /** Box in px around the current frame. TUBE: sides tile V once per block, U centred; BLOCK: whole texture per face; BAND: centre rows; AXLE: a rod along X. */
     private static void box(PoseStack.Pose p, VertexConsumer vc, TextureAtlasSprite s, int light, Space space,
@@ -352,6 +354,10 @@ public final class TentacleRenderer {
                 float span = Y1 - Y0;
                 if (!Float.isFinite(span) || span <= 0) return;
                 int rings = Math.min(MAX_TUBE_RINGS, (int) Math.ceil(span - 1.0E-4F));
+                if (rings == MAX_TUBE_RINGS && System.currentTimeMillis() - lastCapLog > 1000) {
+                    lastCapLog = System.currentTimeMillis();
+                    LOG.warn("Tentacle sleeve of {} blocks capped at {}: a bad pose reached the renderer", span, MAX_TUBE_RINGS);
+                }
                 float top = Y1;
                 for (int i = 0; i < rings; i++) {
                     float bottom = Math.max(Y0, top - 1);
