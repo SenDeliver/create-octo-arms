@@ -9,6 +9,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [1.1.0] - 2026-10-09
 
+First public release (Modrinth, CurseForge).
+
 The Rig grips Sable Ships (also Create Aeronautics Ships) and rides them.
 
 ### Added
@@ -35,7 +37,7 @@ The Rig grips Sable Ships (also Create Aeronautics Ships) and rides them.
 
 ## [1.0.0] - 2026-10-09
 
-First public release as **Create: Octo Arms** (mod id `tentaworks`). The project was called Tentaworks during development; the mod id keeps that name.
+First release as **Create: Octo Arms** (mod id `tentaworks`), server-internal, not published to mod sites. The project was called Tentaworks during development; the mod id keeps that name.
 
 ### Added
 
