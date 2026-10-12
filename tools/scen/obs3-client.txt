@@ -1,0 +1,19 @@
+# Observer suite 3 (Dev): hang on obsA's west wall while Dev2, wearing an active Rig, watches (ImmediatelyFast + Sodium in run2/mods).
+trace on
+hud off
+view third
+await a
+look -90 0
+doublejump
+wait 20
+look -90 -60
+hold up on
+wait 8
+hold up off
+wait 20
+mark ahang
+signal ahang
+await end
+mark end
+wait 20
+quit

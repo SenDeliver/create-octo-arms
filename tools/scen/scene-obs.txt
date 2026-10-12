@@ -1,0 +1,15 @@
+# Observer suite (1.1.1): a second client watches a wearer hang on a Sable Ship while its pose arrives late (far-to-near, rejoin, assemble under the Grips). Needs GRADLE_ARGS=-PwithSable.
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+gamerule doImmediateRespawn true
+time set noon
+forceload add 6000 -20 6200 20
+forceload add 6980 -20 7020 20
+# A parked ship on the floor, turned 30 degrees (as p9 A)
+fill 6060 -60 -3 6066 -56 3 stone hollow
+sable assemble area 6060 -60 -3 6066 -56 3
+execute positioned 6063.5 -57.5 0.5 run sable name set @n obsA
+sable forceload add @e[name=obsA]
+sable physics rotation @e[name=obsA] set axis 0 1 0 30
+# C world box, assembled into a ship later while the wearer hangs on it
+fill 6160 -60 -3 6166 -56 3 stone hollow

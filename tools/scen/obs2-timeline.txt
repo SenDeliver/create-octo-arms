@@ -1,0 +1,45 @@
+# Observer timeline 2. obsA centre 6063.5 -57.5 0.5, Dev hangs on its west wall.
+gamemode spectator Dev2
+tp Dev2 6000.5 -50 0.5 -90 10
+tp Dev 6058.7 -60 0.5 -90 0
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+sable info @e[name=obsA]
+#sleep 1
+#signal a
+#await ahang
+tp Dev2 5963.5 -52 0.5 -90 5
+#sleep 0.5
+#signal t4a
+#sleep 3
+tp Dev2 5948.5 -52 0.5 -90 5
+#sleep 0.5
+#signal t4b
+#sleep 3
+tp Dev2 5938.5 -52 0.5 -90 5
+#sleep 0.5
+#signal t4c
+#sleep 3
+tp Dev2 5933.5 -52 0.5 -90 5
+#sleep 0.5
+#signal t4d
+#sleep 3
+gamemode survival Dev2
+tp Dev2 6063.5 -54.9 0.5 90 45
+#sleep 1
+#signal t8
+#sleep 5
+tp Dev 6063.5 -54.9 2.5 0 0
+item replace entity Dev armor.chest with air
+#sleep 0.5
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 1
+#signal d
+#await dhang
+#signal t5
+#sleep 4
+#signal e
+#sleep 1
+sable remove @e[name=obsA]
+#await edone
+#sleep 2
+#signal end

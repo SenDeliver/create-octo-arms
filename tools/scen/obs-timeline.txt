@@ -1,0 +1,34 @@
+# Observer timeline. T1: Dev2 far (ship untracked) comes next to the hanging Dev. T2: Dev2 rejoins next to the hanging Dev. T3: the box Dev hangs on is assembled into a ship and moved.
+gamemode spectator Dev2
+tp Dev2 7000 -50 0.5
+tp Dev 6058.7 -60 0.5 -90 0
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+sable info @e[name=obsA]
+#sleep 1
+#signal a
+#await ahang
+execute at Dev run tp Dev2 ~-6 ~1 ~-5 facing entity Dev eyes
+#sleep 0.5
+#signal t1
+#sleep 7
+#signal t2
+#sleep 14
+tp Dev 6158.7 -60 0.5 -90 0
+item replace entity Dev armor.chest with air
+#sleep 0.5
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+#sleep 1
+#signal c
+#await chang
+execute at Dev run tp Dev2 ~-6 ~1 ~-5 facing entity Dev eyes
+#sleep 1
+#signal t3
+sable assemble area 6160 -60 -3 6166 -56 3
+execute positioned 6163.5 -57.5 0.5 run sable name set @n obsC
+#sleep 2
+sable info @e[name=obsC]
+tentaworks ship obsC drive 1 0 0
+#sleep 3
+tentaworks ship obsC drive 0 0 0
+#sleep 4
+#signal end
