@@ -231,4 +231,4 @@ Create: Octo Arms is released under the [MIT License](LICENSE). Copyright (c) 20
 
 Built on top of, but **not bundling**, [Create](https://github.com/Creators-of-Create/Create) by the Create team (MIT). It uses Create's Backtank, Sticker and Ponder.
 
-Developed with AI assistance (Claude); design, testing and direction by SenDeliver.
+Developed with AI assistance (Claude).
