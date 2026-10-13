@@ -7,6 +7,17 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-10-13
+
+### Added
+
+- The wearer's body hangs still while the Rig carries them. Before, vanilla read the Rig's move (and a Ship's carry) as walking, so the wearer "walked in the sky" with swinging arms and legs. The walk animation now fades out within a few ticks of being Held and comes back as soon as the Rig Stows. Applies on the wearer's own client and on every client that sees them, also on servers that still run 1.1.
+- Client config `config/tentaworks-client.toml`, key `animation.walkWhileHeld` (default `false`): `true` brings the old walking look back.
+
+### Compatibility
+
+- Client only. Network registrar, packets and save data are unchanged: 1.1.2 clients join 1.1.0/1.1.1 servers and the other way round (they just keep the old look).
+
 ## [1.1.1] - 2026-10-12
 
 ### Fixed

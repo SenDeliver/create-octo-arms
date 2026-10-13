@@ -34,6 +34,7 @@ PUSH = 0.04               # G/H: a one-tick client ship-frame step above this is
                           # a hull starting to move toward it (one tick of hull motion, then a gap): Sable, not the Rig
 LIFT_TOL = 0.1            # R: Standing Height above a rising deck
 STANDING = 1.5            # default Standing Height
+WA_STILL = 0.02           # B/G/H: walk animation speed of a carried rider (v1.1.2 still body)
 HALF = (3.5, 2.5, 3.5)    # hull half size of the 7x5x7 ships around their rotation point (ship frame)
 
 
@@ -50,9 +51,9 @@ def info(text):
 # --- parse -------------------------------------------------------------------------------------------------------------
 tr = {}
 for m in re.finditer(r'TRACE t=\d+ gt=(\d+) pos=' + num + r' d=\S+ cmd=\S+ held=(\d+) state=(\w+) .*?ground=(\w+) hp=(\S+) air=(\d+) ff=\w+'
-                     r'(?: sheld=(\d+) carry=(\S+))?', c):
+                     r'(?: sheld=(\d+) carry=(\S+))?(?: wa=(\S+))?', c):
     tr[int(m[1])] = dict(p=tuple(map(float, m.group(2, 3, 4))), held=int(m[5]), state=m[6], ground=m[7] == 'true', hp=float(m[8]),
-                         air=int(m[9]), sheld=None if m[10] is None else int(m[10]), carry=m[11])
+                         air=int(m[9]), sheld=None if m[10] is None else int(m[10]), carry=m[11], wa=None if m[12] is None else float(m[12]))
 st = {}
 for m in re.finditer(r'STRACE gt=(\d+) Dev pos=' + num + r' v=\S+ state=(\w+) grips=(\d+) cf=\S+ flying=\w+ fall=\S+ hp=(\S+) ground=(\w+) air=(\d+) mv=\S+'
                      r'(?: sgrips=(\d+) carry=(\S+))?', s):
@@ -312,6 +313,16 @@ def bad_lines(t0, t1):
     return sum(part.count(x) for x in ('moved wrongly', 'moved too quickly', 'forcing Falling', 'kicked', 'Flying is not enabled'))
 
 
+def still(name, a, b):
+    """v1.1.2: an idle rider carried by a Ship shows no walk animation (TRACE wa, after HOLD_SETTLE ticks)."""
+    w = [(g, x) for g, x in span(tr, mk[a], mk[b]) if g >= mk[a] + HOLD_SETTLE and x['wa'] is not None]
+    if not w:
+        check(name, False, f'no TRACE wa ticks in {a}..{b}')
+        return
+    peak = max(x['wa'] for _, x in w)
+    check(name, peak <= WA_STILL, f'{len(w)} ticks, peak walk animation speed {peak:.4f} (<= {WA_STILL})')
+
+
 def quiet(name, t0, t1, ship=None):
     """No whir (create:cogs) and no height hiss (create:steam) started between two CSOUND stamps of an idle rider: the Ship's
     carry is not the Rig's motion. With {@code ship}: one that starts within 2 ticks of a Sable contact push (a real one-tick
@@ -369,6 +380,7 @@ if section('B moving ship', 'b0', 'bend', *[k + x for k, _ in STEPS for x in ('a
         drift(f'B {k} client/server drift', 'p9b', a, b, sp)
     ride_client('B client ride across all velocity steps', 'p9b', mk['b0'], mk['bend'], ZONE_RIDE)
     quiet('B sounds: idle rider on the moving ship', 'b0', 'bend')
+    still('B still body: idle rider on the moving ship', 'b0', 'bend')
 
 # --- C rotating ship ----------------------------------------------------------------------------------------------------
 if section('C rotating ship', 'c0', 'cya', 'cyb', 'cra', 'crb', 'cend'):
@@ -454,6 +466,7 @@ if section('G ship moving toward the wearer', 'g0', 'gend', 'g4a', 'g4b', 'g15a'
     bow('G', 'p9g', [('g4', (-4, 0, 0), 'g4on', 'g4off'), ('g15', (-15, 0, 0), 'g15on', 'g15off')])
     info(f"G Sable contact pushes (client ship-frame one-tick steps > {PUSH}): {[(g, round(x, 3)) for g, x in pushes('p9g', mk['g0'], mk['gend'])]}")
     quiet('G sounds: idle rider on the moving ship', 'g0', 'gend', 'p9g')
+    still('G still body: idle rider on the moving ship', 'g0', 'gend')
 
 # --- H under the floor ---------------------------------------------------------------------------------------------------
 if section('H under the floor, ship up and down', 'h0', 'hend', 'hupa', 'hupb', 'hdna', 'hdnb'):
@@ -463,6 +476,7 @@ if section('H under the floor, ship up and down', 'h0', 'hend', 'hupa', 'hupb', 
     bow('H', 'p9h', [('hup', (0, 3, 0), 'hupon', 'hupoff'), ('hdn', (0, -3, 0), 'hdnon', 'hdnoff')])
     info(f"H Sable contact pushes (client ship-frame one-tick steps > {PUSH}): {[(g, round(x, 3)) for g, x in pushes('p9h', mk['h0'], mk['hend'])]}")
     quiet('H sounds: idle rider on the moving ship', 'h0', 'hend', 'p9h')
+    still('H still body: idle rider on the moving ship', 'h0', 'hend')
 
 # --- R roof edge ---------------------------------------------------------------------------------------------------------
 if section('R roof edge, lift on a rising deck', 'rupa', 'rupb', 'rdna', 'rdnb', 'rend'):

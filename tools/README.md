@@ -18,7 +18,7 @@ RCON password: `$RCON_PASSWORD`, else the one already in `server.properties`, el
 |---|---|
 | `setup_run.sh` | Creates `run/` and `run2/`: muted clients, flat survival dedicated server with RCON on 25608 (game port 25609). `GAMEMODE=creative` switches the game mode. |
 | `rcon.py` | Sends an RCON scenario from stdin to the dev server. `#sleep N`, `#await name` and `#signal name` are harness directives (sync with the client script). |
-| `run_split.sh <scene> <client script> <log prefix>` | Fresh world: `runServer`, plays the scene over RCON, joins `runClient` (player `Dev`) running a DevScript, optional second client `Dev2` (`SCRIPT2=`), optional RCON `TIMELINE=`. Config overrides: `TW_SPEED_MAX`, `TW_REACH_COPPER`, `TW_REACH_NETHERITE`. `GRADLE_ARGS` (e.g. `-PnoJei`) go to every Gradle run. |
+| `run_split.sh <scene> <client script> <log prefix>` | Fresh world: `runServer`, plays the scene over RCON, joins `runClient` (player `Dev`) running a DevScript, optional second client `Dev2` (`SCRIPT2=`), optional RCON `TIMELINE=`. Config overrides: `TW_SPEED_MAX`, `TW_REACH_COPPER`, `TW_REACH_NETHERITE` (server), `TW_CLIENT_WALK` (client `animation.walkWhileHeld`, both clients). `GRADLE_ARGS` (e.g. `-PnoJei`) go to every Gradle run. |
 | `run_all.sh <tag>` | Full regression: every suite through `run_split.sh`, then copies screenshots to `shots/` and prints the checks. Logs in `tools/logs/<tag>-*`. p9 (Sable Ships) runs last with `-PwithSable`. |
 | `scen/` | Scenes (`scene-*.txt`, RCON setup), timelines (`*-timeline.txt`, RCON during the run) and client scripts (`*-client.txt`, `*-watch.txt`) per suite. |
 | `analyze.py <log prefix>` | Kick/warn counts and client vs server position drift for one run. |
@@ -89,6 +89,9 @@ New fields go at the end of existing lines only: p1..p8 and `analyze.py` match b
 | client | `CSHIP gt=<gt> id=<uuid> pos=x,y,z q=x,y,z,w` | every client sub-level, each tick, from `DevScript` trace: the pose the client used for this tick's Grips (logical pose read in `MovementInputUpdateEvent` at LOWEST priority, after `RigClient`), printed with the TRACE line at `ClientTickEvent.Post` under its `gt` |
 | server | `SHIPDRIVE gt=<gt> name=<name> v=x,y,z w=x,y,z` | once per `drive` call |
 | server | `SHIPSTOP gt=<gt> name=<name>` | once per `stop` call |
+
+| client | `TRACE … wa=<speed>` | v1.1.2: own `walkAnimation.speed()` (0 = body still), last field |
+| client | `RWALK gt=<gt> name=<player> state=<RigState\|-> wa=<speed>` | v1.1.2: every other player in the level, each traced tick: their Rig visual's state and walk animation speed as this client renders them |
 
 Numbers `%.3f` (`q` `%.5f`). `p9_metrics.py` maps `id` to `name` through SSHIP. Ship frame = `q^-1 * (p - pos)`. Without CSHIP the drift check falls back to world frame with one tick of ship motion allowed.
 

@@ -11,6 +11,17 @@ view front
 wait 3
 shot p6_stowed_front
 view third
+# S stowed walk (vanilla walk animation must still run): forward 12, back 12
+look 0 25
+mark swalka
+hold up on
+wait 12
+hold up off
+hold down on
+wait 12
+hold down off
+mark swalkb
+wait 5
 signal stowed
 wait 20
 doublejump
