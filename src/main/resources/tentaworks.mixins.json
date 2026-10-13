@@ -11,7 +11,8 @@
   "client": [
     "BacktankRendererMixin",
     "EntityRendererMixin",
-    "KineticBlockEntityGoggleMixin"
+    "KineticBlockEntityGoggleMixin",
+    "LivingEntityWalkMixin"
   ],
   "injectors": {
     "defaultRequire": 1

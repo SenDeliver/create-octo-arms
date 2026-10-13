@@ -1,12 +1,12 @@
 #!/bin/bash
 # Dedicated server + client(s) over localhost. Fresh world each run.
 # GRADLE_ARGS (e.g. -PnoJei) go to every gradle run.
-# usage: [TW_SPEED_MAX=20] [TW_REACH_COPPER=N] [TW_REACH_NETHERITE=N] [TIMELINE=<rcon file run after Dev joins>] [SCRIPT2=<client script for Dev2>] [GAMEMODE=creative] tools/run_split.sh <rcon scene> <client script> <log prefix>
+# usage: [TW_SPEED_MAX=20] [TW_REACH_COPPER=N] [TW_REACH_NETHERITE=N] [TW_CLIENT_WALK=true] [TIMELINE=<rcon file run after Dev joins>] [SCRIPT2=<client script for Dev2>] [GAMEMODE=creative] tools/run_split.sh <rcon scene> <client script> <log prefix>
 cd "$(dirname "$0")/.."
 SCENE=$1; SCRIPT=$2; OUT=$3
 mkdir -p "$(dirname "$OUT")"
-for i in $(seq 1 60); do pgrep -f bootstraplauncher > /dev/null || break; sleep 2; done
-if pgrep -f bootstraplauncher > /dev/null; then echo "a Minecraft is already running; not starting"; exit 1; fi
+for i in $(seq 1 60); do pgrep -f "bootstraplauncher.*$PWD/build/moddev" > /dev/null || break; sleep 2; done
+if pgrep -f "bootstraplauncher.*$PWD/build/moddev" > /dev/null; then echo "a dev Minecraft of this repo is already running; not starting"; exit 1; fi
 tools/setup_run.sh > /dev/null
 rm -rf run/server/world run/signal run2/signal
 # TW_SPEED_MAX (e.g. 20), TW_REACH_COPPER / TW_REACH_NETHERITE: this run's world overrides those keys (world/serverconfig beats config/)
@@ -17,6 +17,11 @@ if [ -n "$TW_SPEED_MAX$TW_REACH_COPPER$TW_REACH_NETHERITE" ] && [ -f run/server/
     sec=="[reach]" && $1=="copper" && rc!="" {sub(/=.*/, "= " rc)}
     sec=="[reach]" && $1=="netherite" && rn!="" {sub(/=.*/, "= " rn)} {print}' run/server/config/tentaworks-server.toml > run/server/world/serverconfig/tentaworks-server.toml
 fi
+# TW_CLIENT_WALK (true|false): this run's client config animation.walkWhileHeld on both clients (default: the mod default, false)
+for d in run run2; do
+  rm -f $d/config/tentaworks-client.toml
+  [ -n "$TW_CLIENT_WALK" ] && printf '[animation]\n\twalkWhileHeld = %s\n' "$TW_CLIENT_WALK" > $d/config/tentaworks-client.toml
+done
 [ -f tools/local.env ] && . tools/local.env
 ./gradlew runServer $GRADLE_ARGS > "$OUT-server.log" 2>&1 &
 SPID=$!

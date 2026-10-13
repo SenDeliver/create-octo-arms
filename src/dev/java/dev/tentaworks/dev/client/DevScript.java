@@ -2,6 +2,7 @@ package dev.tentaworks.dev.client;
 
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.client.RigClient;
+import dev.tentaworks.client.RigVisuals;
 import dev.tentaworks.client.RigSettingsScreen;
 import dev.tentaworks.network.RigSettingsPacket;
 import dev.tentaworks.registry.TentaworksDataComponents;
@@ -84,6 +85,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -633,10 +635,16 @@ public final class DevScript {
         Vec3 pos = p.position();
         Vec3 d = lastPos == null ? Vec3.ZERO : pos.subtract(lastPos);
         lastPos = pos;
-        LOG.info("TRACE t={} gt={} pos={} d={} cmd={} held={} state={} fly={} mayfly={} press={} jumpkey={} ground={} hp={} air={} ff={} sheld={} carry={}",
+        LOG.info("TRACE t={} gt={} pos={} d={} cmd={} held={} state={} fly={} mayfly={} press={} jumpkey={} ground={} hp={} air={} ff={} sheld={} carry={} wa={}",
                 clientTicks, mc.level.getGameTime(), fmt(pos), fmt(d), fmt(RigClient.motion()), RigClient.heldCount(), RigClient.state(),
                 p.getAbilities().flying, p.mayFly(), RigClient.jumpPressed(), mc.options.keyJump.isDown(), p.onGround(), p.getHealth(), BacktankUtil.getAir(p.getItemBySlot(EquipmentSlot.CHEST)), p.isFallFlying(),
-                RigClient.shipGrips(), RigClient.carryShip() == null ? "-" : RigClient.carryShip().id());
+                RigClient.shipGrips(), RigClient.carryShip() == null ? "-" : RigClient.carryShip().id(), String.format(Locale.ROOT, "%.4f", p.walkAnimation.speed()));
+        for (var other : mc.level.players()) {
+            if (other == p) continue;
+            RigVisuals.Visual v = RigVisuals.get(other);
+            LOG.info("RWALK gt={} name={} state={} wa={}", mc.level.getGameTime(), other.getGameProfile().getName(),
+                    v == null ? "-" : v.state(), String.format(Locale.ROOT, "%.4f", other.walkAnimation.speed()));
+        }
         if (!SABLE) return;
         List<String> poses = shipPoses != null ? shipPoses : DevShipsClient.poses(mc.level);
         shipPoses = null;

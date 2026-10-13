@@ -1,10 +1,11 @@
 """Phase-6 numbers and pass/fail from a p6 suite log set (gait spread, steppers, planted while moving, frame cost, plant sounds).
-usage: p6_metrics.py tools/logs/<tag>-p6"""
+usage: p6_metrics.py tools/logs/<tag>-p6 [--walk]   (--walk: run made with TW_CLIENT_WALK=true, the vanilla walk animation is expected while Held)"""
 import math
 import re
 import sys
 
 pre = sys.argv[1]
+walk_cfg = '--walk' in sys.argv[2:]
 num = r'(-?[\d.]+),(-?[\d.]+),(-?[\d.]+)'
 c = open(f'{pre}-client.log', errors='replace').read()
 c2 = open(f'{pre}-client2.log', errors='replace').read()
@@ -73,6 +74,31 @@ for name, a, b, need in (('flat walk', 'walka', 'walkb', 6), ('wall climb', 'cli
     states = sorted(set(x['state'] for _, x in w))
     check(f'G3 Held while stepping ({name})', mv and minpl >= 2 and smin >= 2 and n >= need and states == ['ACTIVE'],
           f'{len(mv)} moving ticks, min planted {minpl} (>= 2), {n} plants (>= {need}), server min valid Grips {smin} (>= 2), states {states}')
+
+# W walk animation (v1.1.2): wa = LivingEntity.walkAnimation.speed() each tick (TRACE: own body, RWALK: Dev seen by Dev2)
+WA_STILL = 0.02
+WA_WALK = 0.1
+WA_SETTLE = 10
+wa = {int(m[1]): (m[2], float(m[3])) for m in re.finditer(r'TRACE t=\d+ gt=(\d+) .*? state=(\w+) .*? wa=(\S+)', c)}
+rwa = {int(m[1]): (m[2], float(m[3])) for m in re.finditer(r'RWALK gt=(\d+) name=Dev state=(\S+) wa=(\S+)', c2)}
+w = span(wa, mk['swalka'], mk['swalkb'])
+peak = max((x[1] for _, x in w), default=-1)
+check('W1 stowed walk animates', w and peak >= WA_WALK and all(x[0] == 'STOWED' for _, x in w), f'{len(w)} ticks, peak walk speed {peak:.3f} (>= {WA_WALK}), states {sorted(set(x[0] for _, x in w))}')
+for name, a, b in (('flat walk', 'walka', 'walkb'), ('wall climb', 'climba', 'climbb'), ('ceiling walk', 'ceila', 'ceilb'), ('cliff edge', 'cliffa', 'cliffb')):
+    w = [(g, x) for g, x in span(wa, mk[a], mk[b]) if g >= mk[a] + WA_SETTLE]
+    peak = max((x[1] for _, x in w), default=-1)
+    active = w and all(x[0] == 'ACTIVE' for _, x in w)
+    if walk_cfg:
+        check(f'W2 walkWhileHeld=true: body walks while Held ({name})', active and peak >= WA_WALK, f'{len(w)} ticks, peak walk speed {peak:.3f} (>= {WA_WALK})')
+    else:
+        check(f'W2 body still while Held ({name})', active and peak <= WA_STILL, f'{len(w)} ticks, peak walk speed {peak:.3f} (<= {WA_STILL})')
+w = [(g, x) for g, x in span(rwa, mk['walka'], mk['walkb']) if g >= mk['walka'] + WA_SETTLE]
+peak = max((x[1] for _, x in w), default=-1)
+active = w and all(x[0] == 'ACTIVE' for _, x in w)
+if walk_cfg:
+    check('W3 walkWhileHeld=true: Dev2 sees Dev walk while Held', active and peak >= WA_WALK, f'{len(w)} RWALK ticks, peak {peak:.3f} (>= {WA_WALK})')
+else:
+    check('W3 Dev2 sees Dev still while Held (flat walk)', active and peak <= WA_STILL, f'{len(w)} RWALK ticks, peak {peak:.3f} (<= {WA_STILL})')
 
 for who, log in (('Dev', c), ('Dev2', c2)):
     m = re.search(r'CPERF p6_\S*two_rigs frames=(\d+) avg_us_per_frame=(\S+) max_us_per_frame=(\S+) fps=(\d+)', log)

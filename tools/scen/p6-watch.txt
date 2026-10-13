@@ -1,5 +1,6 @@
 # Dev2: side views of Dev, then wears a Rig next to Dev (two Rigs in view: frame cost), Rig sounds heard from Dev
 hud off
+trace on
 await d2stowed
 wait 3
 shot p6_d2_stowed_side
