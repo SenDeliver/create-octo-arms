@@ -22,6 +22,13 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@48b5f213c81028ace310571dc5ec0fbbca0b2947 # v4
 
+      - name: Tag matches mod_version
+        if: github.event_name == 'release'
+        run: |
+          v=$(sed -n 's/^mod_version=//p' gradle.properties)
+          [ "v$v" = "$GITHUB_REF_NAME" ] || { echo "tag $GITHUB_REF_NAME != gradle.properties mod_version $v"; exit 1; }
+          grep -q "^## \[$v\]" CHANGELOG.md || { echo "CHANGELOG.md has no [$v] section"; exit 1; }
+
       - run: ./gradlew build --no-daemon
 
       - name: Release notes
