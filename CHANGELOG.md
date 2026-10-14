@@ -14,6 +14,10 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - The wearer's body hangs still while the Rig carries them. Before, vanilla read the Rig's move (and a Ship's carry) as walking, so the wearer "walked in the sky" with swinging arms and legs. The walk animation now fades out within a few ticks of being Held and comes back as soon as the Rig Stows. Applies on the wearer's own client and on every client that sees them, also on servers that still run 1.1.
 - Client config `config/tentaworks-client.toml`, key `animation.walkWhileHeld` (default `false`): `true` brings the old walking look back.
 
+### Changed
+
+- The jar is now named `octo-arms-<version>+mc1.21.1.jar` (was `tentaworks-…`), matching the mod's public name. The mod id stays `tentaworks`: worlds, configs and recipes are unaffected. Remove the old `tentaworks-*.jar` when you drop in the new one (two jars with the same mod id fail to load).
+
 ### Compatibility
 
 - Client only. Network registrar, packets and save data are unchanged: 1.1.2 clients join 1.1.0/1.1.1 servers and the other way round (they just keep the old look).

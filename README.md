@@ -145,7 +145,7 @@ Built and tested with NeoForge 21.1.250 and Create 6.0.10; Ships with Sable 2.0.
 ## Install
 
 1. Install NeoForge and Create.
-2. Drop the `tentaworks-1.1.0+mc1.21.1.jar` file into your `mods/` folder.
+2. Drop the `octo-arms-<version>+mc1.21.1.jar` file into your `mods/` folder.
 3. Install it on **both** the client and the server. Clients and server must use the same Octo Arms version: 1.0 clients cannot join a 1.1 server.
 4. Optional: install Sable on both sides (Create Aeronautics needs it anyway) to grip Ships.
 
