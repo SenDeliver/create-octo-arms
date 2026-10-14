@@ -11,22 +11,12 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Fixed
 
-- Climbing a pole or any outside corner from the diagonal: a block that shows two faces now holds on its own, at any offset. Replaces the 1.1.4 half-block rule, which still failed when the body sat further past the edges.
-- Holding forward at a corner slides the body round the pole; the Rig now keeps climbing there instead of stalling at full stretch.
+- Climbing a pole or a building corner from the diagonal no longer gets stuck partway.
+- Moving around a pole now works. The Rig keeps hold while you go round the corner.
 
 ### Compatibility
 
-- Client-side only. 1.1.x clients and servers mix freely.
-
-## [1.1.4] - 2026-10-14
-
-### Fixed
-
-- Climbing a 1-wide pole or any outside corner no longer stalls at the corner, and moving around a pole works. The Rig now holds on past a wall's edge by up to half a block.
-
-### Compatibility
-
-- Client-side only. 1.1.x clients and servers mix freely.
+- Client-side only. 1.1.x clients and servers mix freely. (1.1.4 was not published; its fix is included here.)
 
 ## [1.1.3] - 2026-10-14
 
