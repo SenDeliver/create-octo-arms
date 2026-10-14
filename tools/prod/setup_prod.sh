@@ -6,7 +6,7 @@
 # usage: [PACK=dir] tools/prod/setup_prod.sh [--no-devtools]
 cd "$(dirname "$0")/../.."
 PACK=${PACK:-../client-mods}
-JAR=build/libs/tentaworks-1.0.0+mc1.21.1.jar
+JAR=build/libs/octo-arms-$(sed -n "s/^mod_version=//p" gradle.properties)+mc1.21.1.jar
 CLIENT_ONLY='^(xaerominimap|MouseTweaks|InventoryProfilesNext|libIPN)'
 S=run-prod/server; C=run-prod/client
 [ -f $S/libraries/net/neoforged/neoforge/21.1.250/unix_args.txt ] || { echo "install the server first: mkdir -p $S && cd $S && java -jar neoforge-21.1.250-installer.jar --installServer"; exit 1; }
@@ -18,7 +18,7 @@ for j in $PACK/*.jar; do
 done
 cp $JAR $S/mods/
 cp $JAR $C/mods/
-[ "$1" = "--no-devtools" ] || cp build/devlibs/tentaworks-devtools-1.0.0.jar $C/mods/
+[ "$1" = "--no-devtools" ] || cp build/devlibs/tentaworks-devtools-$(sed -n "s/^mod_version=//p" gradle.properties).jar $C/mods/
 echo 'eula=true' > $S/eula.txt
 echo '-Xms3G -Xmx3G' > $S/user_jvm_args.txt
 PW=$(sed -n 's/^rcon.password=//p' $S/server.properties 2>/dev/null)

@@ -8,7 +8,7 @@ version = "${mod_version}+mc${minecraft_version}"
 group = mod_group_id
 
 base {
-    archivesName = mod_id
+    archivesName = 'octo-arms'
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
