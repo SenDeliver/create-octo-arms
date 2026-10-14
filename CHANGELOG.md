@@ -7,6 +7,16 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [1.1.4] - 2026-10-14
+
+### Fixed
+
+- Climbing a 1-wide pole or any outside corner no longer stalls at the corner, and moving around a pole works. The Rig now holds on past a wall's edge by up to half a block.
+
+### Compatibility
+
+- Client-side only. 1.1.x clients and servers mix freely.
+
 ## [1.1.3] - 2026-10-14
 
 Same content as 1.1.2, re-released so the published jar carries the correct `octo-arms-` name everywhere.
