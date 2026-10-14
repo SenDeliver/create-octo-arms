@@ -42,9 +42,23 @@ jobs:
           [ "v$v" = "$TAG" ] || { echo "tag $TAG != gradle.properties mod_version $v"; exit 1; }
           grep -q "^## \[$v\]" CHANGELOG.md || { echo "CHANGELOG.md has no [$v] section"; exit 1; }
 
-      - run: ./gradlew build --no-daemon
+      - name: Already published?
+        id: done
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          v=$(sed -n 's/^mod_version=//p' gradle.properties)
+          if gh release view "$TAG" --json assets --jq '.assets[].name' | grep -qx "octo-arms-$v+mc1.21.1.jar"; then
+            echo "release $TAG already carries the jar (editing or re-publishing a release fires this workflow again); nothing to do"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: steps.done.outputs.skip != 'true'
+        run: ./gradlew build --no-daemon
 
       - name: Release notes
+        if: steps.done.outputs.skip != 'true'
         run: |
           f="publishing/release-notes-${TAG#v}.md"
           if [ -f "$f" ]; then cp "$f" release-notes.md
@@ -52,6 +66,7 @@ jobs:
           cat release-notes.md
 
       - uses: Kir-Antipov/mc-publish@52307b03863581dec6b652b83e597aec02ebb075 # v3.3
+        if: steps.done.outputs.skip != 'true'
         with:
           files: build/libs/!(*-sources|*-javadoc).jar
           name: Octo Arms ${{ env.TAG }}
