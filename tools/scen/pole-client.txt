@@ -1,4 +1,8 @@
-# Pole: climb a 1x1 column from a face (F) and from a corner (C copper, N netherite); go round it at height (S copper, T netherite).
+# Pole: climb a 1x1 column from a face (F) and from a corner (C copper, N netherite, jump only; C2/N2 looking at the corner with forward + jump:
+# the body slides round the pole along its faces and must keep climbing at full stretch); go round it at height (S copper, T netherite).
+# 2x2 column (south-west corner at 5100,2): corner climbs D (copper, hugging), E (copper, owner's offsets 0.7 west / 0.4 south),
+# G (netherite, same offsets), H (netherite, 0.7 off the west face inside its span), J (copper, 1.2 west / 0.9 south); E and G with forward + jump,
+# the others jump only. Go round from the west face R (copper), Q (netherite).
 trace on
 gait on
 hud off
@@ -18,12 +22,16 @@ hold jump off
 mark fb
 wait 5
 shot pole_face_top
-# C copper, south-east corner: body diagonal off the corner (5001,1)
-cmd tp @s 5001.35 -60 1.35 135 0
+# C copper, south-east corner (5001,1): the owner's repro: walk into the corner looking at it, activate, hold jump only
+cmd tp @s 5002.6 -60 2.6 135 0
 cmd item replace entity @s armor.chest with air
 wait 5
 cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
 wait 10
+hold up on
+wait 20
+hold up off
+wait 5
 doublejump
 wait 20
 mark ca
@@ -33,12 +41,16 @@ hold jump off
 mark cb
 wait 5
 shot pole_corner_copper
-# N netherite, same corner
-cmd tp @s 5001.35 -60 1.35 135 0
+# N netherite, same walk-in corner, jump only
+cmd tp @s 5002.6 -60 2.6 135 0
 cmd item replace entity @s armor.chest with air
 wait 5
 cmd item replace entity @s armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900]
 wait 10
+hold up on
+wait 20
+hold up off
+wait 5
 doublejump
 wait 20
 mark na
@@ -48,6 +60,40 @@ hold jump off
 mark nb
 wait 5
 shot pole_corner_netherite
+# C2 copper 1x1 corner, realistic input: look at the corner, forward + jump
+cmd tp @s 5001.35 -60 1.35 135 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 20
+mark c2a
+hold up on
+hold jump on
+wait 200
+hold jump off
+hold up off
+mark c2b
+wait 5
+shot pole_corner_forward_copper
+# N2 netherite 1x1 corner, forward + jump
+cmd tp @s 5001.35 -60 1.35 135 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 20
+mark n2a
+hold up on
+hold jump on
+wait 200
+hold jump off
+hold up off
+mark n2b
+wait 5
+shot pole_corner_forward_netherite
 # S copper: climb the east face pressed against it (forward + jump) 40 ticks (floor out of Reach), then go round the pole:
 # forward + left (-z) 50 ticks, turn to face the north face and keep forward + left (-x) 50 ticks
 cmd tp @s 5001.8 -60 0.5 90 0
@@ -95,5 +141,130 @@ hold up off
 mark tb
 wait 5
 shot pole_strafe_netherite
+# D 2x2 copper hugging the SW corner
+cmd tp @s 5099.65 -60 2.35 -135 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 20
+mark da
+hold jump on
+wait 120
+hold jump off
+mark db
+wait 5
+shot pole_2x2_corner_copper
+# E 2x2 copper, owner's offsets (0.7 west, 0.4 south of the corner), looking at the corner, forward + jump
+cmd tp @s 5099.3 -60 2.4 -135 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 20
+mark ea
+hold up on
+hold jump on
+wait 120
+hold jump off
+hold up off
+mark eb
+wait 5
+shot pole_2x2_offset_copper
+# G 2x2 netherite, owner's offsets, forward + jump
+cmd tp @s 5099.3 -60 2.4 -135 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 20
+mark ga
+hold up on
+hold jump on
+wait 120
+hold jump off
+hold up off
+mark gb
+wait 5
+shot pole_2x2_offset_netherite
+# H 2x2 netherite, 0.7 off the west face inside its span (control)
+cmd tp @s 5099.3 -60 1.6 -90 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 20
+mark ha
+hold jump on
+wait 120
+hold jump off
+mark hb
+wait 5
+shot pole_2x2_face_netherite
+# J 2x2 copper, far off the corner (1.2 west, 0.9 south: beyond any plane slack, both faces within Reach)
+cmd tp @s 5098.8 -60 2.9 -135 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 20
+mark ja
+hold jump on
+wait 120
+hold jump off
+mark jb
+wait 5
+shot pole_2x2_far_copper
+# R 2x2 copper go round: climb the west face pressed against it 40 ticks, then forward + left (-z) 50 ticks, turn to face the north face, forward + left (+x) 50 ticks
+cmd tp @s 5099.3 -60 1.0 -90 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 20
+hold up on
+hold jump on
+wait 40
+hold jump off
+wait 5
+mark ra
+hold left on
+wait 50
+look 0 0
+wait 50
+hold left off
+hold up off
+mark rb
+wait 5
+shot pole_2x2_round_copper
+# Q 2x2 netherite go round: climb the west face pressed against it 40 ticks, then forward + left (-z) 50 ticks, turn to face the north face, forward + left (+x) 50 ticks
+cmd tp @s 5099.3 -60 1.0 -90 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 20
+hold up on
+hold jump on
+wait 60
+hold jump off
+wait 5
+mark qa
+hold left on
+wait 50
+look 0 0
+wait 50
+hold left off
+hold up off
+mark qb
+wait 5
+shot pole_2x2_round_netherite
 wait 10
 quit

@@ -7,6 +7,17 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [1.1.5] - 2026-10-14
+
+### Fixed
+
+- Climbing a pole or any outside corner from the diagonal: a block that shows two faces now holds on its own, at any offset. Replaces the 1.1.4 half-block rule, which still failed when the body sat further past the edges.
+- Holding forward at a corner slides the body round the pole; the Rig now keeps climbing there instead of stalling at full stretch.
+
+### Compatibility
+
+- Client-side only. 1.1.x clients and servers mix freely.
+
 ## [1.1.4] - 2026-10-14
 
 ### Fixed

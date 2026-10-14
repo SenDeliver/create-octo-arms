@@ -6,8 +6,6 @@ package dev.tentaworks.rig;
  * and returns the squared distance from the body to the nearest point of what is left. Plain doubles, no game classes.
  */
 final class QuadrantClip {
-    /** How far a quadrant reaches past the body planes into its neighbours (blocks). */
-    static final double OVERLAP = 0.5;
     private static final int MAX = 16;
 
     private QuadrantClip() {
@@ -17,8 +15,7 @@ final class QuadrantClip {
      * @param axis face normal axis (0 x, 1 y, 2 z), {@code step} its sign
      * @param lo   face rect min corner, {@code hi} max corner (equal on {@code axis})
      * @param view body centre (0..2), world X in this frame (3..5), world Z in this frame (6..8)
-     * @param sx   +1/−1: the quadrant's side of the X plane through the body, {@code sz} of the Z plane; each side reaches
-     *             {@link #OVERLAP} past the plane
+     * @param sx   +1/−1: the quadrant's side of the X plane through the body, {@code sz} of the Z plane
      * @return squared distance, or {@link Double#MAX_VALUE} when the body is behind the face or no part of it is in the quadrant
      */
     static double dist2(int axis, int step, double[] lo, double[] hi, double[] view, int sx, int sz) {
@@ -39,11 +36,11 @@ final class QuadrantClip {
         return inPlane2(u, v, n, view[iu], view[iv]) + h * h;
     }
 
-    /** {a, b, k}: the half-space {@code a·u + b·v + k ≥ 0} of the face plane where {@code s·(p − c)·n + OVERLAP ≥ 0}. */
+    /** {a, b, k}: the half-space {@code a·u + b·v + k ≥ 0} of the face plane where {@code s·(p − c)·n ≥ 0}. */
     private static double[] halfSpace(int axis, int iu, int iv, double plane, double[] view, int at, int s) {
         double nu = view[at + iu], nv = view[at + iv], na = view[at + axis];
         double cn = view[0] * view[at] + view[1] * view[at + 1] + view[2] * view[at + 2];
-        return new double[]{s * nu, s * nv, s * (na * plane - cn) + OVERLAP};
+        return new double[]{s * nu, s * nv, s * (na * plane - cn)};
     }
 
     private static int clip(double[] u, double[] v, int n, double[] ou, double[] ov, double[] hs) {

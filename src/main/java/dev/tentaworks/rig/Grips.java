@@ -17,9 +17,9 @@ import java.util.List;
 
 /**
  * Held check. Each of the four Tentacles owns one horizontal quadrant around the body; a quadrant has a Grip when some
- * exposed full-block face that looks toward the body lies in it within Reach. Neighbouring quadrants overlap by
- * {@link QuadrantClip#OVERLAP} on each side of the body planes (the Tentacles root at the shoulders, not at the centre), so a
- * one-block pole or an outside corner still gives two quadrants to a body just past its edge. Which Grip each Tentacle takes: {@link TentacleGait}.
+ * exposed full-block face that looks toward the body lies in it within Reach. An outside edge within Reach (two faces of one
+ * block on different axes, both looking toward the body: a pole seen from its corner, a wall's end, a ledge) counts as Held by
+ * itself: its faces all sit on one side of the body planes, so the quadrants alone see one Grip there. Which Grip each Tentacle takes: {@link TentacleGait}.
  * Faces of unit-scale Ships count too: they are scanned and stored in the Ship's plot coords ({@link Face#frame()});
  * the body centre stays in world coords everywhere and is moved into a face's frame where needed.
  */
@@ -85,7 +85,25 @@ public final class Grips {
                 }
             }
         }
-        return held;
+        return held >= HELD || !edge(faces, view, r2) ? held : HELD;
+    }
+
+    /** Faces of one block are consecutive in a scan: two of them on different axes, both within Reach and facing the body. */
+    private static boolean edge(List<Face> faces, View view, double r2) {
+        BlockPos block = null;
+        Frame frame = null;
+        int axes = 0;
+        for (Face f : faces) {
+            if (!f.block.equals(block) || f.frame != frame) {
+                block = f.block;
+                frame = f.frame;
+                axes = 0;
+            }
+            if (view.dist2(f) > r2) continue;
+            axes |= 1 << f.dir.getAxis().ordinal();
+            if (Integer.bitCount(axes) >= 2) return true;
+        }
+        return false;
     }
 
     public static boolean held(List<Face> faces, Vec3 centre, double reach) {
@@ -94,7 +112,8 @@ public final class Grips {
 
     /**
      * Largest part of {@code motion} that keeps the body Held. Tries the full move, then the move with one axis dropped
-     * (slides along gap edges and down cliff walls), each shortened by bisection; keeps the one that gets furthest along the heading.
+     * (slides along gap edges and down cliff walls), then the vertical part alone (a body at full stretch from a pole keeps
+     * climbing while the Heading points away from it), each shortened by bisection; keeps the one that gets furthest along the heading.
      * {@code faces} must cover Reach + |motion| + 0.5 around the body.
      */
     public static Vec3 clampHeld(Level level, Entity entity, Vec3 motion, double reach, List<Face> faces) {
@@ -109,7 +128,7 @@ public final class Grips {
         if (motion.lengthSqr() < 1.0E-8) return Vec3.ZERO;
         Vec3 centre = body(entity).add(carry);
         Vec3 dir = motion.normalize();
-        Vec3[] tries = {motion, new Vec3(0, motion.y, motion.z), new Vec3(motion.x, 0, motion.z), new Vec3(motion.x, motion.y, 0)};
+        Vec3[] tries = {motion, new Vec3(0, motion.y, motion.z), new Vec3(motion.x, 0, motion.z), new Vec3(motion.x, motion.y, 0), new Vec3(0, motion.y, 0)};
         Vec3 best = Vec3.ZERO;
         double bestProgress = 1.0E-4;
         for (Vec3 m : tries) {
@@ -231,16 +250,26 @@ public final class Grips {
 
         double quadrantDist2(Face f, int q) {
             if (f.frame == null) return worldDist2(f, centre, q);
-            if (f.frame != frame) {
-                frame = f.frame;
-                put(0, frame.toLocal(centre));
-                put(3, frame.normalToLocal(X));
-                put(6, frame.normalToLocal(Z));
-            }
+            enter(f.frame);
             AABB r = f.rect;
             int step = f.dir.getAxisDirection().getStep();
             return QuadrantClip.dist2(f.dir.getAxis().ordinal(), step, new double[]{r.minX, r.minY, r.minZ},
                     new double[]{r.maxX, r.maxY, r.maxZ}, local, sx(q), sz(q));
+        }
+
+        /** Distance to the whole face (no quadrant), {@link Double#MAX_VALUE} when the body is behind it. */
+        double dist2(Face f) {
+            if (f.frame == null) return rectDist2(f, centre.x, centre.y, centre.z);
+            enter(f.frame);
+            return rectDist2(f, local[0], local[1], local[2]);
+        }
+
+        private void enter(Frame to) {
+            if (to == frame) return;
+            frame = to;
+            put(0, frame.toLocal(centre));
+            put(3, frame.normalToLocal(X));
+            put(6, frame.normalToLocal(Z));
         }
 
         private void put(int at, Vec3 v) {
@@ -252,17 +281,29 @@ public final class Grips {
 
     private static double worldDist2(Face f, Vec3 c, int q) {
         AABB r = f.rect;
-        Direction.Axis axis = f.dir.getAxis();
-        double plane = f.dir.getAxisDirection() == Direction.AxisDirection.POSITIVE ? r.max(axis) : r.min(axis);
-        if ((c.get(axis) - plane) * f.dir.getAxisDirection().getStep() <= 0) return Double.MAX_VALUE;
+        if (behind(f, c.get(f.dir.getAxis()))) return Double.MAX_VALUE;
         double minX = r.minX, maxX = r.maxX, minZ = r.minZ, maxZ = r.maxZ;
-        if (sx(q) > 0) minX = Math.max(minX, c.x - QuadrantClip.OVERLAP);
-        else maxX = Math.min(maxX, c.x + QuadrantClip.OVERLAP);
-        if (sz(q) > 0) minZ = Math.max(minZ, c.z - QuadrantClip.OVERLAP);
-        else maxZ = Math.min(maxZ, c.z + QuadrantClip.OVERLAP);
+        if (sx(q) > 0) minX = Math.max(minX, c.x);
+        else maxX = Math.min(maxX, c.x);
+        if (sz(q) > 0) minZ = Math.max(minZ, c.z);
+        else maxZ = Math.min(maxZ, c.z);
         if (minX > maxX || minZ > maxZ) return Double.MAX_VALUE;
         double dx = c.x - Mth.clamp(c.x, minX, maxX), dy = c.y - Mth.clamp(c.y, r.minY, r.maxY), dz = c.z - Mth.clamp(c.z, minZ, maxZ);
         return dx * dx + dy * dy + dz * dz;
+    }
+
+    /** {@code x, y, z}: the body centre in the face's frame. */
+    private static double rectDist2(Face f, double x, double y, double z) {
+        AABB r = f.rect;
+        if (behind(f, f.dir.getAxis().choose(x, y, z))) return Double.MAX_VALUE;
+        double dx = x - Mth.clamp(x, r.minX, r.maxX), dy = y - Mth.clamp(y, r.minY, r.maxY), dz = z - Mth.clamp(z, r.minZ, r.maxZ);
+        return dx * dx + dy * dy + dz * dz;
+    }
+
+    private static boolean behind(Face f, double along) {
+        Direction.Axis axis = f.dir.getAxis();
+        double plane = f.dir.getAxisDirection() == Direction.AxisDirection.POSITIVE ? f.rect.max(axis) : f.rect.min(axis);
+        return (along - plane) * f.dir.getAxisDirection().getStep() <= 0;
     }
 
     private static int sx(int q) {
