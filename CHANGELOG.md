@@ -7,6 +7,26 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [1.1.3] - 2026-10-14
+
+Same content as 1.1.2, re-released so the published jar carries the correct `octo-arms-` name everywhere.
+
+### Fixed
+
+- No more "walking in the sky": the body hangs still while the Rig or a Ship carries you. Client-side, also for players you watch.
+
+### Added
+
+- Client config `config/tentaworks-client.toml`: `animation.walkWhileHeld = true` brings the walk animation back.
+
+### Changed
+
+- Jar renamed to `octo-arms-<version>+mc1.21.1.jar` (was `tentaworks-…`). Mod id stays `tentaworks`, worlds and configs are unaffected. Delete the old `tentaworks-*.jar` when updating.
+
+### Compatibility
+
+- 1.1.x clients and servers mix freely; no network or save changes.
+
 ## [1.1.2] - 2026-10-14
 
 ### Fixed
