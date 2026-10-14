@@ -64,7 +64,7 @@ class QuadrantClipTest {
                 p[iu] = rect[0][iu] + (double) a / n;
                 p[iv] = rect[0][iv] + (double) b / n;
                 double[] w = mul(rot, p);
-                if (sx * (w[0] - cw[0]) < -QuadrantClip.OVERLAP || sz * (w[2] - cw[2]) < -QuadrantClip.OVERLAP) continue;
+                if (sx * (w[0] - cw[0]) < 0 || sz * (w[2] - cw[2]) < 0) continue;
                 double dx = w[0] - cw[0], dy = w[1] - cw[1], dz = w[2] - cw[2];
                 best = Math.min(best, dx * dx + dy * dy + dz * dz);
             }
@@ -76,10 +76,10 @@ class QuadrantClipTest {
         double plane = step > 0 ? hi[axis] : lo[axis];
         if ((c[axis] - plane) * step <= 0) return Double.MAX_VALUE;
         double minX = lo[0], maxX = hi[0], minZ = lo[2], maxZ = hi[2];
-        if (sx > 0) minX = Math.max(minX, c[0] - QuadrantClip.OVERLAP);
-        else maxX = Math.min(maxX, c[0] + QuadrantClip.OVERLAP);
-        if (sz > 0) minZ = Math.max(minZ, c[2] - QuadrantClip.OVERLAP);
-        else maxZ = Math.min(maxZ, c[2] + QuadrantClip.OVERLAP);
+        if (sx > 0) minX = Math.max(minX, c[0]);
+        else maxX = Math.min(maxX, c[0]);
+        if (sz > 0) minZ = Math.max(minZ, c[2]);
+        else maxZ = Math.min(maxZ, c[2]);
         if (minX > maxX || minZ > maxZ) return Double.MAX_VALUE;
         double dx = c[0] - clamp(c[0], minX, maxX), dy = c[1] - clamp(c[1], lo[1], hi[1]), dz = c[2] - clamp(c[2], minZ, maxZ);
         return dx * dx + dy * dy + dz * dz;

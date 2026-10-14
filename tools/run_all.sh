@@ -10,7 +10,7 @@
 # phase-7 suite p7 (goggles on filling Rig Blocks, Display Link "Rig Air" board + percent + GUI, Rig Block shots, Ponder scene frames for every component, Ponder hint).
 # phase-8 suite p8 (code-review fixes: forged zero-motion climb Air, ghost blocks, through-wall / unloaded-neighbour Grips, packet bursts, speed check,
 # Setting Down rise, lenient settings codec, 16 RPM goggle sync, untested items U1-U6, input cost; ends with a kick) and p8r16 (input cost at Reach 16).
-# pole suite (a 1x1 pole climbed from a face and from a corner, going round it at height: quadrant overlap);
+# pole suite (1x1 and 2x2 poles climbed from a face and from a corner, going round them at height: outside-edge Held rule);
 # phase-9 suite p9 (v1.1 Sable Ships: parked turned ship, moving 4/15 b/s, rotating, world <-> ship, ship removed mid-grip, deck ride). Runs last and is the
 # only suite built with -PwithSable (Sable runtime); every suite above runs without Sable (no-Sable regression path).
 # usage: tools/run_all.sh <tag>   logs land in tools/logs/<tag>-{main,life,creative,p1,p2,p3,p4,p5,p6,p6walk,p6fast,p7,p8,p8r16,pole,p9}-*

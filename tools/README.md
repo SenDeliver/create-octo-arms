@@ -41,7 +41,9 @@ Dev2 watches Dev's Rig on a Sable Ship at moments where the observer's client ma
 
 ## Pole suite (pole)
 
-A free-standing 1x1 jungle log column (`scene-pole.txt`, x 5000 z 0, 41 high). `pole_metrics.py <log prefix>`: F face climb and C/N corner climbs (Copper, Netherite) reach the top (max feet >= 40), S/T go round the pole at height (>= 80 deg round it) with the Rig Active throughout. Before the quadrant overlap (`QuadrantClip.OVERLAP`) a corner climb stopped at Reach above the floor (3.10 / 6.10) and going round stopped at the face edge (32 deg).
+A free-standing 1x1 jungle log column (`scene-pole.txt`, x 5000 z 0, 41 high) and a 2x2 one (x 5100..5101 z 0..1, 20 high, wall torch on its east face 6 up). `pole_metrics.py <log prefix>`: F face climb and C/N corner climbs (Copper, Netherite) reach the top of the 1x1 (max feet >= 40); D/E/G/H/J climbs on the 2x2 (hugging the corner, 0.7 west / 0.4 south of it as in the owner's 2026-10-14 report, 0.7 off a face, 1.2 / 0.9 off the corner) reach its top (>= 19) and print the body's offset from the corner; S/T and R/Q go round each pole at height (>= 80 deg round it) with the Rig Active throughout. Corner climbs hold jump only: forward at a corner slides the body round the pole along its faces.
+
+History: on 1.1.3 a corner climb stopped at Reach above the floor (3.10 / 6.10) and going round stopped at the face edge (32 deg): all faces of a pole seen from its corner lie in one body quadrant. 1.1.4 widened the quadrants by 0.5 (enough for a body up to 0.5 past both edges); the outside-edge rule in `Grips.count` (two faces of one block on different axes, both within Reach and facing the body, hold by themselves) replaced it.
 
 `tools/run_split.sh tools/scen/scene-pole.txt tools/scen/pole-client.txt tools/logs/x-pole && python3 tools/pole_metrics.py tools/logs/x-pole`
 

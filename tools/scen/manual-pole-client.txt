@@ -1,0 +1,11 @@
+# Manual play at the pole scene: trace + gait logs on, both Rigs in hand, Copper Rig worn and filled. Script ends, game stays open for the player.
+trace on
+gait on
+griplines on
+hud on
+view third
+cmd tp @s 5003.5 -60 3.5 135 0
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd give @s tentaworks:netherite_tentacle_rig[create:banktank_air=900]
+cmd give @s tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd gamemode survival @s
