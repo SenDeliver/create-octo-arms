@@ -9,12 +9,13 @@ on:
         description: "Release tag to (re)publish, e.g. v1.1.2"
         required: true
       targets:
-        description: "Comma list of targets: github,modrinth,curseforge"
-        default: github,modrinth,curseforge
+        description: "Comma list of targets: github,curseforge (modrinth once its project is approved)"
+        default: github,curseforge
 
 env:
   TAG: ${{ inputs.tag || github.ref_name }}
-  TARGETS: ${{ inputs.targets || 'github,modrinth,curseforge' }}
+  # Modrinth off until the project is approved: fill modrinth-id (base62 project id, not the slug) and add 'modrinth' here
+  TARGETS: ${{ inputs.targets || 'github,curseforge' }}
 
 permissions:
   contents: write
@@ -60,7 +61,7 @@ jobs:
           game-versions: 1.21.1
           java: 21
 
-          modrinth-id: MODRINTH_PROJECT_ID_PLACEHOLDER
+          modrinth-id: octo-arms
           modrinth-token: ${{ contains(env.TARGETS, 'modrinth') && secrets.MODRINTH_TOKEN || '' }}
           modrinth-featured: true
           modrinth-dependencies: |
