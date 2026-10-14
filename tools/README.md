@@ -39,6 +39,12 @@ Dev2 watches Dev's Rig on a Sable Ship at moments where the observer's client ma
 `GRADLE_ARGS=-PwithSable TIMELINE=tools/scen/obs-timeline.txt SCRIPT2=tools/scen/obs-watch.txt tools/run_split.sh tools/scen/scene-obs.txt tools/scen/obs-client.txt tools/logs/x-obs && python3 tools/obs_metrics.py tools/logs/x-obs t1,t2,t3`
 (obs2: `obs2-*`, tags `t4a,t4b,t4c,t4d,t8,t5,t6`; obs3: `obs3-*`, tags `f1,f2,f3`.) None of them reproduced the 2026-10-12 observer crash on 1.1.0; they guard the 1.1.1 hardening.
 
+## Pole suite (pole)
+
+A free-standing 1x1 jungle log column (`scene-pole.txt`, x 5000 z 0, 41 high). `pole_metrics.py <log prefix>`: F face climb and C/N corner climbs (Copper, Netherite) reach the top (max feet >= 40), S/T go round the pole at height (>= 80 deg round it) with the Rig Active throughout. Before the quadrant overlap (`QuadrantClip.OVERLAP`) a corner climb stopped at Reach above the floor (3.10 / 6.10) and going round stopped at the face edge (32 deg).
+
+`tools/run_split.sh tools/scen/scene-pole.txt tools/scen/pole-client.txt tools/logs/x-pole && python3 tools/pole_metrics.py tools/logs/x-pole`
+
 ## Sable Ships suite (p9, v1.1)
 
 Only `p9` is built with `GRADLE_ARGS=-PwithSable` (Sable runtime bundle). It runs last in `run_all.sh`; every other suite runs without the flag, so they keep testing the no-Sable path (`NoShips`) exactly as in 1.0. Without the flag p9 fails at `S0` (no `/sable` command).

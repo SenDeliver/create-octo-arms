@@ -1,0 +1,99 @@
+# Pole: climb a 1x1 column from a face (F) and from a corner (C copper, N netherite); go round it at height (S copper, T netherite).
+trace on
+gait on
+hud off
+view third
+# F copper, east face (x=5001), body centred on the face
+cmd tp @s 5001.8 -60 0.5 90 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 20
+mark fa
+hold jump on
+wait 200
+hold jump off
+mark fb
+wait 5
+shot pole_face_top
+# C copper, south-east corner: body diagonal off the corner (5001,1)
+cmd tp @s 5001.35 -60 1.35 135 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 20
+mark ca
+hold jump on
+wait 200
+hold jump off
+mark cb
+wait 5
+shot pole_corner_copper
+# N netherite, same corner
+cmd tp @s 5001.35 -60 1.35 135 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 20
+mark na
+hold jump on
+wait 200
+hold jump off
+mark nb
+wait 5
+shot pole_corner_netherite
+# S copper: climb the east face pressed against it (forward + jump) 40 ticks (floor out of Reach), then go round the pole:
+# forward + left (-z) 50 ticks, turn to face the north face and keep forward + left (-x) 50 ticks
+cmd tp @s 5001.8 -60 0.5 90 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 20
+hold up on
+hold jump on
+wait 40
+hold jump off
+wait 5
+mark sa
+hold left on
+wait 50
+look 180 0
+wait 50
+hold left off
+hold up off
+mark sb
+wait 5
+shot pole_strafe_copper
+# T netherite: same, climb 60 ticks first
+cmd tp @s 5001.8 -60 0.5 90 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 20
+hold up on
+hold jump on
+wait 60
+hold jump off
+wait 5
+mark ta
+hold left on
+wait 50
+look 180 0
+wait 50
+hold left off
+hold up off
+mark tb
+wait 5
+shot pole_strafe_netherite
+wait 10
+quit

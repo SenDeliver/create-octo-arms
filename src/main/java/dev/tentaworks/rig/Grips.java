@@ -17,7 +17,9 @@ import java.util.List;
 
 /**
  * Held check. Each of the four Tentacles owns one horizontal quadrant around the body; a quadrant has a Grip when some
- * exposed full-block face that looks toward the body lies in it within Reach. Which Grip each Tentacle takes: {@link TentacleGait}.
+ * exposed full-block face that looks toward the body lies in it within Reach. Neighbouring quadrants overlap by
+ * {@link QuadrantClip#OVERLAP} on each side of the body planes (the Tentacles root at the shoulders, not at the centre), so a
+ * one-block pole or an outside corner still gives two quadrants to a body just past its edge. Which Grip each Tentacle takes: {@link TentacleGait}.
  * Faces of unit-scale Ships count too: they are scanned and stored in the Ship's plot coords ({@link Face#frame()});
  * the body centre stays in world coords everywhere and is moved into a face's frame where needed.
  */
@@ -254,10 +256,10 @@ public final class Grips {
         double plane = f.dir.getAxisDirection() == Direction.AxisDirection.POSITIVE ? r.max(axis) : r.min(axis);
         if ((c.get(axis) - plane) * f.dir.getAxisDirection().getStep() <= 0) return Double.MAX_VALUE;
         double minX = r.minX, maxX = r.maxX, minZ = r.minZ, maxZ = r.maxZ;
-        if (sx(q) > 0) minX = Math.max(minX, c.x);
-        else maxX = Math.min(maxX, c.x);
-        if (sz(q) > 0) minZ = Math.max(minZ, c.z);
-        else maxZ = Math.min(maxZ, c.z);
+        if (sx(q) > 0) minX = Math.max(minX, c.x - QuadrantClip.OVERLAP);
+        else maxX = Math.min(maxX, c.x + QuadrantClip.OVERLAP);
+        if (sz(q) > 0) minZ = Math.max(minZ, c.z - QuadrantClip.OVERLAP);
+        else maxZ = Math.min(maxZ, c.z + QuadrantClip.OVERLAP);
         if (minX > maxX || minZ > maxZ) return Double.MAX_VALUE;
         double dx = c.x - Mth.clamp(c.x, minX, maxX), dy = c.y - Mth.clamp(c.y, r.minY, r.maxY), dz = c.z - Mth.clamp(c.z, minZ, maxZ);
         return dx * dx + dy * dy + dz * dz;
