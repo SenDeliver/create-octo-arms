@@ -1,0 +1,5 @@
+# Dev2: spectates Dev (Dev's script re-attaches it after every tp); RWALK lines show Dev's sneak flag, pose and crouch as another player's client sees them
+hud off
+trace on
+await stop2
+quit

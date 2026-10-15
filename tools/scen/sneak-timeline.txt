@@ -1,2 +1,7 @@
 op Dev
+op Dev2
 gamemode survival Dev
+gamemode spectator Dev2
+#signal go
+#await sneakdone
+#signal stop2

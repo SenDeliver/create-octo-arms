@@ -42,5 +42,14 @@ if all(k in mk for k in ('ua', 'ub', 'uc')):
     check('U no sinking at idle under water', idle and max(idle) < 0.01, f'max per tick {max(idle, default=0):.4f} over {len(idle)} ticks')
 else:
     check('U marks', False, 'missing')
+try:
+    watch = open(pre + '-client2.log', errors='replace').read()
+except FileNotFoundError:
+    watch = None
+if watch is not None:
+    seen = [l for l in watch.splitlines() if 'RWALK' in l and 'name=Dev ' in l and out.search(l) and 'sneak=true' in l]
+    rcrouch = [l for l in seen if 'crouch=true' in l or 'pose=CROUCHING' in l]
+    check("R other players see no crouch (Dev2's client: Dev's model)", len(seen) > 100 and not rcrouch,
+          f'{len(seen)} ticks Dev sneaking with the Rig out as seen by Dev2, crouching on {len(rcrouch)}')
 ok = all(checks) and c and s and not crouch and not scrouch and 'did not' not in server and 'not placed' not in server and ys and min(ys) < max(ys) - 1
 print('PASS' if ok else 'FAIL')

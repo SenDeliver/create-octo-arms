@@ -34,7 +34,7 @@ TIMELINE=$S/p7-timeline.txt tools/run_split.sh $S/scene-p7.txt $S/p7-client.txt 
 TIMELINE=$S/p8-timeline.txt tools/run_split.sh $S/scene-p8.txt $S/p8-client.txt tools/logs/$TAG-p8
 TW_REACH_NETHERITE=13 TIMELINE=$S/p8r16-timeline.txt tools/run_split.sh $S/scene-p8.txt $S/p8r16-client.txt tools/logs/$TAG-p8r16
 tools/run_split.sh $S/scene-pole.txt $S/pole-client.txt tools/logs/$TAG-pole
-TIMELINE=$S/sneak-timeline.txt tools/run_split.sh $S/scene-sneak.txt $S/sneak-client.txt tools/logs/$TAG-sneak
+TIMELINE=$S/sneak-timeline.txt SCRIPT2=$S/sneak-watch.txt tools/run_split.sh $S/scene-sneak.txt $S/sneak-client.txt tools/logs/$TAG-sneak
 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/p9-timeline.txt tools/run_split.sh $S/scene-p9.txt $S/p9-client.txt tools/logs/$TAG-p9
 mkdir -p tools/shots && cp run/screenshots/*.png run2/screenshots/*.png tools/shots/ 2>/dev/null
 for r in main life creative p1 p2 p3 p4 p5 p6 p6walk p6fast p7 p8 p8r16 pole sneak p9; do echo "== $r"; python3 tools/analyze.py tools/logs/$TAG-$r | grep -v '^mark'; done

@@ -2,12 +2,13 @@
 # W: sneak + use with Create's wrench on a gearbox picks it up. S: sneak + use with stone on a chest places the stone, the chest stays shut.
 # No vanilla sneak movement while the Rig is out: E walks off a platform edge with Shift held (no edge hold), L moves down a ladder with Shift
 # held (no ladder stop), U holds Shift under water (no extra sinking: never faster than the Rig's own step) and idles (no sinking).
-wait 40
+await go
 trace on
 hud off
 view third
 # W wrench
 cmd tp @s 6000.5 -60 0.5 0 30
+cmd spectate Dev Dev2
 cmd item replace entity @s armor.chest with air
 wait 5
 cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
@@ -32,6 +33,7 @@ cmd execute unless block 6000 -60 2 minecraft:air run say SNEAKTEST wrench did n
 doublejump
 wait 40
 cmd tp @s 6003.5 -60 0.5 0 30
+cmd spectate Dev Dev2
 cmd item replace entity @s weapon.mainhand with minecraft:stone 8
 wait 10
 doublejump
@@ -53,6 +55,7 @@ close
 doublejump
 wait 40
 cmd tp @s 6011.5 -57 10.5 -90 0
+cmd spectate Dev Dev2
 wait 10
 doublejump
 wait 30
@@ -68,6 +71,7 @@ hold shift off
 doublejump
 wait 40
 cmd tp @s 6019.5 -60 20.5 -90 0
+cmd spectate Dev Dev2
 wait 10
 doublejump
 wait 30
@@ -84,6 +88,7 @@ mark lb
 doublejump
 wait 40
 cmd tp @s 6033.5 -60 30.5 -90 0
+cmd spectate Dev Dev2
 wait 10
 doublejump
 wait 30
@@ -95,4 +100,5 @@ mark ub
 wait 30
 mark uc
 wait 10
+signal sneakdone
 quit

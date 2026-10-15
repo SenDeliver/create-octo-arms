@@ -643,8 +643,9 @@ public final class DevScript {
         for (var other : mc.level.players()) {
             if (other == p) continue;
             RigVisuals.Visual v = RigVisuals.get(other);
-            LOG.info("RWALK gt={} name={} state={} wa={}", mc.level.getGameTime(), other.getGameProfile().getName(),
-                    v == null ? "-" : v.state(), String.format(Locale.ROOT, "%.4f", other.walkAnimation.speed()));
+            LOG.info("RWALK gt={} name={} state={} wa={} sneak={} crouch={} pose={}", mc.level.getGameTime(), other.getGameProfile().getName(),
+                    v == null ? "-" : v.state(), String.format(Locale.ROOT, "%.4f", other.walkAnimation.speed()),
+                    other.isShiftKeyDown(), other.isCrouching(), other.getPose());
         }
         if (!SABLE) return;
         List<String> poses = shipPoses != null ? shipPoses : DevShipsClient.poses(mc.level);
