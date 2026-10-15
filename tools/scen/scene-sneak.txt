@@ -1,9 +1,16 @@
 # Sneak scene: a Create gearbox at 6000,-60,2 and a chest at 6003,-60,2 on the flat ground (ground top at y=-60).
+# E: stone platform x 6010..6012 z 8..12, top at y=-57 (edge on its east side). L: stone wall x=6020 z 18..22 up to y=-48, ladders on
+# its west face at 6019,z=20, y -60..-49. W: glass pool x 6029..6037 z 27..33, water inside x 6030..6036 z 28..32 up to y=-52.
 gamerule doDaylightCycle false
 gamerule doWeatherCycle false
 gamerule doImmediateRespawn true
 time set noon
-forceload add 5990 -10 6010 10
+forceload add 5990 -10 6040 40
 setblock 6000 -60 2 create:gearbox
 setblock 6003 -60 2 minecraft:chest[facing=north]
 tentaworks trace on
+fill 6010 -60 8 6012 -58 12 minecraft:stone
+fill 6020 -60 18 6020 -48 22 minecraft:stone
+fill 6019 -60 20 6019 -49 20 minecraft:ladder[facing=west]
+fill 6029 -60 27 6037 -52 33 minecraft:glass
+fill 6030 -60 28 6036 -52 32 minecraft:water
