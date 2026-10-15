@@ -7,6 +7,14 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Changed
+
+- Sneaking works while the Rig is out. `Shift` still moves you down and now also counts as sneaking, so sneak + right click (Create's wrench, placing against a block, ...) works while you hang. You don't crouch: the camera stays put.
+
+### Compatibility
+
+- Needs the update on both client and server for the full effect. With an older server, other players see you crouch while you sneak.
+
 ## [1.1.5] - 2026-10-14
 
 ### Fixed

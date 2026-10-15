@@ -6,13 +6,16 @@
   "mixins": [
     "BacktankBlockEntityAccessor",
     "BacktankBlockEntityMixin",
+    "LivingEntitySneakMixin",
+    "PlayerSneakMixin",
     "ServerGamePacketListenerImplAccessor"
   ],
   "client": [
     "BacktankRendererMixin",
     "EntityRendererMixin",
     "KineticBlockEntityGoggleMixin",
-    "LivingEntityWalkMixin"
+    "LivingEntityWalkMixin",
+    "LocalPlayerSneakMixin"
   ],
   "injectors": {
     "defaultRequire": 1

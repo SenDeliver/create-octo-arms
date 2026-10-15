@@ -30,7 +30,7 @@ The only required dependency is Create. With Sable (optional) the Rig also grips
 - **Double Jump** to activate, also in mid-air: the Rig catches you as soon as a Grip is in Reach, with no fall damage.
 - **Setting Down**: Double Jump again and the Rig lowers you to the floor and folds up. With no floor in Reach, it lets go at the lowest point it can hold.
 - **Crawl**: out of Air, the Rig does not drop you. It slowly lowers you to the nearest floor, then folds up.
-- **Hands free**: mining, placing, fighting and using items all work while the Rig carries you.
+- **Hands free**: mining, placing, fighting and using items all work while the Rig carries you. `Shift` also sneaks, so sneak + right click works, without the crouch.
 - **Still a Backtank**: it holds Air, feeds a Diving Helmet, takes Capacity and refills under a shaft.
 - **Two tiers**: Copper (Reach 4) and Netherite (Reach 7, half the Air use, fire resistant).
 - **Three own enchantments**: Far Reach, Thrift and Swift, plus vanilla chest armor enchantments and Create's Capacity.
