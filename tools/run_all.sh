@@ -12,9 +12,10 @@
 # Setting Down rise, lenient settings codec, 16 RPM goggle sync, untested items U1-U6, input cost; ends with a kick) and p8r16 (input cost at Reach 16).
 # pole suite (1x1 and 2x2 poles climbed from a face and from a corner, going round them at height: outside-edge Held rule);
 # sneak suite (Shift with the Rig out: moves down, server sees a sneak, no crouch; sneak + use with Create's wrench and on a chest);
+# sneak2 suite (sneak hand-over: Stowed sneak untouched, crouch returns when the Rig folds with Shift held, release seen, Rig Settings from the hand);
 # phase-9 suite p9 (v1.1 Sable Ships: parked turned ship, moving 4/15 b/s, rotating, world <-> ship, ship removed mid-grip, deck ride). Runs last and is the
 # only suite built with -PwithSable (Sable runtime); every suite above runs without Sable (no-Sable regression path).
-# usage: tools/run_all.sh <tag>   logs land in tools/logs/<tag>-{main,life,creative,p1,p2,p3,p4,p5,p6,p6walk,p6fast,p7,p8,p8r16,pole,sneak,p9}-*
+# usage: tools/run_all.sh <tag>   logs land in tools/logs/<tag>-{main,life,creative,p1,p2,p3,p4,p5,p6,p6walk,p6fast,p7,p8,p8r16,pole,sneak,sneak2,p9}-*
 cd "$(dirname "$0")/.."
 TAG=${1:-reg}
 S=tools/scen
@@ -35,9 +36,10 @@ TIMELINE=$S/p8-timeline.txt tools/run_split.sh $S/scene-p8.txt $S/p8-client.txt 
 TW_REACH_NETHERITE=13 TIMELINE=$S/p8r16-timeline.txt tools/run_split.sh $S/scene-p8.txt $S/p8r16-client.txt tools/logs/$TAG-p8r16
 tools/run_split.sh $S/scene-pole.txt $S/pole-client.txt tools/logs/$TAG-pole
 TIMELINE=$S/sneak-timeline.txt SCRIPT2=$S/sneak-watch.txt tools/run_split.sh $S/scene-sneak.txt $S/sneak-client.txt tools/logs/$TAG-sneak
+TIMELINE=$S/sneak2-timeline.txt tools/run_split.sh $S/scene-sneak.txt $S/sneak2-client.txt tools/logs/$TAG-sneak2
 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/p9-timeline.txt tools/run_split.sh $S/scene-p9.txt $S/p9-client.txt tools/logs/$TAG-p9
 mkdir -p tools/shots && cp run/screenshots/*.png run2/screenshots/*.png tools/shots/ 2>/dev/null
-for r in main life creative p1 p2 p3 p4 p5 p6 p6walk p6fast p7 p8 p8r16 pole sneak p9; do echo "== $r"; python3 tools/analyze.py tools/logs/$TAG-$r | grep -v '^mark'; done
+for r in main life creative p1 p2 p3 p4 p5 p6 p6walk p6fast p7 p8 p8r16 pole sneak sneak2 p9; do echo "== $r"; python3 tools/analyze.py tools/logs/$TAG-$r | grep -v '^mark'; done
 python3 tools/spike_metrics.py tools/logs/$TAG
 python3 tools/p1_metrics.py tools/logs/$TAG-p1
 python3 tools/p2_metrics.py tools/logs/$TAG-p2
@@ -51,4 +53,5 @@ python3 tools/p7_metrics.py tools/logs/$TAG-p7
 python3 tools/p8_metrics.py tools/logs/$TAG-p8 tools/logs/$TAG-p8r16
 python3 tools/pole_metrics.py tools/logs/$TAG-pole
 python3 tools/sneak_metrics.py tools/logs/$TAG-sneak
+python3 tools/sneak2_metrics.py tools/logs/$TAG-sneak2
 python3 tools/p9_metrics.py tools/logs/$TAG-p9

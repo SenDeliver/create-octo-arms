@@ -47,6 +47,15 @@ History: on 1.1.3 a corner climb stopped at Reach above the floor (3.10 / 6.10) 
 
 `tools/run_split.sh tools/scen/scene-pole.txt tools/scen/pole-client.txt tools/logs/x-pole && python3 tools/pole_metrics.py tools/logs/x-pole`
 
+## Sneak suites (sneak, sneak2)
+
+Shift with the Rig out counts as sneaking without the crouch (PR #15). Scene `scene-sneak.txt`: a Create gearbox and a chest on the floor, a platform with an edge, a ladder wall, a glass water pool.
+
+- `sneak` (`sneak_metrics.py`, Dev2 watching): client and server see the sneak with the Rig out, no crouch (pose Standing, eye 1.62), Shift still moves down; sneak + use with the wrench picks up the gearbox and stone goes on the chest; no edge hold, no ladder stop, no extra sinking under water; Dev2's client never sees Dev crouch.
+- `sneak2` (`sneak2_metrics.py`): the hand-over. A Stowed: vanilla crouch on both sides and sneak + use untouched. T: Shift held while the Rig sets down and folds: the crouch starts right after the stow, the server loses the sneak for at most 2 ticks. R: Shift released with the Rig out: no sneak sticks within 5 ticks. H: sneak + use in the air with a Rig in hand opens Rig Settings while the Rig is out.
+
+`TIMELINE=tools/scen/sneak2-timeline.txt tools/run_split.sh tools/scen/scene-sneak.txt tools/scen/sneak2-client.txt tools/logs/x-sneak2 && python3 tools/sneak2_metrics.py tools/logs/x-sneak2`
+
 ## Sable Ships suite (p9, v1.1)
 
 Only `p9` is built with `GRADLE_ARGS=-PwithSable` (Sable runtime bundle). It runs last in `run_all.sh`; every other suite runs without the flag, so they keep testing the no-Sable path (`NoShips`) exactly as in 1.0. Without the flag p9 fails at `S0` (no `/sable` command).

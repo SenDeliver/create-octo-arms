@@ -1,0 +1,67 @@
+# Sneak hand-over (PR #15 review): vanilla sneak stays untouched with the Rig Stowed, and takes over the moment the Rig folds while Shift is held.
+# A Stowed baseline: Shift crouches (client and server CROUCHING) and sneak + use with the wrench picks up the gearbox.
+# T Rig out with Shift held, Double Jump sets down and stows: the server never loses the sneak, and the crouch starts right after the stow.
+# R Shift released with the Rig out: the server stops seeing the sneak within a few ticks, nothing sticks.
+# H Rig in hand too: sneak + use in the air with the Rig out opens Rig Settings, as it does Stowed (p3 B1).
+await go
+trace on
+hud off
+view third
+cmd tp @s 6000.5 -60 0.5 0 30
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s weapon.mainhand with create:wrench
+wait 10
+# A
+hold shift on
+wait 20
+mark a1
+look 0 30
+key key.mouse.right
+wait 10
+hold shift off
+wait 10
+mark a2
+cmd execute if block 6000 -60 2 minecraft:air run say SNEAK2 A stowed wrench picked up the gearbox
+cmd execute unless block 6000 -60 2 minecraft:air run say SNEAK2 A stowed wrench did not pick up the gearbox
+cmd setblock 6000 -60 2 create:gearbox
+wait 10
+# T
+doublejump
+wait 30
+hold shift on
+wait 20
+mark t1
+doublejump
+wait 40
+mark t2
+hold shift off
+wait 10
+mark t3
+# R
+doublejump
+wait 30
+hold shift on
+wait 20
+mark r1
+hold shift off
+wait 20
+mark r2
+# H
+cmd item replace entity @s weapon.mainhand with tentaworks:copper_tentacle_rig
+wait 5
+look -90 -90
+hold shift on
+wait 5
+key key.mouse.right
+wait 10
+hold shift off
+screen
+close
+wait 5
+mark h1
+doublejump
+wait 40
+signal sneak2done
+quit

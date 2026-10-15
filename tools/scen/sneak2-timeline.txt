@@ -1,0 +1,4 @@
+op Dev
+gamemode survival Dev
+#signal go
+#await sneak2done
