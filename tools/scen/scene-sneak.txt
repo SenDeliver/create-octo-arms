@@ -1,0 +1,9 @@
+# Sneak scene: a Create gearbox at 6000,-60,2 and a chest at 6003,-60,2 on the flat ground (ground top at y=-60).
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+gamerule doImmediateRespawn true
+time set noon
+forceload add 5990 -10 6010 10
+setblock 6000 -60 2 create:gearbox
+setblock 6003 -60 2 minecraft:chest[facing=north]
+tentaworks trace on

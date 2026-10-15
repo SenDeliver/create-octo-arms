@@ -1,0 +1,51 @@
+# Sneak with the Rig out: Shift moves down and counts as sneaking (server sneak=true) without the crouch (pose STANDING, eye 1.62).
+# W: sneak + use with Create's wrench on a gearbox picks it up. S: sneak + use with stone on a chest places the stone, the chest stays shut.
+wait 40
+trace on
+hud off
+view third
+# W wrench
+cmd tp @s 6000.5 -60 0.5 0 30
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s weapon.mainhand with create:wrench
+wait 10
+doublejump
+wait 30
+mark wa
+hold shift on
+wait 20
+mark wb
+look 0 30
+key key.mouse.right
+wait 10
+screen
+hold shift off
+wait 10
+mark wc
+cmd execute if block 6000 -60 2 minecraft:air run say SNEAKTEST wrench picked up the gearbox
+cmd execute unless block 6000 -60 2 minecraft:air run say SNEAKTEST wrench did not pick up the gearbox
+# S stone on the chest
+doublejump
+wait 40
+cmd tp @s 6003.5 -60 0.5 0 30
+cmd item replace entity @s weapon.mainhand with minecraft:stone 8
+wait 10
+doublejump
+wait 30
+mark sa
+hold shift on
+wait 20
+mark sb
+look 0 30
+key key.mouse.right
+wait 10
+screen
+hold shift off
+wait 10
+cmd execute if block 6003 -60 1 minecraft:stone run say SNEAKTEST stone placed against the chest
+cmd execute unless block 6003 -60 1 minecraft:stone run say SNEAKTEST stone not placed
+close
+wait 10
+quit

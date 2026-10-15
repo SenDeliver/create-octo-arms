@@ -635,10 +635,11 @@ public final class DevScript {
         Vec3 pos = p.position();
         Vec3 d = lastPos == null ? Vec3.ZERO : pos.subtract(lastPos);
         lastPos = pos;
-        LOG.info("TRACE t={} gt={} pos={} d={} cmd={} held={} state={} fly={} mayfly={} press={} jumpkey={} ground={} hp={} air={} ff={} sheld={} carry={} wa={}",
+        LOG.info("TRACE t={} gt={} pos={} d={} cmd={} held={} state={} fly={} mayfly={} press={} jumpkey={} ground={} hp={} air={} ff={} sheld={} carry={} wa={} sneak={} crouch={} pose={} eye={}",
                 clientTicks, mc.level.getGameTime(), fmt(pos), fmt(d), fmt(RigClient.motion()), RigClient.heldCount(), RigClient.state(),
                 p.getAbilities().flying, p.mayFly(), RigClient.jumpPressed(), mc.options.keyJump.isDown(), p.onGround(), p.getHealth(), BacktankUtil.getAir(p.getItemBySlot(EquipmentSlot.CHEST)), p.isFallFlying(),
-                RigClient.shipGrips(), RigClient.carryShip() == null ? "-" : RigClient.carryShip().id(), String.format(Locale.ROOT, "%.4f", p.walkAnimation.speed()));
+                RigClient.shipGrips(), RigClient.carryShip() == null ? "-" : RigClient.carryShip().id(), String.format(Locale.ROOT, "%.4f", p.walkAnimation.speed()),
+                p.isShiftKeyDown(), p.isCrouching(), p.getPose(), String.format(Locale.ROOT, "%.3f", p.getEyeHeight()));
         for (var other : mc.level.players()) {
             if (other == p) continue;
             RigVisuals.Visual v = RigVisuals.get(other);

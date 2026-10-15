@@ -269,12 +269,12 @@ public final class DevTools {
 
     private static String line(ServerPlayer p) {
         var flight = p.getAttribute(NeoForgeMod.CREATIVE_FLIGHT);
-        return String.format("gt=%d %s pos=%.3f,%.3f,%.3f v=%.3f,%.3f,%.3f state=%s grips=%d cf=%.0f flying=%b fall=%.2f hp=%.1f ground=%b air=%d mv=%.3f,%.3f,%.3f%s",
+        return String.format("gt=%d %s pos=%.3f,%.3f,%.3f v=%.3f,%.3f,%.3f state=%s grips=%d cf=%.0f flying=%b fall=%.2f hp=%.1f ground=%b air=%d mv=%.3f,%.3f,%.3f%s sneak=%b pose=%s",
                 p.level().getGameTime(), p.getName().getString(), p.getX(), p.getY(), p.getZ(),
                 p.getDeltaMovement().x, p.getDeltaMovement().y, p.getDeltaMovement().z,
                 RigServer.state(p), RigServer.grips(p).size(), flight == null ? -1 : flight.getValue(),
                 p.getAbilities().flying, p.fallDistance, p.getHealth(), p.onGround(), BacktankUtil.getAir(p.getItemBySlot(EquipmentSlot.CHEST)),
-                RigServer.motion(p).x, RigServer.motion(p).y, RigServer.motion(p).z, shipFields(p));
+                RigServer.motion(p).x, RigServer.motion(p).y, RigServer.motion(p).z, shipFields(p), p.isShiftKeyDown(), p.getPose());
     }
 
     /** {@code sgrips}: valid Grips on a Ship; {@code carry}: the Ship holding most of them (at least {@link Grips#HELD}), as RigServer picks it. */
