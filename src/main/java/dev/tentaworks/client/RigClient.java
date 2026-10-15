@@ -48,7 +48,8 @@ import java.util.List;
 
 /**
  * Wearer side of the Rig (adr/0001): reads the movement keys, moves the body along the Heading as far as it stays Held,
- * and tells the server. Vanilla jump, sneak and walk input are swallowed while the Rig carries.
+ * and tells the server. Vanilla jump, sneak and walk input are swallowed while the Rig carries. Shift still counts as sneaking
+ * for use and interaction ({@link #sneaking()}), without the crouch.
  * Air and the Rig Settings come from the synced Rig stack; the server has the last word and corrects the state with a RigStatePacket.
  * The on/off input is the Double Jump, or the toggle key when the Rig's Activation Mode is key only.
  * Riding a Ship: while carrying, the carry Ship (the one holding most current Grips, at least two, as on the server) moves
@@ -68,6 +69,7 @@ public final class RigClient {
     private static Vec3 motion = Vec3.ZERO;
     private static boolean jumpWasDown;
     private static boolean jumpPressed;
+    private static boolean sneak;
     private static int ticks;
     private static int lastPress = -100;
     private static int activatedAt = -100;
@@ -116,6 +118,11 @@ public final class RigClient {
         return jumpPressed;
     }
 
+    /** Shift held while the Rig is out: the wearer sneaks (sneak + use works) but neither crouches nor moves like a sneak. */
+    public static boolean sneaking() {
+        return sneak && state != RigState.STOWED;
+    }
+
     @SubscribeEvent
     static void onInput(MovementInputUpdateEvent event) {
         if (!(event.getEntity() instanceof LocalPlayer player)) return;
@@ -140,6 +147,7 @@ public final class RigClient {
         if (state == RigState.STOWED) return;
 
         boolean up = input.jumping, down = input.shiftKeyDown;
+        sneak = down;
         int forward = (input.up ? 1 : 0) - (input.down ? 1 : 0);
         int left = (input.left ? 1 : 0) - (input.right ? 1 : 0);
         input.jumping = false;

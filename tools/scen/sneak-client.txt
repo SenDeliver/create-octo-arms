@@ -1,0 +1,104 @@
+# Sneak with the Rig out: Shift moves down and counts as sneaking (server sneak=true) without the crouch (pose STANDING, eye 1.62).
+# W: sneak + use with Create's wrench on a gearbox picks it up. S: sneak + use with stone on a chest places the stone, the chest stays shut.
+# No vanilla sneak movement while the Rig is out: E walks off a platform edge with Shift held (no edge hold), L moves down a ladder with Shift
+# held (no ladder stop), U holds Shift under water (no extra sinking: never faster than the Rig's own step) and idles (no sinking).
+await go
+trace on
+hud off
+view third
+# W wrench
+cmd tp @s 6000.5 -60 0.5 0 30
+cmd spectate Dev Dev2
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s weapon.mainhand with create:wrench
+wait 10
+doublejump
+wait 30
+mark wa
+hold shift on
+wait 20
+mark wb
+look 0 30
+key key.mouse.right
+wait 10
+screen
+hold shift off
+wait 10
+mark wc
+cmd execute if block 6000 -60 2 minecraft:air run say SNEAKTEST wrench picked up the gearbox
+cmd execute unless block 6000 -60 2 minecraft:air run say SNEAKTEST wrench did not pick up the gearbox
+# S stone on the chest
+doublejump
+wait 40
+cmd tp @s 6003.5 -60 0.5 0 30
+cmd spectate Dev Dev2
+cmd item replace entity @s weapon.mainhand with minecraft:stone 8
+wait 10
+doublejump
+wait 30
+mark sa
+hold shift on
+wait 20
+mark sb
+look 0 30
+key key.mouse.right
+wait 10
+screen
+hold shift off
+wait 10
+cmd execute if block 6003 -60 1 minecraft:stone run say SNEAKTEST stone placed against the chest
+cmd execute unless block 6003 -60 1 minecraft:stone run say SNEAKTEST stone not placed
+close
+# E edge: on the platform, Shift down onto it, then forward + Shift off the east edge
+doublejump
+wait 40
+cmd tp @s 6011.5 -57 10.5 -90 0
+cmd spectate Dev Dev2
+wait 10
+doublejump
+wait 30
+hold shift on
+wait 15
+mark ea
+hold up on
+wait 25
+hold up off
+mark eb
+hold shift off
+# L ladder: climb with Space, then Shift down the ladder
+doublejump
+wait 40
+cmd tp @s 6019.5 -60 20.5 -90 0
+cmd spectate Dev Dev2
+wait 10
+doublejump
+wait 30
+hold jump on
+wait 25
+hold jump off
+wait 5
+mark la
+hold shift on
+wait 30
+hold shift off
+mark lb
+# U under water: Shift down to the pool floor, then idle
+doublejump
+wait 40
+cmd tp @s 6033.5 -60 30.5 -90 0
+cmd spectate Dev Dev2
+wait 10
+doublejump
+wait 30
+mark ua
+hold shift on
+wait 20
+hold shift off
+mark ub
+wait 30
+mark uc
+wait 10
+signal sneakdone
+quit
