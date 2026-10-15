@@ -7,9 +7,11 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-15
+
 ### Changed
 
-- Sneaking works while the Rig is out. `Shift` still moves you down and now also counts as sneaking, so sneak + right click (Create's wrench, placing against a block, ...) works while you hang. You don't crouch: the camera stays put.
+- Sneaking works while the Rig is out. `Shift` still moves you down and now also counts as sneaking, so sneak + right click (Create's wrench, placing against a block, ...) works while you hang. You don't crouch: the camera stays put. The usual sneak perks apply (no trampling, no magma burn), and `Shift` dismounts a seat.
 
 ### Compatibility
 
