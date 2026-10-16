@@ -7,6 +7,16 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-10-16
+
+### Added
+
+- Translations: Chinese (Simplified, Traditional), Czech, French, German, Italian, Japanese, Korean, Polish, Portuguese (Brazil), Spanish (Spain, Mexico), Turkish, Ukrainian, Vietnamese. Native speakers welcome to suggest fixes.
+
+### Compatibility
+
+- Client-only change: works with a 1.2.0 server.
+
 ## [1.2.0] - 2026-10-15
 
 ### Changed
@@ -123,6 +133,7 @@ First release as **Create: Octo Arms** (mod id `tentaworks`), server-internal, n
 
 - Earlier builds were internal test versions and were not published.
 
-[Unreleased]: https://github.com/SenDeliver/create-octo-arms/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/SenDeliver/create-octo-arms/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/SenDeliver/create-octo-arms/compare/v1.2.0...v1.2.1
 [1.1.0]: https://github.com/SenDeliver/create-octo-arms/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/SenDeliver/create-octo-arms/releases/tag/v1.0.0
