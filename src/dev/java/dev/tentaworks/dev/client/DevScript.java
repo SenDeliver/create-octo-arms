@@ -25,6 +25,11 @@ import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.gui.screens.ConnectScreen;
+import net.minecraft.client.gui.screens.DisconnectedScreen;
+import net.minecraft.client.gui.screens.GenericMessageScreen;
+import net.minecraft.client.main.GameConfig;
+import net.minecraft.client.quickplay.QuickPlay;
+import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
@@ -38,6 +43,8 @@ import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.content.equipment.armor.BacktankBlockEntity;
 import com.simibubi.create.content.equipment.armor.BacktankRenderer;
 import com.simibubi.create.content.equipment.armor.BacktankUtil;
+import com.simibubi.create.content.kinetics.chainConveyor.ChainConveyorRidingHandler;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import dev.tentaworks.registry.TentaworksBlocks;
 import net.minecraft.world.level.block.Block;
@@ -90,6 +97,7 @@ import java.util.Set;
 
 /**
  * Dev-only client script: -Ptentaworks.script=file, run once a world is joined.
+ * -Ptentaworks.connect=host:port: quickplay join held back until signal/_connect exists (the client boots while the scene is built; no title screen meanwhile).
  * Lines: wait N | await name (run/signal/name exists) | signal name (writes run/signal/c_name for rcon.py #await) | cmd /x (needs op) | shot name (toasts cleared first) | hud on|off | close | quit
  * | hold up|down|left|right|jump|shift|sprint on|off (re-pressed every tick) | taps N (jump down 1 tick, up 2, N times)
  * | doublejump (taps 2) | look yaw pitch | trace on|off (TRACE line per tick) | mark tag (CPOS line + /tentaworks pos tag)
@@ -104,6 +112,8 @@ import java.util.Set;
  * | goggles tag (CGOGGLE lines: the goggle text of the looked-at block entity)
  * | clearchat | jei ns:id recipes|uses ns:category (JEI recipe view, JEI only; our recipes only when the view has any) | itemtip chest|mainhand|N tag (CTIP lines: the real tooltip of that stack, drawn for a shot)
  * | icons ns:id... (items drawn large) | griplines on|off (debug Grip lines) | perf tag (CPERF: Tentacle draw time since the last perf) | sounds tag (CSOUND: Rig sounds heard, plants seen)
+ * | lookat x y z (turns the eye to that point) | mousebtn left|right press|release (a real mouse button event, as GLFW sends it)
+ * | hit tag (CHIT: the crosshair target, the Simulated hold interaction, steering wheel raw/effective angle)
  * | gait on|off (GAIT line per tick: own gait slots) | key key.keyboard.e (one click; key.mouse.right = use) | tab ns:id (select a creative tab, any page) | backtanks (BACKTANK lines: cogs/shaft partial and default name per backtank block) | rejoin ticks (disconnect, reconnect to the same server after ticks) | view first|third|front.
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
@@ -127,6 +137,11 @@ public final class DevScript {
     private static String forge;
     private static final boolean SABLE = ModList.get() != null && ModList.get().isLoaded("sable");
     private static List<String> shipPoses;
+    private static final boolean SIMULATED = ModList.get() != null && ModList.get().isLoaded("simulated");
+    private static Field holdActive;
+    private static final String CONNECT = System.getProperty("tentaworks.connect");
+    private static boolean connectStarted;
+    private static int disconnectedTicks;
 
     private DevScript() {
     }
@@ -148,6 +163,12 @@ public final class DevScript {
     }
 
     @SubscribeEvent
+    static void onScreenOpening(ScreenEvent.Opening event) {
+        if (CONNECT != null && !connectStarted && event.getNewScreen() instanceof TitleScreen)
+            event.setNewScreen(new GenericMessageScreen(Component.literal("waiting for the scene")));
+    }
+
+    @SubscribeEvent
     static void onTick(ClientTickEvent.Post event) {
         String file = System.getProperty("tentaworks.script");
         if (file == null) return;
@@ -162,6 +183,19 @@ public final class DevScript {
         }
         if (mc.level == null || mc.player == null) {
             inWorld = false;
+            if (CONNECT != null && !connectStarted) {
+                if (mc.isGameLoadFinished() && Files.exists(mc.gameDirectory.toPath().resolve("signal").resolve("_connect"))) {
+                    connectStarted = true;
+                    QuickPlay.connect(mc, new GameConfig.QuickPlayData(null, null, CONNECT, null), null);
+                }
+                return;
+            }
+            disconnectedTicks = lines != null && mc.screen instanceof DisconnectedScreen ? disconnectedTicks + 1 : 0;
+            if (disconnectedTicks > 20) {
+                LOG.info("script: disconnected, quitting");
+                mc.stop();
+                return;
+            }
             if (lines != null && ++outTicks > 400) {
                 LOG.info("script: not in a world for 20 s, quitting");
                 mc.stop();
@@ -336,6 +370,29 @@ public final class DevScript {
                     waitTicks = JUMP_SEQ.size() + 1;
                     return;
                 }
+                case "lookat" -> {
+                    Vec3 d = new Vec3(Double.parseDouble(a[1]), Double.parseDouble(a[2]), Double.parseDouble(a[3])).subtract(mc.player.getEyePosition());
+                    float yaw = (float) Math.toDegrees(Math.atan2(-d.x, d.z));
+                    float pitch = (float) Math.toDegrees(-Math.atan2(d.y, d.horizontalDistance()));
+                    mc.player.setYRot(yaw);
+                    mc.player.setXRot(pitch);
+                    mc.player.yRotO = yaw;
+                    mc.player.xRotO = pitch;
+                    LOG.info("script: lookat yaw={} pitch={}", String.format(Locale.ROOT, "%.1f", yaw), String.format(Locale.ROOT, "%.1f", pitch));
+                }
+                case "mousebtn" -> {
+                    int button = a[1].equals("left") ? GLFW.GLFW_MOUSE_BUTTON_LEFT : GLFW.GLFW_MOUSE_BUTTON_RIGHT;
+                    try {
+                        Method press = MouseHandler.class.getDeclaredMethod("onPress", long.class, int.class, int.class, int.class);
+                        press.setAccessible(true);
+                        press.invoke(mc.mouseHandler, mc.getWindow().getWindow(), button, a[2].equals("press") ? GLFW.GLFW_PRESS : GLFW.GLFW_RELEASE, 0);
+                    } catch (ReflectiveOperationException e) {
+                        LOG.error("script: mousebtn", e);
+                    }
+                }
+                case "hit" -> LOG.info("CHIT {} type={} block={} at={} hold={} wheel={}", a[1], mc.hitResult == null ? "-" : mc.hitResult.getType(),
+                        mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult b ? b.getBlockPos().toShortString().replace(" ", "") : "-",
+                        mc.hitResult == null ? "-" : fmt(mc.hitResult.getLocation()), hold(), wheel());
                 case "look" -> {
                     float yaw = Float.parseFloat(a[1]), pitch = Float.parseFloat(a[2]);
                     mc.player.setYRot(yaw);
@@ -635,11 +692,14 @@ public final class DevScript {
         Vec3 pos = p.position();
         Vec3 d = lastPos == null ? Vec3.ZERO : pos.subtract(lastPos);
         lastPos = pos;
-        LOG.info("TRACE t={} gt={} pos={} d={} cmd={} held={} state={} fly={} mayfly={} press={} jumpkey={} ground={} hp={} air={} ff={} sheld={} carry={} wa={} sneak={} crouch={} pose={} eye={}",
+        Entity vehicle = p.getVehicle();
+        LOG.info("TRACE t={} gt={} pos={} d={} cmd={} held={} state={} fly={} mayfly={} press={} jumpkey={} ground={} hp={} air={} ff={} sheld={} carry={} wa={} sneak={} crouch={} pose={} eye={} veh={} ride={} hold={} vrot={}",
                 clientTicks, mc.level.getGameTime(), fmt(pos), fmt(d), fmt(RigClient.motion()), RigClient.heldCount(), RigClient.state(),
                 p.getAbilities().flying, p.mayFly(), RigClient.jumpPressed(), mc.options.keyJump.isDown(), p.onGround(), p.getHealth(), BacktankUtil.getAir(p.getItemBySlot(EquipmentSlot.CHEST)), p.isFallFlying(),
                 RigClient.shipGrips(), RigClient.carryShip() == null ? "-" : RigClient.carryShip().id(), String.format(Locale.ROOT, "%.4f", p.walkAnimation.speed()),
-                p.isShiftKeyDown(), p.isCrouching(), p.getPose(), String.format(Locale.ROOT, "%.3f", p.getEyeHeight()));
+                p.isShiftKeyDown(), p.isCrouching(), p.getPose(), String.format(Locale.ROOT, "%.3f", p.getEyeHeight()),
+                vehicle == null ? "-" : BuiltInRegistries.ENTITY_TYPE.getKey(vehicle.getType()), ChainConveyorRidingHandler.ridingChainConveyor != null ? "chain" : "-",
+                hold(), vehicle == null ? "-" : String.format(Locale.ROOT, "%.1f", vehicle.getYRot()));
         for (var other : mc.level.players()) {
             if (other == p) continue;
             RigVisuals.Visual v = RigVisuals.get(other);
@@ -651,6 +711,35 @@ public final class DevScript {
         List<String> poses = shipPoses != null ? shipPoses : DevShipsClient.poses(mc.level);
         shipPoses = null;
         for (String pose : poses) LOG.info("CSHIP gt={} {}", mc.level.getGameTime(), pose);
+    }
+
+    /** Simulated's active hold interaction (steering wheel, handle, throttle lever...) by class name, or "-"; reflection: Simulated is runtime only. */
+    private static String hold() {
+        if (!SIMULATED) return "-";
+        try {
+            if (holdActive == null) {
+                holdActive = Class.forName("dev.simulated_team.simulated.util.hold_interaction.HoldInteractionManager").getDeclaredField("active");
+                holdActive.setAccessible(true);
+            }
+            Object active = holdActive.get(null);
+            return active == null ? "-" : active.getClass().getSimpleName();
+        } catch (ReflectiveOperationException e) {
+            return "?";
+        }
+    }
+
+    /** Simulated steering wheel hold: raw and effective angle (reflection), or "-". */
+    private static String wheel() {
+        if (!SIMULATED) return "-";
+        try {
+            Class<?> c = Class.forName("dev.simulated_team.simulated.content.blocks.steering_wheel.SteeringWheelHandler");
+            Field raw = c.getDeclaredField("rawAngle"), eff = c.getDeclaredField("effectiveAngle");
+            raw.setAccessible(true);
+            eff.setAccessible(true);
+            return raw.getFloat(null) + "/" + eff.getFloat(null);
+        } catch (ReflectiveOperationException e) {
+            return "?";
+        }
     }
 
     /** Picks a source in the open Display Link screen through its own selector (reflection on the screen's fields). */

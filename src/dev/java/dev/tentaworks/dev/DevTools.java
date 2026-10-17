@@ -5,6 +5,8 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.content.equipment.armor.BacktankUtil;
+import com.simibubi.create.content.kinetics.chainConveyor.ChainConveyorBlockEntity;
+import com.simibubi.create.content.kinetics.chainConveyor.ServerChainConveyorHandler;
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.compat.Frame;
 import dev.tentaworks.compat.ShipFrames;
@@ -22,8 +24,10 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -41,6 +45,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Dev source set only, never in the release jar. /tentaworks trace on|off (STRACE per tick), pos TAG (one SPOS line),
@@ -52,7 +57,7 @@ import java.util.List;
  * (east) face of the wall column at x=X; Grips on a block at x=20047 whose outer neighbour is in unloaded chunk 1253 when only 20000 0 is forceloaded), burst N (each fake packet
  * sent N times per tick), netstats TAG (NETSTATS: motion packets handled, relays, server tick time), probe X Y Z (reads a block:
  * CHUNKLOAD control), fake slideN (real Grips, zero claimed motion, the server moves the player N blocks per second: speed check),
- * ghost FROM TO (air on the server only: a client ghost block). With Sable: ship NAME drive|stop and SSHIP lines ({@link DevShips}). Logs CHUNKLOAD for chunks at x ≥ 1250. Logs FALL (LivingFallEvent distance) and HURT (damage taken) lines for fall-damage checks.
+ * ghost FROM TO (air on the server only: a client ghost block), nbt X Y Z TAG (SNBT: a block entity's NBT), chain FROM TO (connects two Create chain conveyors). With Sable: ship NAME drive|stop and SSHIP lines ({@link DevShips}). Logs CHUNKLOAD for chunks at x ≥ 1250. Logs FALL (LivingFallEvent distance) and HURT (damage taken) lines for fall-damage checks.
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID)
 public final class DevTools {
@@ -181,6 +186,28 @@ public final class DevTools {
                     LOG.info("GHOST {} blocks removed server-side only", n);
                     return reply(c.getSource(), "ghost " + n);
                 }))))
+                .then(Commands.literal("nbt").then(Commands.argument("pos", BlockPosArgument.blockPos()).then(Commands.argument("tag", StringArgumentType.word()).executes(c -> {
+                    var pos = BlockPosArgument.getBlockPos(c, "pos");
+                    var be = c.getSource().getLevel().getBlockEntity(pos);
+                    LOG.info("SNBT {} gt={} {} {}", StringArgumentType.getString(c, "tag"), c.getSource().getLevel().getGameTime(), pos.toShortString(),
+                            be == null ? "none" : be.saveWithoutMetadata(c.getSource().registryAccess()));
+                    return reply(c.getSource(), "nbt");
+                }))))
+                .then(Commands.literal("chain").then(Commands.argument("from", BlockPosArgument.blockPos()).then(Commands.argument("to", BlockPosArgument.blockPos()).executes(c -> {
+                    var a = BlockPosArgument.getBlockPos(c, "from");
+                    var b = BlockPosArgument.getBlockPos(c, "to");
+                    var level = c.getSource().getLevel();
+                    boolean ok = false;
+                    if (level.getBlockEntity(a) instanceof ChainConveyorBlockEntity ca && level.getBlockEntity(b) instanceof ChainConveyorBlockEntity cb) {
+                        ca.prepareStats();
+                        cb.prepareStats();
+                        cb.addConnectionTo(a);
+                        ca.addConnectionTo(b);
+                        ok = ca.connections.contains(b.subtract(a)) && cb.connections.contains(a.subtract(b));
+                    }
+                    LOG.info("CHAIN {} {} connected={}", a.toShortString(), b.toShortString(), ok);
+                    return reply(c.getSource(), "chain " + ok);
+                }))))
                 .then(Commands.literal("pos").then(Commands.argument("tag", StringArgumentType.word()).executes(c -> {
                     String tag = StringArgumentType.getString(c, "tag");
                     for (ServerPlayer p : c.getSource().getServer().getPlayerList().getPlayers()) LOG.info("SPOS {} {}", tag, line(p));
@@ -269,12 +296,16 @@ public final class DevTools {
 
     private static String line(ServerPlayer p) {
         var flight = p.getAttribute(NeoForgeMod.CREATIVE_FLIGHT);
-        return String.format("gt=%d %s pos=%.3f,%.3f,%.3f v=%.3f,%.3f,%.3f state=%s grips=%d cf=%.0f flying=%b fall=%.2f hp=%.1f ground=%b air=%d mv=%.3f,%.3f,%.3f%s sneak=%b pose=%s",
+        Entity vehicle = p.getVehicle();
+        return String.format("gt=%d %s pos=%.3f,%.3f,%.3f v=%.3f,%.3f,%.3f state=%s grips=%d cf=%.0f flying=%b fall=%.2f hp=%.1f ground=%b air=%d mv=%.3f,%.3f,%.3f%s sneak=%b pose=%s veh=%s ride=%s vrot=%s",
                 p.level().getGameTime(), p.getName().getString(), p.getX(), p.getY(), p.getZ(),
                 p.getDeltaMovement().x, p.getDeltaMovement().y, p.getDeltaMovement().z,
                 RigServer.state(p), RigServer.grips(p).size(), flight == null ? -1 : flight.getValue(),
                 p.getAbilities().flying, p.fallDistance, p.getHealth(), p.onGround(), BacktankUtil.getAir(p.getItemBySlot(EquipmentSlot.CHEST)),
-                RigServer.motion(p).x, RigServer.motion(p).y, RigServer.motion(p).z, shipFields(p), p.isShiftKeyDown(), p.getPose());
+                RigServer.motion(p).x, RigServer.motion(p).y, RigServer.motion(p).z, shipFields(p), p.isShiftKeyDown(), p.getPose(),
+                vehicle == null ? "-" : BuiltInRegistries.ENTITY_TYPE.getKey(vehicle.getType()),
+                ServerChainConveyorHandler.hangingPlayers.containsKey(p.getUUID()) ? "chain" : "-",
+                vehicle == null ? "-" : String.format(Locale.ROOT, "%.1f", vehicle.getYRot()));
     }
 
     /** {@code sgrips}: valid Grips on a Ship; {@code carry}: the Ship holding most of them (at least {@link Grips#HELD}), as RigServer picks it. */

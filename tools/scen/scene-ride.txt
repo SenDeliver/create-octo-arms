@@ -1,0 +1,39 @@
+# Ride scene (adr/0003): a Ride Stows the Rig. Flat world, ground top at y=-60. Every Ride sits next to a wall so the Rig is Active and Held when it starts.
+# Seats: create:white_seat at x 6000..6015 step 3, z=3, stone wall behind them at z=4 (y -60..-54).
+# B: water lane x 6020..6100 z 10..12 (2 deep), wall z=13; boat b1 facing +x. H: horse h1 (tame, saddled) facing +x, wall z=23.
+# M: rail x 6020..6070 z=30, wall z=31, minecart m1. Mid-state mounts: wall z=50 x 6000..6012 up to y=-48, minecarts m_sd, m_cr, m_fa (off rails).
+# Needs ANIMALS=true (server spawn-animals, else the horse is discarded on its first tick); the scene kills worldgen animals before summoning.
+# C: chain conveyors at 6040 -56 60 and 6048 -56 60 connected (tentaworks chain), creative motor (64 RPM) under the first.
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+gamerule doImmediateRespawn true
+gamerule doMobSpawning false
+time set noon
+forceload add 5990 -10 6110 70
+tentaworks trace on
+fill 5998 -60 4 6020 -54 4 minecraft:stone
+setblock 6000 -60 3 create:white_seat
+setblock 6003 -60 3 create:white_seat
+setblock 6006 -60 3 create:white_seat
+setblock 6009 -60 3 create:white_seat
+setblock 6012 -60 3 create:white_seat
+setblock 6015 -60 3 create:white_seat
+fill 6018 -60 13 6102 -55 13 minecraft:stone
+fill 6020 -62 10 6100 -61 12 minecraft:water
+summon minecraft:boat 6022.5 -60.5 11.5 {Tags:["b1"],Rotation:[-90f,0f]}
+fill 6018 -60 23 6102 -55 23 minecraft:stone
+kill @e[type=!minecraft:player,type=!minecraft:boat]
+summon minecraft:horse 6022.5 -60 21.5 {Tags:["h1"],Tame:1b,PersistenceRequired:1b,SaddleItem:{id:"minecraft:saddle",count:1},Rotation:[-90f,0f],attributes:[{id:"minecraft:generic.movement_speed",base:0.3d},{id:"minecraft:generic.jump_strength",base:0.9d}]}
+fill 6018 -60 31 6072 -55 31 minecraft:stone
+fill 6020 -60 30 6070 -60 30 minecraft:rail
+summon minecraft:minecart 6022.5 -60 30.5 {Tags:["m1"]}
+fill 6000 -60 50 6012 -48 50 minecraft:stone
+summon minecraft:minecart 6030.5 -60 46.5 {Tags:["m_sd"]}
+summon minecraft:minecart 6034.5 -60 46.5 {Tags:["m_cr"]}
+summon minecraft:minecart 6038.5 -60 46.5 {Tags:["m_fa"]}
+setblock 6040 -56 60 create:chain_conveyor
+setblock 6048 -56 60 create:chain_conveyor
+setblock 6040 -57 60 create:creative_motor[facing=up]{ScrollValue:64}
+tentaworks chain 6040 -56 60 6048 -56 60
+data get entity @e[tag=h1,limit=1] Tame
+data get entity @e[tag=b1,limit=1] Pos

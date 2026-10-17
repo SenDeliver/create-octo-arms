@@ -60,7 +60,7 @@ _Avoid_: tank block, charger, filler
 A worn Rig takes the Double Jump in creative too. Creative flight is reached by a third jump press while Active or by the fly key.
 
 **Falling**:
-What happens when a Held wearer loses Grips (blocks broken under them) and no new Grip is in Reach: vanilla gravity and fall damage return until a Grip is found again. Taking the Rig off, logging out or changing dimension Stows it at once.
+What happens when a Held wearer loses Grips (blocks broken under them) and no new Grip is in Reach: vanilla gravity and fall damage return until a Grip is found again. Taking the Rig off, logging out, changing dimension or starting a Ride Stows it at once.
 _Avoid_: drop, release
 
 **Crawl**:
@@ -74,6 +74,16 @@ _Avoid_: hover, rest
 **Step**:
 One Tentacle letting go of its Grip and arcing to a new one while the others hold. Tentacles Step alone or in diagonal pairs (never more than two at once, never leaving fewer than two holding), so movement reads as a crawling gait.
 _Avoid_: re-grip, swing
+
+## Rides and controls
+
+**Ride**:
+Anything other than the Rig that carries the wearer: a seat, a mount, a boat or minecart, a chain conveyor, a zipline, a handle pulling the wearer to it. The Rig carries alone: starting a Ride Stows it at once, nothing Activates it during a Ride (jump belongs to the Ride), and it stays Stowed after.
+_Avoid_: vehicle, riding (a Rig on a Ship is carried, not riding), mount (as the general word)
+
+**Control Hold**:
+Holding use on a Ship control (steering wheel, throttle lever) while the Rig is out. The Rig keeps its Grips and holds the wearer still while the movement keys work the control; jump stays the Rig's (Double Jump still Sets Down); letting go hands the keys back to the Rig. A handle held normally moves the wearer: that is a Ride. A handle grabbed sneaking drags its Ship instead, reads no keys and is neither: the Rig carries on, and the Ship does not move (Simulated drags only for a wearer standing on something).
+_Avoid_: steering mode, piloting
 
 ## Movement
 

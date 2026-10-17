@@ -7,6 +7,22 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-17
+
+### Fixed
+
+- `Shift` leaves seats, boats, minecarts and horses again when you sat down with the Rig out. Boats and horses steer and jump normally.
+- Create's chain conveyor carries you even if the Rig was out when you grabbed it.
+- Create Aeronautics controls work with the Rig out: `Shift` snaps the steering wheel while you hold it, the Rig keeps its hold and stays still. Handles pull you in and `W`/`S` work them.
+
+### Changed
+
+- Sitting down, mounting, grabbing a chain conveyor or zipline, or a handle pulling you in stows the Rig. It can't be activated during the ride and stays stowed after it: Double Jump again to use it.
+
+### Compatibility
+
+- No network change: mixes with 1.2.x. A 1.2.x client on an updated server also gets the seat fix (the server stows the Rig).
+
 ## [1.2.1] - 2026-10-16
 
 ### Added

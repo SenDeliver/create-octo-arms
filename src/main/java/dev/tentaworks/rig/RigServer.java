@@ -2,6 +2,7 @@ package dev.tentaworks.rig;
 
 import com.mojang.logging.LogUtils;
 import com.simibubi.create.content.equipment.armor.BacktankUtil;
+import com.simibubi.create.content.kinetics.chainConveyor.ServerChainConveyorHandler;
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.compat.Frame;
 import dev.tentaworks.compat.Pose;
@@ -46,6 +47,8 @@ import java.util.UUID;
  * Riding a Ship: the carry Ship (the one holding most valid Grips, at least two) moves the wearer too; every check on the
  * real move (speed, Air, Crawl, Setting Down) subtracts that carry. The motion in {@link RigMotionPacket} is the Rig's own
  * motion and never includes it.
+ * Rides (adr/0003): the server Stows the Rig of a wearer it sees on a Ride and refuses carrying claims during one, so clients
+ * that do not Stow on their own get the same behaviour.
  */
 public final class RigServer {
     private static final Logger LOG = LogUtils.getLogger();
@@ -67,6 +70,7 @@ public final class RigServer {
     private static final Map<UUID, Double> LAST_Y = new HashMap<>();
     private static final Map<UUID, RigMotionPacket> PENDING = new HashMap<>();
     private static final Map<UUID, Integer> BAD_PACKET_LOGGED = new HashMap<>();
+    private static final Map<UUID, Integer> RIDE_REFUSED = new HashMap<>();
     private static long processed;
     private static long relays;
     private static boolean floatFix = true;
@@ -147,6 +151,7 @@ public final class RigServer {
                 LAST_Y.remove(p.getUUID());
                 PENDING.remove(p.getUUID());
                 BAD_PACKET_LOGGED.remove(p.getUUID());
+                RIDE_REFUSED.remove(p.getUUID());
             }
         });
         NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerChangedDimensionEvent e) -> {
@@ -163,6 +168,7 @@ public final class RigServer {
             LAST_Y.clear();
             PENDING.clear();
             BAD_PACKET_LOGGED.clear();
+            RIDE_REFUSED.clear();
         });
     }
 
@@ -255,6 +261,10 @@ public final class RigServer {
             return;
         }
         Wearer w = WEARERS.get(player.getUUID());
+        if (riding(player)) {
+            refuseRide(player, w);
+            return;
+        }
         boolean air = RigAir.has(player);
         boolean worn = TentacleRigItem.wornOut(RigAir.worn(player));
         if (w == null && (!air || worn)) {
@@ -346,6 +356,25 @@ public final class RigServer {
             setFloat(player, false);
         }
         relay(player, w);
+    }
+
+    /** A Ride carries the wearer: a vehicle, or Create's chain conveyor and Simulated's zipline (both use the chain's hanging list). */
+    private static boolean riding(ServerPlayer player) {
+        return player.isPassenger() || ServerChainConveyorHandler.hangingPlayers.containsKey(player.getUUID());
+    }
+
+    /** A carrying claim during a Ride: Stowed at once; with no Wearer left the wearer hears it at most every {@value #RESEND_TICKS} ticks while the claims go on. */
+    private static void refuseRide(ServerPlayer player, Wearer w) {
+        int now = player.server.getTickCount();
+        if (w != null) {
+            stow(player, true);
+            RIDE_REFUSED.put(player.getUUID(), now);
+            return;
+        }
+        Integer last = RIDE_REFUSED.get(player.getUUID());
+        if (last != null && now - last < RESEND_TICKS) return;
+        RIDE_REFUSED.put(player.getUUID(), now);
+        PacketDistributor.sendToPlayer(player, new RigStatePacket(player.getId(), RigState.STOWED, Tentacles.NONE));
     }
 
     /** Trackers get the Rig only when its state or Tentacles change (and once when they start tracking). */
@@ -462,7 +491,7 @@ public final class RigServer {
     private static void tick(ServerPlayer player) {
         Wearer w = WEARERS.get(player.getUUID());
         if (w == null) return;
-        if (!TentacleRigItem.isWorn(player)) {
+        if (!TentacleRigItem.isWorn(player) || riding(player)) {
             stow(player, true);
             return;
         }

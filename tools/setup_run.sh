@@ -1,7 +1,7 @@
 #!/bin/bash
 # Creates the local run dirs (gitignored): muted clients (run/, run2/), RCON-enabled dedicated server.
 # RCON password: $RCON_PASSWORD, else the one already in run/server/server.properties, else random.
-# GAMEMODE=creative switches the server default game mode; server.properties is rewritten every time.
+# GAMEMODE=creative switches the server default game mode, ANIMALS=true keeps animals (horse in the ride suite); server.properties is rewritten every time.
 cd "$(dirname "$0")/.."
 mkdir -p run/config run/server/config run2/config
 for d in run run2; do
@@ -31,7 +31,7 @@ level-type=minecraft\:flat
 generate-structures=false
 spawn-protection=0
 spawn-monsters=false
-spawn-animals=false
+spawn-animals=${ANIMALS:-false}
 spawn-npcs=false
 difficulty=peaceful
 gamemode=${GAMEMODE:-survival}

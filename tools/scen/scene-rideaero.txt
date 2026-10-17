@@ -1,0 +1,30 @@
+# Rideaero scene (adr/0003, Sable + Aeronautics bundle: GRADLE_ARGS=-PwithSable). Flat world, ground top at y=-60.
+# W ship rw: hollow stone box x 6000..6006 y -59..-54 z 0..6 (bottom 1 above the floor), a Create seat inside at 6003 -58 5 by its z=6 wall;
+# held in the air by tentaworks ship rw drive 0 0 0.
+# Steering wheels (simulated, facing west, preset to 30 deg): stone wall x=6060; baseline wheel 6059 -59 6 on one stone, Rig wheel 6059 -58 0 on two.
+# ScrollValue (angle limit) must be in the NBT, else it loads as 0 and clamps every angle to 0. The wheel rim the hold reacts to: the west face of its block, 0.3..0.75 up (aim at x+0.05, y+0.5).
+# Handles (simulated:iron_handle, facing west) on the west face of the stone wall x=6070: baseline 6069 -57 6, Rig 6069 -57 0.
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+gamerule doImmediateRespawn true
+gamerule doMobSpawning false
+time set noon
+forceload add 5990 -10 6080 20
+tentaworks trace on
+fill 6000 -59 0 6006 -54 6 minecraft:stone hollow
+setblock 6003 -58 5 create:white_seat
+sable assemble area 6000 -59 0 6006 -54 6
+execute positioned 6003.5 -56.5 3.5 run sable name set @n rw
+tentaworks ship rw drive 0 0 0
+sable forceload add @e[name=rw]
+sable info @e[name=rw]
+fill 6060 -60 -3 6060 -50 9 minecraft:stone
+setblock 6059 -60 6 minecraft:stone
+setblock 6059 -59 6 simulated:steering_wheel[facing=west,on_floor=true]{Angle:30f,TargetAngle:30f,ScrollValue:180}
+fill 6059 -60 0 6059 -59 0 minecraft:stone
+setblock 6059 -58 0 simulated:steering_wheel[facing=west,on_floor=true]{Angle:30f,TargetAngle:30f,ScrollValue:180}
+fill 6070 -60 -3 6070 -50 9 minecraft:stone
+setblock 6069 -57 6 simulated:iron_handle[facing=west]
+setblock 6069 -57 0 simulated:iron_handle[facing=west]
+tentaworks nbt 6059 -59 6 wheelbase0
+tentaworks nbt 6059 -58 0 wheelrig0

@@ -1,0 +1,391 @@
+# Ride suite (adr/0003): starting a Ride Stows the Rig, nothing Activates it during the Ride, Shift/jump/WASD go to the Ride. Server decides every dismount.
+# Each section resets: ride dismount (Shift may not have worked), tp, Rig off and on (Stowed on both sides, Air 900).
+await go
+trace on
+hud off
+view third
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+# A Stowed baseline: sit (empty hand), Shift dismounts
+cmd tp @s 6000.5 -60 1.3 0 30
+wait 10
+mark a0
+lookat 6000.5 -59.7 3.5
+key key.mouse.right
+wait 10
+mark a1
+hold shift on
+wait 20
+mark a2
+hold shift off
+wait 10
+# J after a dismount: Double Jump activates, Double Jump again sets down
+mark j0
+doublejump
+wait 30
+mark j1
+doublejump
+wait 40
+mark j2
+# S1 owner repro: Rig Active by the wall, sit, Shift
+cmd ride @s dismount
+cmd tp @s 6003.5 -60 1.3 0 30
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 30
+mark s1a
+lookat 6003.5 -59.7 3.5
+key key.mouse.right
+wait 10
+mark s1b
+hold shift on
+wait 20
+mark s1c
+hold shift off
+wait 5
+# S2 seated Stowed, Double Jump
+cmd ride @s dismount
+cmd tp @s 6006.5 -60 1.3 0 30
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+lookat 6006.5 -59.7 3.5
+key key.mouse.right
+wait 10
+mark s2a
+doublejump
+wait 20
+mark s2b
+hold shift on
+wait 20
+mark s2c
+hold shift off
+wait 5
+# S3 key-only Activation Mode, seated Stowed, toggle key
+cmd ride @s dismount
+cmd tp @s 6009.5 -60 1.3 0 30
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 5
+bind key.tentaworks.toggle key.keyboard.r
+rawsettings chest 1.5 5.6 key
+wait 10
+lookat 6009.5 -59.7 3.5
+key key.mouse.right
+wait 10
+mark s3a
+key key.keyboard.r
+wait 20
+mark s3b
+hold shift on
+wait 20
+mark s3c
+hold shift off
+rawsettings chest 1.5 5.6 double_jump
+wait 5
+# S4 Rig Active, sit, 200 ticks seated: no Air used, Stowed
+cmd ride @s dismount
+cmd tp @s 6012.5 -60 1.3 0 30
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 30
+mark s4a
+lookat 6012.5 -59.7 3.5
+key key.mouse.right
+wait 10
+mark s4b
+wait 200
+mark s4c
+# S5 old client: seated, the server gets Active packets with real Grips (tentaworks fake held): it must keep the Rig Stowed
+cmd ride @s dismount
+cmd tp @s 6015.5 -60 1.3 0 30
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+lookat 6015.5 -59.7 3.5
+key key.mouse.right
+wait 10
+mark s5a
+cmd tentaworks fake held 60
+wait 70
+mark s5b
+# S6 mount while Setting Down
+cmd ride @s dismount
+cmd tp @s 6002.5 -60 48.5 0 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 25
+hold jump on
+wait 20
+hold jump off
+wait 5
+mark s6a
+doublejump
+cmd ride @s mount @e[type=minecart,tag=m_sd,limit=1]
+wait 10
+mark s6b
+hold shift on
+wait 20
+mark s6c
+hold shift off
+wait 5
+# S7 mount in Crawl (no Air)
+cmd ride @s dismount
+cmd tp @s 6006.5 -60 48.5 0 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 25
+hold jump on
+wait 20
+hold jump off
+cmd tentaworks air 0
+wait 5
+mark s7a
+cmd ride @s mount @e[type=minecart,tag=m_cr,limit=1]
+wait 10
+mark s7b
+hold shift on
+wait 20
+mark s7c
+hold shift off
+wait 5
+# S8 mount while Falling (tp into open air, then mount)
+cmd ride @s dismount
+cmd tp @s 6010.5 -60 48.5 0 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 25
+cmd tp @s 6030.5 -40 40.5
+wait 8
+mark s8a
+cmd ride @s mount @e[type=minecart,tag=m_fa,limit=1]
+wait 10
+mark s8b
+hold shift on
+wait 20
+mark s8c
+hold shift off
+wait 5
+# B0 boat baseline, Rig Stowed: ride, W moves, A turns, Shift dismounts
+cmd ride @s dismount
+cmd tp @s 6022.5 -60 9.0 0 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+cmd ride @s mount @e[type=boat,tag=b1,limit=1]
+wait 10
+mark bb1
+hold up on
+wait 40
+hold up off
+mark bb2
+hold left on
+wait 30
+hold left off
+mark bb3
+hold shift on
+wait 20
+mark bb4
+hold shift off
+wait 5
+# B boat on water: Rig Active on the bank, ride, W moves, A turns, Shift dismounts
+cmd ride @s dismount
+cmd tp @s 6022.5 -60 9.0 0 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 30
+mark b0
+cmd ride @s mount @e[type=boat,tag=b1,limit=1]
+wait 10
+mark b1
+hold up on
+wait 40
+hold up off
+mark b2
+hold left on
+wait 30
+hold left off
+mark b3
+hold shift on
+wait 20
+mark b4
+hold shift off
+wait 5
+# H0 horse baseline, Rig Stowed (facing +x along the corridor: a ridden horse turns to the rider's yaw; the horse goes back to its start, it wanders before): ride, W moves, jump (released) jumps, Shift dismounts
+cmd ride @s dismount
+cmd tp @s 6022.5 -60 19.5 -90 0
+cmd tp @e[tag=h1,limit=1] 6022.5 -60 21.5 -90 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+cmd ride @s mount @e[type=horse,tag=h1,limit=1]
+look -90 0
+wait 10
+mark hb1
+hold up on
+wait 30
+hold up off
+wait 10
+mark hb2
+hold jump on
+wait 12
+hold jump off
+wait 20
+mark hb3
+hold shift on
+wait 20
+mark hb4
+hold shift off
+wait 5
+# H horse: Rig Active, ride, W moves, jump (released) jumps, Shift dismounts
+cmd ride @s dismount
+cmd tp @s 6022.5 -60 19.5 -90 0
+cmd tp @e[tag=h1,limit=1] 6022.5 -60 21.5 -90 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 30
+mark h0
+cmd ride @s mount @e[type=horse,tag=h1,limit=1]
+look -90 0
+wait 10
+mark h1
+hold up on
+wait 30
+hold up off
+wait 10
+mark h2
+hold jump on
+wait 12
+hold jump off
+wait 20
+mark h3
+hold shift on
+wait 20
+mark h4
+hold shift off
+wait 5
+# H5 seated Stowed on the horse: Double Jump does not Activate
+cmd ride @s dismount
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+cmd ride @s mount @e[type=horse,tag=h1,limit=1]
+look -90 0
+wait 10
+mark h5a
+doublejump
+wait 20
+mark h5b
+# M minecart on rails: Rig Active, ride, Shift dismounts, stays Stowed after
+cmd ride @s dismount
+cmd tp @s 6022.5 -60 28.5 0 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 30
+mark m0
+cmd ride @s mount @e[type=minecart,tag=m1,limit=1]
+wait 10
+mark m1
+hold shift on
+wait 20
+mark m2
+hold shift off
+wait 20
+mark m3
+# J3 after a real Ride (M): Double Jump activates again (no state left over from the Ride)
+cmd ride @s dismount
+wait 5
+mark j3a
+doublejump
+wait 30
+mark j3b
+# C0 chain conveyor, Stowed baseline: wrench, look at the chain, use: the ride moves the wearer; Shift lets go
+cmd ride @s dismount
+cmd tp @s 6044.5 -60 61.22 0 -90
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s weapon.mainhand with create:wrench
+wait 10
+lookat 6044.5 -55.625 61.22
+wait 2
+key key.mouse.right
+wait 5
+mark c0a
+wait 60
+mark c0b
+hold shift on
+wait 10
+hold shift off
+wait 20
+# C1 chain conveyor with the Rig Active
+cmd tp @s 6044.5 -60 61.22 0 -90
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 30
+mark c1a
+lookat 6044.5 -55.625 61.22
+wait 2
+key key.mouse.right
+wait 5
+mark c1b
+wait 60
+mark c1c
+hold shift on
+wait 10
+hold shift off
+wait 10
+# C2 old client on the chain: riding Stowed, the server gets forged Active packets with real Grips (tentaworks fake held): it must keep the Rig Stowed
+cmd tp @s 6044.5 -60 61.22 0 -90
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+lookat 6044.5 -55.625 61.22
+wait 2
+key key.mouse.right
+wait 15
+mark c2a
+cmd tentaworks fake held 40
+wait 45
+mark c2b
+hold shift on
+wait 10
+hold shift off
+wait 10
+cmd item replace entity @s weapon.mainhand with air
+signal ridedone
+quit

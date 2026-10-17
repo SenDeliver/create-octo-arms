@@ -56,6 +56,9 @@ import java.util.List;
  * the wearer by its own move this tick on top of the Rig's motion, unless Sable already does (feet on its deck). Held is tested
  * where the body really ends up. The motion sent to the server and fed to the gait is the Rig's own, never the carry.
  * A Standing Height lift over a Ship deck aims at that deck where it is now, not where it was at activation.
+ * Rides (adr/0003, {@link Rides}): starting one Stows the Rig, nothing Activates it during one, and the keys go to the Ride
+ * untouched. During a Control Hold the Rig keeps its Grips and holds still; Shift and the walk keys stay on the input for the
+ * control (no walk impulse), jump stays the Rig's.
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public final class RigClient {
@@ -136,6 +139,13 @@ public final class RigClient {
             if (state != RigState.STOWED) setState(player, RigState.STOWED);
             return;
         }
+        if (Rides.riding(player)) {
+            while (TentaworksKeys.TOGGLE.consumeClick()) {
+            }
+            lastPress = -100;
+            if (state != RigState.STOWED) setState(player, RigState.STOWED);
+            return;
+        }
         RigSettings settings = RigSettings.of(RigAir.worn(player));
         if (settings.activation() == RigSettings.ActivationMode.KEY) {
             while (TentaworksKeys.TOGGLE.consumeClick()) toggle(player, settings);
@@ -146,17 +156,19 @@ public final class RigClient {
         }
         if (state == RigState.STOWED) return;
 
-        boolean up = input.jumping, down = input.shiftKeyDown;
+        boolean control = state.carries() && Rides.controlHold();
+        boolean up = input.jumping && !control, down = input.shiftKeyDown && !control;
         sneak = down;
-        int forward = (input.up ? 1 : 0) - (input.down ? 1 : 0);
-        int left = (input.left ? 1 : 0) - (input.right ? 1 : 0);
+        int forward = control ? 0 : (input.up ? 1 : 0) - (input.down ? 1 : 0);
+        int left = control ? 0 : (input.left ? 1 : 0) - (input.right ? 1 : 0);
         input.jumping = false;
-        input.shiftKeyDown = false;
+        if (!control) input.shiftKeyDown = false;
         if (state != RigState.FALLING) {
-            input.up = input.down = input.left = input.right = false;
+            if (!control) input.up = input.down = input.left = input.right = false;
             input.forwardImpulse = 0;
             input.leftImpulse = 0;
         }
+        if (control) liftTo = Double.NaN;
 
         double reach = TentacleRigItem.reach(player);
         double step = settings.speed() * RigEnchants.swift(RigAir.worn(player)) / 20.0;
