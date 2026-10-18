@@ -2,7 +2,7 @@
 # Dedicated server + client(s) over localhost. Fresh world each run.
 # GRADLE_ARGS (e.g. -PnoJei) go to every gradle run.
 # Clients boot while the server boots and join once the scene is done (signal/_connect, DevScript); TW_PREBOOT=0: old flow (client started after the scene, 2 s polls).
-# usage: [TW_SPEED_MAX=20] [TW_REACH_COPPER=N] [TW_REACH_NETHERITE=N] [TW_CLIENT_WALK=true] [TIMELINE=<rcon file run after Dev joins>] [SCRIPT2=<client script for Dev2>] [GAMEMODE=creative] [ANIMALS=true] tools/run_split.sh <rcon scene> <client script> <log prefix>
+# usage: [TW_SPEED_MAX=20] [TW_REACH_COPPER=N] [TW_REACH_NETHERITE=N] [TW_CLIENT_WALK=true] [TW_CLIENT_FORWARD=flat] [TIMELINE=<rcon file run after Dev joins>] [SCRIPT2=<client script for Dev2>] [GAMEMODE=creative] [ANIMALS=true] tools/run_split.sh <rcon scene> <client script> <log prefix>
 cd "$(dirname "$0")/.."
 SCENE=$1; SCRIPT=$2; OUT=$3
 mkdir -p "$(dirname "$OUT")"
@@ -19,9 +19,11 @@ if [ -n "$TW_SPEED_MAX$TW_REACH_COPPER$TW_REACH_NETHERITE" ] && [ -f run/server/
     sec=="[reach]" && $1=="netherite" && rn!="" {sub(/=.*/, "= " rn)} {print}' run/server/config/tentaworks-server.toml > run/server/world/serverconfig/tentaworks-server.toml
 fi
 # TW_CLIENT_WALK (true|false): this run's client config animation.walkWhileHeld on both clients (default: the mod default, false)
+# TW_CLIENT_FORWARD (look|flat): this run's client config movement.forward on both clients (default: the mod default, look)
 for d in run run2; do
   rm -f $d/config/tentaworks-client.toml
-  [ -n "$TW_CLIENT_WALK" ] && printf '[animation]\n\twalkWhileHeld = %s\n' "$TW_CLIENT_WALK" > $d/config/tentaworks-client.toml
+  [ -n "$TW_CLIENT_WALK" ] && printf '[animation]\n\twalkWhileHeld = %s\n' "$TW_CLIENT_WALK" >> $d/config/tentaworks-client.toml
+  [ -n "$TW_CLIENT_FORWARD" ] && printf '[movement]\n\tforward = "%s"\n' "$TW_CLIENT_FORWARD" >> $d/config/tentaworks-client.toml
 done
 [ -f tools/local.env ] && . tools/local.env
 ./gradlew runServer $GRADLE_ARGS > "$OUT-server.log" 2>&1 &

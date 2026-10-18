@@ -4,6 +4,7 @@ import com.simibubi.create.AllSoundEvents;
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.compat.Frame;
 import dev.tentaworks.compat.ShipFrames;
+import dev.tentaworks.config.TentaworksClientConfig;
 import dev.tentaworks.network.RigMotionPacket;
 import dev.tentaworks.network.RigStatePacket;
 import dev.tentaworks.rig.Grip;
@@ -339,9 +340,11 @@ public final class RigClient {
         player.playSound(AllSoundEvents.DENY.getMainEvent(), 1.0F, 1.25F);
     }
 
+    /** The Heading: forward along the camera (client config {@code movement.forward = look}) or level only ({@code flat}). */
     private static Vec3 heading(LocalPlayer player, int forward, int left, boolean up, boolean down) {
-        Vec3 look = player.getViewVector(1.0F);
         float yaw = player.getYRot() * Mth.DEG_TO_RAD;
+        Vec3 look = TentaworksClientConfig.forward() == TentaworksClientConfig.ForwardMode.FLAT
+                ? new Vec3(-Mth.sin(yaw), 0, Mth.cos(yaw)) : player.getViewVector(1.0F);
         Vec3 leftDir = new Vec3(Mth.cos(yaw), 0, Mth.sin(yaw));
         return look.scale(forward).add(leftDir.scale(left)).add(0, (up ? 1 : 0) - (down ? 1 : 0), 0);
     }

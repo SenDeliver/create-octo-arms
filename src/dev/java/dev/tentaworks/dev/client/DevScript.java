@@ -4,6 +4,7 @@ import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.client.RigClient;
 import dev.tentaworks.client.RigVisuals;
 import dev.tentaworks.client.RigSettingsScreen;
+import dev.tentaworks.config.TentaworksClientConfig;
 import dev.tentaworks.network.RigSettingsPacket;
 import dev.tentaworks.registry.TentaworksDataComponents;
 import dev.tentaworks.rig.RigSettings;
@@ -114,7 +115,8 @@ import java.util.Set;
  * | icons ns:id... (items drawn large) | griplines on|off (debug Grip lines) | perf tag (CPERF: Tentacle draw time since the last perf) | sounds tag (CSOUND: Rig sounds heard, plants seen)
  * | lookat x y z (turns the eye to that point) | mousebtn left|right press|release (a real mouse button event, as GLFW sends it)
  * | hit tag (CHIT: the crosshair target, the Simulated hold interaction, steering wheel raw/effective angle)
- * | gait on|off (GAIT line per tick: own gait slots) | key key.keyboard.e (one click; key.mouse.right = use) | tab ns:id (select a creative tab, any page) | backtanks (BACKTANK lines: cogs/shaft partial and default name per backtank block) | rejoin ticks (disconnect, reconnect to the same server after ticks) | view first|third|front.
+ * | gait on|off (GAIT line per tick: own gait slots) | key key.keyboard.e (one click; key.mouse.right = use) | tab ns:id (select a creative tab, any page) | backtanks (BACKTANK lines: cogs/shaft partial and default name per backtank block) | rejoin ticks (disconnect, reconnect to the same server after ticks) | view first|third|front
+ * | forward look|flat (client config movement.forward, in memory only).
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public final class DevScript {
@@ -401,6 +403,7 @@ public final class DevScript {
                     mc.player.xRotO = pitch;
                 }
                 case "trace" -> trace = a[1].equals("on");
+                case "forward" -> TentaworksClientConfig.FORWARD.set(TentaworksClientConfig.ForwardMode.valueOf(a[1].toUpperCase(Locale.ROOT)));
                 case "griplines" -> GripLineRenderer.on = a[1].equals("on");
                 case "icons" -> {
                     List<ItemStack> stacks = new ArrayList<>();

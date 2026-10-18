@@ -170,11 +170,12 @@ Server config: `serverconfig/tentaworks-server.toml` inside the world folder (pu
 | `enchant` | `swiftPerLevel` | 0.15 | Swift: extra Speed per level (0.15 = +15 %) |
 | `ships` | `grip` | true | Rigs grip Sable Ships. Off: Ship blocks are never Grips. No effect without Sable |
 
-Client config: `config/tentaworks-client.toml` (looks only; the server does not read it).
+Client config: `config/tentaworks-client.toml`, or in game under Mods > Octo Arms > Config (looks and controls only; the server does not read it).
 
 | Section | Key | Default | What it does |
 |---|---|---|---|
 | `animation` | `walkWhileHeld` | false | Vanilla walk animation (swinging arms and legs) while the Rig or a Ship carries you. Off: the body hangs still |
+| `movement` | `forward` | look | What `W`/`S` follow while the Rig carries you. `look`: the camera, look down and `W` takes you down. `flat`: level only, like walking or creative flight; `Space`/`Shift` change the height |
 
 Key binds (client, both unbound by default): **Rig Settings (worn Rig)** and **Toggle Tentacle Rig (key-only mode)**.
 

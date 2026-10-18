@@ -11,11 +11,14 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.client.gui.ConfigurationScreen;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
 @Mod(value = TentaworksIds.MOD_ID, dist = Dist.CLIENT)
 public class TentaworksClient {
     public TentaworksClient(ModContainer container) {
         container.registerConfig(ModConfig.Type.CLIENT, TentaworksClientConfig.SPEC);
+        container.registerExtensionPoint(IConfigScreenFactory.class, (mc, parent) -> new ConfigurationScreen(container, parent));
         PonderIndex.addPlugin(new TentaworksPonderPlugin());
         RigSneak.clientSide(player -> {
             if (player instanceof LocalPlayer) return RigClient.state() != RigState.STOWED;

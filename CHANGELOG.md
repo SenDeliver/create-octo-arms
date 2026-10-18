@@ -7,6 +7,17 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-10-18
+
+### Added
+
+- Client config `movement.forward`: `flat` makes `W`/`S` move level like creative flight, whatever you look at; `Space`/`Shift` change the height. Default `look` keeps the camera-following movement. ([#18](https://github.com/SenDeliver/create-octo-arms/issues/18))
+- The client and server configs are editable in game under Mods > Octo Arms > Config.
+
+### Compatibility
+
+- Client-only change: works with a 1.3.0 server, no network change.
+
 ## [1.3.0] - 2026-10-17
 
 ### Fixed

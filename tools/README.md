@@ -21,6 +21,7 @@ RCON password: `$RCON_PASSWORD`, else the one already in `server.properties`, el
 | `run_split.sh <scene> <client script> <log prefix>` | Fresh world: `runServer`, plays the scene over RCON, joins `runClient` (player `Dev`) running a DevScript, optional second client `Dev2` (`SCRIPT2=`), optional RCON `TIMELINE=`. Config overrides: `TW_SPEED_MAX`, `TW_REACH_COPPER`, `TW_REACH_NETHERITE` (server), `TW_CLIENT_WALK` (client `animation.walkWhileHeld`, both clients). `GRADLE_ARGS` (e.g. `-PnoJei`) go to every Gradle run. The clients boot while the server boots (Dev2 once Dev's window is up) and wait on a blank screen; each joins when `run_split.sh` writes its `signal/_connect` (Dev after the scene, Dev2 after Dev joined; DevScript `-Ptentaworks.connect=host:port`, the vanilla quickplay join); the timeline starts 1 s after the last join. A kicked client quits after 1 s. `TW_PREBOOT=0`: the old flow (client started after the scene with `-Pconnect`, 2 s polls); `run_all.sh` uses it for p9 and rideaero (a join right after the scene assembles a Ship failed p9 moving-ship checks in 2 of 3 runs). |
 | `run_all.sh <tag>` | Full regression: every suite through `run_split.sh`, then copies screenshots to `shots/` and prints the checks. Logs in `tools/logs/<tag>-*`. p9 (Sable Ships) and rideaero run last with `-PwithSable`. |
 | `scen/` | Scenes (`scene-*.txt`, RCON setup), timelines (`*-timeline.txt`, RCON during the run) and client scripts (`*-client.txt`, `*-watch.txt`) per suite. |
+| `lang_check.py` | Every lang file has every key of the generated `en_us.json` (release rule, `docs/RELEASE.md`). Exit 1 on a miss. |
 | `analyze.py <log prefix>` | Kick/warn counts and client vs server position drift for one run. |
 | `spike_metrics.py`, `p1_metrics.py` … `p9_metrics.py`, `p6fast_metrics.py`, `ride_metrics.py`, `rideaero_metrics.py` | Per-suite checks on the logs; print PASS/FAIL lines. |
 
@@ -55,6 +56,16 @@ Shift with the Rig out counts as sneaking without the crouch (PR #15). Scene `sc
 - `sneak2` (`sneak2_metrics.py`): the hand-over. A Stowed: vanilla crouch on both sides and sneak + use untouched. T: Shift held while the Rig sets down and folds: the crouch starts right after the stow, the server loses the sneak for at most 2 ticks. R: Shift released with the Rig out: no sneak sticks within 5 ticks. H: sneak + use in the air with a Rig in hand opens Rig Settings while the Rig is out.
 
 `TIMELINE=tools/scen/sneak2-timeline.txt tools/run_split.sh tools/scen/scene-sneak.txt tools/scen/sneak2-client.txt tools/logs/x-sneak2 && python3 tools/sneak2_metrics.py tools/logs/x-sneak2`
+
+## Flat suite (flat)
+
+Issue #18: client config `movement.forward`. Scene `empty.txt` (flat ground at x 8100), the client script flips the config in memory with the DevScript line `forward flat`.
+
+- `flat` (`flat_metrics.py`): L in `look` mode, 60 down + W carries the body to the floor. F1/F2 in `flat` mode, 60 down or 60 up + W stays level and advances; F3 Space still climbs, F4 Shift still descends, F5 60 down + S backs up level. S: no kick or speed warning on the server.
+
+`tools/run_split.sh tools/scen/empty.txt tools/scen/flat-client.txt tools/logs/x-flat && python3 tools/flat_metrics.py tools/logs/x-flat`
+
+`TW_CLIENT_FORWARD=flat` on `run_split.sh` writes the config for both clients instead (any suite).
 
 ## Ride suites (ride, rideaero)
 

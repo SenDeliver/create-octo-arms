@@ -6,7 +6,7 @@ Create addon for NeoForge 21.1 / MC 1.21.1. Read first: `docs/CONTEXT.md` (gloss
 
 - `src/main`: the mod. `rig/` server + shared logic, `client/` wearer side (`RigClient` drives movement, `RigVisuals` what every client renders), `mixin/` (common list vs `client` list in `tentaworks.mixins.json`; common code never loads client classes, bridge with a predicate as `RigSneak` does).
 - `src/dev`: dev-only commands, TRACE/STRACE logging, `DevScript` client scripts. Not in the jar.
-- `tools/`: harness. Suites = scene (RCON) + client script + timeline + `*_metrics.py`. `run_all.sh <tag>` runs all 20, about 38 min on the Mac, GUI clients pop up.
+- `tools/`: harness. Suites = scene (RCON) + client script + timeline + `*_metrics.py`. `run_all.sh <tag>` runs all 21, about 40 min on the Mac, GUI clients pop up.
 
 ## Verify a mixin target before trusting it
 
@@ -27,8 +27,4 @@ New TRACE/STRACE fields go at the end of the line only; older parsers match by f
 
 ## Release
 
-- Version: `mod_version` in `gradle.properties`. Jar: `build/libs/octo-arms-<ver>+mc1.21.1.jar` (reproducible, compare md5).
-- `CHANGELOG.md`: move `[Unreleased]` entries under `## [x.y.z] - date`. Keep user-facing and short.
-- Tag `vX.Y.Z` + GitHub release triggers `publish.yml` (CurseForge; Modrinth off). The owner tags only after testing in game, never tag on your own.
-- Deploying to the owner's server and local client is documented outside the repo (`../../STATE.md`, private). Never put server details in this repo.
-- Protocol: packets changed → bump the network registrar version, say so in CHANGELOG under Compatibility.
+Rules in `docs/RELEASE.md`: version bump on every release (patch = client-only, minor = client + server or bigger feature, major = rewrite), all 15 translations complete (`python3 tools/lang_check.py`), changelog, reproducible jar, harness green, owner tests in game and tags. Never tag or create a GitHub release on your own. Server and local client deploy notes live outside the repo (`../../STATE.md`, private), never put server details in this repo.

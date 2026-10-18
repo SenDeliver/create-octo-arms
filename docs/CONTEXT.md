@@ -88,7 +88,7 @@ _Avoid_: steering mode, piloting
 ## Movement
 
 **Heading**:
-The direction the wearer travels while Active: the camera's full look direction (yaw and pitch) for forward, strafes sideways, with Space and Shift adding straight up and down in the world. The Rig always moves the wearer in the Heading as far as Grips allow.
+The direction the wearer travels while Active: the camera's full look direction (yaw and pitch) for forward, strafes sideways, with Space and Shift adding straight up and down in the world. The Rig always moves the wearer in the Heading as far as Grips allow. Client config `movement.forward = flat` drops the pitch: forward is level, like walking, and only Space and Shift change the height.
 _Avoid_: direction, input vector
 
 **Hang**:
