@@ -114,6 +114,11 @@ neoForge {
             sourceSet(sourceSets.dev)
         }
     }
+
+    unitTest {
+        enable()
+        testedMod = mods."${mod_id}"
+    }
 }
 
 dependencies {
