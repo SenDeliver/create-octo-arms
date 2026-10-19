@@ -7,6 +7,14 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Added
+
+- The Rig shows a durability bar above its Air bar once damaged, so wear is visible without the tooltip. ([#19](https://github.com/SenDeliver/create-octo-arms/issues/19))
+
+### Compatibility
+
+- Client-only change: works with a 1.3.0 server, no network change.
+
 ## [1.3.1] - 2026-10-18
 
 ### Added
