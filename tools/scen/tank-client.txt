@@ -1,0 +1,87 @@
+# Tank (issue #19): climb a 1x1 Fluid Tank column from a face (F copper, N netherite, jump only), climb the 2x2 Creative Fluid Tank
+# column from its south-west corner (D copper, hugging), and rise from the floor to hang under a Fluid Tank roof (R copper, jump only).
+# S copper (slab report): start on the floating bottom-slab platform, walk east over its edge: the Tentacles hold the slab tops
+# (half height) and sides, the body stays at the edge instead of falling 10 to the ground.
+trace on
+gait on
+hud off
+view third
+# F copper, east face of the tank column (x=5201), body centred on the face
+cmd tp @s 5201.8 -60 0.5 90 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 20
+mark fa
+hold jump on
+wait 120
+hold jump off
+mark fb
+wait 5
+shot tank_face_copper
+# N netherite, same face
+cmd tp @s 5201.8 -60 0.5 90 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 20
+mark na
+hold jump on
+wait 120
+hold jump off
+mark nb
+wait 5
+shot tank_face_netherite
+# D 2x2 creative tank, copper hugging the SW corner (5300,2)
+cmd tp @s 5299.65 -60 2.35 -135 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 20
+mark da
+hold jump on
+wait 120
+hold jump off
+mark db
+wait 5
+shot tank_2x2_corner_copper
+# R copper under the tank roof: from the floor straight up, hang under the roof
+cmd tp @s 5399.5 -60 0.5 0 -60
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 20
+mark ra
+hold jump on
+wait 60
+hold jump off
+wait 40
+mark rb
+wait 5
+shot tank_roof_copper
+# S copper on the slab platform: activate standing on it, walk east past the edge (x=5502) and keep pushing
+cmd tp @s 5500.5 -49.5 0.5 -90 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+doublejump
+wait 20
+mark sa
+hold up on
+wait 60
+hold up off
+wait 20
+mark sb
+wait 5
+shot slab_edge_copper
+wait 10
+quit

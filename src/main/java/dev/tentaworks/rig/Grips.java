@@ -1,5 +1,7 @@
 package dev.tentaworks.rig;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import dev.tentaworks.compat.Frame;
 import dev.tentaworks.compat.Pose;
 import dev.tentaworks.compat.ShipFrames;
@@ -9,15 +11,19 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * Held check. Each of the four Tentacles owns one horizontal quadrant around the body; a quadrant has a Grip when some
- * exposed full-block face that looks toward the body lies in it within Reach. An outside edge within Reach (two faces of one
+ * exposed face ({@link #gripFace}, {@link #faceRect}) that looks toward the body lies in it within Reach. An outside edge within Reach (two faces of one
  * block on different axes, both looking toward the body: a pole seen from its corner, a wall's end, a ledge) counts as Held by
  * itself: its faces all sit on one side of the body planes, so the quadrants alone see one Grip there. Which Grip each Tentacle takes: {@link TentacleGait}.
  * Faces of unit-scale Ships count too: they are scanned and stored in the Ship's plot coords ({@link Face#frame()});
@@ -27,9 +33,26 @@ public final class Grips {
     public static final int SLOTS = 4;
     public static final int HELD = 2;
     private static final double THROUGH = 0.3;
+    private static final Direction[] DIRECTIONS = Direction.values();
+    private static final Direction.Axis[] AXES = Direction.Axis.values();
+    /** Smallest face, both ways: keeps fence posts, chains, rails' sides and pane edges out. */
+    private static final double MIN_FACE = 0.5;
+    private static final double EPS = 1.0E-4;
+    /** Widest seam a face is still covered across: stacked chests (2/16), a chest or honey block against a wall (1/16). */
+    private static final double GAP = 0.2;
+    private static final int ANY = 63;
+    private static final short ALL_BITS = (short) (ANY | ANY << 6);
+    private static final Sides NO_SIDES = new Sides(new AABB[6], 0);
+    private static final Sides FULL_SIDES = sides(Shapes.block());
+    /** {@link #sides(VoxelShape)} per shape instance: states and most block entities hand out the same shape every time. */
+    private static final Cache<VoxelShape, Sides> SIDES = CacheBuilder.newBuilder().weakKeys().build();
 
     /** A face; {@code block} and {@code rect} are in {@code frame}'s plot coords, or world coords when it is null. */
     public record Face(BlockPos block, Direction dir, AABB rect, Frame frame) {
+    }
+
+    /** A block's faces in its unit cube by {@link Direction} ordinal, null where it has none; {@code solid}: one bit per face with no hole. */
+    private record Sides(AABB[] rect, int solid) {
     }
 
     private Grips() {
@@ -47,30 +70,196 @@ public final class Grips {
         return faces;
     }
 
+    static List<Face> scan(BlockGetter level, Vec3 centre, double radius) {
+        List<Face> faces = new ArrayList<>();
+        scan(level, centre, radius, null, faces);
+        return faces;
+    }
+
+    /** {@code face} of the block at {@code b} is a Grip: it has a {@link #faceRect} and is not {@link #covered}. */
+    static boolean gripFace(BlockGetter level, BlockPos b, Direction face) {
+        AABB rect = faceRect(level, b, face);
+        return rect != null && !covered(level, b, face, rect);
+    }
+
+    /**
+     * A face is covered when it lies within {@link #GAP} of the block boundary and the neighbour's solid face toward it,
+     * within that gap too, contains it: a full sturdy face covers anything, a half-high slab side covers the slab side next
+     * to it, a thin cover such as a bottom slab covers the floor under it (its own top is the Grip then, see {@link #faceRect}),
+     * a chest lid is covered by the chest on it. A face deeper in its block (a bottom slab's top) is never covered.
+     */
+    private static boolean covered(BlockGetter level, BlockPos b, Direction face, AABB rect) {
+        Direction.Axis axis = face.getAxis();
+        boolean positive = face.getAxisDirection() == Direction.AxisDirection.POSITIVE;
+        double plane = positive ? rect.max(axis) : rect.min(axis);
+        if (Math.abs(plane - (b.get(axis) + (positive ? 1 : 0))) > GAP) return false;
+        BlockPos out = b.relative(face);
+        Direction in = face.getOpposite();
+        BlockState state = level.getBlockState(out);
+        Sides sides = sides(level, out, state);
+        AABB cover = sides.rect[in.ordinal()];
+        if (cover == null) return false;
+        if (state.isCollisionShapeFullBlock(level, out) || state.isFaceSturdy(level, out, in)) return true;
+        if ((sides.solid & bit(in)) == 0) return false;
+        cover = cover.move(out.getX(), out.getY(), out.getZ());
+        if (Math.abs((positive ? cover.min(axis) : cover.max(axis)) - plane) > GAP) return false;
+        for (Direction.Axis a : AXES)
+            if (a != axis && (cover.min(a) > rect.min(a) + EPS || cover.max(a) < rect.max(a) - EPS)) return false;
+        return true;
+    }
+
+    /** The block at {@code p} is a wall for a body on its {@code side}: it has a face toward it (a fence post or a chain is none). */
+    static boolean wall(BlockGetter level, BlockPos p, Direction side) {
+        return faceRect(level, p, side) != null;
+    }
+
+    /** The Grip face {@code d} of the block at {@code b}, world coords (plot coords on a Ship), null when that side has none. */
+    static AABB faceRect(BlockGetter level, BlockPos b, Direction d) {
+        AABB unit = sides(level, b, level.getBlockState(b)).rect[d.ordinal()];
+        return unit == null ? null : unit.move(b.getX(), b.getY(), b.getZ());
+    }
+
+    /**
+     * {@link #sides(VoxelShape)} of the block's support shape; the full cube for a full collision block (leaves), none for a block
+     * nothing collides with (hanging signs, one layer of snow).
+     */
+    private static Sides sides(BlockGetter level, BlockPos pos, BlockState state) {
+        if (state.isAir()) return NO_SIDES;
+        if (state.isCollisionShapeFullBlock(level, pos)) return FULL_SIDES;
+        if (state.getCollisionShape(level, pos).isEmpty()) return NO_SIDES;
+        VoxelShape shape = state.getBlockSupportShape(level, pos);
+        Sides out = SIDES.getIfPresent(shape);
+        if (out == null) {
+            out = sides(shape);
+            SIDES.put(shape, out);
+        }
+        return out;
+    }
+
+    /**
+     * One face per side, in the unit cube, at the shape's outermost plane that way: the boxes on that plane as one rectangle
+     * when they fill it (a bottom slab's top at half height, a chest's lid at 14/16, a stair's upper step), else the largest
+     * of them alone (a stair's side is its lower step, a hopper's top ring and a scaffolding's legs are nothing). A face must
+     * span {@link #MIN_FACE} both ways. The shape is cut to the unit cube first: walls and fences collide 1.5 high, a Grip must
+     * stay in its block.
+     */
+    private static Sides sides(VoxelShape shape) {
+        List<AABB> boxes = new ArrayList<>();
+        for (AABB box : shape.toAabbs()) {
+            AABB cut = new AABB(Mth.clamp(box.minX, 0, 1), Mth.clamp(box.minY, 0, 1), Mth.clamp(box.minZ, 0, 1),
+                    Mth.clamp(box.maxX, 0, 1), Mth.clamp(box.maxY, 0, 1), Mth.clamp(box.maxZ, 0, 1));
+            if (cut.getXsize() > EPS && cut.getYsize() > EPS && cut.getZsize() > EPS) boxes.add(cut);
+        }
+        if (boxes.isEmpty()) return NO_SIDES;
+        AABB[] out = new AABB[6];
+        int solid = 0;
+        double[] lo = new double[3], hi = new double[3];
+        for (Direction d : DIRECTIONS) {
+            Direction.Axis axis = d.getAxis();
+            boolean positive = d.getAxisDirection() == Direction.AxisDirection.POSITIVE;
+            double plane = positive ? -Double.MAX_VALUE : Double.MAX_VALUE;
+            for (AABB box : boxes) plane = positive ? Math.max(plane, box.max(axis)) : Math.min(plane, box.min(axis));
+            Arrays.fill(lo, Double.MAX_VALUE);
+            Arrays.fill(hi, -Double.MAX_VALUE);
+            double area = 0, bestArea = 0;
+            AABB best = null;
+            for (AABB box : boxes) {
+                if (Math.abs((positive ? box.max(axis) : box.min(axis)) - plane) > EPS) continue;
+                double boxArea = 1;
+                for (Direction.Axis a : AXES) {
+                    if (a == axis) continue;
+                    lo[a.ordinal()] = Math.min(lo[a.ordinal()], box.min(a));
+                    hi[a.ordinal()] = Math.max(hi[a.ordinal()], box.max(a));
+                    boxArea *= box.max(a) - box.min(a);
+                }
+                area += boxArea;
+                if (boxArea > bestArea) {
+                    bestArea = boxArea;
+                    best = box;
+                }
+            }
+            lo[axis.ordinal()] = hi[axis.ordinal()] = plane;
+            AABB rect = new AABB(lo[0], lo[1], lo[2], hi[0], hi[1], hi[2]);
+            double rectArea = 1;
+            for (Direction.Axis a : AXES) if (a != axis) rectArea *= hi[a.ordinal()] - lo[a.ordinal()];
+            if (area >= rectArea - EPS) solid |= bit(d);
+            else {
+                lo[axis.ordinal()] = hi[axis.ordinal()] = plane;
+                for (Direction.Axis a : AXES) {
+                    if (a == axis) continue;
+                    lo[a.ordinal()] = best.min(a);
+                    hi[a.ordinal()] = best.max(a);
+                }
+                rect = new AABB(lo[0], lo[1], lo[2], hi[0], hi[1], hi[2]);
+            }
+            boolean wide = true;
+            for (Direction.Axis a : AXES) if (a != axis && rect.max(a) - rect.min(a) < MIN_FACE - EPS) wide = false;
+            if (wide) out[d.ordinal()] = rect;
+        }
+        return new Sides(out, solid);
+    }
+
     private static void scan(BlockGetter level, Vec3 centre, double radius, Frame frame, List<Face> faces) {
         int r = Mth.ceil(radius) + 1;
         int n = 2 * r + 3;
         BlockPos origin = BlockPos.containing(centre).offset(-r - 1, -r - 1, -r - 1);
-        boolean[] full = new boolean[n * n * n];
+        short[] cells = new short[n * n * n];
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (int x = 0; x < n; x++)
             for (int y = 0; y < n; y++)
                 for (int z = 0; z < n; z++) {
                     pos.set(origin.getX() + x, origin.getY() + y, origin.getZ() + z);
-                    full[(x * n + y) * n + z] = level.getBlockState(pos).isCollisionShapeFullBlock(level, pos);
+                    cells[(x * n + y) * n + z] = cell(level, pos);
                 }
         double r2 = radius * radius;
         for (int x = 1; x < n - 1; x++)
             for (int y = 1; y < n - 1; y++)
                 for (int z = 1; z < n - 1; z++) {
-                    if (!full[(x * n + y) * n + z]) continue;
+                    int own = cells[(x * n + y) * n + z];
+                    if ((own & ANY) == 0) continue;
                     BlockPos b = origin.offset(x, y, z);
                     if (new AABB(b).distanceToSqr(centre) > r2) continue;
-                    for (Direction d : Direction.values()) {
-                        if (full[((x + d.getStepX()) * n + y + d.getStepY()) * n + z + d.getStepZ()]) continue;
-                        faces.add(new Face(b, d, faceRect(b, d), frame));
+                    Sides sides = own == ALL_BITS ? FULL_SIDES : sides(level, b, level.getBlockState(b));
+                    for (Direction d : DIRECTIONS) {
+                        AABB unit = sides.rect[d.ordinal()];
+                        if (unit == null) continue;
+                        Direction.Axis axis = d.getAxis();
+                        double gap = d.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 1 - unit.max(axis) : unit.min(axis);
+                        AABB rect = null;
+                        if (gap <= GAP) {
+                            int out = cells[((x + d.getStepX()) * n + y + d.getStepY()) * n + z + d.getStepZ()];
+                            if (gap < EPS && (out & full(d.getOpposite())) != 0) continue;
+                            if ((out & bit(d.getOpposite())) != 0) {
+                                rect = unit.move(b.getX(), b.getY(), b.getZ());
+                                if (covered(level, b, d, rect)) continue;
+                            }
+                        }
+                        faces.add(new Face(b, d, rect == null ? unit.move(b.getX(), b.getY(), b.getZ()) : rect, frame));
                     }
                 }
+    }
+
+    /** Bits 0-5: the block has a face that way ({@link #faceRect}); bits 6-11: that face is whole and sturdy (a full collision block, or vanilla's attach rule). 0 for air. */
+    private static short cell(BlockGetter level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        if (state.isAir()) return 0;
+        if (state.isCollisionShapeFullBlock(level, pos)) return ALL_BITS;
+        Sides sides = sides(level, pos, state);
+        int bits = 0;
+        for (Direction d : DIRECTIONS) {
+            if (sides.rect[d.ordinal()] == null) continue;
+            bits |= bit(d);
+            if (state.isFaceSturdy(level, pos, d)) bits |= full(d);
+        }
+        return (short) bits;
+    }
+
+    private static int bit(Direction d) {
+        return 1 << d.ordinal();
+    }
+
+    private static int full(Direction d) {
+        return 1 << 6 + d.ordinal();
     }
 
     public static int count(List<Face> faces, Vec3 centre, double reach) {
@@ -177,9 +366,10 @@ public final class Grips {
     }
 
     /**
-     * A Grip is real when its point lies on the named face, within Reach of the body, on a loaded full block whose outer
-     * neighbour is loaded and not full, and the body is not behind that face with solid blocks in between. The point check
-     * comes first so a forged Grip can never make the server read an unloaded position.
+     * A Grip is real when its point lies in its block and within Reach of the body, the block is loaded and has that face
+     * ({@link #faceRect}) under the point, its outer neighbour is loaded and does not {@link #covered cover} it, and the body is
+     * not behind the face's plane with a wall between. The point checks come first so a forged Grip can never make the server
+     * read an unloaded position.
      * A Grip in plot coords needs a live unit-scale Ship there (Ships on in the config) and passes when it is real under any
      * of the Ship's {@link ShipFrames#recent recent} poses: the client built it from a pose that lags the server's.
      */
@@ -203,37 +393,31 @@ public final class Grips {
         Direction face = grip.face();
         Vec3 p = grip.point();
         double r2 = reach * reach;
-        if (!faceRect(b, face).inflate(0.02).contains(p)) return false;
+        if (!new AABB(b).inflate(0.02).contains(p)) return false;
         if (centres.stream().noneMatch(c -> p.distanceToSqr(c) <= r2)) return false;
         BlockPos out = b.relative(face);
         boolean outLoaded = level.isLoaded(out);
         if (!level.isLoaded(b) || (!outLoaded && !plot)) return false;
-        if (!level.getBlockState(b).isCollisionShapeFullBlock(level, b) || (outLoaded && level.getBlockState(out).isCollisionShapeFullBlock(level, out))) return false;
-        double plane = face.getAxisDirection() == Direction.AxisDirection.POSITIVE ? b.get(face.getAxis()) + 1 : b.get(face.getAxis());
-        for (Vec3 c : centres) if (p.distanceToSqr(c) <= r2 && !throughBlock(level, face, plane, c, plot)) return true;
+        AABB rect = faceRect(level, b, face);
+        if (rect == null || !rect.inflate(0.02).contains(p)) return false;
+        if (outLoaded && covered(level, b, face, rect)) return false;
+        Direction.Axis axis = face.getAxis();
+        double plane = face.getAxisDirection() == Direction.AxisDirection.POSITIVE ? rect.max(axis) : rect.min(axis);
+        for (Vec3 c : centres) if (p.distanceToSqr(c) <= r2 && !throughBlock(level, b, face, plane, c, plot)) return true;
         return false;
     }
 
-    /** The body sits behind the face's plane with a solid block between: the Tentacle would have to pass through the wall. */
-    private static boolean throughBlock(Level level, Direction face, double plane, Vec3 centre, boolean plot) {
+    /**
+     * The body sits behind the face's plane with a wall between: the Tentacle would have to pass through it. The wall is
+     * the block in the body's column on the Grip block's layer (the Grip block itself when the body is straight behind it).
+     */
+    private static boolean throughBlock(Level level, BlockPos b, Direction face, double plane, Vec3 centre, boolean plot) {
         Direction.Axis axis = face.getAxis();
         int step = face.getAxisDirection().getStep();
         if ((centre.get(axis) - plane) * step >= -THROUGH) return false;
-        double inside = plane - step * 0.5;
+        double inside = b.get(axis) + 0.5;
         BlockPos p = BlockPos.containing(axis == Direction.Axis.X ? inside : centre.x, axis == Direction.Axis.Y ? inside : centre.y, axis == Direction.Axis.Z ? inside : centre.z);
-        return level.isLoaded(p) ? level.getBlockState(p).isCollisionShapeFullBlock(level, p) : !plot;
-    }
-
-    private static AABB faceRect(BlockPos b, Direction d) {
-        double x0 = b.getX(), y0 = b.getY(), z0 = b.getZ(), x1 = x0 + 1, y1 = y0 + 1, z1 = z0 + 1;
-        return switch (d) {
-            case DOWN -> new AABB(x0, y0, z0, x1, y0, z1);
-            case UP -> new AABB(x0, y1, z0, x1, y1, z1);
-            case NORTH -> new AABB(x0, y0, z0, x1, y1, z0);
-            case SOUTH -> new AABB(x0, y0, z1, x1, y1, z1);
-            case WEST -> new AABB(x0, y0, z0, x0, y1, z1);
-            case EAST -> new AABB(x1, y0, z0, x1, y1, z1);
-        };
+        return level.isLoaded(p) ? wall(level, p, face.getOpposite()) : !plot;
     }
 
     /** The body centre as seen from each face's frame, moved into a frame once per run of faces from it. */

@@ -16,7 +16,7 @@ RCON password: `$RCON_PASSWORD`, else the one already in `server.properties`, el
 
 | File | What it does |
 |---|---|
-| `setup_run.sh` | Creates `run/` and `run2/`: muted clients, flat survival dedicated server with RCON on 25608 (game port 25609). `GAMEMODE=creative` switches the game mode, `ANIMALS=true` keeps animals (`spawn-animals`). |
+| `setup_run.sh` | Creates `run/` and `run2/`: muted clients, flat survival dedicated server with RCON on 25608 (game port 25609). `GAMEMODE=creative` switches the game mode, `ANIMALS=true` keeps animals (`spawn-animals`). Fresh `run/server` (new clone or worktree): the scene's `op Dev` runs before Dev ever joined and resolves a Mojang UUID, not the offline one, so Dev's commands fail with "Unknown or incomplete command"; copy `ops.json` and `usercache.json` from a run dir that has seen Dev join. |
 | `rcon.py` | Sends an RCON scenario from stdin to the dev server. `#sleep N`, `#await name` and `#signal name` are harness directives (sync with the client script). |
 | `run_split.sh <scene> <client script> <log prefix>` | Fresh world: `runServer`, plays the scene over RCON, joins `runClient` (player `Dev`) running a DevScript, optional second client `Dev2` (`SCRIPT2=`), optional RCON `TIMELINE=`. Config overrides: `TW_SPEED_MAX`, `TW_REACH_COPPER`, `TW_REACH_NETHERITE` (server), `TW_CLIENT_WALK` (client `animation.walkWhileHeld`, both clients). `GRADLE_ARGS` (e.g. `-PnoJei`) go to every Gradle run. The clients boot while the server boots (Dev2 once Dev's window is up) and wait on a blank screen; each joins when `run_split.sh` writes its `signal/_connect` (Dev after the scene, Dev2 after Dev joined; DevScript `-Ptentaworks.connect=host:port`, the vanilla quickplay join); the timeline starts 1 s after the last join. A kicked client quits after 1 s. `TW_PREBOOT=0`: the old flow (client started after the scene with `-Pconnect`, 2 s polls); `run_all.sh` uses it for p9 and rideaero (a join right after the scene assembles a Ship failed p9 moving-ship checks in 2 of 3 runs). |
 | `run_all.sh <tag>` | Full regression: every suite through `run_split.sh`, then copies screenshots to `shots/` and prints the checks. Logs in `tools/logs/<tag>-*`. p9 (Sable Ships) and rideaero run last with `-PwithSable`. |
@@ -47,6 +47,14 @@ A free-standing 1x1 jungle log column (`scene-pole.txt`, x 5000 z 0, 41 high) an
 History: on 1.1.3 a corner climb stopped at Reach above the floor (3.10 / 6.10) and going round stopped at the face edge (32 deg): all faces of a pole seen from its corner lie in one body quadrant. 1.1.4 widened the quadrants by 0.5 (enough for a body up to 0.5 past both edges); the outside-edge rule in `Grips.count` (two faces of one block on different axes, both within Reach and facing the body, hold by themselves) replaced it.
 
 `tools/run_split.sh tools/scen/scene-pole.txt tools/scen/pole-client.txt tools/logs/x-pole && python3 tools/pole_metrics.py tools/logs/x-pole`
+
+## Tank suite (tank)
+
+Issue #19 and the slab report after it: Create Fluid Tanks and recessed surfaces are Grips. `scene-tank.txt`: a 1x1 Fluid Tank column (x 5200 z 0, 20 high), a 2x2 Creative Fluid Tank column (x 5300..5301 z 0..1, 20 high), a 3x3 Fluid Tank roof (y -56 over x 5398..5400 z -1..1) and a floating 3x3 bottom-slab platform (y -50 over x 5499..5501 z -1..1). `tank_metrics.py <log prefix>`: F/N face climbs (Copper, Netherite) and the D corner climb reach the column top (max feet >= 19), R rises from the floor and still hangs under the roof 40 ticks after jump is released (feet >= 1.0), S walks east off the slab platform and stays held at its edge (min feet >= 8.0 above the ground, end x past the edge, held >= 2), the Rig Active throughout.
+
+Why: a tank's collision shape for the empty collision context (what `isCollisionShapeFullBlock` caches) is cut down for campfire smoke, so tanks were never full blocks to the Rig, and faces were only ever taken on the block boundary, so a bottom slab's top (half height), a top slab's underside, snow, carpet, chest lids and stair steps were no Grips. Faces now come from the block's support shape (`Grips.faceRect`): per side, the part of the shape on its outermost plane, at that plane, when it is at least half a block wide both ways (fence posts, chains, rails' sides are out). A face on the block boundary is covered when the neighbour's face toward it contains it; a recessed face never is. Unit tests for the rule: `GripFaceTest` (`./gradlew test`, runs under FML so Create's blocks are real).
+
+`tools/run_split.sh tools/scen/scene-tank.txt tools/scen/tank-client.txt tools/logs/x-tank && python3 tools/tank_metrics.py tools/logs/x-tank`
 
 ## Sneak suites (sneak, sneak2)
 

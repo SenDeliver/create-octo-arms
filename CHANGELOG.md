@@ -7,13 +7,20 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-10-20
+
 ### Added
 
 - The Rig shows a durability bar above its Air bar once damaged, so wear is visible without the tooltip. ([#19](https://github.com/SenDeliver/create-octo-arms/issues/19))
 
+### Fixed
+
+- Tentacles grip Create's Fluid Tanks (and Creative Fluid Tanks). A face is a Grip when it is sturdy in the vanilla sense (what torches and rails attach to), not only when the block is a full cube. ([#19](https://github.com/SenDeliver/create-octo-arms/issues/19))
+- Tentacles grip recessed surfaces at their real height: the top of a bottom slab, the underside of a top slab, slab sides, stair steps, snow, carpet, farmland, closed trapdoors, chest lids, wall tops, Create depots; the broad faces of doors, panes and iron bars too. A horizontal slab can be passed over and under like a full block. Nothing narrower than half a block (fence posts, chains, rails' sides), nothing with a hole under the tip (hopper and cauldron rims, scaffolding sides) and nothing the player walks through (one layer of snow, hanging signs) is a Grip.
+
 ### Compatibility
 
-- Client-only change: works with a 1.3.0 server, no network change.
+- Server and client change (the Grip rule is checked on both sides, network payloads unchanged). A newer client on a 1.3.1 server gets its tank, slab and other new Grips rejected after 10 ticks (Falling); a 1.3.1 client on a newer server keeps working, every Grip it knows is still valid. Update both.
 
 ## [1.3.1] - 2026-10-18
 
@@ -168,7 +175,8 @@ First release as **Create: Octo Arms** (mod id `tentaworks`), server-internal, n
 
 - Earlier builds were internal test versions and were not published.
 
-[Unreleased]: https://github.com/SenDeliver/create-octo-arms/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/SenDeliver/create-octo-arms/compare/v1.3.2...HEAD
+[1.3.2]: https://github.com/SenDeliver/create-octo-arms/compare/v1.3.1...v1.3.2
 [1.2.1]: https://github.com/SenDeliver/create-octo-arms/compare/v1.2.0...v1.2.1
 [1.1.0]: https://github.com/SenDeliver/create-octo-arms/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/SenDeliver/create-octo-arms/releases/tag/v1.0.0

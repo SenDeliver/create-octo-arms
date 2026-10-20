@@ -17,7 +17,7 @@ The Backtank's air, the only fuel of a Rig. Idle holding drains a trickle, movin
 _Avoid_: pressure, fuel, charge, energy
 
 **Grip**:
-A spot on any solid block face (floor, wall or ceiling, including the underside of a ledge) that a Tentacle tip holds on to. The only place a Tentacle meets the world. Tentacles never push, hit or damage anything (fighting with them is a v2 idea). A Grip on a Ship block is stored in that Ship's plot coordinates; the Ship is implied by the block, so the Grip stays put while the Ship moves.
+A spot on any solid block surface (floor, wall or ceiling, including the underside of a ledge, the top of a bottom slab or a chest lid at its real height; nothing narrower than half a block) that a Tentacle tip holds on to. The only place a Tentacle meets the world. Tentacles never push, hit or damage anything (fighting with them is a v2 idea). A Grip on a Ship block is stored in that Ship's plot coordinates; the Ship is implied by the block, so the Grip stays put while the Ship moves.
 _Avoid_: foothold, anchor, foot, contact
 
 **Held**:

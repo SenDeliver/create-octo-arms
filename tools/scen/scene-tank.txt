@@ -1,0 +1,16 @@
+# Tank scene (issue #19): Create Fluid Tanks as Grips. A 1x1 Fluid Tank column at x=5200 z=0, y -60..-41 (20 high), a 2x2 Creative
+# Fluid Tank column at x 5300..5301 z 0..1, same height, and a 3x3 Fluid Tank roof at x 5398..5400 z -1..1, y=-56 (floor to roof underside 4).
+# Slab report: a floating 3x3 bottom-slab platform at x 5499..5501 z -1..1, y=-50 (top at -49.5, 10 above the ground).
+# Flat world: ground top at y=-60.
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+gamerule doImmediateRespawn true
+time set noon
+forceload add 5190 -10 5510 10
+fill 5200 -60 0 5200 -41 0 create:fluid_tank
+fill 5300 -60 0 5301 -41 1 create:creative_fluid_tank
+fill 5398 -56 -1 5400 -56 1 create:fluid_tank
+fill 5499 -50 -1 5501 -50 1 minecraft:stone_slab
+op Dev
+tentaworks trace on
+gamemode survival Dev
