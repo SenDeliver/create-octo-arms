@@ -252,7 +252,7 @@ public final class DevTools {
                 if (fast || slide || fakeKind.equals("held") || fakeKind.equals("climb") || fakeKind.equals("downrise")) {
                     double reach = RigServer.reach(p);
                     TentacleGait gait = new TentacleGait();
-                    gait.tick(p.level(), Grips.faces(p.level(), body, reach + 1), body, p.yBodyRot, Vec3.ZERO, reach, 0);
+                    gait.tick(p.level(), Grips.faces(p.level(), body, reach + 1), body, p.yBodyRot, Vec3.ZERO, reach, 0, Double.NaN);
                     tentacles = gait.wire();
                 } else if (fakeKind.startsWith("through") || fakeKind.equals("edge")) {
                     Grip[] g = new Grip[4];

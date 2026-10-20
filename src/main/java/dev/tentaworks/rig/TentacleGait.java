@@ -13,7 +13,8 @@ import java.util.List;
 /**
  * Which Grip each Tentacle holds, and when it Steps (client side; the server only validates the Grips).
  * Slots are body-relative: 0 front left, 1 front right, 2 back left, 3 back right; each prefers a spread target in its own
- * quadrant (front ones high, back ones low, so a wall also gets four spread Grips). A planted Tentacle keeps its Grip until
+ * quadrant (front ones high, back ones low but never under the wearer's floor, so a wall also gets four spread Grips). A Grip must
+ * be {@link Grips#visible} from the body. A planted Tentacle keeps its Grip until
  * it goes invalid or out of reach, falls behind its target along the Heading, or (Idle) a clearly better Grip exists.
  * At most two Tentacles step at once, a diagonal pair (0+3, 1+2), and a voluntary Step never leaves fewer than two planted.
  * A stepping slot already carries its new Grip (the arc is drawn only), so the server always sees every Grip.
@@ -100,10 +101,10 @@ public final class TentacleGait {
     }
 
     /**
-     * One tick. {@code body} is the body centre after this tick's move, {@code motion} the move (collided), {@code yaw} the body yaw.
-     * Faces must cover {@code reach + overshoot} around the body.
+     * One tick. {@code body} is the body centre after this tick's move, {@code motion} the move (collided), {@code yaw} the body yaw,
+     * {@code floor} the world Y of the floor under the wearer (NaN when none near). Faces must cover {@code reach + overshoot} around the body.
      */
-    public void tick(Level level, List<Grips.Face> faces, Vec3 body, float yaw, Vec3 motion, double reach, double overshoot) {
+    public void tick(Level level, List<Grips.Face> faces, Vec3 body, float yaw, Vec3 motion, double reach, double overshoot, double floor) {
         double limit = reach + overshoot;
         double speed = motion.length();
         keep = reach + KEEP_SLACK;
@@ -122,7 +123,7 @@ public final class TentacleGait {
                 }
             }
         }
-        Vec3[] target = targets(body, yaw, reach);
+        Vec3[] target = targets(body, yaw, reach, floor);
         boolean any = false;
         for (Grip g : grips) any |= g != null;
         if (!any) {
@@ -228,8 +229,11 @@ public final class TentacleGait {
         return slot == 0 || slot == 3 ? 0 : 1;
     }
 
-    /** Spread target of each slot: out on its body diagonal, front slots raised and back slots lowered. */
-    public static Vec3[] targets(Vec3 body, float yaw, double reach) {
+    /**
+     * Spread target of each slot: out on its body diagonal, front slots raised and back slots lowered, but no lower than
+     * {@code floor} (world Y, NaN for none): a low body aims its back Tentacles at the floor it stands on, not under it.
+     */
+    public static Vec3[] targets(Vec3 body, float yaw, double reach, double floor) {
         float r = yaw * Mth.DEG_TO_RAD;
         Vec3 fwd = new Vec3(-Mth.sin(r), 0, Mth.cos(r));
         Vec3 left = new Vec3(Mth.cos(r), 0, Mth.sin(r));
@@ -239,14 +243,16 @@ public final class TentacleGait {
         for (int i = 0; i < SLOTS; i++) {
             int f = i < 2 ? 1 : -1;
             int l = (i & 1) == 0 ? 1 : -1;
-            out[i] = body.add(fwd.scale(f).add(left.scale(l)).normalize().scale(rho)).add(0, f * rise, 0);
+            Vec3 t = body.add(fwd.scale(f).add(left.scale(l)).normalize().scale(rho)).add(0, f * rise, 0);
+            out[i] = Double.isNaN(floor) || t.y >= floor ? t : new Vec3(t.x, floor, t.z);
         }
         return out;
     }
 
     /**
      * Face point nearest {@code aim} (spread from the other Grips) within {@code limit} of the body now and where it will be at
-     * plant time, and within the keep distance of the body before this tick's move (what the server checks the packet against).
+     * plant time, within the keep distance of the body before this tick's move (what the server checks the packet against), and
+     * {@link Grips#visible} from the body (sighted only when it beats the best so far: the trace is the costly part).
      * All world points; each face is searched in its own frame.
      */
     private Grip best(List<Grips.Face> faces, Vec3 worldBody, Vec3 worldAhead, Vec3 worldAim, double limit, int slot) {
@@ -280,7 +286,7 @@ public final class TentacleGait {
             }
             if (p.distanceToSqr(before) > k2) continue;
             double s = score(frame == null ? p : frame.toWorld(p), worldAim, slot);
-            if (s < bestScore) {
+            if (s < bestScore && Grips.visible(level, body, p, d, frame != null)) {
                 bestScore = s;
                 out = new Grip(p, f.block(), d);
             }

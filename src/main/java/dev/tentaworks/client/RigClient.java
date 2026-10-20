@@ -255,7 +255,8 @@ public final class RigClient {
         }
         double overshoot = TentacleGait.overshoot(TentacleRigItem.topSpeed(RigAir.worn(player)) * 1.05 / 20.0);
         Vec3 moved = Grips.collide(level, player, motion);
-        GAIT.tick(level, faces, body.add(shift).add(moved), player.yBodyRot, moved, reach, overshoot);
+        Floor floor = floorBelow(player, 0.35 * reach);
+        GAIT.tick(level, faces, body.add(shift).add(moved), player.yBodyRot, moved, reach, overshoot, floor == null ? Double.NaN : floor.y());
         noFlying(player);
         Tentacles wire = GAIT.wire();
         RigVisuals.local(player, state, wire);

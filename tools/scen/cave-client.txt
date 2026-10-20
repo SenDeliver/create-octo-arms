@@ -1,0 +1,63 @@
+# Cave (2026-10-20 clipping report): stand on a floor with a cave right under it, Rig at Standing Height 0 (body low), idle,
+# then walk, turn and walk back (looking down: the Heading pushes into the floor, the body stays at its lowest). Every Grip must
+# stay on or above the floor top (y -49): nothing under the platform is in sight.
+# N netherite (Reach 7: the back aim is 1.55 under the floor), C copper (Reach 4: 0.5 under).
+trace on
+gait on
+hud off
+view third
+# N netherite, platform centre, Standing Height 0, looking 40 degrees down
+cmd tp @s 5600.5 -49 0.5 0 40
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900]
+wait 10
+rawsettings chest 0 5.6 double_jump
+wait 10
+doublejump
+wait 40
+mark na
+wait 40
+shot cave_low_netherite
+hold up on
+wait 12
+hold up off
+wait 10
+lookat 5600.5 -49 -3.5
+wait 5
+hold up on
+wait 12
+hold up off
+wait 20
+mark nb
+wait 5
+doublejump
+wait 30
+# C copper, same
+cmd tp @s 5600.5 -49 0.5 0 40
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 10
+rawsettings chest 0 5.6 double_jump
+wait 10
+doublejump
+wait 40
+mark ca
+wait 40
+shot cave_low_copper
+hold up on
+wait 12
+hold up off
+wait 10
+lookat 5600.5 -49 -3.5
+wait 5
+hold up on
+wait 12
+hold up off
+wait 20
+mark cb
+wait 5
+doublejump
+wait 30
+quit

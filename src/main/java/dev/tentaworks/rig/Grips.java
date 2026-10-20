@@ -25,14 +25,16 @@ import java.util.List;
  * Held check. Each of the four Tentacles owns one horizontal quadrant around the body; a quadrant has a Grip when some
  * exposed face ({@link #gripFace}, {@link #faceRect}) that looks toward the body lies in it within Reach. An outside edge within Reach (two faces of one
  * block on different axes, both looking toward the body: a pole seen from its corner, a wall's end, a ledge) counts as Held by
- * itself: its faces all sit on one side of the body planes, so the quadrants alone see one Grip there. Which Grip each Tentacle takes: {@link TentacleGait}.
+ * itself: its faces all sit on one side of the body planes, so the quadrants alone see one Grip there. Which Grip each Tentacle takes: {@link TentacleGait};
+ * a Grip it takes or holds must also be {@link #visible} from the body, the Held count does not look that far.
  * Faces of unit-scale Ships count too: they are scanned and stored in the Ship's plot coords ({@link Face#frame()});
  * the body centre stays in world coords everywhere and is moved into a face's frame where needed.
  */
 public final class Grips {
     public static final int SLOTS = 4;
     public static final int HELD = 2;
-    private static final double THROUGH = 0.3;
+    /** A Grip point is sighted this far off its face, clear of the face's own block. */
+    private static final double CLEARANCE = 0.05;
     private static final Direction[] DIRECTIONS = Direction.values();
     private static final Direction.Axis[] AXES = Direction.Axis.values();
     /** Smallest face, both ways: keeps fence posts, chains, rails' sides and pane edges out. */
@@ -106,11 +108,6 @@ public final class Grips {
         for (Direction.Axis a : AXES)
             if (a != axis && (cover.min(a) > rect.min(a) + EPS || cover.max(a) < rect.max(a) - EPS)) return false;
         return true;
-    }
-
-    /** The block at {@code p} is a wall for a body on its {@code side}: it has a face toward it (a fence post or a chain is none). */
-    static boolean wall(BlockGetter level, BlockPos p, Direction side) {
-        return faceRect(level, p, side) != null;
     }
 
     /** The Grip face {@code d} of the block at {@code b}, world coords (plot coords on a Ship), null when that side has none. */
@@ -367,9 +364,8 @@ public final class Grips {
 
     /**
      * A Grip is real when its point lies in its block and within Reach of the body, the block is loaded and has that face
-     * ({@link #faceRect}) under the point, its outer neighbour is loaded and does not {@link #covered cover} it, and the body is
-     * not behind the face's plane with a wall between. The point checks come first so a forged Grip can never make the server
-     * read an unloaded position.
+     * ({@link #faceRect}) under the point, its outer neighbour is loaded and does not {@link #covered cover} it, and the point is
+     * {@link #visible} from the body. The point checks come first so a forged Grip can never make the server read an unloaded position.
      * A Grip in plot coords needs a live unit-scale Ship there (Ships on in the config) and passes when it is real under any
      * of the Ship's {@link ShipFrames#recent recent} poses: the client built it from a pose that lags the server's.
      */
@@ -401,23 +397,29 @@ public final class Grips {
         AABB rect = faceRect(level, b, face);
         if (rect == null || !rect.inflate(0.02).contains(p)) return false;
         if (outLoaded && covered(level, b, face, rect)) return false;
-        Direction.Axis axis = face.getAxis();
-        double plane = face.getAxisDirection() == Direction.AxisDirection.POSITIVE ? rect.max(axis) : rect.min(axis);
-        for (Vec3 c : centres) if (p.distanceToSqr(c) <= r2 && !throughBlock(level, b, face, plane, c, plot)) return true;
+        for (Vec3 c : centres) if (p.distanceToSqr(c) <= r2 && visible(level, c, p, face, plot)) return true;
         return false;
     }
 
     /**
-     * The body sits behind the face's plane with a wall between: the Tentacle would have to pass through it. The wall is
-     * the block in the body's column on the Grip block's layer (the Grip block itself when the body is straight behind it).
+     * The body can see the Grip: the straight line from the body centre to the point, lifted {@link #CLEARANCE} off its face,
+     * crosses no collision shape. A cave under the floor, the far side of a wall, a ledge seen from below are no Grips, the
+     * Tentacle would pass through a block. Traces blocks of {@code level} only, never through {@code Level.clip} (a Ship hit
+     * would come back in plot coords); a Ship Grip is traced in plot coords with the body centre moved there. Unloaded counts as
+     * solid in the world and as empty in plot space. The line stops a hair short so a point on an edge does not touch the block beside it.
+     * Only the Grip's own frame is traced: a Ship hull between the body and a world Grip, or world blocks before a Ship Grip, are not seen.
      */
-    private static boolean throughBlock(Level level, BlockPos b, Direction face, double plane, Vec3 centre, boolean plot) {
-        Direction.Axis axis = face.getAxis();
-        int step = face.getAxisDirection().getStep();
-        if ((centre.get(axis) - plane) * step >= -THROUGH) return false;
-        double inside = b.get(axis) + 0.5;
-        BlockPos p = BlockPos.containing(axis == Direction.Axis.X ? inside : centre.x, axis == Direction.Axis.Y ? inside : centre.y, axis == Direction.Axis.Z ? inside : centre.z);
-        return level.isLoaded(p) ? wall(level, p, face.getOpposite()) : !plot;
+    static boolean visible(BlockGetter level, Vec3 centre, Vec3 point, Direction face, boolean plot) {
+        Vec3 off = point.add(face.getStepX() * CLEARANCE, face.getStepY() * CLEARANCE, face.getStepZ() * CLEARANCE);
+        Vec3 from = centre, to = centre.add(off.subtract(centre).scale(1 - 1.0E-4));
+        Boolean hit = BlockGetter.traverseBlocks(from, to, (Void) null, (c, pos) -> {
+            if (level instanceof Level l && !l.isLoaded(pos)) return plot ? null : Boolean.TRUE;
+            BlockState s = level.getBlockState(pos);
+            if (s.isAir()) return null;
+            VoxelShape shape = s.getCollisionShape(level, pos);
+            return shape.isEmpty() || shape.clip(from, to, pos) == null ? null : Boolean.TRUE;
+        }, c -> null);
+        return hit == null;
     }
 
     /** The body centre as seen from each face's frame, moved into a frame once per run of faces from it. */

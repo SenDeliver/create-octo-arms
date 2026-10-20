@@ -28,7 +28,7 @@ src/generated/resources/.cache/
 __pycache__/
 *.log
 tools/logs/
-tools/shots/*.tmp
+tools/shots/
 tools/local.*
 
 # videos stay local (too big for git)
