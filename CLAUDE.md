@@ -16,7 +16,7 @@ Vanilla + NeoForge sources: `build/moddev/artifacts/neoforge-<ver>-sources.jar` 
 
 1. `gh pr diff`, then `git fetch origin pull/N/head:pr-N && git checkout pr-N`. Local edits to `tools/run_all.sh` block the checkout: stash them.
 2. `./gradlew build`, run the PR's suite alone first (`tools/run_split.sh ...`, see `tools/README.md`), then `tools/run_all.sh <tag>`.
-3. `run_all.sh` overwrites the tracked screenshots in `tools/shots/`: `git checkout -- tools/shots` afterwards unless new shots are wanted.
+3. `run_all.sh` copies screenshots to `tools/shots/` (gitignored, never commit them).
 4. Known timing flakes, re-run the suite alone before blaming the PR: p7 `D1 display board` (RCON read), p8 `forged zero climb` (packet bursts), p9 ride timings.
 5. Comparison baseline: last `tools/logs/*-runall.txt` on `main`.
 6. Merge: squash, `gh pr merge N --squash`. Maintainer pushes to `main` directly for housekeeping; contributors go through PRs.

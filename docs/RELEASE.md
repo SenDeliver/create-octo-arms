@@ -30,7 +30,7 @@ Translation rules: reuse the terms already in that file (Rig, Air, Reach, Grip, 
 2. Bump `mod_version` by the table above.
 3. `CHANGELOG.md`: move `[Unreleased]` entries under `## [x.y.z] - date`, user-facing and short. Packet change: say so under Compatibility.
 4. `./gradlew build`, jar `build/libs/octo-arms-<ver>+mc1.21.1.jar` (reproducible, compare md5).
-5. `tools/run_all.sh <tag>` green, or the flakes listed in `CLAUDE.md` re-run alone and green. `git checkout -- tools/shots` afterwards unless new shots are wanted.
+5. `tools/run_all.sh <tag>` green, or the flakes listed in `CLAUDE.md` re-run alone and green.
 6. Owner tests the jar in game. Only then the owner tags `vX.Y.Z` and creates the GitHub release, which runs `publish.yml` (CurseForge). Never tag on your own.
 
 Deploying to the owner's server and local client is documented outside the repo. Never put server details here.

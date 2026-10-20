@@ -169,4 +169,4 @@ Release jar inside a full modpack, as players run it. Build first: `./gradlew bu
 | `prod/rcon_prod.py` | Same as `rcon.py` for the prod-pack server. |
 | `prod/scen/`, `prod/prod_metrics.py` | Prod-pack scenario and its checks. |
 
-`shots/` holds curated screenshots from past runs.
+`shots/` (gitignored) gets the screenshots of the last `run_all.sh`.
