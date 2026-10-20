@@ -7,6 +7,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-10-20
+
 ### Fixed
 
 - Tentacles no longer reach through the floor or a wall. A Grip must be in sight of the wearer: the straight line from the body to the Grip point crosses no block. A low body (Standing Height 0, Shift, Crawl) on a floor with a cave under it used to grip the cave's floor and walls through the platform, and the lower Tentacle segments went through the floor.
@@ -184,7 +186,8 @@ First release as **Create: Octo Arms** (mod id `tentaworks`), server-internal, n
 
 - Earlier builds were internal test versions and were not published.
 
-[Unreleased]: https://github.com/SenDeliver/create-octo-arms/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/SenDeliver/create-octo-arms/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/SenDeliver/create-octo-arms/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/SenDeliver/create-octo-arms/compare/v1.3.1...v1.4.0
 [1.3.1]: https://github.com/SenDeliver/create-octo-arms/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/SenDeliver/create-octo-arms/compare/v1.2.1...v1.3.0
