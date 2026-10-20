@@ -12,6 +12,7 @@
 # Setting Down rise, lenient settings codec, 16 RPM goggle sync, untested items U1-U6, input cost; ends with a kick) and p8r16 (input cost at Reach 16).
 # pole suite (1x1 and 2x2 poles climbed from a face and from a corner, going round them at height: outside-edge Held rule);
 # tank suite (issue #19: Create Fluid Tank columns climbed from a face and a corner, a Fluid Tank roof hung under: sturdy-face Grip rule);
+# cave suite (2026-10-20 clipping report: a low body on a floor with a cave under it keeps every Grip on the floor: Grips in sight only, back aim not under the floor);
 # sneak suite (Shift with the Rig out: moves down, server sees a sneak, no crouch; sneak + use with Create's wrench and on a chest);
 # sneak2 suite (sneak hand-over: Stowed sneak untouched, crouch returns when the Rig folds with Shift held, release seen, Rig Settings from the hand);
 # flat suite (issue #18: client config movement.forward = flat: W/S level only while looking up or down, Space/Shift still climb; look mode unchanged);
@@ -20,7 +21,7 @@
 # only suites built with -PwithSable (Sable runtime + Aeronautics bundle); rideaero: seat on a Ship, Control Hold on a Simulated steering wheel, Simulated handle;
 # every suite above runs without Sable (no-Sable regression path).
 # p9 and rideaero keep the old join (TW_PREBOOT=0, see run_split.sh): a join right after the scene assembles a Ship failed p9 moving-ship checks (B b4 Air, G g15 server ride) in 2 of 3 runs, 0 of 7 with the old join or a 10 s later join.
-# usage: tools/run_all.sh <tag>   logs land in tools/logs/<tag>-{main,life,creative,p1,p2,p3,p4,p5,p6,p6walk,p6fast,p7,p8,p8r16,pole,tank,sneak,sneak2,flat,ride,p9,rideaero}-*
+# usage: tools/run_all.sh <tag>   logs land in tools/logs/<tag>-{main,life,creative,p1,p2,p3,p4,p5,p6,p6walk,p6fast,p7,p8,p8r16,pole,tank,cave,sneak,sneak2,flat,ride,p9,rideaero}-*
 cd "$(dirname "$0")/.."
 TAG=${1:-reg}
 S=tools/scen
@@ -41,6 +42,7 @@ TIMELINE=$S/p8-timeline.txt tools/run_split.sh $S/scene-p8.txt $S/p8-client.txt 
 TW_REACH_NETHERITE=13 TIMELINE=$S/p8r16-timeline.txt tools/run_split.sh $S/scene-p8.txt $S/p8r16-client.txt tools/logs/$TAG-p8r16
 tools/run_split.sh $S/scene-pole.txt $S/pole-client.txt tools/logs/$TAG-pole
 tools/run_split.sh $S/scene-tank.txt $S/tank-client.txt tools/logs/$TAG-tank
+tools/run_split.sh $S/scene-cave.txt $S/cave-client.txt tools/logs/$TAG-cave
 TIMELINE=$S/sneak-timeline.txt SCRIPT2=$S/sneak-watch.txt tools/run_split.sh $S/scene-sneak.txt $S/sneak-client.txt tools/logs/$TAG-sneak
 TIMELINE=$S/sneak2-timeline.txt tools/run_split.sh $S/scene-sneak.txt $S/sneak2-client.txt tools/logs/$TAG-sneak2
 tools/run_split.sh $S/empty.txt $S/flat-client.txt tools/logs/$TAG-flat
@@ -48,7 +50,7 @@ ANIMALS=true TIMELINE=$S/ride-timeline.txt tools/run_split.sh $S/scene-ride.txt 
 TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/p9-timeline.txt tools/run_split.sh $S/scene-p9.txt $S/p9-client.txt tools/logs/$TAG-p9
 TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/rideaero-timeline.txt tools/run_split.sh $S/scene-rideaero.txt $S/rideaero-client.txt tools/logs/$TAG-rideaero
 mkdir -p tools/shots && cp run/screenshots/*.png run2/screenshots/*.png tools/shots/ 2>/dev/null
-for r in main life creative p1 p2 p3 p4 p5 p6 p6walk p6fast p7 p8 p8r16 pole tank sneak sneak2 flat ride p9 rideaero; do echo "== $r"; python3 tools/analyze.py tools/logs/$TAG-$r | grep -v '^mark'; done
+for r in main life creative p1 p2 p3 p4 p5 p6 p6walk p6fast p7 p8 p8r16 pole tank cave sneak sneak2 flat ride p9 rideaero; do echo "== $r"; python3 tools/analyze.py tools/logs/$TAG-$r | grep -v '^mark'; done
 python3 tools/spike_metrics.py tools/logs/$TAG
 python3 tools/p1_metrics.py tools/logs/$TAG-p1
 python3 tools/p2_metrics.py tools/logs/$TAG-p2
@@ -62,6 +64,7 @@ python3 tools/p7_metrics.py tools/logs/$TAG-p7
 python3 tools/p8_metrics.py tools/logs/$TAG-p8 tools/logs/$TAG-p8r16
 python3 tools/pole_metrics.py tools/logs/$TAG-pole
 python3 tools/tank_metrics.py tools/logs/$TAG-tank
+python3 tools/cave_metrics.py tools/logs/$TAG-cave
 python3 tools/sneak_metrics.py tools/logs/$TAG-sneak
 python3 tools/sneak2_metrics.py tools/logs/$TAG-sneak2
 python3 tools/flat_metrics.py tools/logs/$TAG-flat

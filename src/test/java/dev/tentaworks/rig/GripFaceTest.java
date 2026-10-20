@@ -47,7 +47,7 @@ class GripFaceTest {
     }
 
     /** A handful of blocks in air. */
-    private static final class World implements BlockGetter {
+    static final class World implements BlockGetter {
         private final Map<BlockPos, BlockState> blocks = new HashMap<>();
 
         World put(int x, int y, int z, BlockState state) {
@@ -276,7 +276,6 @@ class GripFaceTest {
         assertTrue(has(faces, 0, 0, 0, Direction.UP));
         faces = Grips.scan(new World().put(0, 0, 0, Blocks.OAK_HANGING_SIGN.defaultBlockState()), CENTRE, RADIUS);
         assertEquals(0, count(faces, 0, 0, 0), faces.toString());
-        assertFalse(Grips.wall(new World().put(0, 0, 0, Blocks.OAK_HANGING_SIGN.defaultBlockState()), BlockPos.ZERO, Direction.DOWN));
     }
 
     /** A face with a hole is only its largest solid part: a stair's side is its lower step; a hopper's top ring and a scaffolding's legs are nothing. */
@@ -311,12 +310,12 @@ class GripFaceTest {
         assertFalse(Grips.gripFace(w, BlockPos.ZERO, Direction.UP));
     }
 
-    /** Leaves have an empty support shape but a full collision box: Grips as in 1.3.1, and a wall for {@code throughBlock}. */
+    /** Leaves have an empty support shape but a full collision box: Grips as in 1.3.1, and in the way of a sight line. */
     @Test
     void leavesGripLikeFullBlocks() {
         World w = new World().put(0, 0, 0, Blocks.OAK_LEAVES.defaultBlockState());
         assertEquals(6, count(Grips.scan(w, CENTRE, RADIUS), 0, 0, 0));
-        assertTrue(Grips.wall(w, BlockPos.ZERO, Direction.DOWN));
+        assertFalse(Grips.visible(w, new Vec3(0.5, -1.5, 0.5), new Vec3(0.5, 1, 0.5), Direction.UP, false), "a Grip on the leaves' top, seen from below");
         World canopy = new World().put(0, 0, 0, Blocks.OAK_LOG.defaultBlockState()).put(1, 0, 0, Blocks.OAK_LEAVES.defaultBlockState());
         assertFalse(has(Grips.scan(canopy, CENTRE, RADIUS), 0, 0, 0, Direction.EAST), "the log face inside the canopy is covered");
     }
@@ -339,18 +338,6 @@ class GripFaceTest {
         assertFalse(Grips.gripFace(w, BlockPos.ZERO, Direction.EAST), "the tank seam");
         assertNull(Grips.faceRect(w, new BlockPos(0, 6, 0), Direction.UP), "a fence post top");
         assertNull(Grips.faceRect(w, new BlockPos(0, 2, 0), Direction.UP), "air");
-    }
-
-    /** {@code throughBlock}'s wall test: the block between the body and the Grip's plane has a face toward the body. */
-    @Test
-    void wallBetweenBodyAndFace() {
-        World w = new World().put(0, 0, 0, tank).put(1, 0, 0, tank).put(0, 2, 0, slab(SlabType.TOP)).put(0, 3, 0, slab(SlabType.BOTTOM)).put(0, 5, 0, Blocks.OAK_FENCE.defaultBlockState());
-        assertTrue(Grips.wall(w, new BlockPos(0, 0, 0), Direction.DOWN), "a tank layer between a Grip on its top and a body below");
-        assertFalse(Grips.wall(w, new BlockPos(0, 1, 0), Direction.DOWN), "air");
-        assertTrue(Grips.wall(w, new BlockPos(0, 2, 0), Direction.DOWN), "a top slab seen from below");
-        assertTrue(Grips.wall(w, new BlockPos(0, 3, 0), Direction.DOWN), "a bottom slab seen from below");
-        assertTrue(Grips.wall(w, new BlockPos(0, 3, 0), Direction.UP), "a bottom slab seen from above");
-        assertFalse(Grips.wall(w, new BlockPos(0, 5, 0), Direction.DOWN), "a fence post is no wall");
     }
 
     /** Going round a slab: a body above a slab's corner is Held by the slab's top and side alone (the outside-edge rule). */

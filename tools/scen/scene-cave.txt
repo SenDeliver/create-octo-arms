@@ -1,0 +1,17 @@
+# Cave scene (the 2026-10-20 clipping report): a floor with a one-high cave right under it. An 11x11 stone platform at y=-50
+# (top -49) over x 5595..5605 z -5..5; under it a cave: air at y=-51 inside, stone walls at y=-51 round the rim (x 5595 and 5605,
+# z -5 and 5), a stone cave floor at y=-52 (top -51). A low body on the platform (Standing Height 0) aims its back Tentacles
+# under the platform: before the fix they gripped the cave floor and walls through the platform.
+# Flat world: ground top at y=-60.
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+gamerule doImmediateRespawn true
+time set noon
+forceload add 5585 -15 5615 15
+fill 5595 -52 -5 5605 -52 5 minecraft:stone
+fill 5595 -51 -5 5605 -51 5 minecraft:stone
+fill 5596 -51 -4 5604 -51 4 minecraft:air
+fill 5595 -50 -5 5605 -50 5 minecraft:stone
+op Dev
+tentaworks trace on
+gamemode survival Dev

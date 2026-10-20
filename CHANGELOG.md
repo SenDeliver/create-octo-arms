@@ -7,6 +7,15 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Fixed
+
+- Tentacles no longer reach through the floor or a wall. A Grip must be in sight of the wearer: the straight line from the body to the Grip point crosses no block. A low body (Standing Height 0, Shift, Crawl) on a floor with a cave under it used to grip the cave's floor and walls through the platform, and the lower Tentacle segments went through the floor.
+- The back Tentacles never aim under the floor the wearer stands on: a low body plants them on its own floor instead of hunting for something deeper.
+
+### Compatibility
+
+- Server and client change (the sight rule is checked on both sides, network payloads unchanged). A 1.4.0 client on a newer server gets its through-block Grips rejected (Falling after 10 ticks if fewer than two remain); a newer client on a 1.4.0 server keeps working. Update both.
+
 ## [1.4.0] - 2026-10-20
 
 ### Added

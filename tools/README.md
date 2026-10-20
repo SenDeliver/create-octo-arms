@@ -56,6 +56,10 @@ Why: a tank's collision shape for the empty collision context (what `isCollision
 
 `tools/run_split.sh tools/scen/scene-tank.txt tools/scen/tank-client.txt tools/logs/x-tank && python3 tools/tank_metrics.py tools/logs/x-tank`
 
+## Cave suite (cave)
+
+The 2026-10-20 clipping report: with the Rig out and the body low, the lower Tentacle segments went through the floor; in spectator the tips held blocks of a cave under the floor. `scene-cave.txt`: an 11x11 stone platform (x 5595..5605 z -5..5, top y -49) over a one-high cave (air at y -51 inside, stone walls round the rim, cave floor top -51). The client script puts the Rig at Standing Height 0 (`rawsettings chest 0 ...`) on the platform centre looking 40° down (the Heading pushes into the floor, so the body stays at its lowest while walking), idles, walks, turns with `lookat` and walks back; Netherite (N: the back aim would sit 1.55 under the floor) and Copper (C: 0.5 under). `cave_metrics.py <log prefix>`: over each window no Grip point in the `GAIT` lines lies under the floor top, >= 2 Grips on >= 95 % of gait ticks, some stepping, the server sees >= 2 valid Grips on >= 95 % of its ticks, the body stays low (max feet <= -48.7), Active throughout; S: no `forcing Falling` on the server (the sight rule is the same on both sides). Shots `cave_low_netherite`, `cave_low_copper`.
+
 ## Sneak suites (sneak, sneak2)
 
 Shift with the Rig out counts as sneaking without the crouch (PR #15). Scene `scene-sneak.txt`: a Create gearbox and a chest on the floor, a platform with an edge, a ladder wall, a glass water pool.

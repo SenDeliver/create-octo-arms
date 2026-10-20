@@ -6,7 +6,7 @@ Create addon for NeoForge 21.1 / MC 1.21.1. Read first: `docs/CONTEXT.md` (gloss
 
 - `src/main`: the mod. `rig/` server + shared logic, `client/` wearer side (`RigClient` drives movement, `RigVisuals` what every client renders), `mixin/` (common list vs `client` list in `tentaworks.mixins.json`; common code never loads client classes, bridge with a predicate as `RigSneak` does).
 - `src/dev`: dev-only commands, TRACE/STRACE logging, `DevScript` client scripts. Not in the jar.
-- `tools/`: harness. Suites = scene (RCON) + client script + timeline + `*_metrics.py`. `run_all.sh <tag>` runs all 22, about 42 min on the Mac, GUI clients pop up.
+- `tools/`: harness. Suites = scene (RCON) + client script + timeline + `*_metrics.py`. `run_all.sh <tag>` runs all 23, about 44 min on the Mac, GUI clients pop up.
 
 ## Verify a mixin target before trusting it
 
