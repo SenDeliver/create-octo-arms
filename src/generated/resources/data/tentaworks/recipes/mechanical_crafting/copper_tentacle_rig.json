@@ -1,13 +1,12 @@
 {
   "type": "create:mechanical_crafting",
-  "accept_mirrored": true,
-  "category": "misc",
+  "acceptMirrored": true,
   "key": {
     "B": {
       "item": "create:brass_casing"
     },
     "C": {
-      "tag": "c:plates/copper"
+      "tag": "forge:plates/copper"
     },
     "K": {
       "item": "create:copper_backtank"
@@ -25,7 +24,6 @@
     "TCT"
   ],
   "result": {
-    "count": 1,
-    "id": "tentaworks:copper_tentacle_rig"
+    "item": "tentaworks:copper_tentacle_rig"
   }
 }

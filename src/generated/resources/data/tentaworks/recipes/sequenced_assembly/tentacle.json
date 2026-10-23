@@ -6,7 +6,7 @@
   "loops": 2,
   "results": [
     {
-      "id": "tentaworks:tentacle"
+      "item": "tentaworks:tentacle"
     }
   ],
   "sequence": [
@@ -22,7 +22,7 @@
       ],
       "results": [
         {
-          "id": "tentaworks:incomplete_tentacle"
+          "item": "tentaworks:incomplete_tentacle"
         }
       ]
     },
@@ -35,7 +35,7 @@
       ],
       "results": [
         {
-          "id": "tentaworks:incomplete_tentacle"
+          "item": "tentaworks:incomplete_tentacle"
         }
       ]
     },
@@ -51,12 +51,12 @@
       ],
       "results": [
         {
-          "id": "tentaworks:incomplete_tentacle"
+          "item": "tentaworks:incomplete_tentacle"
         }
       ]
     }
   ],
-  "transitional_item": {
-    "id": "tentaworks:incomplete_tentacle"
+  "transitionalItem": {
+    "item": "tentaworks:incomplete_tentacle"
   }
 }

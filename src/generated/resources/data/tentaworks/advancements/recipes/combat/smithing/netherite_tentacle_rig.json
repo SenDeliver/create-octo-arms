@@ -5,7 +5,9 @@
       "conditions": {
         "items": [
           {
-            "items": "tentaworks:copper_tentacle_rig"
+            "items": [
+              "tentaworks:copper_tentacle_rig"
+            ]
           }
         ]
       },
@@ -20,13 +22,14 @@
   },
   "requirements": [
     [
-      "has_the_recipe",
-      "has_copper_tentacle_rig"
+      "has_copper_tentacle_rig",
+      "has_the_recipe"
     ]
   ],
   "rewards": {
     "recipes": [
       "tentaworks:smithing/netherite_tentacle_rig"
     ]
-  }
+  },
+  "sends_telemetry_event": false
 }
