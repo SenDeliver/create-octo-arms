@@ -170,6 +170,7 @@ tasks.named('test', Test) {
 }
 
 tasks.named('runFmlTestServer') {
+    timeout = java.time.Duration.ofMinutes(5)
     def reports = fmlTestReports
     def gameDir = fmlTestGameDir
     doFirst {
