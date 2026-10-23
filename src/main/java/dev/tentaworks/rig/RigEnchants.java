@@ -2,6 +2,7 @@ package dev.tentaworks.rig;
 
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.config.TentaworksConfig;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -9,7 +10,6 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 /**
@@ -17,7 +17,7 @@ import net.minecraftforge.registries.RegistryObject;
  * count as the max level. Costs, rarity (= weight and anvil cost) and max levels match the 1.21.1 data files.
  */
 public final class RigEnchants {
-    private static final DeferredRegister<Enchantment> REGISTER = DeferredRegister.create(ForgeRegistries.ENCHANTMENTS, TentaworksIds.MOD_ID);
+    private static final DeferredRegister<Enchantment> REGISTER = DeferredRegister.create(Registries.ENCHANTMENT, TentaworksIds.MOD_ID);
     private static EnchantmentCategory category;
 
     public static final RegistryObject<Enchantment> FAR_REACH = REGISTER.register(TentaworksIds.FAR_REACH, FarReach::new);
