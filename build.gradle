@@ -11,6 +11,14 @@ base {
     archivesName = 'octo-arms'
 }
 
+def fmlTestClasses = ['dev.tentaworks.rig.GripFaceTest', 'dev.tentaworks.rig.GripSightTest']
+def fmlTestReports = layout.buildDirectory.dir('test-results/fmlTest').get().asFile
+def fmlTestGameDir = layout.buildDirectory.dir('fmltest-run').get().asFile
+configurations {
+    fmlTestLibraries
+    testImplementation.extendsFrom fmlTestLibraries
+}
+
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 repositories {
@@ -48,11 +56,23 @@ legacyForge {
         minecraftVersion = project.parchment_minecraft_version
     }
 
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+            sourceSet(sourceSets.dev)
+        }
+        "${mod_id}_fmltest" {
+            sourceSet(sourceSets.main)
+            sourceSet(sourceSets.test)
+        }
+    }
+
     runs {
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
             project.properties.each { k, v -> if (k.startsWith('tentaworks.')) systemProperty k, v.toString() }
             logLevel = org.slf4j.event.Level.INFO
+            loadedMods = [mods."${mod_id}"]
         }
         client {
             client()
@@ -92,6 +112,16 @@ legacyForge {
             programArgument '--nogui'
             gameDirectory = project.file('run/server')
         }
+        fmlTestServer {
+            server()
+            sourceSet = sourceSets.test
+            loadedMods = [mods."${mod_id}_fmltest"]
+            gameDirectory = fmlTestGameDir
+            programArgument '--nogui'
+            systemProperty 'tentaworks.fmltest.reports', fmlTestReports.absolutePath
+            systemProperty 'tentaworks.fmltest.classes', fmlTestClasses.join(',')
+            additionalRuntimeClasspathConfiguration.extendsFrom(configurations.fmlTestLibraries)
+        }
         data {
             data()
             gameDirectory = project.file('run/data')
@@ -99,13 +129,6 @@ legacyForge {
                     '--output', file('src/generated/resources/').absolutePath,
                     '--existing', file('src/main/resources/').absolutePath,
                     '--existing-mod', 'create'
-        }
-    }
-
-    mods {
-        "${mod_id}" {
-            sourceSet(sourceSets.main)
-            sourceSet(sourceSets.dev)
         }
     }
 }
@@ -133,13 +156,56 @@ dependencies {
     modCompileOnly("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
     if (!project.hasProperty('noJei')) modDevRuntimeOnly("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
 
-    testImplementation(platform("org.junit:junit-bom:5.10.1"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    fmlTestLibraries(platform("org.junit:junit-bom:5.10.1"))
+    fmlTestLibraries("org.junit.jupiter:junit-jupiter")
+    fmlTestLibraries("org.junit.jupiter:junit-jupiter-engine")
+    fmlTestLibraries("org.junit.platform:junit-platform-launcher")
+    fmlTestLibraries("org.junit.platform:junit-platform-reporting")
 }
 
 tasks.named('test', Test) {
     useJUnitPlatform()
+    fmlTestClasses.each { exclude it.replace('.', '/') + '.class' }
+    dependsOn 'fmlTest'
+}
+
+tasks.named('runFmlTestServer') {
+    def reports = fmlTestReports
+    def gameDir = fmlTestGameDir
+    doFirst {
+        reports.deleteDir()
+        reports.mkdirs()
+        gameDir.mkdirs()
+        new File(gameDir, 'eula.txt').text = 'eula=true\n'
+    }
+}
+
+tasks.register('fmlTest') {
+    group = 'verification'
+    description = 'Runs the JUnit classes that need Forge and Create (fmlTestClasses) in a dev server and checks every test ran and passed.'
+    dependsOn 'runFmlTestServer'
+    def reports = fmlTestReports
+    def expectedClasses = fmlTestClasses
+    doLast {
+        def summaryFile = new File(reports, 'fmltest.properties')
+        if (!summaryFile.exists()) throw new GradleException("No FML test summary in ${reports}: the test server did not run the tests")
+        def summary = new Properties()
+        summaryFile.withInputStream { summary.load(it) }
+        def cases = []
+        reports.listFiles().findAll { it.name.endsWith('.xml') }.each { f ->
+            cases.addAll(new groovy.xml.XmlSlurper().parse(f).'**'.findAll { it.name() == 'testcase' })
+        }
+        def bad = cases.findAll { c -> c.children().any { it.name() in ['failure', 'error', 'skipped'] } }
+        def missing = expectedClasses.findAll { cls -> !cases.any { it.@classname.text() == cls } }
+        def expected = summary.getProperty('expected') as int
+        def problems = []
+        if (missing) problems << "classes with no test run: ${missing}"
+        if (cases.size() != expected) problems << "${cases.size()} test cases in the XML, ${expected} @Test methods"
+        if ((summary.getProperty('found') as int) != expected) problems << "JUnit found ${summary.getProperty('found')} tests, ${expected} @Test methods"
+        bad.each { problems << "${it.@classname}.${it.@name}: ${it.children()*.name().findAll { it in ['failure', 'error', 'skipped'] }.join(',')}" }
+        if (problems) throw new GradleException("FML tests failed (${reports}):\n" + problems.join('\n'))
+        println "FML tests: ${cases.size()} passed in ${expectedClasses.size()} classes"
+    }
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

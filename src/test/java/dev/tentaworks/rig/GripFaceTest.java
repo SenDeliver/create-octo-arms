@@ -40,7 +40,7 @@ class GripFaceTest {
     private static final double EPS = 1.0E-6;
     private static BlockState tank;
 
-    /** The test task runs under FML (build.gradle {@code unitTest}): registries are up, Create is a loaded mod. */
+    /** Runs in a dev server (build.gradle {@code fmlTest}): registries are up, Create is a loaded mod. */
     @BeforeAll
     static void setUp() {
         tank = AllBlocks.FLUID_TANK.getDefaultState();
