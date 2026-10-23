@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[4,)"
+loaderVersion="[47,)"
 license="MIT"
 
 [[mods]]
@@ -10,7 +10,7 @@ description='''DevScript and dev commands for prod-pack tests. Never ship.'''
 
 [[dependencies.tentaworks_devtools]]
 modId="tentaworks"
-type="required"
+mandatory=true
 versionRange="[1.0.0,)"
 ordering="AFTER"
 side="BOTH"
