@@ -7,6 +7,7 @@ import dev.tentaworks.compat.ShipFrames;
 import dev.tentaworks.config.TentaworksClientConfig;
 import dev.tentaworks.network.RigMotionPacket;
 import dev.tentaworks.network.RigStatePacket;
+import dev.tentaworks.network.TentaworksNetwork;
 import dev.tentaworks.rig.Grip;
 import dev.tentaworks.rig.Grips;
 import dev.tentaworks.rig.RigAir;
@@ -42,7 +43,6 @@ import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.client.event.MovementInputUpdateEvent;
 import net.minecraftforge.common.ForgeMod;
-import net.minecraftforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -260,7 +260,7 @@ public final class RigClient {
         noFlying(player);
         Tentacles wire = GAIT.wire();
         RigVisuals.local(player, state, wire);
-        PacketDistributor.sendToServer(new RigMotionPacket(state, motion, wire));
+        TentaworksNetwork.sendToServer(new RigMotionPacket(state, motion, wire));
     }
 
     private static boolean onJumpPress(LocalPlayer player, RigSettings settings) {
@@ -437,7 +437,7 @@ public final class RigClient {
             noRegrab = false;
             noFlying(player);
             RigVisuals.local(player, next, Tentacles.NONE);
-            PacketDistributor.sendToServer(new RigMotionPacket(next, Vec3.ZERO, Tentacles.NONE));
+            TentaworksNetwork.sendToServer(new RigMotionPacket(next, Vec3.ZERO, Tentacles.NONE));
         }
     }
 

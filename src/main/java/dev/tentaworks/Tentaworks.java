@@ -50,7 +50,7 @@ public class Tentaworks {
         TentaworksCreativeTabs.register(modBus);
         TentaworksLang.init();
         TentaworksDatagen.register(modBus);
-        modBus.addListener(TentaworksNetwork::register);
+        TentaworksNetwork.register();
         modBus.addListener((FMLCommonSetupEvent e) -> e.enqueueWork(Tentaworks::addRigsToBacktankType));
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, TentaworksConfig.SPEC);
         RigServer.init();

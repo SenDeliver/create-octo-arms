@@ -7,6 +7,7 @@ import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.gui.widget.SelectionScrollInput;
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.network.RigSettingsPacket;
+import dev.tentaworks.network.TentaworksNetwork;
 import dev.tentaworks.rig.RigSettings;
 import dev.tentaworks.rig.RigSettings.ActivationMode;
 import dev.tentaworks.rig.TentacleRigItem;
@@ -20,7 +21,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.PacketDistributor;
 
 import java.util.List;
 import java.util.Locale;
@@ -157,6 +157,6 @@ public class RigSettingsScreen extends AbstractSimiScreen {
     public void removed() {
         RigSettings s = settings();
         RigSettings.set(rig, s);
-        PacketDistributor.sendToServer(new RigSettingsPacket(slot, s));
+        TentaworksNetwork.sendToServer(new RigSettingsPacket(slot, s));
     }
 }

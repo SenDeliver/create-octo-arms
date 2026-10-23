@@ -10,6 +10,7 @@ import dev.tentaworks.compat.ShipFrames;
 import dev.tentaworks.mixin.ServerGamePacketListenerImplAccessor;
 import dev.tentaworks.network.RigMotionPacket;
 import dev.tentaworks.network.RigStatePacket;
+import dev.tentaworks.network.TentaworksNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.resources.ResourceLocation;
@@ -28,7 +29,6 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.network.PacketDistributor;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -143,7 +143,7 @@ public final class RigServer {
         MinecraftForge.EVENT_BUS.addListener((PlayerEvent.StartTracking e) -> {
             if (e.getTarget() instanceof ServerPlayer target && e.getEntity() instanceof ServerPlayer watcher) {
                 Wearer w = WEARERS.get(target.getUUID());
-                if (w != null) PacketDistributor.sendToPlayer(watcher, new RigStatePacket(target.getId(), w.state, w.tentacles));
+                if (w != null) TentaworksNetwork.sendToPlayer(watcher, new RigStatePacket(target.getId(), w.state, w.tentacles));
             }
         });
         MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent e) -> {
@@ -270,7 +270,7 @@ public final class RigServer {
         boolean air = RigAir.has(player);
         boolean worn = TentacleRigItem.wornOut(RigAir.worn(player));
         if (w == null && (!air || worn)) {
-            PacketDistributor.sendToPlayer(player, new RigStatePacket(player.getId(), RigState.STOWED, Tentacles.NONE));
+            TentaworksNetwork.sendToPlayer(player, new RigStatePacket(player.getId(), RigState.STOWED, Tentacles.NONE));
             return;
         }
         if (w == null) {
@@ -312,7 +312,7 @@ public final class RigServer {
             if (w.told != state || (state == RigState.FALLING && player.tickCount - w.resentAt >= RESEND_TICKS)) {
                 w.told = state;
                 w.resentAt = player.tickCount;
-                PacketDistributor.sendToPlayer(player, new RigStatePacket(player.getId(), state, tentacles));
+                TentaworksNetwork.sendToPlayer(player, new RigStatePacket(player.getId(), state, tentacles));
             }
         } else {
             w.told = null;
@@ -330,7 +330,7 @@ public final class RigServer {
                 w.rejected = true;
                 w.told = state;
                 w.resentAt = player.tickCount;
-                PacketDistributor.sendToPlayer(player, new RigStatePacket(player.getId(), state, tentacles));
+                TentaworksNetwork.sendToPlayer(player, new RigStatePacket(player.getId(), state, tentacles));
             }
         }
         w.state = state;
@@ -376,7 +376,7 @@ public final class RigServer {
         Integer last = RIDE_REFUSED.get(player.getUUID());
         if (last != null && now - last < RESEND_TICKS) return;
         RIDE_REFUSED.put(player.getUUID(), now);
-        PacketDistributor.sendToPlayer(player, new RigStatePacket(player.getId(), RigState.STOWED, Tentacles.NONE));
+        TentaworksNetwork.sendToPlayer(player, new RigStatePacket(player.getId(), RigState.STOWED, Tentacles.NONE));
     }
 
     /** Trackers get the Rig only when its state or Tentacles change (and once when they start tracking). */
@@ -385,7 +385,7 @@ public final class RigServer {
         w.relayedState = w.state;
         w.relayed = w.tentacles;
         relays++;
-        PacketDistributor.sendToPlayersTrackingEntity(player, new RigStatePacket(player.getId(), w.state, w.tentacles));
+        TentaworksNetwork.sendToPlayersTrackingEntity(player, new RigStatePacket(player.getId(), w.state, w.tentacles));
     }
 
     private static boolean sameTentacles(Tentacles a, Tentacles b) {
@@ -400,7 +400,7 @@ public final class RigServer {
         if (!packet.state().carries() || player.tickCount - w.resentAt < RESEND_TICKS) return;
         w.resentAt = player.tickCount;
         w.told = RigState.FALLING;
-        PacketDistributor.sendToPlayer(player, new RigStatePacket(player.getId(), RigState.FALLING, tentacles));
+        TentaworksNetwork.sendToPlayer(player, new RigStatePacket(player.getId(), RigState.FALLING, tentacles));
         if (!ghost) return;
         Vec3 body = Grips.body(player);
         double near = reach(player) + GRIP_SLACK + 2;
@@ -575,8 +575,8 @@ public final class RigServer {
         w.state = RigState.CRAWL;
         w.told = RigState.CRAWL;
         RigStatePacket packet = new RigStatePacket(player.getId(), RigState.CRAWL, w.tentacles);
-        PacketDistributor.sendToPlayer(player, packet);
-        PacketDistributor.sendToPlayersTrackingEntity(player, packet);
+        TentaworksNetwork.sendToPlayer(player, packet);
+        TentaworksNetwork.sendToPlayersTrackingEntity(player, packet);
     }
 
     public static void stow(ServerPlayer player, boolean tellWearer) {
@@ -584,8 +584,8 @@ public final class RigServer {
         setFloat(player, false);
         if (w == null) return;
         RigStatePacket packet = new RigStatePacket(player.getId(), RigState.STOWED, Tentacles.NONE);
-        if (tellWearer) PacketDistributor.sendToPlayer(player, packet);
-        PacketDistributor.sendToPlayersTrackingEntity(player, packet);
+        if (tellWearer) TentaworksNetwork.sendToPlayer(player, packet);
+        TentaworksNetwork.sendToPlayersTrackingEntity(player, packet);
     }
 
     private static void noFlying(ServerPlayer player) {

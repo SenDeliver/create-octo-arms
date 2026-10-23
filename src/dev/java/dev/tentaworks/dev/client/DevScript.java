@@ -6,6 +6,7 @@ import dev.tentaworks.client.RigVisuals;
 import dev.tentaworks.client.RigSettingsScreen;
 import dev.tentaworks.config.TentaworksClientConfig;
 import dev.tentaworks.network.RigSettingsPacket;
+import dev.tentaworks.network.TentaworksNetwork;
 import dev.tentaworks.registry.TentaworksDataComponents;
 import dev.tentaworks.rig.RigSettings;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
@@ -15,7 +16,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.PacketDistributor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -159,7 +159,7 @@ public final class DevScript {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     static void onInputLast(MovementInputUpdateEvent event) {
         if (forge == null || !(event.getEntity() instanceof LocalPlayer) || RigClient.state() == RigState.STOWED) return;
-        if (forge.equals("zero")) PacketDistributor.sendToServer(new RigMotionPacket(RigClient.state(), Vec3.ZERO, RigClient.gait().wire()));
+        if (forge.equals("zero")) TentaworksNetwork.sendToServer(new RigMotionPacket(RigClient.state(), Vec3.ZERO, RigClient.gait().wire()));
     }
 
     @SubscribeEvent
@@ -319,7 +319,7 @@ public final class DevScript {
                     EquipmentSlot slot = EquipmentSlot.byName(a[1]);
                     RigSettings raw = new RigSettings(Float.parseFloat(a[2]), Float.parseFloat(a[3]),
                             a[4].equals("key") ? RigSettings.ActivationMode.KEY : RigSettings.ActivationMode.DOUBLE_JUMP);
-                    PacketDistributor.sendToServer(new RigSettingsPacket(slot, raw));
+                    TentaworksNetwork.sendToServer(new RigSettingsPacket(slot, raw));
                     LOG.info("script: raw settings {} {}", slot.getName(), raw);
                 }
                 case "tooltips" -> {

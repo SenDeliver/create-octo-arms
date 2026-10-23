@@ -1,7 +1,6 @@
 package dev.tentaworks.rig;
 
-import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,27 +13,27 @@ public record Tentacles(Grip[] grips, byte[] phases) {
     public static final int SLOTS = 4;
     public static final Tentacles NONE = new Tentacles(new Grip[SLOTS], new byte[]{-1, -1, -1, -1});
 
-    public static final StreamCodec<ByteBuf, Tentacles> STREAM_CODEC = StreamCodec.of(
-            (buf, t) -> {
-                for (int i = 0; i < SLOTS; i++) {
-                    Grip g = t.grips[i];
-                    buf.writeBoolean(g != null);
-                    if (g != null) {
-                        Grip.STREAM_CODEC.encode(buf, g);
-                        buf.writeByte(t.phases[i]);
-                    }
-                }
-            },
-            buf -> {
-                Grip[] grips = new Grip[SLOTS];
-                byte[] phases = {-1, -1, -1, -1};
-                for (int i = 0; i < SLOTS; i++) {
-                    if (!buf.readBoolean()) continue;
-                    grips[i] = Grip.STREAM_CODEC.decode(buf);
-                    phases[i] = buf.readByte();
-                }
-                return new Tentacles(grips, phases);
-            });
+    public void write(FriendlyByteBuf buf) {
+        for (int i = 0; i < SLOTS; i++) {
+            Grip g = grips[i];
+            buf.writeBoolean(g != null);
+            if (g != null) {
+                g.write(buf);
+                buf.writeByte(phases[i]);
+            }
+        }
+    }
+
+    public static Tentacles read(FriendlyByteBuf buf) {
+        Grip[] grips = new Grip[SLOTS];
+        byte[] phases = {-1, -1, -1, -1};
+        for (int i = 0; i < SLOTS; i++) {
+            if (!buf.readBoolean()) continue;
+            grips[i] = Grip.read(buf);
+            phases[i] = buf.readByte();
+        }
+        return new Tentacles(grips, phases);
+    }
 
     public static byte phaseByte(float phase) {
         return (byte) Math.round(Math.max(0, Math.min(1, phase)) * 255);
