@@ -7,7 +7,7 @@ Optional `tools/local.env` (gitignored) is sourced before Gradle runs, e.g.:
 
 ```bash
 export JAVA_HOME=/path/to/jdk          # JDK for Gradle
-export JAVA21_HOME=/path/to/jdk-21     # prod-pack server only (tools/prod/server.sh)
+export JAVA17_HOME=/path/to/jdk-17     # prod-pack server only (tools/prod/server.sh)
 ```
 
 RCON password: `$RCON_PASSWORD`, else the one already in `server.properties`, else random. `rcon.py` reads port and password from `server.properties`.

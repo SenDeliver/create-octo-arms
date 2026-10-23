@@ -1,15 +1,15 @@
 #!/bin/bash
-# Prod-pack test dirs (gitignored run-prod/): NeoForge 21.1.250 dedicated server (installer) + clientProd run dir.
+# Prod-pack test dirs (gitignored run-prod/): Forge 1.20.1 (47.x) dedicated server (installer) + clientProd run dir.
 # Server mods = live client pack minus client-only jars + release jar. Client mods = full pack + release jar + test-only devtools jar.
 # ALLOW_FLIGHT=true mirrors prod server.properties (default false: strictest, vanilla float kick on).
 # PACK=<dir of modpack jars> (never modified; default ../client-mods next to the repo). RCON password: $RCON_PASSWORD, else kept, else random.
 # usage: [PACK=dir] tools/prod/setup_prod.sh [--no-devtools]
 cd "$(dirname "$0")/../.."
 PACK=${PACK:-../client-mods}
-JAR=build/libs/octo-arms-$(sed -n "s/^mod_version=//p" gradle.properties)+mc1.21.1.jar
+JAR=build/libs/octo-arms-$(sed -n "s/^mod_version=//p" gradle.properties)+mc$(sed -n "s/^minecraft_version=//p" gradle.properties).jar
 CLIENT_ONLY='^(xaerominimap|MouseTweaks|InventoryProfilesNext|libIPN)'
 S=run-prod/server; C=run-prod/client
-[ -f $S/libraries/net/neoforged/neoforge/21.1.250/unix_args.txt ] || { echo "install the server first: mkdir -p $S && cd $S && java -jar neoforge-21.1.250-installer.jar --installServer"; exit 1; }
+ls $S/libraries/net/minecraftforge/forge/1.20.1-*/unix_args.txt > /dev/null 2>&1 || { echo "install the server first (Java 17): mkdir -p $S && cd $S && java -jar forge-1.20.1-<47.x>-installer.jar --installServer"; exit 1; }
 rm -rf $S/mods $C/mods; mkdir -p $S/mods $C/mods $C/config
 for j in $PACK/*.jar; do
   n=$(basename "$j")
