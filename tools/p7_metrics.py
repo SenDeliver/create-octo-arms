@@ -43,7 +43,7 @@ check('G2 fill rate and enchant-derived stats (Copper, Far Reach II, Swift I, 12
 check('G3 Netherite Rig Block without a shaft', has('g3', 'Not filling') and has('g3', 'Reach: 7.0 blocks') and has('g3', 'Air use: 50%') and air('g3') == (300, 900),
       f'{gog.get("g3", [])[2:7]}')
 
-reads = re.findall(r'data get block 3510 -60 0 Air => .*?data: (\d+)\s.*?data get block 3512 -59 0 => .*?Sections: \[\{Text: \'"([^"]*)"\'.*?\{Text: \'"([^"]*)"\'', r, re.S)
+reads = re.findall(r'data get block 3510 -60 0 Air => .*?data: (\d+)\s.*?data get block 3512 -59 0 => .*?Sections: \[\{[^\]]*?Text: \'(?:\{"text":)?"([^"]*)"\}?\'.*?\{[^\]]*?Text: \'(?:\{"text":)?"([^"]*)"\}?\'', r, re.S)
 vals = [(int(a), lab, txt) for a, lab, txt in reads]
 nums = [(a, int(t)) for a, lab, t in vals if t.isdigit()]
 pct = [(a, t) for a, lab, t in vals if t.endswith('%')]

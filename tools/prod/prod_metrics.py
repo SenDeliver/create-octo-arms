@@ -47,13 +47,13 @@ check('Legworks loaded', re.search(r'Legworks 0\.1\.1', sd + s) is not None, 'Le
 check('Client joined', 'Dev joined the game' in s, '')
 kick = re.findall(r'Dev lost connection: (.*)', s)
 check('No kicks', all('Disconnected' in k for k in kick), f"disconnects: {kick}")
-cf = rcon('> attribute Dev neoforge:creative_flight get')
-check('M activate/climb/Set Down', at('m_active') == 'ACTIVE' and at('m_down') == 'STOWED' and cf[:2] and 'is 1.0' in cf[0] and 'is 0.0' in cf[1],
-      f"states {at('m_active')} -> {at('m_down')}; server flight {cf[:2]}")
+cf = rcon('> data get entity Dev abilities.mayfly')
+check('M activate/climb/Set Down', at('m_active') == 'ACTIVE' and at('m_down') == 'STOWED' and len(cf) > 1 and all('0b' in x for x in cf[:2]),
+      f"states {at('m_active')} -> {at('m_down')}; server mayfly {cf[:2]}")
 climb = tr.get(mk['m_climb'][0], {}).get('p', (0, 0, 0))[1] if 'm_climb' in mk else None
 check('M climb height', climb is not None and climb > -52, f"feet y after 2 s climb {climb}")
-check('H hang + Set Down', at('h_hang') == 'ACTIVE' and at('h_down') == 'STOWED' and len(cf) > 3 and 'is 1.0' in cf[2],
-      f"hang {at('h_hang')} (feet {tr.get(mk['h_hang'][0], {}).get('p') if 'h_hang' in mk else None}), down {at('h_down')}, server flight {cf[2:4]}")
+check('H hang + Set Down', at('h_hang') == 'ACTIVE' and at('h_down') == 'STOWED' and len(cf) > 3 and all('0b' in x for x in cf[2:4]),
+      f"hang {at('h_hang')} (feet {tr.get(mk['h_hang'][0], {}).get('p') if 'h_hang' in mk else None}), down {at('h_down')}, server mayfly {cf[2:4]}")
 ff = rcon('> data get entity Dev FallFlying')
 eff = [tr[g]['ff'] for g in tr if 'e_catch' in mk and 'e_down' in mk and mk['e_catch'][0] - 20 <= g <= mk['e_down'][0] and tr[g]['state'] in ('ACTIVE', 'SETTING_DOWN')]
 check('E elytra + Rig', at('e_catch') == 'ACTIVE' and at('e_down') == 'STOWED' and eff and not any(eff) and all('0b' in x for x in ff),

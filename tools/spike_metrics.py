@@ -54,7 +54,6 @@ st8 = []
 for x in w:
     if not st8 or st8[-1] != x['state']: st8.append(x['state'])
 fl = re.findall(r'abilities.flying => Dev has the following entity data: (\w+)', rc)
-cfv = re.findall(r'creative_flight get => .*? is (\S+)', rc)
 out.append(f"S8 Double Jump on/off: client states {' -> '.join(st8)}, client fly ever true: {any(x['fly'] for x in w)}, server abilities.flying samples {fl}")
 w = span(tr, mk['swb'], mk['swc'])
 ys = [x['p'][1] for x in w]
@@ -62,7 +61,7 @@ out.append(f"W underwater: climbed to feet {mk and w[0]['p'][1]:.3f} (water top 
 print('\n'.join(out))
 
 tr, st, mk, rc = load('life')
-print('LIFE creative_flight samples in order:', re.findall(r'creative_flight get => .*? is (\S+)', rc))
+print('LIFE mayfly samples in order:', re.findall(r'abilities.mayfly => Dev has the following entity data: (\w+)', rc))
 for a, b, name in (('l1hang', 'l1after', 'L1 logout/rejoin'), ('l2hang', 'l2after', 'L2 unequip'), ('l3hang', 'l3after', 'L3 death')):
     sw = span(st, mk[a], mk[b])
     print(f"{name}: server hp min {min(x['hp'] for x in sw):.1f}, end pos {sw[-1]['p']}, cf end {sw[-1]['cf']:.0f}, flying ever {any(x['flying'] for x in sw)}")
@@ -70,4 +69,4 @@ sw = span(st, mk['l4after'] - 60, mk['l4after'] + 40)
 s5 = span(st, mk['l4after'] + 1, mk['l5after'])
 print(f"L5 forged Active, no Grips: server states {sorted(set(x['state'] for x in s5))}, cf max while not client-carried {max(x['cf'] for g, x in zip(sorted(st), st.values()) if mk['l4after'] < g <= mk['l5after'] and tr.get(g, {}).get('state') == 'STOWED'):.0f}")
 tr, st, mk, rc = load('creative')
-print('CREATIVE flying samples:', re.findall(r'abilities.flying => Dev has the following entity data: (\w+)', rc), 'cf samples:', re.findall(r'creative_flight get => .*? is (\S+)', rc))
+print('CREATIVE flying samples:', re.findall(r'abilities.flying => Dev has the following entity data: (\w+)', rc), 'mayfly samples:', re.findall(r'abilities.mayfly => Dev has the following entity data: (\w+)', rc))
