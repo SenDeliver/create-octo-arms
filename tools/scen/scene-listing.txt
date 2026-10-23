@@ -1,5 +1,5 @@
 # Listing screenshots (docs/images): hero, climb, ceiling, goggles, JEI, tooltips. x 7990..8100. Flat world: ground top y=-60.
-# TIMELINE listing-timeline.txt, SCRIPT2 listing-watch.txt (Dev2 = spectator camera). Run with or without -PwithSable.
+# TIMELINE listing-timeline.txt, SCRIPT2 listing-watch.txt (Dev2 = spectator camera).
 gamerule doDaylightCycle false
 gamerule doWeatherCycle false
 gamerule doImmediateRespawn true
