@@ -1,6 +1,6 @@
 {
  "parent": "block/block",
- "loader": "neoforge:composite",
+ "loader": "forge:composite",
  "render_type": "minecraft:cutout",
  "textures": {
   "particle": "create:block/netherite_backtank"
