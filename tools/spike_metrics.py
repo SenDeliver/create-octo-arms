@@ -68,5 +68,13 @@ for a, b, name in (('l1hang', 'l1after', 'L1 logout/rejoin'), ('l2hang', 'l2afte
 sw = span(st, mk['l4after'] - 60, mk['l4after'] + 40)
 s5 = span(st, mk['l4after'] + 1, mk['l5after'])
 print(f"L5 forged Active, no Grips: server states {sorted(set(x['state'] for x in s5))}, cf max while not client-carried {max(x['cf'] for g, x in zip(sorted(st), st.values()) if mk['l4after'] < g <= mk['l5after'] and tr.get(g, {}).get('state') == 'STOWED'):.0f}")
+g6 = [g for g in sorted(st) if mk['l5after'] < g <= mk['l6after']]
+on = next(g for a, g in zip(g6, g6[1:]) if st[g]['cf'] and not st[a]['cf'])
+off = next(g for g in g6 if g > on and not st[g]['cf'])
+print(f"L6b one forged Active with Grips, then silence: float on at gt {on}, off after {off - on} ticks")
+srv = open(f'{pre}-life-server.log', errors='replace').read()
+kick = int(re.findall(r'STRACE gt=(\d+)(?:(?!STRACE).)*?Flying is not enabled', srv, re.S)[-1])
+up = next(g for g in sorted(st) if g > mk['l6after'] and st[g]['state'] != 'FALLING')
+print(f"L7 float fix off: kicked {kick - up} ticks after the carry started, cf max {max(st[g]['cf'] for g in sorted(st) if up <= g <= kick):.0f}")
 tr, st, mk, rc = load('creative')
 print('CREATIVE flying samples:', re.findall(r'abilities.flying => Dev has the following entity data: (\w+)', rc), 'mayfly samples:', re.findall(r'abilities.mayfly => Dev has the following entity data: (\w+)', rc))
