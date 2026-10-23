@@ -6,10 +6,7 @@ import com.simibubi.create.content.kinetics.deployer.DeployerApplicationRecipe;
 import com.simibubi.create.content.kinetics.press.PressingRecipe;
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.registry.TentaworksItems;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
-
-import java.util.concurrent.CompletableFuture;
 
 /** Tentacle: Piston Extension Pole, then deploy a Sticker, press, deploy an Andesite Casing; two loops. */
 public class TentaworksSequencedAssemblyRecipes extends SequencedAssemblyRecipeGen {
@@ -22,7 +19,7 @@ public class TentaworksSequencedAssemblyRecipes extends SequencedAssemblyRecipeG
             .addStep(PressingRecipe::new, r -> r)
             .addStep(DeployerApplicationRecipe::new, r -> r.require(AllBlocks.ANDESITE_CASING.get())));
 
-    public TentaworksSequencedAssemblyRecipes(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
-        super(output, registries, TentaworksIds.MOD_ID);
+    public TentaworksSequencedAssemblyRecipes(PackOutput output) {
+        super(output, TentaworksIds.MOD_ID);
     }
 }

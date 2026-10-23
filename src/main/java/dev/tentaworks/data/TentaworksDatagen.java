@@ -39,7 +39,7 @@ public final class TentaworksDatagen {
     private static void gather(GatherDataEvent event) {
         DataGenerator gen = event.getGenerator();
         PackOutput out = gen.getPackOutput();
-        gen.addProvider(event.includeServer(), new TentaworksSequencedAssemblyRecipes(out, event.getLookupProvider()));
-        gen.addProvider(event.includeServer(), new TentaworksMechanicalCraftingRecipes(out, event.getLookupProvider()));
+        gen.addProvider(event.includeServer(), new TentaworksSequencedAssemblyRecipes(out));
+        gen.addProvider(event.includeServer(), new TentaworksMechanicalCraftingRecipes(out));
     }
 }
