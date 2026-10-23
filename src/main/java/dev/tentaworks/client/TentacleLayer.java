@@ -86,7 +86,7 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
     }
 
     @SubscribeEvent
-    static void onFirstPerson(RenderLevelStageEvent event) {
+    public static void onFirstPerson(RenderLevelStageEvent event) {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_ENTITIES) return;
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
@@ -120,7 +120,7 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
         }
 
         @SubscribeEvent
-        static void onAddLayers(EntityRenderersEvent.AddLayers event) {
+        public static void onAddLayers(EntityRenderersEvent.AddLayers event) {
             for (String skin : event.getSkins()) {
                 EntityRenderer<? extends Player> r = event.getSkin(skin);
                 if (r instanceof LivingEntityRenderer<?, ?> lr && lr.getModel() instanceof PlayerModel<?>) {

@@ -22,7 +22,7 @@ public final class TentaworksKeys {
     }
 
     @SubscribeEvent
-    static void register(RegisterKeyMappingsEvent event) {
+    public static void register(RegisterKeyMappingsEvent event) {
         event.register(SETTINGS);
         event.register(TOGGLE);
     }

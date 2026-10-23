@@ -174,7 +174,7 @@ public final class RigVisuals {
     }
 
     @SubscribeEvent
-    static void onTick(TickEvent.ClientTickEvent event) {
+    public static void onTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) {

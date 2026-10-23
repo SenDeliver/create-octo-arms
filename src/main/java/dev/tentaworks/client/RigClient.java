@@ -125,7 +125,7 @@ public final class RigClient {
     }
 
     @SubscribeEvent
-    static void onInput(MovementInputUpdateEvent event) {
+    public static void onInput(MovementInputUpdateEvent event) {
         if (!(event.getEntity() instanceof LocalPlayer player)) return;
         Input input = event.getInput();
         ticks++;
@@ -474,7 +474,7 @@ public final class RigClient {
     }
 
     @SubscribeEvent
-    static void onClientTick(TickEvent.ClientTickEvent event) {
+    public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         while (TentaworksKeys.SETTINGS.consumeClick()) {
@@ -483,13 +483,13 @@ public final class RigClient {
     }
 
     @SubscribeEvent
-    static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
+    public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         reset();
         RigVisuals.clear();
     }
 
     @SubscribeEvent
-    static void onClone(ClientPlayerNetworkEvent.Clone event) {
+    public static void onClone(ClientPlayerNetworkEvent.Clone event) {
         reset();
         RigVisuals.clear();
     }
