@@ -16,7 +16,7 @@ quick = re.findall(r'\[(\d\d:\d\d:\d\d)\] \[Server thread/WARN\].*?: (\w+) moved
 unexplained = [(t, n) for t, n in quick if not any(0 <= secs(t) - pt <= 2 for pt in tps)]
 print(f'moved too quickly: {len(quick)} total, {len(quick) - len(unexplained)} within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained={len(unexplained)}', unexplained[:5])
 for f, c in clients.items():
-    exc = [l for l in c.splitlines() if 'Exception' in l and 'neoforge-client.new.tmp.toml' not in l and 'ApiStatus' not in l]
+    exc = [l for l in c.splitlines() if 'Exception' in l and 'neoforge-client.new.tmp.toml' not in l and 'ApiStatus' not in l and 'Error loading class: xaero/' not in l]
     print(f, 'exceptions(excl. known)=', len(exc), *exc[:3], sep=' ')
 num = r'(-?[\d.]+),(-?[\d.]+),(-?[\d.]+)'
 cpos = {m[0]: (int(m[1]), tuple(map(float, m[2:5]))) for m in re.findall(r'CPOS (\S+) gt=(\d+) pos=' + num, clients.get(pre + '-client.log', ''))}

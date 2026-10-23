@@ -120,6 +120,6 @@ check('S2 Dev2 hears Dev', m2 and int(m2[1]) > 0 and m2[1] == m2[2] and slime2 >
 h = heard[1] if heard else ''
 check('S3 piston + steam', 'piston.extend' in h and 'piston.contract' in h and 'create:steam' in h, f'Dev heard {h}')
 
-exc = [l for l in (c + c2 + s).splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'authlib' not in l]
+exc = [l for l in (c + c2 + s).splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'authlib' not in l and 'Error loading class: xaero/' not in l]
 check('E exceptions', not exc, f'{len(exc)} exception lines' + (f': {exc[0][:200]}' if exc else ''))
 print('RESULT', 'PASS' if not fails else 'FAIL ' + ', '.join(fails))

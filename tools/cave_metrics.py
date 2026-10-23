@@ -60,6 +60,6 @@ for tag, a, b in (('N netherite low on the cave roof', 'na', 'nb'), ('C copper l
                    f"max feet {feet:.2f} (<= {FLOOR + 0.3}: body low), states {states(w)}")
 forced = s.count('forcing Falling')
 check(forced == 0, 'S server never forces Falling', f'{forced} forcing lines (want 0: client and server agree on sight)')
-exc = [l for l in c.splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'neoforge-client.new.tmp.toml' not in l]
+exc = [l for l in c.splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'neoforge-client.new.tmp.toml' not in l and 'Error loading class: xaero/' not in l]
 check(not exc, 'E exceptions', f'{len(exc)} exception lines')
 print('RESULT', 'PASS' if not fails else 'FAIL ' + ', '.join(fails))

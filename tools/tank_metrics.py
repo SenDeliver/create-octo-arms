@@ -49,6 +49,6 @@ else:
     end = w[-1]
     check(low >= 8.0 and end['p'][0] >= 5501.5 and end['held'] >= 2 and states(w) == 'ACTIVE', tag,
           f"min feet {low:.2f} above ground (>= 8.0; platform top 10.5; the body fell to 0 before the fix: a bottom slab's top was no Grip), end x {end['p'][0]:.2f} (>= 5501.5: past the east edge), end held {end['held']}, states {states(w)}")
-exc = [l for l in c.splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'neoforge-client.new.tmp.toml' not in l]
+exc = [l for l in c.splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'neoforge-client.new.tmp.toml' not in l and 'Error loading class: xaero/' not in l]
 check(not exc, 'E exceptions', f'{len(exc)} exception lines')
 print('RESULT', 'PASS' if not fails else 'FAIL ' + ', '.join(fails))

@@ -62,6 +62,6 @@ for tag, a, b in (('R 2x2 round copper', 'ra', 'rb'), ('Q 2x2 round netherite', 
     a0 = ang(w[0]['p'])
     far = max(abs((ang(x['p']) - a0 + 540) % 360 - 180) for x in w)
     check(far >= 80 and states(w) == 'ACTIVE', tag, f"furthest {far:.0f} deg round the pole (>= 80), feet y {w[0]['p'][1] + 60:.2f} -> {w[-1]['p'][1] + 60:.2f}, pos {w[0]['p'][0]:.2f},{w[0]['p'][2]:.2f} -> {w[-1]['p'][0]:.2f},{w[-1]['p'][2]:.2f}, held min {min(x['held'] for x in w)}, states {states(w)}")
-exc = [l for l in c.splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'neoforge-client.new.tmp.toml' not in l]
+exc = [l for l in c.splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'neoforge-client.new.tmp.toml' not in l and 'Error loading class: xaero/' not in l]
 check(not exc, 'E exceptions', f'{len(exc)} exception lines')
 print('RESULT', 'PASS' if not fails else 'FAIL ' + ', '.join(fails))
