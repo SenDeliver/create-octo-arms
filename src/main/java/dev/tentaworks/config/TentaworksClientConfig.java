@@ -1,15 +1,11 @@
 package dev.tentaworks.config;
 
 import dev.tentaworks.TentaworksIds;
-import net.minecraft.network.chat.Component;
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.neoforged.neoforge.common.TranslatableEnum;
-
-import java.util.Locale;
 
 /**
  * Client config ({@code config/tentaworks-client.toml}): looks and controls only, nothing the server needs to know. Edited in
- * the file or from Mods > Octo Arms > Config.
+ * the file.
  */
 public final class TentaworksClientConfig {
     public static final ForgeConfigSpec SPEC;
@@ -17,16 +13,11 @@ public final class TentaworksClientConfig {
     public static final ForgeConfigSpec.EnumValue<ForwardMode> FORWARD;
 
     /** What {@code W}/{@code S} follow while the Rig carries you. */
-    public enum ForwardMode implements TranslatableEnum {
+    public enum ForwardMode {
         /** The camera, pitch included: look down and {@code W} takes you down (the default, as the Rig always moved). */
         LOOK,
         /** Where you face on the level only, as walking or creative flight: height changes only with jump and sneak. */
-        FLAT;
-
-        @Override
-        public Component getTranslatedName() {
-            return Component.translatable(TentaworksIds.MOD_ID + ".configuration.movement.forward." + name().toLowerCase(Locale.ROOT));
-        }
+        FLAT
     }
 
     static {

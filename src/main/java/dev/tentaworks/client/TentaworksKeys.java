@@ -10,7 +10,7 @@ import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.settings.KeyConflictContext;
 
 /** Both keys are unbound by default (design §7): Rig Settings while worn, and the toggle for the key-only Activation Mode. */
-@EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public final class TentaworksKeys {
     public static final String CATEGORY = "key.categories." + TentaworksIds.MOD_ID;
     public static final KeyMapping SETTINGS = new KeyMapping("key." + TentaworksIds.MOD_ID + ".settings",
