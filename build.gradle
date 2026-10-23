@@ -11,7 +11,7 @@ base {
     archivesName = 'octo-arms'
 }
 
-def fmlTestClasses = ['dev.tentaworks.rig.GripFaceTest', 'dev.tentaworks.rig.GripSightTest']
+def fmlTestClasses = ['dev.tentaworks.rig.GripFaceTest', 'dev.tentaworks.rig.GripSightTest', 'dev.tentaworks.rig.RigEnchantsTest']
 def fmlTestReports = layout.buildDirectory.dir('test-results/fmlTest').get().asFile
 def fmlTestGameDir = layout.buildDirectory.dir('fmltest-run').get().asFile
 configurations {
