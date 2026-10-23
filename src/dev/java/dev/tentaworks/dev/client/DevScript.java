@@ -2,6 +2,7 @@ package dev.tentaworks.dev.client;
 
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.client.RigClient;
+import dev.tentaworks.dev.DevTools;
 import dev.tentaworks.client.RigVisuals;
 import dev.tentaworks.client.RigSettingsScreen;
 import dev.tentaworks.config.TentaworksClientConfig;
@@ -691,7 +692,7 @@ public final class DevScript {
         Entity vehicle = p.getVehicle();
         LOG.info("TRACE t={} gt={} pos={} d={} cmd={} held={} state={} fly={} mayfly={} press={} jumpkey={} ground={} hp={} air={} ff={} sheld={} carry={} wa={} sneak={} crouch={} pose={} eye={} veh={} ride={} hold={} vrot={}",
                 clientTicks, mc.level.getGameTime(), fmt(pos), fmt(d), fmt(RigClient.motion()), RigClient.heldCount(), RigClient.state(),
-                p.getAbilities().flying, p.getAbilities().mayfly, RigClient.jumpPressed(), mc.options.keyJump.isDown(), p.onGround(), p.getHealth(), (int) BacktankUtil.getAir(p.getItemBySlot(EquipmentSlot.CHEST)), p.isFallFlying(),
+                p.getAbilities().flying, p.getAbilities().mayfly, RigClient.jumpPressed(), mc.options.keyJump.isDown(), p.onGround(), p.getHealth(), DevTools.air(p.getItemBySlot(EquipmentSlot.CHEST)), p.isFallFlying(),
                 RigClient.shipGrips(), RigClient.carryShip() == null ? "-" : RigClient.carryShip().id(), String.format(Locale.ROOT, "%.4f", p.walkAnimation.speed()),
                 p.isShiftKeyDown(), p.isCrouching(), p.getPose(), String.format(Locale.ROOT, "%.3f", p.getEyeHeight()),
                 vehicle == null ? "-" : BuiltInRegistries.ENTITY_TYPE.getKey(vehicle.getType()), ChainConveyorRidingHandler.ridingChainConveyor != null ? "chain" : "-",

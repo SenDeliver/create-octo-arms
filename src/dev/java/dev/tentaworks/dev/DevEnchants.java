@@ -1,6 +1,5 @@
 package dev.tentaworks.dev;
 
-import com.simibubi.create.content.equipment.armor.BacktankUtil;
 import dev.tentaworks.rig.RigSettings;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -41,7 +40,7 @@ final class DevEnchants {
     static String describe(ItemStack st) {
         return String.format("item=%s ench=%s stored=%s damage=%d/%d air=%d settings=%s", itemId(st),
                 list(st.getEnchantmentTags()), list(EnchantedBookItem.getEnchantments(st)),
-                st.getDamageValue(), st.getMaxDamage(), (int) BacktankUtil.getAir(st), RigSettings.stored(st));
+                st.getDamageValue(), st.getMaxDamage(), DevTools.air(st), RigSettings.stored(st));
     }
 
     private static String itemId(ItemStack st) {

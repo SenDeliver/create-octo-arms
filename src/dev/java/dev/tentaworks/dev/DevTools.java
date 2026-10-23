@@ -294,11 +294,16 @@ public final class DevTools {
                 p.level().getGameTime(), p.getName().getString(), p.getX(), p.getY(), p.getZ(),
                 p.getDeltaMovement().x, p.getDeltaMovement().y, p.getDeltaMovement().z,
                 RigServer.state(p), RigServer.grips(p).size(), RigServer.floating(p) ? 1.0 : 0.0,
-                p.getAbilities().flying, p.fallDistance, p.getHealth(), p.onGround(), (int) BacktankUtil.getAir(p.getItemBySlot(EquipmentSlot.CHEST)),
+                p.getAbilities().flying, p.fallDistance, p.getHealth(), p.onGround(), air(p.getItemBySlot(EquipmentSlot.CHEST)),
                 RigServer.motion(p).x, RigServer.motion(p).y, RigServer.motion(p).z, " sgrips=0 carry=-", p.isShiftKeyDown(), p.getPose(),
                 vehicle == null ? "-" : BuiltInRegistries.ENTITY_TYPE.getKey(vehicle.getType()),
                 ServerChainConveyorHandler.hangingPlayers.containsKey(p.getUUID()) ? "chain" : "-",
                 vehicle == null ? "-" : String.format(Locale.ROOT, "%.1f", vehicle.getYRot()));
+    }
+
+    /** Create's Air without {@link BacktankUtil#getAir}'s getOrCreateTag, which would add an empty tag to the stack it reads. */
+    public static int air(ItemStack st) {
+        return st.hasTag() ? (int) Math.min(st.getTag().getFloat("Air"), BacktankUtil.maxAir(st)) : 0;
     }
 
     private static int reply(CommandSourceStack source, String msg) {
