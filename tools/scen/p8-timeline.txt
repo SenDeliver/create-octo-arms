@@ -1,19 +1,19 @@
 tp Dev 4557.5 -60 0.5 -90 0
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 1
 #signal a
 #await adone
 item replace entity Dev armor.chest with air
 tp Dev 4557.5 -60 0.5 -90 0
 #sleep 0.5
-item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900,enchantments={levels:{"tentaworks:far_reach":3}}]
+item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig{Air:900,Enchantments:[{id:"tentaworks:far_reach",lvl:3s}]}
 #sleep 1
 #signal p
 #await pdone
 item replace entity Dev armor.chest with air
 tp Dev 4641.5 -60 0.5 0 0
 #sleep 0.5
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 1
 #signal g
 #await ghang
@@ -22,7 +22,7 @@ tentaworks ghost 4640 -53 -1 4642 -53 1
 #await ghostdone
 item replace entity Dev armor.chest with air
 tp Dev 4518.5 -60 0.5 -90 0
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 1
 tentaworks netstats t0
 tentaworks fake through4520 20
@@ -58,11 +58,11 @@ tentaworks fake slide20 40
 tp Dev 4680.5 -60 0.5 -90 0
 item replace entity Dev armor.chest with air
 #sleep 1
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 1
 tentaworks fake downrise 20
 #sleep 2
-give Dev tentaworks:copper_tentacle_rig[tentaworks:rig_settings={standing_height:2.5f,activation:"bogus"}]
+give Dev tentaworks:copper_tentacle_rig{"tentaworks:rig_settings":{standing_height:2.5f,activation:"bogus"}}
 tentaworks rigs codec
 clear Dev tentaworks:copper_tentacle_rig
 #signal forgeddone
@@ -82,13 +82,13 @@ data get block 4600 -60 0 Air
 #signal l3d
 item replace entity Dev armor.head with air
 tp Dev 4580.5 -60 0.5 0 0
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[damage=500,create:banktank_air=900,tentaworks:rig_settings={activation:"key"}]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Damage:500,Air:900,"tentaworks:rig_settings":{activation:"key"}}
 #sleep 1
 #signal u1
 #await u1done
 item replace entity Dev armor.chest with air
 #sleep 0.5
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[damage=100,create:banktank_air=500,enchantments={levels:{"minecraft:mending":1,"tentaworks:far_reach":2}},tentaworks:rig_settings={standing_height:2.0f,speed:4.5f,activation:"key"}]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Damage:100,Air:500,Enchantments:[{id:"minecraft:mending",lvl:1s},{id:"tentaworks:far_reach",lvl:2s}],"tentaworks:rig_settings":{standing_height:2.0f,speed:4.5f,activation:"key"}}
 #sleep 0.5
 tentaworks inv m0
 execute at Dev run summon experience_orb ~ ~0.5 ~ {Value:200}
@@ -96,7 +96,7 @@ execute at Dev run summon experience_orb ~ ~0.5 ~ {Value:200}
 #sleep 3
 tentaworks inv m1
 #signal u2done
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900,trim={pattern:"minecraft:sentry",material:"minecraft:gold"}]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900,Trim:{pattern:"minecraft:sentry",material:"minecraft:gold"}}
 tp Dev 4590.5 -60 0.5 0 0
 #sleep 1
 #signal u3
@@ -118,12 +118,12 @@ data get block 4621 -59 0
 tp Dev 4724.5 -60 0.5 -90 0
 item replace entity Dev armor.chest with air
 #sleep 0.3
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 1
 #signal u6
 #await u6done
 #await k
 item replace entity Dev armor.head with air
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=0]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:0}
 tp Dev 4700.5 300 0.5 0 0
 #sleep 15

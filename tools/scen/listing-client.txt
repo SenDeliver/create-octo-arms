@@ -4,7 +4,7 @@ hud off
 view third
 await hero
 cmd tp @s 8024.5 -60 2.5 0 0
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 20
 doublejump
 wait 40
@@ -15,7 +15,7 @@ await herodone
 cmd item replace entity @s armor.chest with air
 cmd tp @s 8024.5 -60 7.2 0 0
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 10
 doublejump
 wait 20
@@ -31,7 +31,7 @@ await climbdone
 # hang under the bridge (underside y=-50): the Rig stays Active across the swap + tp and grips the ceiling, rise to it, hang a bit lower
 cmd item replace entity @s armor.chest with air
 cmd tp @s 8055.5 -52 -57.5 90 0
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 30
 hold jump on
 wait 15
@@ -55,7 +55,7 @@ view first
 hud on
 wait 20
 cmd setblock 8080 -60 -100 minecraft:air
-cmd setblock 8080 -60 -100 tentaworks:copper_tentacle_rig[facing=south,arms=true]{Air:300,Components:{"minecraft:enchantments":{levels:{"tentaworks:far_reach":2,"tentaworks:swift":1}}}}
+cmd setblock 8080 -60 -100 tentaworks:copper_tentacle_rig[facing=south,arms=true]{Air:300,VanillaTag:{Enchantments:[{id:"tentaworks:far_reach",lvl:2s},{id:"tentaworks:swift",lvl:1s}]}}
 wait 30
 clearchat
 look 180 20

@@ -15,7 +15,7 @@ setblock 3010 -59 0 create:creative_motor[facing=down]{ScrollValue:64}
 setblock 3013 -60 0 tentaworks:netherite_tentacle_rig[facing=north,arms=true]{Air:300}
 # C Carry On: a chest and an enchanted Copper Rig Block with Air 500
 setblock 3004 -60 6 minecraft:chest
-setblock 3008 -60 6 tentaworks:copper_tentacle_rig[facing=north,arms=true]{Air:500,Components:{"minecraft:enchantments":{levels:{"tentaworks:far_reach":2}}}}
+setblock 3008 -60 6 tentaworks:copper_tentacle_rig[facing=north,arms=true]{Air:500,VanillaTag:{Enchantments:[{id:"tentaworks:far_reach",lvl:2s}]}}
 # S Sable: a 5x5 stone deck one block above the floor, assembled into a Ship (sits on the ground, still)
 fill 3200 -59 -2 3204 -59 2 minecraft:stone
 #sleep 1

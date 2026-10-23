@@ -3,7 +3,7 @@ tentaworks trace on
 gamemode survival Dev
 # D copper drain: idle, move, climb
 tp Dev 600.5 -60 0.5 -90 0
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 1
 #signal dc
 #await dcdone
@@ -13,7 +13,7 @@ item replace entity Dev armor.chest with air
 #sleep 0.5
 tp Dev 560.5 -60 20.5 -90 0
 #sleep 0.5
-item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig{Air:900}
 #sleep 1
 #signal dn
 #await dndone
@@ -23,7 +23,7 @@ item replace entity Dev armor.chest with air
 #sleep 0.5
 tp Dev 677.5 -60 0.5 -90 0
 #sleep 0.5
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=5]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:5}
 #sleep 1
 #signal c1
 #await c1done
@@ -39,7 +39,7 @@ tentaworks air 93
 tentaworks air 1
 #signal c2
 #await c2hold
-attribute Dev neoforge:creative_flight get
+data get entity Dev abilities.mayfly
 data get entity Dev Pos
 fill 704 -60 -4 712 -53 4 stone
 #signal c2pillar
@@ -70,18 +70,18 @@ effect give Dev minecraft:instant_health 1 5
 tentaworks pos nc1a
 tentaworks fake climb 30
 #sleep 0.5
-attribute Dev neoforge:creative_flight get
+data get entity Dev abilities.mayfly
 #sleep 1.5
 tentaworks pos nc1b
-attribute Dev neoforge:creative_flight get
+data get entity Dev abilities.mayfly
 tentaworks air 900
 tentaworks pos nc1pa
 tentaworks fake climb 30
 #sleep 0.5
-attribute Dev neoforge:creative_flight get
+data get entity Dev abilities.mayfly
 #sleep 2.5
 tentaworks pos nc1pb
-attribute Dev neoforge:creative_flight get
+data get entity Dev abilities.mayfly
 # NC2 forged Active climb packets while the real client Crawls under ceiling C
 #signal nc2
 #await nc2up
@@ -92,7 +92,7 @@ tentaworks fake climb 40
 #signal nc2go
 #sleep 3
 tentaworks pos nc2b
-attribute Dev neoforge:creative_flight get
+data get entity Dev abilities.mayfly
 #await nc2done
 data get entity Dev Health
 effect give Dev minecraft:instant_health 1 5

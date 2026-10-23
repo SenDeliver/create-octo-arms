@@ -19,7 +19,7 @@ tp Dev 1510.5 -60 1.5 180 45
 xp add Dev 200 levels
 setblock 1510 -60 0 anvil[facing=north]
 item replace entity Dev hotbar.0 with tentaworks:copper_tentacle_rig
-item replace entity Dev hotbar.1 with enchanted_book[stored_enchantments={levels:{"minecraft:mending":1}}]
+item replace entity Dev hotbar.1 with enchanted_book{StoredEnchantments:[{id:"minecraft:mending",lvl:1s}]}
 #sleep 0.3
 #signal a1
 #await a1done
@@ -27,7 +27,7 @@ tentaworks inv a1
 clear Dev
 setblock 1510 -60 0 anvil[facing=north]
 item replace entity Dev hotbar.0 with tentaworks:copper_tentacle_rig
-item replace entity Dev hotbar.1 with enchanted_book[stored_enchantments={levels:{"minecraft:unbreaking":3}}]
+item replace entity Dev hotbar.1 with enchanted_book{StoredEnchantments:[{id:"minecraft:unbreaking",lvl:3s}]}
 #sleep 0.3
 #signal a2
 #await a2done
@@ -35,7 +35,7 @@ tentaworks inv a2
 clear Dev
 setblock 1510 -60 0 anvil[facing=north]
 item replace entity Dev hotbar.0 with tentaworks:copper_tentacle_rig
-item replace entity Dev hotbar.1 with enchanted_book[stored_enchantments={levels:{"minecraft:protection":4}}]
+item replace entity Dev hotbar.1 with enchanted_book{StoredEnchantments:[{id:"minecraft:protection",lvl:4s}]}
 #sleep 0.3
 #signal a3
 #await a3done
@@ -43,7 +43,7 @@ tentaworks inv a3
 clear Dev
 setblock 1510 -60 0 anvil[facing=north]
 item replace entity Dev hotbar.0 with tentaworks:copper_tentacle_rig
-item replace entity Dev hotbar.1 with enchanted_book[stored_enchantments={levels:{"create:capacity":3}}]
+item replace entity Dev hotbar.1 with enchanted_book{StoredEnchantments:[{id:"create:capacity",lvl:3s}]}
 #sleep 0.3
 #signal a4
 #await a4done
@@ -51,7 +51,7 @@ tentaworks inv a4
 clear Dev
 setblock 1510 -60 0 anvil[facing=north]
 item replace entity Dev hotbar.0 with tentaworks:copper_tentacle_rig
-item replace entity Dev hotbar.1 with enchanted_book[stored_enchantments={levels:{"tentaworks:far_reach":3}}]
+item replace entity Dev hotbar.1 with enchanted_book{StoredEnchantments:[{id:"tentaworks:far_reach",lvl:3s}]}
 #sleep 0.3
 #signal a5
 #await a5done
@@ -59,7 +59,7 @@ tentaworks inv a5
 clear Dev
 setblock 1510 -60 0 anvil[facing=north]
 item replace entity Dev hotbar.0 with tentaworks:copper_tentacle_rig
-item replace entity Dev hotbar.1 with enchanted_book[stored_enchantments={levels:{"tentaworks:thrift":3}}]
+item replace entity Dev hotbar.1 with enchanted_book{StoredEnchantments:[{id:"tentaworks:thrift",lvl:3s}]}
 #sleep 0.3
 #signal a6
 #await a6done
@@ -67,7 +67,7 @@ tentaworks inv a6
 clear Dev
 setblock 1510 -60 0 anvil[facing=north]
 item replace entity Dev hotbar.0 with tentaworks:copper_tentacle_rig
-item replace entity Dev hotbar.1 with enchanted_book[stored_enchantments={levels:{"tentaworks:swift":2}}]
+item replace entity Dev hotbar.1 with enchanted_book{StoredEnchantments:[{id:"tentaworks:swift",lvl:2s}]}
 #sleep 0.3
 #signal a7
 #await a7done
@@ -75,23 +75,23 @@ tentaworks inv a7
 clear Dev
 setblock 1510 -60 0 anvil[facing=north]
 item replace entity Dev hotbar.0 with tentaworks:netherite_tentacle_rig
-item replace entity Dev hotbar.1 with enchanted_book[stored_enchantments={levels:{"minecraft:thorns":3,"minecraft:binding_curse":1,"minecraft:vanishing_curse":1}}]
+item replace entity Dev hotbar.1 with enchanted_book{StoredEnchantments:[{id:"minecraft:thorns",lvl:3s},{id:"minecraft:binding_curse",lvl:1s},{id:"minecraft:vanishing_curse",lvl:1s}]}
 #sleep 0.3
 #signal a8
 #await a8done
 tentaworks inv a8
 clear Dev
 setblock 1510 -60 0 anvil[facing=north]
-item replace entity Dev hotbar.0 with tentaworks:copper_tentacle_rig[enchantments={levels:{"tentaworks:far_reach":3}}]
-item replace entity Dev hotbar.1 with enchanted_book[stored_enchantments={levels:{"tentaworks:thrift":3,"tentaworks:swift":2,"minecraft:mending":1,"minecraft:unbreaking":3,"minecraft:protection":4,"create:capacity":3}}]
+item replace entity Dev hotbar.0 with tentaworks:copper_tentacle_rig{Enchantments:[{id:"tentaworks:far_reach",lvl:3s}]}
+item replace entity Dev hotbar.1 with enchanted_book{StoredEnchantments:[{id:"tentaworks:thrift",lvl:3s},{id:"tentaworks:swift",lvl:2s},{id:"minecraft:mending",lvl:1s},{id:"minecraft:unbreaking",lvl:3s},{id:"minecraft:protection",lvl:4s},{id:"create:capacity",lvl:3s}]}
 #sleep 0.3
 #signal a9
 #await a9done
 tentaworks inv a9
 clear Dev
 setblock 1510 -60 0 anvil[facing=north]
-item replace entity Dev hotbar.0 with tentaworks:copper_tentacle_rig[enchantments={levels:{"minecraft:protection":4}}]
-item replace entity Dev hotbar.1 with enchanted_book[stored_enchantments={levels:{"minecraft:blast_protection":4}}]
+item replace entity Dev hotbar.0 with tentaworks:copper_tentacle_rig{Enchantments:[{id:"minecraft:protection",lvl:4s}]}
+item replace entity Dev hotbar.1 with enchanted_book{StoredEnchantments:[{id:"minecraft:blast_protection",lvl:4s}]}
 #sleep 0.3
 #signal r1
 #await r1done
@@ -99,7 +99,7 @@ tentaworks inv r1
 clear Dev
 setblock 1510 -60 0 anvil[facing=north]
 item replace entity Dev hotbar.0 with tentaworks:copper_tentacle_rig
-item replace entity Dev hotbar.1 with enchanted_book[stored_enchantments={levels:{"minecraft:sharpness":5}}]
+item replace entity Dev hotbar.1 with enchanted_book{StoredEnchantments:[{id:"minecraft:sharpness",lvl:5s}]}
 #sleep 0.3
 #signal r2
 #await r2done
@@ -107,7 +107,7 @@ tentaworks inv r2
 clear Dev
 setblock 1510 -60 0 anvil[facing=north]
 item replace entity Dev hotbar.0 with create:copper_backtank
-item replace entity Dev hotbar.1 with enchanted_book[stored_enchantments={levels:{"tentaworks:far_reach":3}}]
+item replace entity Dev hotbar.1 with enchanted_book{StoredEnchantments:[{id:"tentaworks:far_reach",lvl:3s}]}
 #sleep 0.3
 #signal r3
 #await r3done
@@ -115,7 +115,7 @@ tentaworks inv r3
 clear Dev
 setblock 1510 -60 0 anvil[facing=north]
 item replace entity Dev hotbar.0 with create:copper_backtank
-item replace entity Dev hotbar.1 with enchanted_book[stored_enchantments={levels:{"minecraft:mending":1}}]
+item replace entity Dev hotbar.1 with enchanted_book{StoredEnchantments:[{id:"minecraft:mending",lvl:1s}]}
 #sleep 0.3
 #signal r4
 #await r4done
@@ -123,7 +123,7 @@ tentaworks inv r4
 clear Dev
 setblock 1510 -60 0 anvil[facing=north]
 item replace entity Dev hotbar.0 with tentaworks:copper_tentacle_rig
-item replace entity Dev hotbar.1 with enchanted_book[stored_enchantments={levels:{"minecraft:swift_sneak":3}}]
+item replace entity Dev hotbar.1 with enchanted_book{StoredEnchantments:[{id:"minecraft:swift_sneak",lvl:3s}]}
 #sleep 0.3
 #signal r5
 #await r5done
@@ -131,7 +131,7 @@ tentaworks inv r5
 clear Dev
 # D durability and Mending on a worn Rig: mob hit wears it, an XP orb mends it
 tp Dev 1520.5 -60 10.5 -90 0
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[enchantments={levels:{"minecraft:mending":1}},create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Enchantments:[{id:"minecraft:mending",lvl:1s}],Air:900}
 #sleep 0.5
 tentaworks inv d0
 damage Dev 8 minecraft:mob_attack
@@ -144,7 +144,7 @@ effect give Dev minecraft:instant_health 1 5
 # B Rig Block keeps our enchantments, damage, Air and name through place / pick up
 item replace entity Dev armor.chest with air
 tp Dev 1520.5 -60 0.5 -90 60
-item replace entity Dev weapon.mainhand with tentaworks:copper_tentacle_rig[enchantments={levels:{"tentaworks:far_reach":3,"tentaworks:thrift":2,"tentaworks:swift":1,"minecraft:mending":1,"minecraft:unbreaking":3,"minecraft:protection":4,"create:capacity":2}},damage=20,create:banktank_air=300,custom_name='"Octo"']
+item replace entity Dev weapon.mainhand with tentaworks:copper_tentacle_rig{Enchantments:[{id:"tentaworks:far_reach",lvl:3s},{id:"tentaworks:thrift",lvl:2s},{id:"tentaworks:swift",lvl:1s},{id:"minecraft:mending",lvl:1s},{id:"minecraft:unbreaking",lvl:3s},{id:"minecraft:protection",lvl:4s},{id:"create:capacity",lvl:2s}],Damage:20,Air:300,display:{Name:'"Octo"'}}
 #sleep 1
 tentaworks inv b0
 #signal b1
@@ -156,19 +156,19 @@ tentaworks inv b1
 tentaworks inv b2
 clear Dev
 # FX levels above the max count as the max: Far Reach X / Thrift X on Copper = III; Far Reach III on Netherite
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[enchantments={levels:{"tentaworks:far_reach":10,"tentaworks:thrift":10}},create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Enchantments:[{id:"tentaworks:far_reach",lvl:10s},{id:"tentaworks:thrift",lvl:10s}],Air:900}
 #sleep 0.5
 tentaworks rigs fx
 #signal fx
 #await fxdone
-item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig[enchantments={levels:{"tentaworks:far_reach":3}},create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig{Enchantments:[{id:"tentaworks:far_reach",lvl:3s}],Air:900}
 #sleep 0.5
 tentaworks rigs fn
 #signal fn
 #await fndone
 # F1 Far Reach III + Swift II Copper: screen footer, Standing Height clamp, Space to max height; control: plain Copper
 tp Dev 1540.5 -60 0.5 -90 0
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[enchantments={levels:{"tentaworks:far_reach":3,"tentaworks:swift":2}},create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Enchantments:[{id:"tentaworks:far_reach",lvl:3s},{id:"tentaworks:swift",lvl:2s}],Air:900}
 #sleep 0.5
 tentaworks rigs f1
 #signal f1
@@ -176,7 +176,7 @@ tentaworks rigs f1
 tentaworks rigs f1clamp
 #signal f1go
 #await f1done
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 tp Dev 1540.5 -60 10.5 -90 0
 #sleep 0.5
 tentaworks rigs f1c
@@ -187,7 +187,7 @@ item replace entity Dev armor.chest with air
 #sleep 0.5
 tp Dev 1560.5 -50 0.5 -90 0
 #sleep 0.5
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[enchantments={levels:{"tentaworks:far_reach":3}},create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Enchantments:[{id:"tentaworks:far_reach",lvl:3s}],Air:900}
 #sleep 1
 #signal f2
 #await f2up
@@ -195,10 +195,10 @@ fill 1559 -51 -1 1561 -51 1 air
 #sleep 0.3
 #signal f2cut
 #await f2held
-attribute Dev neoforge:creative_flight get
+data get entity Dev abilities.mayfly
 fill 1559 -51 -1 1561 -51 1 stone
 #sleep 0.5
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 0.5
 fill 1559 -51 -1 1561 -51 1 air
 #signal f2copper
@@ -209,7 +209,7 @@ item replace entity Dev armor.chest with air
 #sleep 0.5
 tp Dev 1600.5 -60 0.5 -90 0
 #sleep 0.5
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[enchantments={levels:{"tentaworks:thrift":1}},create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Enchantments:[{id:"tentaworks:thrift",lvl:1s}],Air:900}
 #sleep 1
 #signal t1
 #await t1done
@@ -217,7 +217,7 @@ item replace entity Dev armor.chest with air
 #sleep 0.5
 tp Dev 1560.5 -60 20.5 -90 0
 #sleep 0.5
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[enchantments={levels:{"tentaworks:thrift":3}},create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Enchantments:[{id:"tentaworks:thrift",lvl:3s}],Air:900}
 #sleep 1
 #signal t3
 #await t3done
@@ -226,13 +226,13 @@ item replace entity Dev armor.chest with air
 #sleep 0.5
 tp Dev 1700.5 -60 40.5 -90 0
 #sleep 0.5
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[enchantments={levels:{"tentaworks:swift":1}},create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Enchantments:[{id:"tentaworks:swift",lvl:1s}],Air:900}
 #sleep 0.5
 #signal s1
 #await s1done
 item replace entity Dev armor.chest with air
 #sleep 0.5
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[enchantments={levels:{"tentaworks:swift":2}},create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Enchantments:[{id:"tentaworks:swift",lvl:2s}],Air:900}
 #sleep 0.5
 #signal s2
 #await s2done
@@ -249,7 +249,7 @@ tentaworks fake fast20 20
 #sleep 1.5
 tentaworks pos fk2b
 #sleep 1
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 1
 tentaworks pos fk3a
 tentaworks fake fast10.4 20

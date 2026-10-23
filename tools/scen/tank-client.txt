@@ -10,7 +10,7 @@ view third
 cmd tp @s 5201.8 -60 0.5 90 0
 cmd item replace entity @s armor.chest with air
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 10
 doublejump
 wait 20
@@ -25,7 +25,7 @@ shot tank_face_copper
 cmd tp @s 5201.8 -60 0.5 90 0
 cmd item replace entity @s armor.chest with air
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:netherite_tentacle_rig{Air:900}
 wait 10
 doublejump
 wait 20
@@ -40,7 +40,7 @@ shot tank_face_netherite
 cmd tp @s 5299.65 -60 2.35 -135 0
 cmd item replace entity @s armor.chest with air
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 10
 doublejump
 wait 20
@@ -55,7 +55,7 @@ shot tank_2x2_corner_copper
 cmd tp @s 5399.5 -60 0.5 0 -60
 cmd item replace entity @s armor.chest with air
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 10
 doublejump
 wait 20
@@ -71,7 +71,7 @@ shot tank_roof_copper
 cmd tp @s 5500.5 -49.5 0.5 -90 0
 cmd item replace entity @s armor.chest with air
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 10
 doublejump
 wait 20

@@ -1,5 +1,5 @@
 tp Dev 4557.5 -60 0.5 -90 0
-item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900,enchantments={levels:{"tentaworks:far_reach":3}}]
+item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig{Air:900,Enchantments:[{id:"tentaworks:far_reach",lvl:3s}]}
 #sleep 1
 #signal p
 #await pdone

@@ -44,7 +44,7 @@ setblock 8055 -50 -56 minecraft:sea_lantern
 fill 8076 -61 -104 8084 -61 -96 minecraft:polished_andesite
 fill 8076 -60 -103 8084 -56 -103 create:andesite_casing
 fill 8077 -59 -103 8083 -57 -103 minecraft:stone_bricks
-setblock 8080 -60 -100 tentaworks:copper_tentacle_rig[facing=south,arms=true]{Air:100,Components:{"minecraft:enchantments":{levels:{"tentaworks:far_reach":2,"tentaworks:swift":1}}}}
+setblock 8080 -60 -100 tentaworks:copper_tentacle_rig[facing=south,arms=true]{Air:100,VanillaTag:{Enchantments:[{id:"tentaworks:far_reach",lvl:2s},{id:"tentaworks:swift",lvl:1s}]}}
 setblock 8080 -59 -100 create:creative_motor[facing=down]{ScrollValue:128}
 setblock 8078 -60 -102 tentaworks:netherite_tentacle_rig[facing=south,arms=true]
 # trees around (background)

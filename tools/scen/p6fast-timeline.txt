@@ -1,5 +1,5 @@
 tp Dev 2990.5 -60 0.5 -90 0
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[enchantments={levels:{"tentaworks:swift":2}},tentaworks:rig_settings={standing_height:1.5f,speed:20.0f,activation:"double_jump"},create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Enchantments:[{id:"tentaworks:swift",lvl:2s}],"tentaworks:rig_settings":{standing_height:1.5f,speed:20.0f,activation:"double_jump"},Air:900}
 #sleep 1
 #signal a
 #await climb

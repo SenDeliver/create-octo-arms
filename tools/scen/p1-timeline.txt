@@ -3,7 +3,7 @@ tentaworks trace on
 gamemode survival Dev
 # N1 netherite: Space to max height (open ground)
 tp Dev 400.5 -60 0.5 -90 0
-item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig{Air:900}
 #sleep 1
 #signal n1
 #await n1done
@@ -13,7 +13,7 @@ item replace entity Dev armor.chest with air
 #sleep 0.5
 tp Dev 440.5 -50 0.5 -90 0
 #sleep 0.5
-item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig{Air:900}
 #sleep 1
 #signal n2
 #await n2up
@@ -22,10 +22,10 @@ fill 439 -51 -1 441 -51 1 air
 #signal n2cut
 #await n2held
 data get entity Dev Pos
-attribute Dev neoforge:creative_flight get
+data get entity Dev abilities.mayfly
 fill 439 -51 -1 441 -51 1 stone
 #sleep 0.5
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 0.5
 fill 439 -51 -1 441 -51 1 air
 #signal n2copper
@@ -35,7 +35,7 @@ data get entity Dev Pos
 item replace entity Dev armor.chest with air
 #sleep 0.5
 tp Dev 470.5 -60 0.5 -90 60
-item replace entity Dev weapon.mainhand with tentaworks:copper_tentacle_rig[enchantments={levels:{"create:capacity":3}},custom_name='"Rigby"']
+item replace entity Dev weapon.mainhand with tentaworks:copper_tentacle_rig{Enchantments:[{id:"create:capacity",lvl:3s}],display:{Name:'"Rigby"'}}
 setblock 471 -60 -4 create:copper_backtank[facing=west]
 setblock 471 -60 -2 create:netherite_backtank[facing=west]
 #sleep 1
@@ -61,7 +61,7 @@ data get block 471 -57 0 ScrollValue
 data get block 471 -60 0
 data get entity Dev Inventory
 # R2 netherite Rig Block: place, refill, break (loot path)
-item replace entity Dev weapon.mainhand with tentaworks:netherite_tentacle_rig[enchantments={levels:{"create:capacity":1}},custom_name='"Nethy"']
+item replace entity Dev weapon.mainhand with tentaworks:netherite_tentacle_rig{Enchantments:[{id:"create:capacity",lvl:1s}],display:{Name:'"Nethy"'}}
 #sleep 0.5
 #signal r2
 #await r2placed
@@ -84,7 +84,7 @@ item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig
 # W diving helmet draws the Rig's Air under water
 clear Dev
 item replace entity Dev armor.head with create:copper_diving_helmet
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 tp Dev 302.5 -59 0.5 -90 0
 #sleep 1
 data get entity Dev Inventory

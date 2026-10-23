@@ -4,7 +4,7 @@ await go
 trace on
 hud off
 view third
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 10
 # A Stowed baseline: sit (empty hand), Shift dismounts
 cmd tp @s 6000.5 -60 1.3 0 30
@@ -32,7 +32,7 @@ cmd ride @s dismount
 cmd tp @s 6003.5 -60 1.3 0 30
 cmd item replace entity @s armor.chest with air
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 10
 doublejump
 wait 30
@@ -51,7 +51,7 @@ cmd ride @s dismount
 cmd tp @s 6006.5 -60 1.3 0 30
 cmd item replace entity @s armor.chest with air
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 10
 lookat 6006.5 -59.7 3.5
 key key.mouse.right
@@ -70,7 +70,7 @@ cmd ride @s dismount
 cmd tp @s 6009.5 -60 1.3 0 30
 cmd item replace entity @s armor.chest with air
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 5
 bind key.tentaworks.toggle key.keyboard.r
 rawsettings chest 1.5 5.6 key
@@ -93,7 +93,7 @@ cmd ride @s dismount
 cmd tp @s 6012.5 -60 1.3 0 30
 cmd item replace entity @s armor.chest with air
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 10
 doublejump
 wait 30
@@ -109,7 +109,7 @@ cmd ride @s dismount
 cmd tp @s 6015.5 -60 1.3 0 30
 cmd item replace entity @s armor.chest with air
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 10
 lookat 6015.5 -59.7 3.5
 key key.mouse.right
@@ -123,7 +123,7 @@ cmd ride @s dismount
 cmd tp @s 6002.5 -60 48.5 0 0
 cmd item replace entity @s armor.chest with air
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 10
 doublejump
 wait 25
@@ -146,7 +146,7 @@ cmd ride @s dismount
 cmd tp @s 6006.5 -60 48.5 0 0
 cmd item replace entity @s armor.chest with air
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 10
 doublejump
 wait 25
@@ -169,7 +169,7 @@ cmd ride @s dismount
 cmd tp @s 6010.5 -60 48.5 0 0
 cmd item replace entity @s armor.chest with air
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 10
 doublejump
 wait 25
@@ -189,7 +189,7 @@ cmd ride @s dismount
 cmd tp @s 6022.5 -60 9.0 0 0
 cmd item replace entity @s armor.chest with air
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 10
 cmd ride @s mount @e[type=boat,tag=b1,limit=1]
 wait 10
@@ -212,7 +212,7 @@ cmd ride @s dismount
 cmd tp @s 6022.5 -60 9.0 0 0
 cmd item replace entity @s armor.chest with air
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 10
 doublejump
 wait 30
@@ -239,7 +239,7 @@ cmd tp @s 6022.5 -60 19.5 -90 0
 cmd tp @e[tag=h1,limit=1] 6022.5 -60 21.5 -90 0
 cmd item replace entity @s armor.chest with air
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 10
 cmd ride @s mount @e[type=horse,tag=h1,limit=1]
 look -90 0
@@ -266,7 +266,7 @@ cmd tp @s 6022.5 -60 19.5 -90 0
 cmd tp @e[tag=h1,limit=1] 6022.5 -60 21.5 -90 0
 cmd item replace entity @s armor.chest with air
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 10
 doublejump
 wait 30
@@ -294,7 +294,7 @@ wait 5
 cmd ride @s dismount
 cmd item replace entity @s armor.chest with air
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 10
 cmd ride @s mount @e[type=horse,tag=h1,limit=1]
 look -90 0
@@ -308,7 +308,7 @@ cmd ride @s dismount
 cmd tp @s 6022.5 -60 28.5 0 0
 cmd item replace entity @s armor.chest with air
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 10
 doublejump
 wait 30
@@ -334,7 +334,7 @@ cmd ride @s dismount
 cmd tp @s 6044.5 -60 61.22 0 -90
 cmd item replace entity @s armor.chest with air
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 cmd item replace entity @s weapon.mainhand with create:wrench
 wait 10
 lookat 6044.5 -55.625 61.22
@@ -352,7 +352,7 @@ wait 20
 cmd tp @s 6044.5 -60 61.22 0 -90
 cmd item replace entity @s armor.chest with air
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 10
 doublejump
 wait 30
@@ -372,7 +372,7 @@ wait 10
 cmd tp @s 6044.5 -60 61.22 0 -90
 cmd item replace entity @s armor.chest with air
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 wait 10
 lookat 6044.5 -55.625 61.22
 wait 2

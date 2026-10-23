@@ -24,7 +24,7 @@ tentaworks craftercheck 2000 -59 20
 tentaworks craftercheck 2010 -59 20
 # W1 wear stops at 1 durability: two 8-point mob hits on a Copper Rig at damage 109 / 112; a /give at damage 500 reads 111
 tp Dev 2050.5 -60 0.5 -90 0
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[damage=109,create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Damage:109,Air:900}
 #sleep 1
 tentaworks inv w1a
 damage Dev 8 minecraft:mob_attack
@@ -33,7 +33,7 @@ tentaworks inv w1b
 damage Dev 8 minecraft:mob_attack
 #sleep 0.5
 tentaworks inv w1c
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[damage=500,create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Damage:500,Air:900}
 #sleep 0.5
 tentaworks inv w1d
 damage Dev 8 minecraft:mob_attack
@@ -48,7 +48,7 @@ tentaworks pos w3a
 tentaworks fake held 20
 #sleep 1.5
 tentaworks pos w3b
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[damage=50,create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Damage:50,Air:900}
 #sleep 0.5
 tentaworks pos w3c
 tentaworks fake held 20
@@ -58,7 +58,7 @@ item replace entity Dev armor.chest with air
 #sleep 1
 # W4 Active on the floor, a hit wears it out: Sets Down, Stowed on the floor
 tp Dev 2070.5 -60 0.5 -90 0
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[damage=109,create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Damage:109,Air:900}
 #sleep 1
 #signal w4
 #await w4up
@@ -71,7 +71,7 @@ effect give Dev minecraft:instant_health 1 5
 # W5 hanging under a ceiling (floor 15 below), a hit wears it out: Sets Down, lets go at the lowest Held point, falls
 item replace entity Dev armor.chest with air
 #sleep 0.5
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[damage=109,create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Damage:109,Air:900}
 #sleep 0.5
 #signal w5
 #await w5up
@@ -83,7 +83,7 @@ effect give Dev minecraft:instant_health 1 5
 # W6 Crawl (no Air) holding under a ceiling, a hit wears it out: lets go, falls
 item replace entity Dev armor.chest with air
 #sleep 0.5
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[damage=109,create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Damage:109,Air:900}
 #sleep 0.5
 #signal w6
 #await w6up
@@ -99,7 +99,7 @@ item replace entity Dev armor.chest with air
 tp Dev 2150.5 -60 1.5 180 45
 xp add Dev 100 levels
 setblock 2150 -60 0 anvil[facing=north]
-item replace entity Dev hotbar.0 with tentaworks:copper_tentacle_rig[damage=111,create:banktank_air=600,enchantments={levels:{"minecraft:protection":4,"tentaworks:far_reach":2}},tentaworks:rig_settings={standing_height:2.5f,speed:6.0f,activation:"key"},custom_name='"Octo"']
+item replace entity Dev hotbar.0 with tentaworks:copper_tentacle_rig{Damage:111,Air:600,Enchantments:[{id:"minecraft:protection",lvl:4s},{id:"tentaworks:far_reach",lvl:2s}],"tentaworks:rig_settings":{standing_height:2.5f,speed:6.0f,activation:"key"},display:{Name:'"Octo"'}}
 item replace entity Dev hotbar.1 with copper_ingot 2
 #sleep 0.3
 tentaworks named an1a
@@ -108,7 +108,7 @@ tentaworks named an1a
 tentaworks named an1
 clear Dev
 setblock 2150 -60 0 anvil[facing=north]
-item replace entity Dev hotbar.0 with tentaworks:copper_tentacle_rig[damage=111,create:banktank_air=600]
+item replace entity Dev hotbar.0 with tentaworks:copper_tentacle_rig{Damage:111,Air:600}
 item replace entity Dev hotbar.1 with netherite_ingot 1
 #sleep 0.3
 #signal an2
@@ -116,7 +116,7 @@ item replace entity Dev hotbar.1 with netherite_ingot 1
 tentaworks named an2
 clear Dev
 setblock 2150 -60 0 anvil[facing=north]
-item replace entity Dev hotbar.0 with tentaworks:netherite_tentacle_rig[damage=591,create:banktank_air=600,enchantments={levels:{"tentaworks:thrift":3}}]
+item replace entity Dev hotbar.0 with tentaworks:netherite_tentacle_rig{Damage:591,Air:600,Enchantments:[{id:"tentaworks:thrift",lvl:3s}]}
 item replace entity Dev hotbar.1 with netherite_ingot 1
 #sleep 0.3
 #signal an3
@@ -125,7 +125,7 @@ tentaworks named an3
 clear Dev
 # W8 Mending: worn Rig with Mending refuses, a 10-XP orb mends it, then it activates again
 tp Dev 2170.5 -60 0.5 -90 0
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[damage=111,create:banktank_air=900,enchantments={levels:{"minecraft:mending":1}}]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Damage:111,Air:900,Enchantments:[{id:"minecraft:mending",lvl:1s}]}
 #sleep 1
 tentaworks inv m0
 #signal m1
@@ -136,19 +136,19 @@ tentaworks inv m2
 #signal m2
 #await m2done
 # W9 real tooltips of the worn Rig: undamaged, damaged, worn out (Copper, Netherite)
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 0.5
 #signal t0
 #await t0done
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[damage=50,create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Damage:50,Air:900}
 #sleep 0.5
 #signal t1
 #await t1done
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[damage=111,create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Damage:111,Air:900}
 #sleep 0.5
 #signal t2
 #await t2done
-item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig[damage=591,create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig{Damage:591,Air:900}
 #sleep 0.5
 #signal t3
 #await t3done
@@ -157,7 +157,7 @@ item replace entity Dev armor.chest with air
 tp Dev 2160.5 -60 1.5 180 45
 setblock 2160 -60 0 smithing_table
 item replace entity Dev hotbar.0 with netherite_upgrade_smithing_template
-item replace entity Dev hotbar.1 with tentaworks:copper_tentacle_rig[damage=40,create:banktank_air=500,enchantments={levels:{"tentaworks:far_reach":2}},tentaworks:rig_settings={standing_height:2.5f,speed:6.0f,activation:"key"},custom_name='"Smithy"']
+item replace entity Dev hotbar.1 with tentaworks:copper_tentacle_rig{Damage:40,Air:500,Enchantments:[{id:"tentaworks:far_reach",lvl:2s}],"tentaworks:rig_settings":{standing_height:2.5f,speed:6.0f,activation:"key"},display:{Name:'"Smithy"'}}
 item replace entity Dev hotbar.2 with netherite_ingot
 #sleep 0.3
 tentaworks named sm0

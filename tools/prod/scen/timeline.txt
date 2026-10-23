@@ -1,31 +1,31 @@
 tp Dev 3037.5 -60 0.5 -90 0
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 1
 #signal m
 #await m_active
-attribute Dev neoforge:creative_flight get
+data get entity Dev abilities.mayfly
 #signal m_active_ok
 #await m_down
-attribute Dev neoforge:creative_flight get
+data get entity Dev abilities.mayfly
 tp Dev 3082.5 -60 0.5 90 0
 item replace entity Dev armor.chest with air
 #sleep 0.3
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 1
 #signal h
 #await h_hang
-attribute Dev neoforge:creative_flight get
+data get entity Dev abilities.mayfly
 data get entity Dev Pos
 #signal h_ok
 #await h_down
-attribute Dev neoforge:creative_flight get
+data get entity Dev abilities.mayfly
 curios replace back 0 Dev with minecraft:elytra
 curios list Dev
 tp Dev 3037.5 -30 0.5 -90 0
 #signal e
 #await e_catch
 data get entity Dev FallFlying
-attribute Dev neoforge:creative_flight get
+data get entity Dev abilities.mayfly
 #signal e_ok
 #await e_up
 data get entity Dev FallFlying
@@ -74,10 +74,10 @@ gamemode creative Dev
 #signal i
 #await i_done
 gamemode survival Dev
-data get entity @n[type=!player] Pos
+data get entity @e[type=!player,sort=nearest,limit=1] Pos
 sable info @n
 tp Dev 3197.5 -60 0.5 -90 0
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 1
 data get entity Dev Inventory
 data get entity Dev SelectedItem
@@ -86,24 +86,24 @@ data get entity Dev SelectedItem
 tp Dev 3202.5 -57 0.5 -90 0
 item replace entity Dev armor.chest with air
 #sleep 0.3
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 1
 #signal s_deck
 #await s_deck_ok
-attribute Dev neoforge:creative_flight get
+data get entity Dev abilities.mayfly
 execute positioned 3202.5 -58.5 0.5 run sable physics translation @n add 0 1.5 0
 #sleep 0.5
 execute positioned 3202.5 -57 0.5 run sable physics impulse @n linear 0 0 600
 #sleep 0.5
 #signal s_moved
 #await s_moved_ok
-attribute Dev neoforge:creative_flight get
+data get entity Dev abilities.mayfly
 data get entity Dev Pos
 #signal s_done
 tp Dev 3211.5 -60 0.5 -90 0
 item replace entity Dev armor.chest with air
 #sleep 0.3
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 1
 #signal w
 #await s_wall

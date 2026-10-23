@@ -5,7 +5,7 @@ gamerule doImmediateRespawn true
 time set noon
 forceload add 3490 -20 3540 20
 # G goggles: Copper Rig Block (Far Reach II, Swift I) filling under a 128 RPM motor; Netherite Rig Block without a shaft
-setblock 3502 -60 0 tentaworks:copper_tentacle_rig[facing=north,arms=true]{Air:100,Components:{"minecraft:enchantments":{levels:{"tentaworks:far_reach":2,"tentaworks:swift":1}}}}
+setblock 3502 -60 0 tentaworks:copper_tentacle_rig[facing=north,arms=true]{Air:100,VanillaTag:{Enchantments:[{id:"tentaworks:far_reach",lvl:2s},{id:"tentaworks:swift",lvl:1s}]}}
 setblock 3502 -59 0 create:creative_motor[facing=down]{ScrollValue:128}
 setblock 3505 -60 0 tentaworks:netherite_tentacle_rig[facing=north,arms=true]{Air:300}
 # D Display Link: Copper Rig Block (empty) under a 128 RPM motor, link on its east side, two display boards above the link driven by a cogwheel

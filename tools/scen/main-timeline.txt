@@ -4,7 +4,7 @@ gamemode survival Dev
 tp Dev2 -3.5 -60 6.5
 # S1
 tp Dev 0.5 -60 0.5 -90 0
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 1
 #signal s1
 #await s1done
@@ -15,12 +15,12 @@ item replace entity Dev armor.chest with air
 tp Dev 37.5 -60 0.5 -90 0
 tp Dev2 33.5 -60 7.5
 #sleep 0.5
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 1
 #signal s2
 #await s2idle
 data get entity Dev Pos
-attribute Dev neoforge:creative_flight get
+data get entity Dev abilities.mayfly
 execute as Dev2 at @s run tp @s ~ ~ ~ facing entity Dev eyes
 #sleep 1
 #signal shot2
@@ -34,13 +34,13 @@ item replace entity Dev armor.chest with air
 tp Dev 82.5 -60 0.5 90 0
 tp Dev2 87.5 -60 9.5
 #sleep 0.5
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 1
 #signal s3
 #await s3idle
 data get entity Dev Pos
 data get entity Dev abilities.flying
-attribute Dev neoforge:creative_flight get
+data get entity Dev abilities.mayfly
 execute as Dev2 at @s run tp @s ~ ~ ~ facing entity Dev eyes
 #sleep 1
 #signal shot3
@@ -56,7 +56,7 @@ item replace entity Dev armor.chest with air
 #sleep 0.5
 tp Dev 136.5 -50 0.5 -90 0
 #sleep 0.5
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 1
 #signal s4
 #await s4done
@@ -66,7 +66,7 @@ item replace entity Dev armor.chest with air
 #sleep 0.5
 tp Dev 165.5 -50 0.5 -90 0
 #sleep 0.5
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 1
 #signal s5
 #await s5done
@@ -76,7 +76,7 @@ item replace entity Dev armor.chest with air
 #sleep 0.5
 tp Dev 222.5 -60 0.5 90 0
 #sleep 0.5
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 1
 #signal s6
 #await s6hang
@@ -87,20 +87,20 @@ fill 224 -40 -5 235 -40 5 air
 #await s6done
 data get entity Dev Pos
 data get entity Dev Health
-attribute Dev neoforge:creative_flight get
+data get entity Dev abilities.mayfly
 # S7
 item replace entity Dev armor.chest with air
 #sleep 0.5
 tp Dev 260.5 -60 0.5 -90 0
 #sleep 0.5
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 1
 #signal s7
 #await s7top
 data get entity Dev Pos
 #sleep 2.5
 data get entity Dev Pos
-attribute Dev neoforge:creative_flight get
+data get entity Dev abilities.mayfly
 #await s7done
 data get entity Dev Pos
 # S8
@@ -108,28 +108,28 @@ item replace entity Dev armor.chest with air
 #sleep 0.5
 tp Dev 280.5 -60 0.5 -90 0
 #sleep 0.5
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 1
 #signal s8
 #await s8on
 data get entity Dev abilities.flying
-attribute Dev neoforge:creative_flight get
+data get entity Dev abilities.mayfly
 #signal s8checked
 #await s8off
 data get entity Dev abilities.flying
-attribute Dev neoforge:creative_flight get
+data get entity Dev abilities.mayfly
 data get entity Dev Pos
 # W
 item replace entity Dev armor.chest with air
 #sleep 0.5
 tp Dev 302.5 -60 0.5 -90 0
 #sleep 0.5
-item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig{Air:900}
 #sleep 1
 #signal sw
 #await swidle
 data get entity Dev Pos
-attribute Dev neoforge:creative_flight get
+data get entity Dev abilities.mayfly
 #sleep 2
 data get entity Dev Pos
 #await swdone

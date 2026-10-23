@@ -23,7 +23,7 @@ fill 6020 -62 10 6100 -61 12 minecraft:water
 summon minecraft:boat 6022.5 -60.5 11.5 {Tags:["b1"],Rotation:[-90f,0f]}
 fill 6018 -60 23 6102 -55 23 minecraft:stone
 kill @e[type=!minecraft:player,type=!minecraft:boat]
-summon minecraft:horse 6022.5 -60 21.5 {Tags:["h1"],Tame:1b,PersistenceRequired:1b,SaddleItem:{id:"minecraft:saddle",count:1},Rotation:[-90f,0f],attributes:[{id:"minecraft:generic.movement_speed",base:0.3d},{id:"minecraft:generic.jump_strength",base:0.9d}]}
+summon minecraft:horse 6022.5 -60 21.5 {Tags:["h1"],Tame:1b,PersistenceRequired:1b,SaddleItem:{id:"minecraft:saddle",Count:1b},Rotation:[-90f,0f],Attributes:[{Name:"minecraft:generic.movement_speed",Base:0.3d},{Name:"minecraft:horse.jump_strength",Base:0.9d}]}
 fill 6018 -60 31 6072 -55 31 minecraft:stone
 fill 6020 -60 30 6070 -60 30 minecraft:rail
 summon minecraft:minecart 6022.5 -60 30.5 {Tags:["m1"]}
