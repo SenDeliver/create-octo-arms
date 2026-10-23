@@ -53,7 +53,6 @@ legacyForge {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
             project.properties.each { k, v -> if (k.startsWith('tentaworks.')) systemProperty k, v.toString() }
             logLevel = org.slf4j.event.Level.INFO
-            if (name != 'clientProd') programArgument "-mixin.config=${mod_id}.mixins.json"
         }
         client {
             client()
