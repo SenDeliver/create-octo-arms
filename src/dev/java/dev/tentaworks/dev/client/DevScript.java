@@ -137,8 +137,6 @@ public final class DevScript {
     private static String lastSubtitle;
     private static boolean toastsCleared;
     private static String forge;
-    private static final boolean SABLE = ModList.get() != null && ModList.get().isLoaded("sable");
-    private static List<String> shipPoses;
     private static final boolean SIMULATED = ModList.get() != null && ModList.get().isLoaded("simulated");
     private static Field holdActive;
     private static final String CONNECT = System.getProperty("tentaworks.connect");
@@ -159,7 +157,6 @@ public final class DevScript {
     /** Forged client (phase 8): "zero" sends a second motion packet per tick claiming no motion; the server keeps the latest. */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     static void onInputLast(MovementInputUpdateEvent event) {
-        if (trace && SABLE && event.getEntity() instanceof LocalPlayer p) shipPoses = DevShipsClient.poses((ClientLevel) p.level());
         if (forge == null || !(event.getEntity() instanceof LocalPlayer) || RigClient.state() == RigState.STOWED) return;
         if (forge.equals("zero")) PacketDistributor.sendToServer(new RigMotionPacket(RigClient.state(), Vec3.ZERO, RigClient.gait().wire()));
     }
@@ -710,10 +707,6 @@ public final class DevScript {
                     v == null ? "-" : v.state(), String.format(Locale.ROOT, "%.4f", other.walkAnimation.speed()),
                     other.isShiftKeyDown(), other.isCrouching(), other.getPose());
         }
-        if (!SABLE) return;
-        List<String> poses = shipPoses != null ? shipPoses : DevShipsClient.poses(mc.level);
-        shipPoses = null;
-        for (String pose : poses) LOG.info("CSHIP gt={} {}", mc.level.getGameTime(), pose);
     }
 
     /** Simulated's active hold interaction (steering wheel, handle, throttle lever...) by class name, or "-"; reflection: Simulated is runtime only. */

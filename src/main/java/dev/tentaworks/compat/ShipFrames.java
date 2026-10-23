@@ -1,18 +1,16 @@
 package dev.tentaworks.compat;
 
-import dev.tentaworks.compat.sable.SableShips;
 import dev.tentaworks.config.TentaworksConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.fml.ModList;
 
 import java.util.List;
 
 /**
- * The only door to Sable Ships. {@link NoShips} without Sable; the Sable implementation is loaded only when Sable is.
+ * The only door to Sable Ships. {@link NoShips} on this branch: Sable is 1.21-only.
  * With the server config {@code ships.grip} off, no Ship is near and no plot block has a Ship.
  */
 public interface ShipFrames {
@@ -58,13 +56,9 @@ public interface ShipFrames {
     }
 
     final class Holder {
-        private static final ShipFrames INSTANCE = ModList.get() != null && ModList.get().isLoaded("sable") ? sable() : NoShips.INSTANCE;
+        private static final ShipFrames INSTANCE = NoShips.INSTANCE;
 
         private Holder() {
-        }
-
-        private static ShipFrames sable() {
-            return SableShips.create();
         }
     }
 }

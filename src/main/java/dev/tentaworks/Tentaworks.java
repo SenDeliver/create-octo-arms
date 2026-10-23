@@ -12,7 +12,6 @@ import dev.tentaworks.data.TentaworksDatagen;
 import dev.tentaworks.network.TentaworksNetwork;
 import dev.tentaworks.registry.TentaworksBlocks;
 import dev.tentaworks.registry.TentaworksCreativeTabs;
-import dev.tentaworks.registry.TentaworksDataComponents;
 import dev.tentaworks.registry.TentaworksDisplaySources;
 import dev.tentaworks.registry.TentaworksItems;
 import dev.tentaworks.registry.TentaworksLang;
@@ -35,7 +34,6 @@ public class Tentaworks {
         REGISTRATE.registerEventListeners(modBus);
         REGISTRATE.setTooltipModifierFactory(item -> new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
                 .andThen(TooltipModifier.mapNull(KineticStats.create(item))));
-        TentaworksDataComponents.register(modBus);
         TentaworksDisplaySources.init();
         TentaworksBlocks.init();
         TentaworksItems.init();
