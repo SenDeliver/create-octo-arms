@@ -16,11 +16,11 @@ fill 4640 -53 -1 4642 -53 1 stone
 # U4 nixie tube, progress-bar mode: Rig Block with Air 450 (no shaft), link east of it, nixie above the link
 setblock 4610 -60 0 tentaworks:copper_tentacle_rig[facing=north,arms=true]{Air:450}
 setblock 4611 -59 0 create:nixie_tube[facing=north]
-setblock 4611 -60 0 create:display_link[facing=east]{TargetOffset:[I;0,1,0],TargetLine:0,Source:{Id:"tentaworks:rig_air",Mode:2}}
+setblock 4611 -60 0 create:display_link[facing=east]{TargetOffset:{X:0,Y:1,Z:0},TargetLine:0,Source:{Id:"tentaworks:rig_air",Mode:2}}
 # U5 Display Link with no source yet (picked in its GUI), nixie above
 setblock 4620 -60 0 tentaworks:copper_tentacle_rig[facing=north,arms=true]{Air:300}
 setblock 4621 -59 0 create:nixie_tube[facing=north]
-setblock 4621 -60 0 create:display_link[facing=east]{TargetOffset:[I;0,1,0],TargetLine:0}
+setblock 4621 -60 0 create:display_link[facing=east]{TargetOffset:{X:0,Y:1,Z:0},TargetLine:0}
 # U6 water pool: stone walls 4720..4728, water inside up to y=-52
 fill 4720 -60 -4 4728 -52 4 stone
 fill 4721 -60 -3 4727 -52 3 water
