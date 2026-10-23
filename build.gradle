@@ -166,6 +166,17 @@ dependencies {
 tasks.named('test', Test) {
     useJUnitPlatform()
     testLogging.exceptionFormat = 'full'
+    doFirst {
+        classpath.files.each { f ->
+            if (f.name.endsWith('.jar')) {
+                def z = new java.util.zip.ZipFile(f)
+                def signed = z.entries().toList().any { it.name.startsWith('META-INF/') && it.name.endsWith('.SF') }
+                def forge = z.getEntry('net/minecraftforge/common/extensions/IForgeBlockGetter.class') != null
+                z.close()
+                if (signed || forge) println "TESTCP ${f} signed=${signed} forge=${forge}"
+            }
+        }
+    }
     fmlTestClasses.each { exclude it.replace('.', '/') + '.class' }
     dependsOn 'fmlTest'
 }
