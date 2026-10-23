@@ -165,6 +165,7 @@ dependencies {
 
 tasks.named('test', Test) {
     useJUnitPlatform()
+    testLogging.exceptionFormat = 'full'
     fmlTestClasses.each { exclude it.replace('.', '/') + '.class' }
     dependsOn 'fmlTest'
 }
