@@ -22,8 +22,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * The Rig enchantments match the 1.21.1 data files (data/tentaworks/enchantment/*.json and the enchantment tags): Rig items
- * only, same levels, costs, weights and anvil costs, in the enchanting table, not treasure, not traded by villagers (1.21.1
- * has them in no {@code tradeable} tag). Create's Capacity still applies to a Rig. Runs in the dev server (fmlTest).
+ * only, same levels, costs, weights and anvil costs, in the enchanting table, not treasure, traded by villagers and on random
+ * loot (1.21.1 vanilla {@code tradeable} and {@code on_random_loot} include {@code #non_treasure}). Create's Capacity still
+ * applies to a Rig. Runs in the dev server (fmlTest).
  */
 class RigEnchantsTest {
     private static Enchantment[] ours() {
@@ -112,7 +113,7 @@ class RigEnchantsTest {
         for (Enchantment e : ours()) {
             assertFalse(e.isTreasureOnly(), e + " treasure");
             assertFalse(e.isCurse(), e + " curse");
-            assertFalse(e.isTradeable(), e + " tradeable");
+            assertTrue(e.isTradeable(), e + " tradeable");
             assertTrue(e.isDiscoverable(), e + " discoverable");
             assertTrue(e.isAllowedOnBooks(), e + " on books");
         }

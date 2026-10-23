@@ -89,12 +89,6 @@ public final class RigEnchants {
         public int getMaxCost(int level) {
             return maxBase + perLevel * (level - 1);
         }
-
-        /** 1.21.1 lists them in no {@code tradeable} tag: librarians never sell them. */
-        @Override
-        public boolean isTradeable() {
-            return false;
-        }
     }
 
     public static class FarReach extends RigEnchantment {
