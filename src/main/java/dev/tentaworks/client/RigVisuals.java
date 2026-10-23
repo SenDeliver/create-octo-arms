@@ -320,8 +320,12 @@ public final class RigVisuals {
     /** {@code frame} null: the world (points pass through). */
     /** Guard against a Ship pose this client does not have yet: a point there sits at raw plot coords, far from the player. */
     static boolean plausible(Player player, Vec3 world) {
+        return plausible(player.position(), world);
+    }
+
+    static boolean plausible(Vec3 wearer, Vec3 world) {
         if (!Double.isFinite(world.x) || !Double.isFinite(world.y) || !Double.isFinite(world.z)) return false;
-        return world.distanceToSqr(player.position()) <= MAX_GRIP_DISTANCE * MAX_GRIP_DISTANCE;
+        return world.distanceToSqr(wearer) <= MAX_GRIP_DISTANCE * MAX_GRIP_DISTANCE;
     }
 
     static Vec3 toWorld(Frame frame, Vec3 p, float pt) {
