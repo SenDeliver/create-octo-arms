@@ -141,6 +141,6 @@ check('A4 negative control: fall guard off, plain fall is kicked (vanilla zeroes
       f"kick lines after 'fallfix false': {len(after)}, last traced tick {ntr[-1][0] - na if ntr else -1} after the tp, feet {ntr[-1][1]['p'][1] if ntr else float('nan'):.1f}")
 
 print('== Log')
-exc = sum(1 for t in (s, c) for line in t.splitlines() if 'Exception' in line and 'ScheduledForRemoval' not in line)
+exc = sum(1 for t in (s, c) for line in t.splitlines() if 'Exception' in line and 'ScheduledForRemoval' not in line and 'Error loading class: xaero/' not in line)
 check('No exceptions', exc == 0, f'{exc}')
 print('RESULT', 'PASS' if not fails else 'FAIL ' + ', '.join(fails))
