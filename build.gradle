@@ -177,6 +177,9 @@ var unsignedForgeJar = tasks.register('unsignedForgeJar', Zip) {
 tasks.named('test', Test) {
     useJUnitPlatform()
     testLogging.exceptionFormat = 'full'
+    def testRunDir = layout.buildDirectory.dir('test-run').get().asFile
+    workingDir = testRunDir
+    doFirst { testRunDir.mkdirs() }
     classpath = files(unsignedForgeJar) + classpath.filter { !(it.name == forgeJarName && it.parentFile.name == 'artifacts') }
     fmlTestClasses.each { exclude it.replace('.', '/') + '.class' }
     dependsOn 'fmlTest'
