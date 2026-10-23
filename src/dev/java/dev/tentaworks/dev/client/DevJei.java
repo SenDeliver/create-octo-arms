@@ -9,7 +9,7 @@ import mezz.jei.api.recipe.category.IRecipeCategory;
 import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.Recipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +42,7 @@ final class DevJei {
     private static <T> void show(IJeiRuntime rt, RecipeType<T> type, IFocus<ItemStack> focus) {
         IRecipeCategory<T> cat = rt.getRecipeManager().getRecipeCategory(type);
         List<T> all = rt.getRecipeManager().createRecipeLookup(type).limitFocus(List.of(focus)).get().toList();
-        List<T> ours = all.stream().filter(r -> r instanceof RecipeHolder<?> h && h.id().getNamespace().equals(TentaworksIds.MOD_ID)).toList();
+        List<T> ours = all.stream().filter(r -> r instanceof Recipe<?> h && h.getId().getNamespace().equals(TentaworksIds.MOD_ID)).toList();
         List<T> recipes = ours.isEmpty() ? all : ours;
         if (!ours.isEmpty()) LOG.info("JEI {} showing {} of {} (ours only)", type.getUid(), ours.size(), all.size());
         LOG.info("JEI {} {} {} -> {} recipes", type.getUid(), focus.getRole(), focus.getTypedValue().getIngredient(), recipes.size());

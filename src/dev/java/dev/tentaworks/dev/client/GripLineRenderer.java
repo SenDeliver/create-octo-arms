@@ -31,11 +31,11 @@ public final class GripLineRenderer {
     }
 
     @SubscribeEvent
-    static void onRender(RenderLevelStageEvent event) {
+    public static void onRender(RenderLevelStageEvent event) {
         if (!on || event.getStage() != RenderLevelStageEvent.Stage.AFTER_ENTITIES) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
-        float partial = event.getPartialTick().getGameTimeDeltaPartialTick(false);
+        float partial = event.getPartialTick();
         Vec3 cam = event.getCamera().getPosition();
         PoseStack pose = event.getPoseStack();
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
@@ -53,8 +53,8 @@ public final class GripLineRenderer {
                 Vec3 d = g.subtract(body).normalize();
                 for (int i = 0; i < 3; i++) {
                     double o = (i - 1) * 0.03;
-                    lines.addVertex(last, (float) (body.x + o), (float) body.y, (float) (body.z + o)).setColor(1.0F, 0.35F, 0.1F, 1.0F).setNormal(last, (float) d.x, (float) d.y, (float) d.z);
-                    lines.addVertex(last, (float) (g.x + o), (float) g.y, (float) (g.z + o)).setColor(1.0F, 0.35F, 0.1F, 1.0F).setNormal(last, (float) d.x, (float) d.y, (float) d.z);
+                    lines.vertex(last.pose(), (float) (body.x + o), (float) body.y, (float) (body.z + o)).color(1.0F, 0.35F, 0.1F, 1.0F).normal(last.normal(), (float) d.x, (float) d.y, (float) d.z).endVertex();
+                    lines.vertex(last.pose(), (float) (g.x + o), (float) g.y, (float) (g.z + o)).color(1.0F, 0.35F, 0.1F, 1.0F).normal(last.normal(), (float) d.x, (float) d.y, (float) d.z).endVertex();
                 }
                 LevelRenderer.renderLineBox(pose, lines, new AABB(g, g).inflate(0.12), 0.1F, 1.0F, 0.3F, 1.0F);
             }

@@ -5,7 +5,6 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.simibubi.create.AllBlocks;
-import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.content.equipment.armor.BacktankUtil;
@@ -16,38 +15,37 @@ import com.simibubi.create.content.kinetics.belt.item.BeltConnectorItem;
 import com.simibubi.create.content.kinetics.belt.transport.TransportedItemStack;
 import com.simibubi.create.content.kinetics.crafter.MechanicalCrafterBlock;
 import com.simibubi.create.content.kinetics.crafter.MechanicalCrafterBlockEntity;
-import com.simibubi.create.content.kinetics.crafter.MechanicalCraftingInput;
+import com.simibubi.create.content.kinetics.crafter.MechanicalCraftingInventory;
 import com.simibubi.create.content.kinetics.crafter.RecipeGridHandler;
 import com.simibubi.create.content.processing.sequenced.SequencedAssemblyRecipe;
 import dev.tentaworks.TentaworksIds;
-import dev.tentaworks.registry.TentaworksDataComponents;
 import dev.tentaworks.registry.TentaworksItems;
+import dev.tentaworks.rig.RigSettings;
 import net.createmod.catnip.math.Pointing;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.SmithingRecipeInput;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.IItemHandler;
@@ -99,9 +97,9 @@ final class DevRecipes {
 
     static String comps(ItemStack s) {
         return String.format(Locale.ROOT, "item=%s count=%d air=%s damage=%d/%d ench=%s settings=%s name=%s", id(s), s.getCount(),
-                s.has(AllDataComponents.BACKTANK_AIR) ? String.valueOf(BacktankUtil.getAir(s)) : "none", s.getDamageValue(), s.getMaxDamage(),
-                s.getTagEnchantments().size(), s.get(TentaworksDataComponents.RIG_SETTINGS.get()),
-                s.has(DataComponents.CUSTOM_NAME) ? s.getHoverName().getString() : "none");
+                s.hasTag() && s.getTag().contains("Air", Tag.TAG_ANY_NUMERIC) ? String.valueOf((int) BacktankUtil.getAir(s)) : "none", s.getDamageValue(), s.getMaxDamage(),
+                s.getEnchantmentTags().size(), RigSettings.stored(s),
+                s.hasCustomHoverName() ? s.getHoverName().getString() : "none");
     }
 
     /** Create's own crafter path ({@link RecipeGridHandler#tryToApplyRecipe}); rows top to bottom, the backtank holds 700 Air. */
@@ -120,14 +118,14 @@ final class DevRecipes {
             for (int c = 0; c < 3; c++) {
                 if (rows[r][c] == null) continue;
                 ItemStack s = new ItemStack(rows[r][c]);
-                if (s.getItem() instanceof com.simibubi.create.content.equipment.armor.BacktankItem) s.set(AllDataComponents.BACKTANK_AIR, 700);
+                if (s.getItem() instanceof com.simibubi.create.content.equipment.armor.BacktankItem) s.getOrCreateTag().putFloat("Air", 700);
                 grid.put(org.apache.commons.lang3.tuple.Pair.of(c, rows.length - 1 - r), s);
             }
         items.calcStats();
-        MechanicalCraftingInput input = MechanicalCraftingInput.of(items);
+        MechanicalCraftingInventory input = new MechanicalCraftingInventory(items);
         String found = "none";
-        for (RecipeHolder<?> h : level.getRecipeManager().getRecipes())
-            if (h.value().getType() == AllRecipeTypes.MECHANICAL_CRAFTING.getType() && ((Recipe<CraftingInput>) h.value()).matches(input, level)) found = h.id().toString();
+        for (Recipe<?> h : level.getRecipeManager().getRecipes())
+            if (h.getType() == AllRecipeTypes.MECHANICAL_CRAFTING.getType() && ((Recipe<CraftingContainer>) h).matches(input, level)) found = h.getId().toString();
         ItemStack result = RecipeGridHandler.tryToApplyRecipe(level, items);
         if (result == null) result = ItemStack.EMPTY;
         boolean ok = expected == Items.AIR ? result.isEmpty() : result.is(expected.asItem()) && BacktankUtil.getAir(result) == 0;
@@ -143,36 +141,36 @@ final class DevRecipes {
         craft(level, "copper_rig_flipped_none", new ItemLike[][]{{t, c, t}, {b, AllItems.COPPER_BACKTANK.get(), b}, {t, p, t}}, Items.AIR);
         craft(level, "rig_missing_tentacle_none", new ItemLike[][]{{t, p, null}, {b, AllItems.COPPER_BACKTANK.get(), b}, {t, c, t}}, Items.AIR);
 
-        Optional<RecipeHolder<?>> seq = rm.byKey(TentaworksIds.id("sequenced_assembly/" + TentaworksIds.TENTACLE));
-        if (seq.isPresent() && seq.get().value() instanceof SequencedAssemblyRecipe sa) {
+        Optional<? extends Recipe<?>> seq = rm.byKey(TentaworksIds.id("sequenced_assembly/" + TentaworksIds.TENTACLE));
+        if (seq.isPresent() && seq.get() instanceof SequencedAssemblyRecipe sa) {
             ItemStack out = sa.getResultItem(level.registryAccess());
             List<String> steps = sa.getSequence().stream().map(s -> BuiltInRegistries.RECIPE_TYPE.getKey(s.getRecipe().getType()).toString()).toList();
             boolean ok = out.is(TentaworksItems.TENTACLE.get()) && sa.getLoops() == 2 && steps.size() == 3
                     && sa.getIngredient().test(new ItemStack(AllBlocks.PISTON_EXTENSION_POLE.get()))
                     && sa.getTransitionalItem().is(TentaworksItems.INCOMPLETE_TENTACLE.get());
-            LOG.info("RECIPE {} tentacle_sequence id={} loops={} steps={} transitional={} result={}", ok ? "PASS" : "FAIL", seq.get().id(),
+            LOG.info("RECIPE {} tentacle_sequence id={} loops={} steps={} transitional={} result={}", ok ? "PASS" : "FAIL", sa.getId(),
                     sa.getLoops(), steps, id(sa.getTransitionalItem()), id(out));
         } else {
             LOG.info("RECIPE FAIL tentacle_sequence missing");
         }
 
         ItemStack base = new ItemStack(TentaworksItems.COPPER_TENTACLE_RIG.get());
-        base.set(AllDataComponents.BACKTANK_AIR, 444);
-        base.set(DataComponents.CUSTOM_NAME, Component.literal("Smith"));
+        base.getOrCreateTag().putFloat("Air", 444);
+        base.setHoverName(Component.literal("Smith"));
         base.setDamageValue(30);
-        SmithingRecipeInput in = new SmithingRecipeInput(new ItemStack(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE), base, new ItemStack(Items.NETHERITE_INGOT));
+        SimpleContainer in = new SimpleContainer(new ItemStack(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE), base, new ItemStack(Items.NETHERITE_INGOT));
         var smith = rm.getRecipeFor(RecipeType.SMITHING, in, level);
-        ItemStack sr = smith.map(h -> h.value().assemble(in, level.registryAccess())).orElse(ItemStack.EMPTY);
+        ItemStack sr = smith.map(h -> h.assemble(in, level.registryAccess())).orElse(ItemStack.EMPTY);
         boolean sok = sr.is(TentaworksItems.NETHERITE_TENTACLE_RIG.get()) && BacktankUtil.getAir(sr) == 444 && sr.getDamageValue() == 30;
-        LOG.info("RECIPE {} smithing id={} result: {}", sok ? "PASS" : "FAIL", smith.map(h -> h.id().toString()).orElse("none"), comps(sr));
-        SmithingRecipeInput bad = new SmithingRecipeInput(new ItemStack(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE), new ItemStack(TentaworksItems.NETHERITE_TENTACLE_RIG.get()), new ItemStack(Items.NETHERITE_INGOT));
+        LOG.info("RECIPE {} smithing id={} result: {}", sok ? "PASS" : "FAIL", smith.map(h -> h.getId().toString()).orElse("none"), comps(sr));
+        SimpleContainer bad = new SimpleContainer(new ItemStack(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE), new ItemStack(TentaworksItems.NETHERITE_TENTACLE_RIG.get()), new ItemStack(Items.NETHERITE_INGOT));
         LOG.info("RECIPE {} smithing_netherite_base_none matched={}", rm.getRecipeFor(RecipeType.SMITHING, bad, level).isEmpty() ? "PASS" : "FAIL",
-                rm.getRecipeFor(RecipeType.SMITHING, bad, level).map(h -> h.id().toString()).orElse("none"));
+                rm.getRecipeFor(RecipeType.SMITHING, bad, level).map(h -> h.getId().toString()).orElse("none"));
 
-        List<String> ours = rm.getRecipes().stream().filter(h -> h.id().getNamespace().equals(TentaworksIds.MOD_ID)).map(h -> h.id().toString()).sorted().toList();
+        List<String> ours = rm.getRecipes().stream().filter(h -> h.getId().getNamespace().equals(TentaworksIds.MOD_ID)).map(h -> h.getId().toString()).sorted().toList();
         LOG.info("RECIPE count tentaworks={} {}", ours.size(), ours);
-        var adv = level.getServer().getAdvancements().get(TentaworksIds.id("doc_rig"));
-        LOG.info("RECIPE advancement doc_rig present={} parent={}", adv != null, adv == null ? "none" : adv.value().parent().map(Object::toString).orElse("none"));
+        var adv = level.getServer().getAdvancements().getAdvancement(TentaworksIds.id("doc_rig"));
+        LOG.info("RECIPE advancement doc_rig present={} parent={}", adv != null, adv == null || adv.getParent() == null ? "none" : adv.getParent().getId().toString());
         return reply(ctx.getSource(), "recipes");
     }
 
@@ -203,9 +201,9 @@ final class DevRecipes {
             level.setBlock(m, AllBlocks.CREATIVE_MOTOR.getDefaultState().setValue(BlockStateProperties.FACING, dir.getOpposite()), 3);
             BlockEntity be = level.getBlockEntity(m);
             if (be != null) {
-                CompoundTag t = be.saveWithoutMetadata(level.registryAccess());
+                CompoundTag t = be.saveWithoutMetadata();
                 t.putInt("ScrollValue", rpm);
-                be.loadWithComponents(t, level.registryAccess());
+                be.load(t);
                 be.setChanged();
             }
             return;
@@ -216,22 +214,22 @@ final class DevRecipes {
     private static void hold(ServerLevel level, BlockPos deployer, ItemStack stack) {
         BlockEntity be = level.getBlockEntity(deployer);
         if (be == null) return;
-        CompoundTag t = be.saveWithoutMetadata(level.registryAccess());
-        CompoundTag held = (CompoundTag) stack.save(level.registryAccess());
+        CompoundTag t = be.saveWithoutMetadata();
+        CompoundTag held = stack.save(new CompoundTag());
         held.putByte("Slot", (byte) 0);
         ListTag inv = new ListTag();
         inv.add(held);
         t.put("Inventory", inv);
-        be.loadWithComponents(t, level.registryAccess());
+        be.load(t);
         be.setChanged();
     }
 
     private static int heldCount(ServerLevel level, BlockPos deployer) {
         BlockEntity be = level.getBlockEntity(deployer);
         if (be == null) return -1;
-        ListTag inv = be.saveWithoutMetadata(level.registryAccess()).getList("Inventory", 10);
+        ListTag inv = be.saveWithoutMetadata().getList("Inventory", 10);
         for (int i = 0; i < inv.size(); i++)
-            if (inv.getCompound(i).getByte("Slot") == 0) return ItemStack.parseOptional(level.registryAccess(), inv.getCompound(i)).getCount();
+            if (inv.getCompound(i).getByte("Slot") == 0) return ItemStack.of(inv.getCompound(i)).getCount();
         return 0;
     }
 
@@ -270,7 +268,7 @@ final class DevRecipes {
         ServerLevel level = ctx.getSource().getLevel();
         BlockPos o = BlockPosArgument.getLoadedBlockPos(ctx, "at");
         List<String> found = new ArrayList<>();
-        IItemHandler depot = level.getCapability(Capabilities.ItemHandler.BLOCK, o.east(BELT), Direction.UP);
+        IItemHandler depot = itemHandler(level, o.east(BELT), Direction.UP);
         if (depot != null) for (int i = 0; i < depot.getSlots(); i++) {
             ItemStack s = depot.getStackInSlot(i);
             if (!s.isEmpty()) found.add("depot:" + id(s) + "x" + s.getCount() + progress(s));
@@ -288,8 +286,14 @@ final class DevRecipes {
     }
 
     private static String progress(ItemStack s) {
-        var sa = s.get(AllDataComponents.SEQUENCED_ASSEMBLY);
-        return sa == null ? "" : String.format(Locale.ROOT, "(step=%d,progress=%.2f)", sa.step(), sa.progress());
+        if (!s.hasTag() || !s.getTag().contains("SequencedAssembly", Tag.TAG_COMPOUND)) return "";
+        CompoundTag sa = s.getTag().getCompound("SequencedAssembly");
+        return String.format(Locale.ROOT, "(step=%d,progress=%.2f)", sa.getInt("Step"), sa.getFloat("Progress"));
+    }
+
+    private static IItemHandler itemHandler(ServerLevel level, BlockPos pos, Direction side) {
+        BlockEntity be = level.getBlockEntity(pos);
+        return be == null ? null : be.getCapability(ForgeCapabilities.ITEM_HANDLER, side).orElse(null);
     }
 
     private static BlockState crafter(Direction pointTo) {
@@ -321,7 +325,7 @@ final class DevRecipes {
         level.setBlock(cog, AllBlocks.COGWHEEL.getDefaultState().setValue(BlockStateProperties.AXIS, Direction.Axis.Z), 3);
         power(level, cog, 128);
         ItemStack tank = new ItemStack(netherite ? AllItems.NETHERITE_BACKTANK.get() : AllItems.COPPER_BACKTANK.get());
-        tank.set(AllDataComponents.BACKTANK_AIR, air);
+        tank.getOrCreateTag().putFloat("Air", air);
         ItemStack[][] rows = {
                 {new ItemStack(TentaworksItems.TENTACLE.get()), new ItemStack(AllItems.COPPER_SHEET.get()), new ItemStack(TentaworksItems.TENTACLE.get())},
                 {new ItemStack(AllBlocks.BRASS_CASING.get()), tank, new ItemStack(AllBlocks.BRASS_CASING.get())},
@@ -356,7 +360,7 @@ final class DevRecipes {
         List<String> left = new ArrayList<>();
         for (int y = 0; y < 3; y++)
             for (int x = 0; x < 3; x++) {
-                IItemHandler h = p.level.getCapability(Capabilities.ItemHandler.BLOCK, p.o.offset(x, y, 0), Direction.SOUTH);
+                IItemHandler h = itemHandler(p.level, p.o.offset(x, y, 0), Direction.SOUTH);
                 ItemStack rest = h == null ? p.rows[y][x] : h.insertItem(0, p.rows[y][x].copy(), false);
                 if (!rest.isEmpty()) left.add(x + "," + y + ":" + id(rest));
             }
@@ -367,7 +371,7 @@ final class DevRecipes {
         ServerLevel level = ctx.getSource().getLevel();
         BlockPos o = BlockPosArgument.getLoadedBlockPos(ctx, "at");
         List<String> out = new ArrayList<>();
-        IItemHandler chest = level.getCapability(Capabilities.ItemHandler.BLOCK, o.offset(1, -1, 0), Direction.UP);
+        IItemHandler chest = itemHandler(level, o.offset(1, -1, 0), Direction.UP);
         if (chest != null) for (int i = 0; i < chest.getSlots(); i++) {
             ItemStack s = chest.getStackInSlot(i);
             if (!s.isEmpty()) out.add("chest " + comps(s));

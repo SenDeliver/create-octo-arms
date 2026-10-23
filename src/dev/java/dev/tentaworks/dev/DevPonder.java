@@ -76,7 +76,7 @@ final class DevPonder {
         try {
             Path out = Path.of(dir == null ? "ponder-export" : dir).resolve(name + ".nbt");
             Files.createDirectories(out.getParent());
-            NbtIo.writeCompressed(tag, out);
+            NbtIo.writeCompressed(tag, out.toFile());
             LOG.info("SCHEMATIC {} -> {}", name, out.toAbsolutePath());
         } catch (Exception e) {
             LOG.error("SCHEMATIC {} failed", name, e);

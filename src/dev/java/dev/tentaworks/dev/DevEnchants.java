@@ -1,25 +1,21 @@
 package dev.tentaworks.dev;
 
 import com.simibubi.create.content.equipment.armor.BacktankUtil;
-import dev.tentaworks.registry.TentaworksDataComponents;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import dev.tentaworks.rig.RigSettings;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
-import net.minecraft.core.IdMap;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.EnchantmentMenu;
+import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
-import net.minecraft.world.item.enchantment.ItemEnchantments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +27,7 @@ import java.util.TreeMap;
 
 /**
  * Dev only. Enchanting table offers for the item in the main hand, computed by vanilla's own EnchantmentMenu
- * (a throwaway menu at a real table, so bookshelves and NeoForge events count) for many player enchantment seeds.
+ * (a throwaway menu at a real table, so bookshelves and Forge events count) for many player enchantment seeds.
  * ENCHAVAIL: every enchantment the table can pick at any power 1..50 (deterministic). ENCHSTAT: clue counts per slot.
  * ENCHSEED: a seed whose third offer shows the wanted enchantment, set on the player so the real table shows it.
  */
@@ -43,14 +39,22 @@ final class DevEnchants {
     }
 
     static String describe(ItemStack st) {
-        return String.format("item=%s ench=%s stored=%s damage=%d/%d air=%d settings=%s", st.getItemHolder().getRegisteredName(),
-                list(st.getTagEnchantments()), list(st.getOrDefault(net.minecraft.core.component.DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY)),
-                st.getDamageValue(), st.getMaxDamage(), BacktankUtil.getAir(st), st.get(TentaworksDataComponents.RIG_SETTINGS.get()));
+        return String.format("item=%s ench=%s stored=%s damage=%d/%d air=%d settings=%s", itemId(st),
+                list(st.getEnchantmentTags()), list(EnchantedBookItem.getEnchantments(st)),
+                st.getDamageValue(), st.getMaxDamage(), (int) BacktankUtil.getAir(st), RigSettings.stored(st));
     }
 
-    private static String list(ItemEnchantments e) {
+    private static String itemId(ItemStack st) {
+        return BuiltInRegistries.ITEM.getKey(st.getItem()).toString();
+    }
+
+    static String enchId(Enchantment e) {
+        return String.valueOf(BuiltInRegistries.ENCHANTMENT.getKey(e));
+    }
+
+    private static String list(ListTag tags) {
         List<String> out = new ArrayList<>();
-        for (Object2IntMap.Entry<Holder<Enchantment>> x : e.entrySet()) out.add(x.getKey().getRegisteredName() + ":" + x.getIntValue());
+        for (Map.Entry<Enchantment, Integer> x : EnchantmentHelper.deserializeEnchantments(tags).entrySet()) out.add(enchId(x.getKey()) + ":" + x.getValue());
         out.sort(null);
         return "[" + String.join(",", out) + "]";
     }
@@ -66,23 +70,19 @@ final class DevEnchants {
         return new Offers(m.costs.clone(), m.enchantClue.clone(), m.levelClue.clone());
     }
 
-    private static String name(IdMap<Holder<Enchantment>> ids, int id) {
-        Holder<Enchantment> h = id < 0 ? null : ids.byId(id);
-        return h == null ? "none" : h.getRegisteredName();
+    private static String name(int id) {
+        Enchantment e = id < 0 ? null : BuiltInRegistries.ENCHANTMENT.byId(id);
+        return e == null ? "none" : enchId(e);
     }
 
     static void stats(ServerPlayer p, BlockPos table, int seeds) {
         ItemStack item = p.getMainHandItem();
-        String itemId = item.getItemHolder().getRegisteredName();
-        Registry<Enchantment> reg = p.level().registryAccess().registryOrThrow(Registries.ENCHANTMENT);
+        String itemId = itemId(item);
         Map<String, Integer> avail = new TreeMap<>();
-        reg.getTag(EnchantmentTags.IN_ENCHANTING_TABLE).ifPresent(tag -> {
-            for (int power = 1; power <= 50; power++)
-                for (EnchantmentInstance in : EnchantmentHelper.getAvailableEnchantmentResults(power, item, tag.stream()))
-                    avail.merge(in.enchantment.getRegisteredName(), in.level, Math::max);
-        });
+        for (int power = 1; power <= 50; power++)
+            for (EnchantmentInstance in : EnchantmentHelper.getAvailableEnchantmentResults(power, item, false))
+                avail.merge(enchId(in.enchantment), in.level, Math::max);
         LOG.info("ENCHAVAIL item={} {}", itemId, avail);
-        IdMap<Holder<Enchantment>> ids = reg.asHolderIdMap();
         List<Map<String, Integer>> clues = List.of(new TreeMap<>(), new TreeMap<>(), new TreeMap<>());
         int[] costSum = new int[3];
         int saved = p.getEnchantmentSeed();
@@ -90,7 +90,7 @@ final class DevEnchants {
             Offers o = offers(p, table, item, s);
             for (int i = 0; i < 3; i++) {
                 costSum[i] += o.costs[i];
-                clues.get(i).merge(name(ids, o.clue[i]), 1, Integer::sum);
+                clues.get(i).merge(name(o.clue[i]), 1, Integer::sum);
             }
         }
         setSeed(p, saved);
@@ -100,30 +100,37 @@ final class DevEnchants {
 
     static int findSeed(ServerPlayer p, BlockPos table, ResourceLocation want) {
         ItemStack item = p.getMainHandItem();
-        IdMap<Holder<Enchantment>> ids = p.level().registryAccess().registryOrThrow(Registries.ENCHANTMENT).asHolderIdMap();
         int saved = p.getEnchantmentSeed();
         for (int s = 0; s < 100000; s++) {
             Offers o = offers(p, table, item, s);
-            if (name(ids, o.clue[2]).equals(want.toString())) {
-                LOG.info("ENCHSEED item={} seed={} costs={},{},{} clues={}:{},{}:{},{}:{}", item.getItemHolder().getRegisteredName(), s,
-                        o.costs[0], o.costs[1], o.costs[2], name(ids, o.clue[0]), o.level[0], name(ids, o.clue[1]), o.level[1], name(ids, o.clue[2]), o.level[2]);
+            if (name(o.clue[2]).equals(want.toString())) {
+                LOG.info("ENCHSEED item={} seed={} costs={},{},{} clues={}:{},{}:{},{}:{}", itemId(item), s,
+                        o.costs[0], o.costs[1], o.costs[2], name(o.clue[0]), o.level[0], name(o.clue[1]), o.level[1], name(o.clue[2]), o.level[2]);
                 return s;
             }
         }
         setSeed(p, saved);
-        LOG.info("ENCHSEED item={} none for {}", item.getItemHolder().getRegisteredName(), want);
+        LOG.info("ENCHSEED item={} none for {}", itemId(item), want);
         return -1;
     }
 
     private static void setSeed(Player p, int seed) {
         try {
             if (seedField == null) {
-                seedField = Player.class.getDeclaredField("enchantmentSeed");
+                seedField = seedField();
                 seedField.setAccessible(true);
             }
             seedField.setInt(p, seed);
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException(e);
+        }
+    }
+
+    private static Field seedField() throws NoSuchFieldException {
+        try {
+            return Player.class.getDeclaredField("enchantmentSeed");
+        } catch (NoSuchFieldException e) {
+            return Player.class.getDeclaredField("f_36081_");
         }
     }
 }

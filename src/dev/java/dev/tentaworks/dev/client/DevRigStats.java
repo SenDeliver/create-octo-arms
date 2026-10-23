@@ -43,7 +43,7 @@ public final class DevRigStats {
     }
 
     @SubscribeEvent
-    static void onSound(PlaySoundEvent event) {
+    public static void onSound(PlaySoundEvent event) {
         if (event.getSound() == null) return;
         String id = event.getSound().getLocation().toString();
         if (id.equals("create:slime_added") || id.equals("create:steam") || id.equals("create:cogs") || id.startsWith("minecraft:block.piston.")) {
@@ -55,7 +55,7 @@ public final class DevRigStats {
     }
 
     @SubscribeEvent
-    static void onFrame(TickEvent.RenderTickEvent event) {
+    public static void onFrame(TickEvent.RenderTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         frames++;
         long[] n = new long[1];
@@ -65,12 +65,12 @@ public final class DevRigStats {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
-    static void onInputStart(MovementInputUpdateEvent event) {
+    public static void onInputStart(MovementInputUpdateEvent event) {
         inputStart = System.nanoTime();
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    static void onInputEnd(MovementInputUpdateEvent event) {
+    public static void onInputEnd(MovementInputUpdateEvent event) {
         if (RigClient.state() == dev.tentaworks.rig.RigState.STOWED) return;
         long n = System.nanoTime() - inputStart;
         inputTicks++;
@@ -109,7 +109,7 @@ public final class DevRigStats {
     }
 
     @SubscribeEvent
-    static void onTick(TickEvent.ClientTickEvent event) {
+    public static void onTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         if (!gaitTrace || mc.player == null || mc.level == null) return;

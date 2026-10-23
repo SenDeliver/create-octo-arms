@@ -7,7 +7,6 @@ import dev.tentaworks.client.RigSettingsScreen;
 import dev.tentaworks.config.TentaworksClientConfig;
 import dev.tentaworks.network.RigSettingsPacket;
 import dev.tentaworks.network.TentaworksNetwork;
-import dev.tentaworks.registry.TentaworksDataComponents;
 import dev.tentaworks.rig.RigSettings;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.item.ItemDescription;
@@ -27,9 +26,7 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.gui.screens.ConnectScreen;
 import net.minecraft.client.gui.screens.DisconnectedScreen;
-import net.minecraft.client.gui.screens.GenericMessageScreen;
-import net.minecraft.client.main.GameConfig;
-import net.minecraft.client.quickplay.QuickPlay;
+import net.minecraft.client.gui.screens.GenericDirtMessageScreen;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
@@ -68,20 +65,16 @@ import org.slf4j.LoggerFactory;
 
 import dev.tentaworks.rig.RigEnchants;
 import dev.tentaworks.rig.TentacleRigItem;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.core.Holder;
-import net.minecraft.core.IdMap;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.EnchantmentMenu;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.lwjgl.glfw.GLFW;
 
 import java.io.IOException;
@@ -94,6 +87,7 @@ import java.util.Deque;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -104,7 +98,7 @@ import java.util.Set;
  * | doublejump (taps 2) | look yaw pitch | trace on|off (TRACE line per tick) | mark tag (CPOS line + /tentaworks pos tag)
  * | freeze ms (blocks the client thread: a real hitch, no packets) | TITLE lines whenever the on-screen subtitle changes (Create's backtank warnings)
  * | bind key.tentaworks.toggle key.keyboard.r (rebinds a KeyMapping, not saved to options.txt) | scroll N delta (N-th ScrollInput of the open screen, delta steps)
- * | rigs tag (CRIG lines: open Rig Settings screen values + Rig Settings component per slot) | screen (SCREEN line: open screen class)
+ * | rigs tag (CRIG lines: open Rig Settings screen values + stored Rig Settings per slot) | screen (SCREEN line: open screen class)
  * | rawsettings mainhand|offhand|chest height speed double_jump|key (sends the settings packet as is, unclamped)
  * | tooltips shift|noshift ns:id... (Create ItemDescription of each item, as with/without Shift)
  * | slot N [quick|pickup] (real container click on menu slot N) | enchbutton N (enchanting table option N, 0-based) | menu tag (CMENU lines: menu, anvil cost,
@@ -147,7 +141,7 @@ public final class DevScript {
     }
 
     @SubscribeEvent
-    static void onPreTick(TickEvent.ClientTickEvent event) {
+    public static void onPreTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.START) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
@@ -157,19 +151,19 @@ public final class DevScript {
 
     /** Forged client (phase 8): "zero" sends a second motion packet per tick claiming no motion; the server keeps the latest. */
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    static void onInputLast(MovementInputUpdateEvent event) {
+    public static void onInputLast(MovementInputUpdateEvent event) {
         if (forge == null || !(event.getEntity() instanceof LocalPlayer) || RigClient.state() == RigState.STOWED) return;
         if (forge.equals("zero")) TentaworksNetwork.sendToServer(new RigMotionPacket(RigClient.state(), Vec3.ZERO, RigClient.gait().wire()));
     }
 
     @SubscribeEvent
-    static void onScreenOpening(ScreenEvent.Opening event) {
+    public static void onScreenOpening(ScreenEvent.Opening event) {
         if (CONNECT != null && !connectStarted && event.getNewScreen() instanceof TitleScreen)
-            event.setNewScreen(new GenericMessageScreen(Component.literal("waiting for the scene")));
+            event.setNewScreen(new GenericDirtMessageScreen(Component.literal("waiting for the scene")));
     }
 
     @SubscribeEvent
-    static void onTick(TickEvent.ClientTickEvent event) {
+    public static void onTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         String file = System.getProperty("tentaworks.script");
         if (file == null) return;
@@ -178,16 +172,16 @@ public final class DevScript {
             if (mc.level == null && --rejoinTicks == 0) {
                 LOG.info("script rejoin {}", rejoinAddress);
                 ConnectScreen.startConnecting(new TitleScreen(), mc, ServerAddress.parseString(rejoinAddress),
-                        new ServerData("dev", rejoinAddress, ServerData.Type.OTHER), false, null);
+                        new ServerData("dev", rejoinAddress, false), false);
             }
             return;
         }
         if (mc.level == null || mc.player == null) {
             inWorld = false;
             if (CONNECT != null && !connectStarted) {
-                if (mc.isGameLoadFinished() && Files.exists(mc.gameDirectory.toPath().resolve("signal").resolve("_connect"))) {
+                if (mc.getOverlay() == null && Files.exists(mc.gameDirectory.toPath().resolve("signal").resolve("_connect"))) {
                     connectStarted = true;
-                    QuickPlay.connect(mc, new GameConfig.QuickPlayData(null, null, CONNECT, null), null);
+                    ConnectScreen.startConnecting(new TitleScreen(), mc, ServerAddress.parseString(CONNECT), new ServerData("dev", CONNECT, false), true);
                 }
                 return;
             }
@@ -302,7 +296,7 @@ public final class DevScript {
                     } else {
                         ScrollInput in = inputs.get(n);
                         for (int i = 0; i < Math.abs(delta); i++)
-                            in.mouseScrolled(in.getX() + in.getWidth() / 2.0, in.getY() + in.getHeight() / 2.0, 0, Math.signum(delta));
+                            in.mouseScrolled(in.getX() + in.getWidth() / 2.0, in.getY() + in.getHeight() / 2.0, Math.signum(delta));
                         LOG.info("script: scrolled {} by {} -> {}", n, delta, in.getState());
                     }
                 }
@@ -311,8 +305,8 @@ public final class DevScript {
                     if (mc.screen instanceof RigSettingsScreen rs) LOG.info("CRIG {} screen settings={}", a[1], rs.settings());
                     for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND, EquipmentSlot.CHEST}) {
                         ItemStack st = mc.player.getItemBySlot(slot);
-                        if (!st.isEmpty()) LOG.info("CRIG {} slot={} item={} settings={}", a[1], slot.getName(), st.getItemHolder().getRegisteredName(),
-                                st.get(TentaworksDataComponents.RIG_SETTINGS.get()));
+                        if (!st.isEmpty()) LOG.info("CRIG {} slot={} item={} settings={}", a[1], slot.getName(), BuiltInRegistries.ITEM.getKey(st.getItem()),
+                                RigSettings.stored(st));
                     }
                 }
                 case "rawsettings" -> {
@@ -441,7 +435,7 @@ public final class DevScript {
                     rejoinTicks = Integer.parseInt(a[1]);
                     HELD.clear();
                     mc.level.disconnect();
-                    mc.disconnect();
+                    mc.clearLevel();
                     return;
                 }
                 case "slot" -> {
@@ -623,21 +617,21 @@ public final class DevScript {
         LOG.info("CMENU {} class={} id={}", tag, m.getClass().getSimpleName(), m.containerId);
         if (m instanceof AnvilMenu anvil) LOG.info("CMENU {} anvil cost={}", tag, anvil.getCost());
         if (m instanceof EnchantmentMenu e) {
-            IdMap<Holder<Enchantment>> ids = mc.level.registryAccess().registryOrThrow(Registries.ENCHANTMENT).asHolderIdMap();
             for (int i = 0; i < 3; i++) {
-                Holder<Enchantment> h = e.enchantClue[i] < 0 ? null : ids.byId(e.enchantClue[i]);
-                LOG.info("CMENU {} offer={} cost={} clue={}:{}", tag, i + 1, e.costs[i], h == null ? "none" : h.getRegisteredName(), e.levelClue[i]);
+                Enchantment h = e.enchantClue[i] < 0 ? null : BuiltInRegistries.ENCHANTMENT.byId(e.enchantClue[i]);
+                LOG.info("CMENU {} offer={} cost={} clue={}:{}", tag, i + 1, e.costs[i], h == null ? "none" : BuiltInRegistries.ENCHANTMENT.getKey(h), e.levelClue[i]);
             }
         }
         for (Slot slot : m.slots) {
             if (slot.container == mc.player.getInventory() || !slot.hasItem()) continue;
             ItemStack st = slot.getItem();
             List<String> ench = new ArrayList<>();
-            for (Object2IntMap.Entry<Holder<Enchantment>> x : st.getTagEnchantments().entrySet()) ench.add(x.getKey().getRegisteredName() + ":" + x.getIntValue());
-            for (Object2IntMap.Entry<Holder<Enchantment>> x : st.getOrDefault(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY).entrySet())
-                ench.add("book " + x.getKey().getRegisteredName() + ":" + x.getIntValue());
+            for (Map.Entry<Enchantment, Integer> x : EnchantmentHelper.deserializeEnchantments(st.getEnchantmentTags()).entrySet())
+                ench.add(BuiltInRegistries.ENCHANTMENT.getKey(x.getKey()) + ":" + x.getValue());
+            for (Map.Entry<Enchantment, Integer> x : EnchantmentHelper.deserializeEnchantments(EnchantedBookItem.getEnchantments(st)).entrySet())
+                ench.add("book " + BuiltInRegistries.ENCHANTMENT.getKey(x.getKey()) + ":" + x.getValue());
             ench.sort(null);
-            LOG.info("CMENU {} slot={} item={} count={} ench={}", tag, slot.index, st.getItemHolder().getRegisteredName(), st.getCount(), ench);
+            LOG.info("CMENU {} slot={} item={} count={} ench={}", tag, slot.index, BuiltInRegistries.ITEM.getKey(st.getItem()), st.getCount(), ench);
         }
     }
 
@@ -697,7 +691,7 @@ public final class DevScript {
         Entity vehicle = p.getVehicle();
         LOG.info("TRACE t={} gt={} pos={} d={} cmd={} held={} state={} fly={} mayfly={} press={} jumpkey={} ground={} hp={} air={} ff={} sheld={} carry={} wa={} sneak={} crouch={} pose={} eye={} veh={} ride={} hold={} vrot={}",
                 clientTicks, mc.level.getGameTime(), fmt(pos), fmt(d), fmt(RigClient.motion()), RigClient.heldCount(), RigClient.state(),
-                p.getAbilities().flying, p.mayFly(), RigClient.jumpPressed(), mc.options.keyJump.isDown(), p.onGround(), p.getHealth(), BacktankUtil.getAir(p.getItemBySlot(EquipmentSlot.CHEST)), p.isFallFlying(),
+                p.getAbilities().flying, p.getAbilities().mayfly, RigClient.jumpPressed(), mc.options.keyJump.isDown(), p.onGround(), p.getHealth(), (int) BacktankUtil.getAir(p.getItemBySlot(EquipmentSlot.CHEST)), p.isFallFlying(),
                 RigClient.shipGrips(), RigClient.carryShip() == null ? "-" : RigClient.carryShip().id(), String.format(Locale.ROOT, "%.4f", p.walkAnimation.speed()),
                 p.isShiftKeyDown(), p.isCrouching(), p.getPose(), String.format(Locale.ROOT, "%.3f", p.getEyeHeight()),
                 vehicle == null ? "-" : BuiltInRegistries.ENTITY_TYPE.getKey(vehicle.getType()), ChainConveyorRidingHandler.ridingChainConveyor != null ? "chain" : "-",

@@ -3,21 +3,18 @@ package dev.tentaworks.dev;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.content.equipment.armor.BacktankUtil;
 import com.simibubi.create.content.kinetics.chainConveyor.ChainConveyorBlockEntity;
 import com.simibubi.create.content.kinetics.chainConveyor.ServerChainConveyorHandler;
 import dev.tentaworks.TentaworksIds;
-import dev.tentaworks.compat.Frame;
-import dev.tentaworks.compat.ShipFrames;
 import dev.tentaworks.network.RigMotionPacket;
 import dev.tentaworks.rig.Grip;
 import dev.tentaworks.rig.TentacleGait;
 import dev.tentaworks.rig.Tentacles;
 import dev.tentaworks.rig.Grips;
-import dev.tentaworks.registry.TentaworksDataComponents;
 import dev.tentaworks.rig.RigEnchants;
 import dev.tentaworks.rig.RigServer;
+import dev.tentaworks.rig.RigSettings;
 import dev.tentaworks.rig.TentacleRigItem;
 import dev.tentaworks.rig.RigState;
 import net.minecraft.commands.CommandSourceStack;
@@ -41,15 +38,13 @@ import net.minecraftforge.event.TickEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 /**
  * Dev source set only, never in the release jar. /tentaworks trace on|off (STRACE per tick), pos TAG (one SPOS line),
  * floatfix on|off (negative control for the float kick), fake active|nan|held|climb TICKS (forged Active packets every tick: no Grips, NaN motion,
  * real Grips, real Grips with an upward motion, or fastN: real Grips with a level motion of N blocks per second), air N (sets the worn Rig's Air), fallfix on|off (negative control for the long-fall
- * float kick), rigs TAG (SRIG lines: Rig Settings component per slot),
+ * float kick), rigs TAG (SRIG lines: stored Rig Settings per slot),
  * inv TAG (SINV lines: every inventory item with enchantments, damage, Air), enchstats X Y Z SEEDS and enchseed X Y Z ENCHANTMENT
  * (enchanting table offers, see {@link DevEnchants}). Phase 8: fake downrise|throughX|edge (Setting Down claims with a rising motion; Grips on the far
  * (east) face of the wall column at x=X; Grips on a block at x=20047 whose outer neighbour is in unloaded chunk 1253 when only 20000 0 is forceloaded), burst N (each fake packet
@@ -73,12 +68,12 @@ public final class DevTools {
     }
 
     @SubscribeEvent
-    static void onStarted(ServerStartedEvent event) {
+    public static void onStarted(ServerStartedEvent event) {
         LOG.info("tentaworks dev tools active (dist={})", event.getServer().isDedicatedServer() ? "dedicated" : "integrated");
     }
 
     @SubscribeEvent
-    static void onCommands(RegisterCommandsEvent event) {
+    public static void onCommands(RegisterCommandsEvent event) {
         DevRecipes.register(event.getDispatcher());
         DevPonder.register(event.getDispatcher());
         LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("tentaworks").requires(s -> s.hasPermission(2));
@@ -106,7 +101,7 @@ public final class DevTools {
                             ItemStack st = p.getItemBySlot(slot);
                             if (st.isEmpty()) continue;
                             LOG.info("SRIG {} {} slot={} item={} settings={}", tag, p.getName().getString(), slot.getName(),
-                                    st.getItemHolder().getRegisteredName(), st.get(TentaworksDataComponents.RIG_SETTINGS.get()));
+                                    BuiltInRegistries.ITEM.getKey(st.getItem()), RigSettings.stored(st));
                         }
                     for (ServerPlayer p : c.getSource().getServer().getPlayerList().getPlayers()) {
                         ItemStack worn = p.getItemBySlot(EquipmentSlot.CHEST);
@@ -126,7 +121,7 @@ public final class DevTools {
                     int n = IntegerArgumentType.getInteger(c, "n");
                     for (ServerPlayer p : c.getSource().getServer().getPlayerList().getPlayers()) {
                         ItemStack rig = p.getItemBySlot(EquipmentSlot.CHEST);
-                        if (!rig.isEmpty()) rig.set(AllDataComponents.BACKTANK_AIR, n);
+                        if (!rig.isEmpty()) rig.getOrCreateTag().putFloat("Air", n);
                     }
                     LOG.info("air set {}", n);
                     return reply(c.getSource(), "air " + n);
@@ -187,7 +182,7 @@ public final class DevTools {
                     var pos = BlockPosArgument.getBlockPos(c, "pos");
                     var be = c.getSource().getLevel().getBlockEntity(pos);
                     LOG.info("SNBT {} gt={} {} {}", StringArgumentType.getString(c, "tag"), c.getSource().getLevel().getGameTime(), pos.toShortString(),
-                            be == null ? "none" : be.saveWithoutMetadata(c.getSource().registryAccess()));
+                            be == null ? "none" : be.saveWithoutMetadata());
                     return reply(c.getSource(), "nbt");
                 }))))
                 .then(Commands.literal("chain").then(Commands.argument("from", BlockPosArgument.blockPos()).then(Commands.argument("to", BlockPosArgument.blockPos()).executes(c -> {
@@ -213,22 +208,22 @@ public final class DevTools {
     }
 
     @SubscribeEvent
-    static void onFall(LivingFallEvent event) {
+    public static void onFall(LivingFallEvent event) {
         if (event.getEntity() instanceof ServerPlayer p)
             LOG.info("FALL gt={} {} distance={} multiplier={}", p.level().getGameTime(), p.getName().getString(),
                     String.format("%.3f", event.getDistance()), event.getDamageMultiplier());
     }
 
-    @SubscribeEvent
-    static void onDamage(LivingDamageEvent.Post event) {
+    @SubscribeEvent(priority = net.minecraftforge.eventbus.api.EventPriority.LOWEST)
+    public static void onDamage(LivingDamageEvent event) {
         if (event.getEntity() instanceof ServerPlayer p)
             LOG.info("HURT gt={} {} source={} amount={}", p.level().getGameTime(), p.getName().getString(),
-                    event.getSource().getMsgId(), String.format("%.1f", event.getNewDamage()));
+                    event.getSource().getMsgId(), String.format("%.1f", event.getAmount()));
     }
 
     /** Fake packets go in before the Rig handles this tick's packets, so they replace the real client's (as a cheating client's would). */
     @SubscribeEvent(priority = net.minecraftforge.eventbus.api.EventPriority.HIGHEST)
-    static void onTickStart(TickEvent.ServerTickEvent event) {
+    public static void onTickStart(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.START) return;
         tickStart = System.nanoTime();
         if (fakeTicks > 0) {
@@ -272,13 +267,13 @@ public final class DevTools {
     }
 
     @SubscribeEvent
-    static void onChunkLoad(net.minecraftforge.event.level.ChunkEvent.Load event) {
+    public static void onChunkLoad(net.minecraftforge.event.level.ChunkEvent.Load event) {
         if (!event.getLevel().isClientSide() && event.getChunk().getPos().x >= 1250)
             LOG.info("CHUNKLOAD {} {} new={}", event.getChunk().getPos().x, event.getChunk().getPos().z, event.isNewChunk());
     }
 
     @SubscribeEvent
-    static void onTick(TickEvent.ServerTickEvent event) {
+    public static void onTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         long dt = System.nanoTime() - tickStart;
         tickCount++;
@@ -299,31 +294,11 @@ public final class DevTools {
                 p.level().getGameTime(), p.getName().getString(), p.getX(), p.getY(), p.getZ(),
                 p.getDeltaMovement().x, p.getDeltaMovement().y, p.getDeltaMovement().z,
                 RigServer.state(p), RigServer.grips(p).size(), RigServer.floating(p) ? 1.0 : 0.0,
-                p.getAbilities().flying, p.fallDistance, p.getHealth(), p.onGround(), BacktankUtil.getAir(p.getItemBySlot(EquipmentSlot.CHEST)),
-                RigServer.motion(p).x, RigServer.motion(p).y, RigServer.motion(p).z, shipFields(p), p.isShiftKeyDown(), p.getPose(),
+                p.getAbilities().flying, p.fallDistance, p.getHealth(), p.onGround(), (int) BacktankUtil.getAir(p.getItemBySlot(EquipmentSlot.CHEST)),
+                RigServer.motion(p).x, RigServer.motion(p).y, RigServer.motion(p).z, " sgrips=0 carry=-", p.isShiftKeyDown(), p.getPose(),
                 vehicle == null ? "-" : BuiltInRegistries.ENTITY_TYPE.getKey(vehicle.getType()),
                 ServerChainConveyorHandler.hangingPlayers.containsKey(p.getUUID()) ? "chain" : "-",
                 vehicle == null ? "-" : String.format(Locale.ROOT, "%.1f", vehicle.getYRot()));
-    }
-
-    /** {@code sgrips}: valid Grips on a Ship; {@code carry}: the Ship holding most of them (at least {@link Grips#HELD}), as RigServer picks it. */
-    private static String shipFields(ServerPlayer p) {
-        ShipFrames ships = ShipFrames.get();
-        List<Frame> frames = new ArrayList<>();
-        Frame best = null;
-        int bestCount = Grips.HELD - 1;
-        for (Grip g : RigServer.grips(p)) {
-            Frame f = ships.isPlot(p.level(), g.block()) ? ships.containing(p.level(), g.block()) : null;
-            if (f == null) continue;
-            frames.add(f);
-            int n = 0;
-            for (Frame o : frames) if (f.equals(o)) n++;
-            if (n > bestCount) {
-                bestCount = n;
-                best = f;
-            }
-        }
-        return " sgrips=" + frames.size() + " carry=" + (best == null ? "-" : best.id());
     }
 
     private static int reply(CommandSourceStack source, String msg) {
