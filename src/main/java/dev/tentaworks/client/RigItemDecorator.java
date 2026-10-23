@@ -6,8 +6,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.client.IItemDecorator;
-import net.neoforged.neoforge.client.event.RegisterItemDecorationsEvent;
+import net.minecraftforge.client.IItemDecorator;
+import net.minecraftforge.client.event.RegisterItemDecorationsEvent;
 
 /**
  * Second item bar for a Rig: the Backtank bar below shows Air, this one above it shows durability

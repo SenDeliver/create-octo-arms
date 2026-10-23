@@ -7,11 +7,11 @@ import dev.tentaworks.rig.RigSneak;
 import dev.tentaworks.rig.RigState;
 import net.createmod.ponder.foundation.PonderIndex;
 import net.minecraft.client.player.LocalPlayer;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModContainer;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
 
 @Mod(value = TentaworksIds.MOD_ID, dist = Dist.CLIENT)
 public class TentaworksClient {

@@ -3,16 +3,16 @@ package dev.tentaworks.rig;
 import dev.tentaworks.config.TentaworksConfig;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec;
 
 public enum RigTier {
     COPPER(TentaworksConfig.REACH_COPPER, null),
     NETHERITE(TentaworksConfig.REACH_NETHERITE, TentaworksConfig.AIR_NETHERITE_FACTOR);
 
-    private final ModConfigSpec.DoubleValue reach;
-    private final ModConfigSpec.DoubleValue airFactor;
+    private final ForgeConfigSpec.DoubleValue reach;
+    private final ForgeConfigSpec.DoubleValue airFactor;
 
-    RigTier(ModConfigSpec.DoubleValue reach, ModConfigSpec.DoubleValue airFactor) {
+    RigTier(ForgeConfigSpec.DoubleValue reach, ForgeConfigSpec.DoubleValue airFactor) {
         this.reach = reach;
         this.airFactor = airFactor;
     }

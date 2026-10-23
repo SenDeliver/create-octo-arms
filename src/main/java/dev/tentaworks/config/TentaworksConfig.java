@@ -1,26 +1,26 @@
 package dev.tentaworks.config;
 
 import dev.tentaworks.TentaworksIds;
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec;
 
 public final class TentaworksConfig {
-    public static final ModConfigSpec SPEC;
-    public static final ModConfigSpec.DoubleValue REACH_COPPER;
-    public static final ModConfigSpec.DoubleValue REACH_NETHERITE;
-    public static final ModConfigSpec.DoubleValue SPEED_MAX;
-    public static final ModConfigSpec.DoubleValue AIR_IDLE;
-    public static final ModConfigSpec.DoubleValue AIR_MOVE;
-    public static final ModConfigSpec.DoubleValue AIR_CLIMB;
-    public static final ModConfigSpec.DoubleValue AIR_NETHERITE_FACTOR;
-    public static final ModConfigSpec.DoubleValue CRAWL_SPEED;
-    public static final ModConfigSpec.DoubleValue ENCHANT_FAR_REACH;
-    public static final ModConfigSpec.DoubleValue ENCHANT_THRIFT;
-    public static final ModConfigSpec.DoubleValue ENCHANT_SWIFT;
-    public static final ModConfigSpec.BooleanValue SHIPS_GRIP;
+    public static final ForgeConfigSpec SPEC;
+    public static final ForgeConfigSpec.DoubleValue REACH_COPPER;
+    public static final ForgeConfigSpec.DoubleValue REACH_NETHERITE;
+    public static final ForgeConfigSpec.DoubleValue SPEED_MAX;
+    public static final ForgeConfigSpec.DoubleValue AIR_IDLE;
+    public static final ForgeConfigSpec.DoubleValue AIR_MOVE;
+    public static final ForgeConfigSpec.DoubleValue AIR_CLIMB;
+    public static final ForgeConfigSpec.DoubleValue AIR_NETHERITE_FACTOR;
+    public static final ForgeConfigSpec.DoubleValue CRAWL_SPEED;
+    public static final ForgeConfigSpec.DoubleValue ENCHANT_FAR_REACH;
+    public static final ForgeConfigSpec.DoubleValue ENCHANT_THRIFT;
+    public static final ForgeConfigSpec.DoubleValue ENCHANT_SWIFT;
+    public static final ForgeConfigSpec.BooleanValue SHIPS_GRIP;
 
     static {
         String t = TentaworksIds.MOD_ID + ".configuration.";
-        ModConfigSpec.Builder b = new ModConfigSpec.Builder();
+        ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
         b.translation(t + "reach").push("reach");
         REACH_COPPER = b.comment("Grip Reach of a Copper Rig, blocks. Far Reach adds to it, up to 16 in total").translation(t + "reach.copper").defineInRange("copper", 4.0, 1.0, 16.0);
         REACH_NETHERITE = b.comment("Grip Reach of a Netherite Rig, blocks. Far Reach adds to it, up to 16 in total").translation(t + "reach.netherite").defineInRange("netherite", 7.0, 1.0, 16.0);
@@ -51,7 +51,7 @@ public final class TentaworksConfig {
     private TentaworksConfig() {
     }
 
-    public static double value(ModConfigSpec.DoubleValue v) {
+    public static double value(ForgeConfigSpec.DoubleValue v) {
         try {
             return v.get();
         } catch (IllegalStateException e) {
@@ -59,7 +59,7 @@ public final class TentaworksConfig {
         }
     }
 
-    public static boolean value(ModConfigSpec.BooleanValue v) {
+    public static boolean value(ForgeConfigSpec.BooleanValue v) {
         try {
             return v.get();
         } catch (IllegalStateException e) {
@@ -67,7 +67,7 @@ public final class TentaworksConfig {
         }
     }
 
-    public static <T> T value(ModConfigSpec.ConfigValue<T> v) {
+    public static <T> T value(ForgeConfigSpec.ConfigValue<T> v) {
         try {
             return v.get();
         } catch (IllegalStateException e) {

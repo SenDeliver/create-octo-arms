@@ -62,6 +62,6 @@ public final class TentaworksItems {
     }
 
     private static ResourceLocation create(String path) {
-        return ResourceLocation.fromNamespaceAndPath("create", path);
+        return new ResourceLocation("create", path);
     }
 }

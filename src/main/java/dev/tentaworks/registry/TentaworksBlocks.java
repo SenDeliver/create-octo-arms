@@ -4,8 +4,8 @@ import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.api.behaviour.display.DisplaySource;
 import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.equipment.armor.BacktankBlock;
-import net.neoforged.neoforge.client.model.generators.ConfiguredModel;
-import net.neoforged.neoforge.client.model.generators.ModelFile;
+import net.minecraftforge.client.model.generators.ConfiguredModel;
+import net.minecraftforge.client.model.generators.ModelFile;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.tterrag.registrate.util.entry.BlockEntry;
@@ -46,7 +46,7 @@ public final class TentaworksBlocks {
         return REGISTRATE.block(name, p -> new RigBlock(p, tier))
                 .initialProperties(base)
                 .blockstate((c, p) -> {
-                    ModelFile plain = p.models().getExistingFile(ResourceLocation.fromNamespaceAndPath("create", "block/" + createModel + "/block"));
+                    ModelFile plain = p.models().getExistingFile(new ResourceLocation("create", "block/" + createModel + "/block"));
                     ModelFile arms = p.models().getExistingFile(p.modLoc("block/" + name));
                     p.getVariantBuilder(c.getEntry()).forAllStatesExcept(state -> ConfiguredModel.builder()
                             .modelFile(state.getValue(RigBlock.ARMS) ? arms : plain)

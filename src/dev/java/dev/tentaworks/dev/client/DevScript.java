@@ -15,7 +15,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraftforge.network.PacketDistributor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -30,7 +30,7 @@ import net.minecraft.client.gui.screens.DisconnectedScreen;
 import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.minecraft.client.main.GameConfig;
 import net.minecraft.client.quickplay.QuickPlay;
-import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
@@ -38,7 +38,7 @@ import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
-import net.neoforged.fml.ModList;
+import net.minecraftforge.fml.ModList;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.content.equipment.armor.BacktankBlockEntity;
@@ -54,15 +54,15 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import dev.tentaworks.network.RigMotionPacket;
 import dev.tentaworks.rig.RigState;
-import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.gui.CreativeTabsScreenPage;
+import net.minecraftforge.client.event.MovementInputUpdateEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.client.gui.CreativeTabsScreenPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,7 +147,8 @@ public final class DevScript {
     }
 
     @SubscribeEvent
-    static void onPreTick(ClientTickEvent.Pre event) {
+    static void onPreTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
         for (KeyMapping k : HELD) k.setDown(true);
@@ -168,7 +169,8 @@ public final class DevScript {
     }
 
     @SubscribeEvent
-    static void onTick(ClientTickEvent.Post event) {
+    static void onTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
         String file = System.getProperty("tentaworks.script");
         if (file == null) return;
         Minecraft mc = Minecraft.getInstance();
@@ -322,7 +324,7 @@ public final class DevScript {
                 }
                 case "tooltips" -> {
                     List<ItemStack> stacks = new ArrayList<>();
-                    for (int i = 2; i < a.length; i++) stacks.add(new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.parse(a[i]))));
+                    for (int i = 2; i < a.length; i++) stacks.add(new ItemStack(BuiltInRegistries.ITEM.get(new ResourceLocation(a[i]))));
                     mc.setScreen(new TooltipScreen(stacks, a[1].equals("shift")));
                 }
                 case "key" -> {
@@ -404,7 +406,7 @@ public final class DevScript {
                 case "griplines" -> GripLineRenderer.on = a[1].equals("on");
                 case "icons" -> {
                     List<ItemStack> stacks = new ArrayList<>();
-                    for (int i = 1; i < a.length; i++) stacks.add(new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.parse(a[i]))));
+                    for (int i = 1; i < a.length; i++) stacks.add(new ItemStack(BuiltInRegistries.ITEM.get(new ResourceLocation(a[i]))));
                     mc.setScreen(new IconScreen(stacks));
                     waitTicks = 3;
                     return;
@@ -461,7 +463,7 @@ public final class DevScript {
                 case "menu" -> logMenu(mc, a[1]);
                 case "clearchat" -> mc.gui.getChat().clearMessages(false);
                 case "ponder" -> {
-                    net.createmod.ponder.foundation.ui.PonderUI ui = net.createmod.ponder.foundation.ui.PonderUI.of(new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.parse(a[1]))));
+                    net.createmod.ponder.foundation.ui.PonderUI ui = net.createmod.ponder.foundation.ui.PonderUI.of(new ItemStack(BuiltInRegistries.ITEM.get(new ResourceLocation(a[1]))));
                     net.createmod.catnip.gui.ScreenOpener.open(ui);
                     LOG.info("script ponder {} scene={}", a[1], ui.getActiveScene().getId());
                     waitTicks = 10;
@@ -484,8 +486,8 @@ public final class DevScript {
                     } else LOG.info("CGOGGLE {} none {}", a[1], mc.hitResult == null ? "-" : mc.hitResult.getLocation());
                 }
                 case "jei" -> {
-                    if (net.neoforged.fml.ModList.get().isLoaded("jei"))
-                        DevJei.open(new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.parse(a[1]))), a[2], a[3]);
+                    if (net.minecraftforge.fml.ModList.get().isLoaded("jei"))
+                        DevJei.open(new ItemStack(BuiltInRegistries.ITEM.get(new ResourceLocation(a[1]))), a[2], a[3]);
                     else LOG.info("JEI not loaded");
                     waitTicks = 10;
                     return;
@@ -656,7 +658,7 @@ public final class DevScript {
             LOG.warn("script: tab needs the creative inventory open");
             return;
         }
-        CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.get(ResourceLocation.parse(id));
+        CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.get(new ResourceLocation(id));
         try {
             Field pages = CreativeModeInventoryScreen.class.getDeclaredField("pages");
             pages.setAccessible(true);

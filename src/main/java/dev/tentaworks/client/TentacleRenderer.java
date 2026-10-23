@@ -38,7 +38,7 @@ public final class TentacleRenderer {
     public static final float PX = 1 / 16f;
     static final float PAD = 2f * PX;
     static final float STEM = 1.5f * PX;
-    private static final ResourceLocation STICKER = ResourceLocation.fromNamespaceAndPath("create", "block/sticker");
+    private static final ResourceLocation STICKER = new ResourceLocation("create", "block/sticker");
 
     /** Shoulder hub centres (px), slots 0 front-left/upper-left, 1 front-right/upper-right, 2 back-left/lower-left, 3 back-right/lower-right. */
     static final Vector3f[] SHOULDER = {v(2.75f, 10.0f, 7.5f), v(13.25f, 10.0f, 7.5f), v(2.75f, 3.0f, 7.5f), v(13.25f, 3.0f, 7.5f)};

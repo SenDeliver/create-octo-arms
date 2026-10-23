@@ -21,15 +21,14 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.NeoForgeMod;
-import net.neoforged.neoforge.event.entity.EntityTeleportEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.ForgeMod;
+import net.minecraftforge.event.entity.EntityTeleportEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.network.PacketDistributor;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -116,20 +115,23 @@ public final class RigServer {
     }
 
     public static void init() {
-        NeoForge.EVENT_BUS.addListener((PlayerTickEvent.Post e) -> {
-            if (e.getEntity() instanceof ServerPlayer p) {
+        MinecraftForge.EVENT_BUS.addListener((TickEvent.PlayerTickEvent e) -> {
+            if (e.phase == TickEvent.Phase.END && e.player instanceof ServerPlayer p) {
                 fallGuard(p);
                 tick(p);
             }
         });
-        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Pre e) -> processPending(e.getServer()));
-        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post e) -> {
+        MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent e) -> {
+            if (e.phase == TickEvent.Phase.START) processPending(e.getServer());
+        });
+        MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent e) -> {
+            if (e.phase != TickEvent.Phase.END) return;
             for (Map.Entry<UUID, Wearer> en : WEARERS.entrySet()) {
                 ServerPlayer p = e.getServer().getPlayerList().getPlayer(en.getKey());
                 if (p != null) trackRealMove(p, en.getValue());
             }
         });
-        NeoForge.EVENT_BUS.addListener((EntityTeleportEvent e) -> {
+        MinecraftForge.EVENT_BUS.addListener((EntityTeleportEvent e) -> {
             Wearer w = WEARERS.get(e.getEntity().getUUID());
             if (w != null) {
                 w.tickPos = null;
@@ -138,13 +140,13 @@ public final class RigServer {
                 w.overSpeed = 0;
             }
         });
-        NeoForge.EVENT_BUS.addListener((PlayerEvent.StartTracking e) -> {
+        MinecraftForge.EVENT_BUS.addListener((PlayerEvent.StartTracking e) -> {
             if (e.getTarget() instanceof ServerPlayer target && e.getEntity() instanceof ServerPlayer watcher) {
                 Wearer w = WEARERS.get(target.getUUID());
                 if (w != null) PacketDistributor.sendToPlayer(watcher, new RigStatePacket(target.getId(), w.state, w.tentacles));
             }
         });
-        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent e) -> {
+        MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent e) -> {
             if (e.getEntity() instanceof ServerPlayer p) {
                 setFloat(p, false);
                 WEARERS.remove(p.getUUID());
@@ -154,16 +156,16 @@ public final class RigServer {
                 RIDE_REFUSED.remove(p.getUUID());
             }
         });
-        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerChangedDimensionEvent e) -> {
+        MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerChangedDimensionEvent e) -> {
             if (e.getEntity() instanceof ServerPlayer p) stow(p, true);
         });
-        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerRespawnEvent e) -> {
+        MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerRespawnEvent e) -> {
             if (e.getEntity() instanceof ServerPlayer p) stow(p, true);
         });
-        NeoForge.EVENT_BUS.addListener((LivingDeathEvent e) -> {
+        MinecraftForge.EVENT_BUS.addListener((LivingDeathEvent e) -> {
             if (e.getEntity() instanceof ServerPlayer p) stow(p, true);
         });
-        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> {
+        MinecraftForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> {
             WEARERS.clear();
             LAST_Y.clear();
             PENDING.clear();
@@ -598,7 +600,7 @@ public final class RigServer {
     }
 
     private static void setFloat(ServerPlayer player, boolean on) {
-        AttributeInstance flight = player.getAttribute(NeoForgeMod.CREATIVE_FLIGHT);
+        AttributeInstance flight = player.getAttribute(ForgeMod.CREATIVE_FLIGHT);
         if (flight == null) return;
         if (on && floatFix) {
             if (!flight.hasModifier(FLOAT_ID)) flight.addTransientModifier(FLOAT);

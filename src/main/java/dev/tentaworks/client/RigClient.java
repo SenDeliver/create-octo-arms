@@ -35,14 +35,14 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
-import net.neoforged.neoforge.common.NeoForgeMod;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.client.event.MovementInputUpdateEvent;
+import net.minecraftforge.common.ForgeMod;
+import net.minecraftforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -477,7 +477,8 @@ public final class RigClient {
     }
 
     @SubscribeEvent
-    static void onClientTick(ClientTickEvent.Post event) {
+    static void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         while (TentaworksKeys.SETTINGS.consumeClick()) {
             if (mc.player != null && mc.screen == null && TentacleRigItem.isWorn(mc.player)) RigSettingsScreen.open(EquipmentSlot.CHEST);
@@ -494,7 +495,7 @@ public final class RigClient {
     static void onClone(ClientPlayerNetworkEvent.Clone event) {
         reset();
         RigVisuals.clear();
-        AttributeInstance flight = event.getNewPlayer().getAttribute(NeoForgeMod.CREATIVE_FLIGHT);
+        AttributeInstance flight = event.getNewPlayer().getAttribute(ForgeMod.CREATIVE_FLIGHT);
         if (flight != null) flight.removeModifier(RigServer.FLOAT_ID);
     }
 }

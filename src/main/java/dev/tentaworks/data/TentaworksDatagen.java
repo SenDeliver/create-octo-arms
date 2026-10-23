@@ -11,9 +11,9 @@ import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.SmithingTransformRecipeBuilder;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.common.Tags;
+import net.minecraftforge.data.event.GatherDataEvent;
 
 import static dev.tentaworks.Tentaworks.REGISTRATE;
 

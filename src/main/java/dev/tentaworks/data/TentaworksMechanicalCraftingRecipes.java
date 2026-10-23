@@ -18,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
 
 /** Rigs: tank in the middle, Tentacles at the corners, Precision Mechanism on top (design §6). A crafted Rig starts empty. */
 public class TentaworksMechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
-    static final TagKey<Item> COPPER_PLATES = ItemTags.create(ResourceLocation.fromNamespaceAndPath("c", "plates/copper"));
+    static final TagKey<Item> COPPER_PLATES = ItemTags.create(new ResourceLocation("c", "plates/copper"));
 
     GeneratedRecipe COPPER_TENTACLE_RIG = create(TentaworksItems.COPPER_TENTACLE_RIG::get).recipe(b -> rig(b, AllItems.COPPER_BACKTANK.get()));
     GeneratedRecipe NETHERITE_TENTACLE_RIG = create(TentaworksItems.NETHERITE_TENTACLE_RIG::get).recipe(b -> rig(b, AllItems.NETHERITE_BACKTANK.get()));

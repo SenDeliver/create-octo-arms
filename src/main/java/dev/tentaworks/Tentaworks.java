@@ -18,10 +18,10 @@ import dev.tentaworks.registry.TentaworksLang;
 import dev.tentaworks.rig.RigServer;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModContainer;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
 import net.neoforged.neoforge.event.BlockEntityTypeAddBlocksEvent;
 
 @Mod(TentaworksIds.MOD_ID)

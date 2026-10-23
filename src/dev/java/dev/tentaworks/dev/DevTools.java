@@ -31,14 +31,14 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.common.NeoForgeMod;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
-import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
-import net.neoforged.neoforge.event.server.ServerStartedEvent;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.common.ForgeMod;
+import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.minecraftforge.event.entity.living.LivingFallEvent;
+import net.minecraftforge.event.server.ServerStartedEvent;
+import net.minecraftforge.event.TickEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -228,8 +228,9 @@ public final class DevTools {
     }
 
     /** Fake packets go in before the Rig handles this tick's packets, so they replace the real client's (as a cheating client's would). */
-    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.HIGHEST)
-    static void onTickStart(ServerTickEvent.Pre event) {
+    @SubscribeEvent(priority = net.minecraftforge.eventbus.api.EventPriority.HIGHEST)
+    static void onTickStart(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) return;
         tickStart = System.nanoTime();
         if (fakeTicks > 0) {
             fakeTicks--;
@@ -272,13 +273,14 @@ public final class DevTools {
     }
 
     @SubscribeEvent
-    static void onChunkLoad(net.neoforged.neoforge.event.level.ChunkEvent.Load event) {
+    static void onChunkLoad(net.minecraftforge.event.level.ChunkEvent.Load event) {
         if (!event.getLevel().isClientSide() && event.getChunk().getPos().x >= 1250)
             LOG.info("CHUNKLOAD {} {} new={}", event.getChunk().getPos().x, event.getChunk().getPos().z, event.isNewChunk());
     }
 
     @SubscribeEvent
-    static void onTick(ServerTickEvent.Post event) {
+    static void onTick(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
         long dt = System.nanoTime() - tickStart;
         tickCount++;
         tickNanos += dt;
@@ -293,7 +295,7 @@ public final class DevTools {
     }
 
     private static String line(ServerPlayer p) {
-        var flight = p.getAttribute(NeoForgeMod.CREATIVE_FLIGHT);
+        var flight = p.getAttribute(ForgeMod.CREATIVE_FLIGHT);
         Entity vehicle = p.getVehicle();
         return String.format("gt=%d %s pos=%.3f,%.3f,%.3f v=%.3f,%.3f,%.3f state=%s grips=%d cf=%.0f flying=%b fall=%.2f hp=%.1f ground=%b air=%d mv=%.3f,%.3f,%.3f%s sneak=%b pose=%s veh=%s ride=%s vrot=%s",
                 p.level().getGameTime(), p.getName().getString(), p.getX(), p.getY(), p.getZ(),

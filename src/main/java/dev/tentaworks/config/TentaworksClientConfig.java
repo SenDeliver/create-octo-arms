@@ -2,7 +2,7 @@ package dev.tentaworks.config;
 
 import dev.tentaworks.TentaworksIds;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec;
 import net.neoforged.neoforge.common.TranslatableEnum;
 
 import java.util.Locale;
@@ -12,9 +12,9 @@ import java.util.Locale;
  * the file or from Mods > Octo Arms > Config.
  */
 public final class TentaworksClientConfig {
-    public static final ModConfigSpec SPEC;
-    public static final ModConfigSpec.BooleanValue WALK_WHILE_HELD;
-    public static final ModConfigSpec.EnumValue<ForwardMode> FORWARD;
+    public static final ForgeConfigSpec SPEC;
+    public static final ForgeConfigSpec.BooleanValue WALK_WHILE_HELD;
+    public static final ForgeConfigSpec.EnumValue<ForwardMode> FORWARD;
 
     /** What {@code W}/{@code S} follow while the Rig carries you. */
     public enum ForwardMode implements TranslatableEnum {
@@ -31,7 +31,7 @@ public final class TentaworksClientConfig {
 
     static {
         String t = TentaworksIds.MOD_ID + ".configuration.";
-        ModConfigSpec.Builder b = new ModConfigSpec.Builder();
+        ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
         b.translation(t + "animation").push("animation");
         WALK_WHILE_HELD = b.comment("Vanilla walk animation (swinging arms and legs) while the Rig carries you or a Ship carries you with it. Off: the body hangs still")
                 .translation(t + "animation.walkWhileHeld").define("walkWhileHeld", false);

@@ -9,14 +9,13 @@ import dev.tentaworks.rig.TentacleGait;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RenderFrameEvent;
-import net.neoforged.neoforge.client.event.sound.PlaySoundEvent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.client.event.MovementInputUpdateEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.client.event.sound.PlaySoundEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +55,8 @@ public final class DevRigStats {
     }
 
     @SubscribeEvent
-    static void onFrame(RenderFrameEvent.Post event) {
+    static void onFrame(TickEvent.RenderTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
         frames++;
         long[] n = new long[1];
         TentacleRenderer.stats((ns, calls) -> n[0] = ns);
@@ -109,7 +109,8 @@ public final class DevRigStats {
     }
 
     @SubscribeEvent
-    static void onTick(ClientTickEvent.Post event) {
+    static void onTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         if (!gaitTrace || mc.player == null || mc.level == null) return;
         TentacleGait g = RigClient.gait();

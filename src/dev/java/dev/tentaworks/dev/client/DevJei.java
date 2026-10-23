@@ -31,7 +31,7 @@ final class DevJei {
         }
         RecipeIngredientRole r = role.equals("uses") ? RecipeIngredientRole.INPUT : RecipeIngredientRole.OUTPUT;
         IFocus<ItemStack> focus = rt.getJeiHelpers().getFocusFactory().createFocus(r, VanillaTypes.ITEM_STACK, stack);
-        Optional<RecipeType<?>> type = rt.getJeiHelpers().getRecipeType(ResourceLocation.parse(category));
+        Optional<RecipeType<?>> type = rt.getJeiHelpers().getRecipeType(new ResourceLocation(category));
         if (type.isEmpty()) {
             LOG.info("JEI no category {}", category);
             return;
