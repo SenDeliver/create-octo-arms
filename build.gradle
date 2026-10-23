@@ -1,6 +1,6 @@
 plugins {
     id 'java-library'
-    id 'net.neoforged.moddev' version '2.0.147'
+    id 'net.neoforged.moddev.legacyforge' version '2.0.148'
     id 'idea'
 }
 
@@ -11,26 +11,19 @@ base {
     archivesName = 'octo-arms'
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 repositories {
-    exclusiveContent {
-        forRepository { maven { url = "https://maven.ryanhcode.dev/releases" } }
-        filter {
-            includeGroup "dev.ryanhcode.sable"
-            includeGroup "dev.ryanhcode.sable-companion"
-        }
-    }
-    exclusiveContent {
-        forRepository { maven { url = "https://api.modrinth.com/maven" } }
-        filter { includeGroup "maven.modrinth" }
-    }
+    mavenCentral()
     maven { url = "https://maven.createmod.net" }
+    exclusiveContent {
+        forRepository { maven { url = "https://maven.tterrag.com" } }
+        filter { includeGroup "com.tterrag.registrate" }
+    }
     exclusiveContent {
         forRepository { maven { url = "https://maven.blamejared.com" } }
         filter { includeGroup "mezz.jei" }
     }
-    maven { url = "https://maven.ithundxr.dev/snapshots" }
 }
 
 sourceSets {
@@ -46,8 +39,9 @@ sourceSets {
     }
 }
 
-neoForge {
-    version = project.neo_version
+legacyForge {
+    version = "${minecraft_version}-${forge_version}"
+    accessTransformers.from 'src/main/resources/META-INF/accesstransformer.cfg'
 
     parchment {
         mappingsVersion = project.parchment_mappings_version
@@ -59,6 +53,7 @@ neoForge {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
             project.properties.each { k, v -> if (k.startsWith('tentaworks.')) systemProperty k, v.toString() }
             logLevel = org.slf4j.event.Level.INFO
+            if (name != 'clientProd') programArgument "-mixin.config=${mod_id}.mixins.json"
         }
         client {
             client()
@@ -114,44 +109,30 @@ neoForge {
             sourceSet(sourceSets.dev)
         }
     }
+}
 
-    unitTest {
-        enable()
-        testedMod = mods."${mod_id}"
-    }
+mixin {
+    add sourceSets.main, "${mod_id}.refmap.json"
+    config "${mod_id}.mixins.json"
+}
+
+obfuscation {
+    createRemappingConfiguration(configurations.devRuntimeOnly)
 }
 
 dependencies {
-    implementation("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
-    implementation("net.createmod.ponder:ponder-neoforge:${ponder_version}+mc${minecraft_version}")
-    compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_version}")
-    runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}")
-    implementation("com.tterrag.registrate:Registrate:${registrate_version}")
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
-    compileOnly("dev.ryanhcode.sable-companion:sable-companion-common-${minecraft_version}:${sable_companion_version}")
-    compileOnly("dev.ryanhcode.sable:sable-neoforge-${minecraft_version}:${sable_version}") {
-        exclude group: "dev.ryanhcode.sable-companion"
-        exclude group: "foundry.veil"
-        exclude group: "com.simibubi.create"
-        exclude group: "net.createmod.ponder"
-        exclude group: "dev.engine-room.flywheel"
-        exclude group: "com.tterrag.registrate"
-    }
-    if (project.hasProperty('withSable')) {
-        runtimeOnly("dev.ryanhcode.sable:sable-neoforge-${minecraft_version}:${sable_version}") {
-            exclude group: "dev.ryanhcode.sable-companion"
-            exclude group: "foundry.veil"
-            exclude group: "com.simibubi.create"
-            exclude group: "net.createmod.ponder"
-            exclude group: "dev.engine-room.flywheel"
-            exclude group: "com.tterrag.registrate"
-        }
-        runtimeOnly "maven.modrinth:create-aeronautics:${aero_bundle_version}"
-    }
+    modImplementation("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
+    modImplementation("net.createmod.ponder:Ponder-Forge-${minecraft_version}:${ponder_version}")
+    modCompileOnly("dev.engine-room.flywheel:flywheel-forge-api-${minecraft_version}:${flywheel_version}")
+    modRuntimeOnly("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_version}")
+    modImplementation("com.tterrag.registrate:Registrate:${registrate_version}")
+    implementation("io.github.llamalad7:mixinextras-forge:${mixinextras_version}")
 
-    compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
-    compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
-    if (!project.hasProperty('noJei')) devRuntimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
+    modCompileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
+    modCompileOnly("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
+    if (!project.hasProperty('noJei')) modDevRuntimeOnly("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
 
     testImplementation(platform("org.junit:junit-bom:5.10.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -166,7 +147,7 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
     var replaceProperties = [
             minecraft_version      : minecraft_version,
             minecraft_version_range: minecraft_version_range,
-            neo_version            : neo_version,
+            forge_version          : forge_version,
             loader_version_range   : loader_version_range,
             mod_id                 : mod_id,
             mod_name               : mod_name,
@@ -180,10 +161,11 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
     into "build/generated/sources/modMetadata"
 }
 sourceSets.main.resources.srcDir generateModMetadata
-neoForge.ideSyncTask generateModMetadata
+legacyForge.ideSyncTask generateModMetadata
 
 tasks.named('jar', Jar) {
     from('LICENSE')
+    manifest.attributes(["MixinConfigs": "${mod_id}.mixins.json"])
 }
 
 sourceSets {
@@ -192,8 +174,8 @@ sourceSets {
     }
 }
 
-neoForge.addModdingDependenciesTo(sourceSets.prodclient)
-neoForge.addModdingDependenciesTo(sourceSets.test)
+legacyForge.addModdingDependenciesTo(sourceSets.prodclient)
+legacyForge.addModdingDependenciesTo(sourceSets.test)
 
 tasks.register('devJar', Jar) {
     group = 'build'
@@ -207,4 +189,5 @@ tasks.register('devJar', Jar) {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+    options.compilerArgs += ['-Xmaxerrs', '100000']
 }
