@@ -134,8 +134,8 @@ public class RigPuppetElement extends AnimatedSceneElementBase {
         bodySpace(chain, bodyYaw);
 
         poseModel(time, dep);
-        VertexConsumer skin = buffer.getBuffer(RenderType.entityCutoutNoCull(DefaultPlayerSkin.getDefaultTexture()));
-        model.renderToBuffer(ps, skin, light, OverlayTexture.NO_OVERLAY);
+        VertexConsumer skin = buffer.getBuffer(RenderType.entityCutoutNoCull(DefaultPlayerSkin.getDefaultSkin()));
+        model.renderToBuffer(ps, skin, light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
 
         ps.pushPose();
         model.body.translateAndRotate(ps);

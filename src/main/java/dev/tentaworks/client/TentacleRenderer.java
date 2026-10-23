@@ -406,8 +406,8 @@ public final class TentacleRenderer {
     private static void quad(VertexConsumer vc, PoseStack.Pose p, TextureAtlasSprite s, int light, float nx, float ny, float nz,
                              float uFrom, float uTo, float vFrom, float vTo,
                              float ax, float ay, float az, float bx, float by, float bz, float cx, float cy, float cz, float dx, float dy, float dz) {
-        float u0 = s.getU(uFrom / 16f), u1 = s.getU(uTo / 16f);
-        float v0 = s.getV(vFrom / 16f), v1 = s.getV(vTo / 16f);
+        float u0 = s.getU(uFrom), u1 = s.getU(uTo);
+        float v0 = s.getV(vFrom), v1 = s.getV(vTo);
         vertex(vc, p, ax, ay, az, u0, v0, light, nx, ny, nz);
         vertex(vc, p, dx, dy, dz, u0, v1, light, nx, ny, nz);
         vertex(vc, p, cx, cy, cz, u1, v1, light, nx, ny, nz);
@@ -415,6 +415,6 @@ public final class TentacleRenderer {
     }
 
     private static void vertex(VertexConsumer vc, PoseStack.Pose p, float x, float y, float z, float u, float v, int light, float nx, float ny, float nz) {
-        vc.addVertex(p, x, y, z).setColor(0xFFFFFFFF).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(p, nx, ny, nz);
+        vc.vertex(p.pose(), x, y, z).color(255, 255, 255, 255).uv(u, v).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(p.normal(), nx, ny, nz).endVertex();
     }
 }

@@ -1,6 +1,7 @@
 package dev.tentaworks.client;
 
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.tentaworks.TentaworksIds;
@@ -17,7 +18,6 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Pose;
@@ -39,7 +39,7 @@ import org.joml.Vector3f;
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
     /** The first-person Rig's own buffer: ending a batch on the shared one mid-frame frees builders other layers still hold under batching mods. */
-    private static final ByteBufferBuilder FIRST_PERSON_BUFFER = new ByteBufferBuilder(256 * 1024);
+    private static final BufferBuilder FIRST_PERSON_BUFFER = new BufferBuilder(256 * 1024);
     public TentacleLayer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent) {
         super(parent);
     }
@@ -53,7 +53,7 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
             ps.pushPose();
             getParentModel().body.translateAndRotate(ps);
             TentacleRenderer.toTankSpace(ps);
-            Matrix4f m = new Matrix4f(ps.last().pose());
+            Matrix4f m = toCamera(ps);
             Vec3 cam = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
             Vec3 body = player.getPosition(pt).add(0, 1.1, 0).subtract(cam);
             Vector3f c = m.transformPosition(0.5F, 0.5F, 0.5F, new Vector3f());
@@ -80,17 +80,9 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
         return distance < 24 ? 0 : distance < 48 ? 1 : 2;
     }
 
-    @SubscribeEvent
-    static void onAddLayers(EntityRenderersEvent.AddLayers event) {
-        for (PlayerSkin.Model model : event.getSkins()) {
-            EntityRenderer<? extends Player> r = event.getSkin(model);
-            if (r instanceof LivingEntityRenderer<?, ?> lr && lr.getModel() instanceof PlayerModel<?>) {
-                @SuppressWarnings("unchecked")
-                LivingEntityRenderer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> pr =
-                        (LivingEntityRenderer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>>) lr;
-                pr.addLayer(new TentacleLayer(pr));
-            }
-        }
+    /** The level's PoseStack carries the camera rotation on 1.20.1: undo it so {@code toCamera} maps to camera-relative world. */
+    private static Matrix4f toCamera(PoseStack ps) {
+        return new Matrix4f(RenderSystem.getInverseViewRotationMatrix()).mul(ps.last().pose());
     }
 
     @SubscribeEvent
@@ -102,7 +94,7 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
         if (!(player.getItemBySlot(EquipmentSlot.CHEST).getItem() instanceof TentacleRigItem rig)) return;
         RigVisuals.Visual visual = RigVisuals.get(player);
         if (visual == null || !visual.visible() || player.getPose() == Pose.SLEEPING) return;
-        float pt = event.getPartialTick().getGameTimeDeltaPartialTick(false);
+        float pt = event.getPartialTick();
         TentacleRenderer.timed(() -> {
             Vec3 cam = event.getCamera().getPosition();
             PoseStack ps = event.getPoseStack();
@@ -116,9 +108,28 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
             TentacleRenderer.toTankSpace(ps);
             MultiBufferSource.BufferSource buffers = MultiBufferSource.immediate(FIRST_PERSON_BUFFER);
             TentacleRenderer.drawRig(ps, buffers, player, rig.tier(), visual, pt,
-                    new TentacleRenderer.Space(new Matrix4f(ps.last().pose()), cam, true, true, 0xF000F0, 0));
+                    new TentacleRenderer.Space(toCamera(ps), cam, true, true, 0xF000F0, 0));
             ps.popPose();
             buffers.endBatch();
         });
+    }
+
+    @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+    public static final class Layers {
+        private Layers() {
+        }
+
+        @SubscribeEvent
+        static void onAddLayers(EntityRenderersEvent.AddLayers event) {
+            for (String skin : event.getSkins()) {
+                EntityRenderer<? extends Player> r = event.getSkin(skin);
+                if (r instanceof LivingEntityRenderer<?, ?> lr && lr.getModel() instanceof PlayerModel<?>) {
+                    @SuppressWarnings("unchecked")
+                    LivingEntityRenderer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> pr =
+                            (LivingEntityRenderer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>>) lr;
+                    pr.addLayer(new TentacleLayer(pr));
+                }
+            }
+        }
     }
 }

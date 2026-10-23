@@ -28,7 +28,7 @@ public class TentaworksPonderPlugin implements PonderPlugin {
 
     @Override
     public void registerScenes(PonderSceneRegistrationHelper<ResourceLocation> helper) {
-        PonderSceneRegistrationHelper<ItemProviderEntry<?, ?>> h = helper.withKeyFunction(RegistryEntry::getId);
+        PonderSceneRegistrationHelper<ItemProviderEntry<?>> h = helper.withKeyFunction(RegistryEntry::getId);
         h.forComponents(TentaworksItems.COPPER_TENTACLE_RIG, TentaworksItems.NETHERITE_TENTACLE_RIG, TentaworksItems.TENTACLE,
                         TentaworksItems.COPPER_TENTACLE_RIG_PLACEABLE, TentaworksItems.NETHERITE_TENTACLE_RIG_PLACEABLE)
                 .addStoryBoard("tentacle_rig", RigPonderScenes::tentacleRig, TAG);
@@ -42,7 +42,7 @@ public class TentaworksPonderPlugin implements PonderPlugin {
                 .title("Tentacle Rigs")
                 .description("Worn Backtanks with four pneumatic Tentacles that carry you over floors, walls and ceilings")
                 .register();
-        PonderTagRegistrationHelper<ItemProviderEntry<?, ?>> h = helper.withKeyFunction(RegistryEntry::getId);
+        PonderTagRegistrationHelper<ItemProviderEntry<?>> h = helper.withKeyFunction(RegistryEntry::getId);
         h.addToTag(TAG)
                 .add(TentaworksItems.COPPER_TENTACLE_RIG)
                 .add(TentaworksItems.NETHERITE_TENTACLE_RIG)
