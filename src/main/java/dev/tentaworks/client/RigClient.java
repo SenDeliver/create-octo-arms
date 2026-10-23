@@ -12,7 +12,6 @@ import dev.tentaworks.rig.Grip;
 import dev.tentaworks.rig.Grips;
 import dev.tentaworks.rig.RigAir;
 import dev.tentaworks.rig.RigEnchants;
-import dev.tentaworks.rig.RigServer;
 import dev.tentaworks.rig.RigSettings;
 import dev.tentaworks.rig.RigState;
 import dev.tentaworks.rig.TentacleGait;
@@ -28,7 +27,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.Level;
@@ -42,7 +40,6 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.client.event.MovementInputUpdateEvent;
-import net.minecraftforge.common.ForgeMod;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -495,7 +492,5 @@ public final class RigClient {
     static void onClone(ClientPlayerNetworkEvent.Clone event) {
         reset();
         RigVisuals.clear();
-        AttributeInstance flight = event.getNewPlayer().getAttribute(ForgeMod.CREATIVE_FLIGHT);
-        if (flight != null) flight.removeModifier(RigServer.FLOAT_ID);
     }
 }

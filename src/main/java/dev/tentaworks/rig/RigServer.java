@@ -3,7 +3,6 @@ package dev.tentaworks.rig;
 import com.mojang.logging.LogUtils;
 import com.simibubi.create.content.equipment.armor.BacktankUtil;
 import com.simibubi.create.content.kinetics.chainConveyor.ServerChainConveyorHandler;
-import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.compat.Frame;
 import dev.tentaworks.compat.Pose;
 import dev.tentaworks.compat.ShipFrames;
@@ -13,34 +12,34 @@ import dev.tentaworks.network.RigStatePacket;
 import dev.tentaworks.network.TentaworksNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.event.entity.EntityTeleportEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
  * Server side of the Rig: trusts the client's motion (adr/0001) but checks the Rig is worn and the Grips are real,
- * mirrors the velocity and keeps the float kick quiet with a transient creative-flight modifier while the Rig carries.
+ * mirrors the velocity and, while the Rig carries, keeps the float kick quiet (its counters reset every tick) and cancels fall damage.
  * Air is the server's call: it drains here, an empty Rig cannot activate and a carrying one drops to Crawl.
  * So is wear: a worn-out Rig (1 durability) cannot activate and an Active one Sets Down.
  * Riding a Ship: the carry Ship (the one holding most valid Grips, at least two) moves the wearer too; every check on the
@@ -51,8 +50,6 @@ import java.util.UUID;
  */
 public final class RigServer {
     private static final Logger LOG = LogUtils.getLogger();
-    public static final ResourceLocation FLOAT_ID = TentaworksIds.id("rig_float");
-    private static final AttributeModifier FLOAT = new AttributeModifier(FLOAT_ID, 1.0, AttributeModifier.Operation.ADD_VALUE);
     private static final double GRIP_SLACK = 0.75;
     private static final int REJECT_TICKS = 10;
     private static final int SILENT_TICKS = 10;
@@ -70,6 +67,7 @@ public final class RigServer {
     private static final Map<UUID, RigMotionPacket> PENDING = new HashMap<>();
     private static final Map<UUID, Integer> BAD_PACKET_LOGGED = new HashMap<>();
     private static final Map<UUID, Integer> RIDE_REFUSED = new HashMap<>();
+    private static final Set<UUID> FLOATING = new HashSet<>();
     private static long processed;
     private static long relays;
     private static boolean floatFix = true;
@@ -119,7 +117,11 @@ public final class RigServer {
             if (e.phase == TickEvent.Phase.END && e.player instanceof ServerPlayer p) {
                 fallGuard(p);
                 tick(p);
+                if (FLOATING.contains(p.getUUID())) quietFloatKick(p);
             }
+        });
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, (LivingFallEvent e) -> {
+            if (e.getEntity() instanceof ServerPlayer p && FLOATING.contains(p.getUUID())) e.setCanceled(true);
         });
         MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent e) -> {
             if (e.phase == TickEvent.Phase.START) processPending(e.getServer());
@@ -171,6 +173,7 @@ public final class RigServer {
             PENDING.clear();
             BAD_PACKET_LOGGED.clear();
             RIDE_REFUSED.clear();
+            FLOATING.clear();
         });
     }
 
@@ -192,6 +195,11 @@ public final class RigServer {
     /** Motion packets handled and state relays sent since start (server stats). */
     public static long[] stats() {
         return new long[]{processed, relays};
+    }
+
+    /** The Rig carries this wearer with the float fix on: no float kick, no fall damage. */
+    public static boolean floating(ServerPlayer player) {
+        return FLOATING.contains(player.getUUID());
     }
 
     public static void setFloatFix(boolean on) {
@@ -600,13 +608,18 @@ public final class RigServer {
     }
 
     private static void setFloat(ServerPlayer player, boolean on) {
-        AttributeInstance flight = player.getAttribute(ForgeMod.CREATIVE_FLIGHT);
-        if (flight == null) return;
         if (on && floatFix) {
-            if (!flight.hasModifier(FLOAT_ID)) flight.addTransientModifier(FLOAT);
-            if (player.connection != null) ((ServerGamePacketListenerImplAccessor) player.connection).tentaworks$setAboveGroundTickCount(0);
-        } else if (flight.hasModifier(FLOAT_ID)) {
-            flight.removeModifier(FLOAT_ID);
+            FLOATING.add(player.getUUID());
+            quietFloatKick(player);
+        } else {
+            FLOATING.remove(player.getUUID());
         }
+    }
+
+    private static void quietFloatKick(ServerPlayer player) {
+        if (player.connection == null) return;
+        ServerGamePacketListenerImplAccessor c = (ServerGamePacketListenerImplAccessor) player.connection;
+        c.tentaworks$setAboveGroundTickCount(0);
+        c.tentaworks$setAboveGroundVehicleTickCount(0);
     }
 }

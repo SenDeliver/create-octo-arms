@@ -33,7 +33,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
@@ -295,12 +294,11 @@ public final class DevTools {
     }
 
     private static String line(ServerPlayer p) {
-        var flight = p.getAttribute(ForgeMod.CREATIVE_FLIGHT);
         Entity vehicle = p.getVehicle();
         return String.format("gt=%d %s pos=%.3f,%.3f,%.3f v=%.3f,%.3f,%.3f state=%s grips=%d cf=%.0f flying=%b fall=%.2f hp=%.1f ground=%b air=%d mv=%.3f,%.3f,%.3f%s sneak=%b pose=%s veh=%s ride=%s vrot=%s",
                 p.level().getGameTime(), p.getName().getString(), p.getX(), p.getY(), p.getZ(),
                 p.getDeltaMovement().x, p.getDeltaMovement().y, p.getDeltaMovement().z,
-                RigServer.state(p), RigServer.grips(p).size(), flight == null ? -1 : flight.getValue(),
+                RigServer.state(p), RigServer.grips(p).size(), RigServer.floating(p) ? 1.0 : 0.0,
                 p.getAbilities().flying, p.fallDistance, p.getHealth(), p.onGround(), BacktankUtil.getAir(p.getItemBySlot(EquipmentSlot.CHEST)),
                 RigServer.motion(p).x, RigServer.motion(p).y, RigServer.motion(p).z, shipFields(p), p.isShiftKeyDown(), p.getPose(),
                 vehicle == null ? "-" : BuiltInRegistries.ENTITY_TYPE.getKey(vehicle.getType()),
