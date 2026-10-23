@@ -1,7 +1,6 @@
 package dev.tentaworks.network;
 
 import dev.tentaworks.TentaworksIds;
-import dev.tentaworks.registry.TentaworksDataComponents;
 import dev.tentaworks.rig.RigSettings;
 import dev.tentaworks.rig.TentacleRigItem;
 import io.netty.buffer.ByteBuf;
@@ -34,7 +33,7 @@ public record RigSettingsPacket(EquipmentSlot slot, RigSettings settings) implem
     public static void handle(ServerPlayer player, RigSettingsPacket packet) {
         ItemStack stack = player.getItemBySlot(packet.slot);
         if (!(stack.getItem() instanceof TentacleRigItem rig)) return;
-        stack.set(TentaworksDataComponents.RIG_SETTINGS.get(), packet.settings.clamped(rig.reach(stack)));
+        RigSettings.set(stack, packet.settings.clamped(rig.reach(stack)));
     }
 
     @Override

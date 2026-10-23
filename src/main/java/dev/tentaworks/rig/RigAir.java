@@ -24,7 +24,7 @@ public final class RigAir {
         return stack.getItem() instanceof TentacleRigItem ? stack : ItemStack.EMPTY;
     }
 
-    public static int air(Player player) {
+    public static float air(Player player) {
         ItemStack rig = worn(player);
         return rig.isEmpty() ? 0 : BacktankUtil.getAir(rig);
     }

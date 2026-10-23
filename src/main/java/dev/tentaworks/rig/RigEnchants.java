@@ -2,40 +2,50 @@ package dev.tentaworks.rig;
 
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.config.TentaworksConfig;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.EnchantmentCategory;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
 /**
- * The Rig's own enchantments (data-driven, {@code data/tentaworks/enchantment}). Strength per level comes from the
- * Server Config. Levels above an enchantment's max level count as the max level.
+ * The Rig's own enchantments. Strength per level comes from the Server Config. Levels above an enchantment's max level
+ * count as the max level. Costs, rarity (= weight and anvil cost) and max levels match the 1.21.1 data files.
  */
 public final class RigEnchants {
-    public static final ResourceKey<Enchantment> FAR_REACH = key(TentaworksIds.FAR_REACH);
-    public static final ResourceKey<Enchantment> THRIFT = key(TentaworksIds.THRIFT);
-    public static final ResourceKey<Enchantment> SWIFT = key(TentaworksIds.SWIFT);
+    private static final DeferredRegister<Enchantment> REGISTER = DeferredRegister.create(ForgeRegistries.ENCHANTMENTS, TentaworksIds.MOD_ID);
+    private static EnchantmentCategory category;
+
+    public static final RegistryObject<Enchantment> FAR_REACH = REGISTER.register(TentaworksIds.FAR_REACH, FarReach::new);
+    public static final RegistryObject<Enchantment> THRIFT = REGISTER.register(TentaworksIds.THRIFT, Thrift::new);
+    public static final RegistryObject<Enchantment> SWIFT = REGISTER.register(TentaworksIds.SWIFT, Swift::new);
     /** Thrift can never cut Air use by more than this, whatever the config and level. */
     private static final double MAX_THRIFT = 0.9;
 
     private RigEnchants() {
     }
 
-    private static ResourceKey<Enchantment> key(String path) {
-        return ResourceKey.create(Registries.ENCHANTMENT, TentaworksIds.id(path));
+    public static void register(IEventBus modBus) {
+        REGISTER.register(modBus);
     }
 
-    /** Side-safe: the holder comes from the stack itself, so client and server stacks resolve alike. */
-    public static int level(ItemStack stack, ResourceKey<Enchantment> key) {
+    public static boolean enchantable(Item item) {
+        return item instanceof TentacleRigItem;
+    }
+
+    private static EnchantmentCategory category() {
+        if (category == null) category = EnchantmentCategory.create("tentaworks_rig", RigEnchants::enchantable);
+        return category;
+    }
+
+    public static int level(ItemStack stack, RegistryObject<Enchantment> enchantment) {
         if (stack.isEmpty() || !stack.isEnchanted()) return 0;
-        for (Object2IntMap.Entry<Holder<Enchantment>> e : stack.getTagEnchantments().entrySet()) {
-            Holder<Enchantment> holder = e.getKey();
-            if (holder.is(key)) return Math.min(EnchantmentHelper.getItemEnchantmentLevel(holder, stack), holder.value().getMaxLevel());
-        }
-        return 0;
+        Enchantment e = enchantment.get();
+        return Math.min(stack.getEnchantmentLevel(e), e.getMaxLevel());
     }
 
     /** Extra Reach in blocks. */
@@ -51,5 +61,51 @@ public final class RigEnchants {
     /** Speed and top Speed multiplier, 1 without Swift. */
     public static double swift(ItemStack rig) {
         return 1.0 + level(rig, SWIFT) * TentaworksConfig.value(TentaworksConfig.ENCHANT_SWIFT);
+    }
+
+    /** min cost = minBase + perLevel * (level - 1), max cost = maxBase + perLevel * (level - 1). */
+    public static class RigEnchantment extends Enchantment {
+        private final int maxLevel, minBase, maxBase, perLevel;
+
+        protected RigEnchantment(Rarity rarity, int maxLevel, int minBase, int maxBase, int perLevel) {
+            super(rarity, category(), new EquipmentSlot[]{TentacleRigItem.SLOT});
+            this.maxLevel = maxLevel;
+            this.minBase = minBase;
+            this.maxBase = maxBase;
+            this.perLevel = perLevel;
+        }
+
+        @Override
+        public int getMaxLevel() {
+            return maxLevel;
+        }
+
+        @Override
+        public int getMinCost(int level) {
+            return minBase + perLevel * (level - 1);
+        }
+
+        @Override
+        public int getMaxCost(int level) {
+            return maxBase + perLevel * (level - 1);
+        }
+    }
+
+    public static class FarReach extends RigEnchantment {
+        public FarReach() {
+            super(Rarity.RARE, 3, 15, 65, 12);
+        }
+    }
+
+    public static class Thrift extends RigEnchantment {
+        public Thrift() {
+            super(Rarity.UNCOMMON, 3, 5, 55, 10);
+        }
+    }
+
+    public static class Swift extends RigEnchantment {
+        public Swift() {
+            super(Rarity.RARE, 2, 15, 65, 15);
+        }
     }
 }

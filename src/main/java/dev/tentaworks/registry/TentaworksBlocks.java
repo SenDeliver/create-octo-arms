@@ -1,6 +1,5 @@
 package dev.tentaworks.registry;
 
-import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.api.behaviour.display.DisplaySource;
 import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.equipment.armor.BacktankBlock;
@@ -21,8 +20,9 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
-import net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction;
+import net.minecraft.world.level.storage.loot.functions.CopyNbtFunction;
 import net.minecraft.world.level.storage.loot.predicates.ExplosionCondition;
+import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 
 import java.util.function.Supplier;
@@ -61,7 +61,10 @@ public final class TentaworksBlocks {
                         .when(ExplosionCondition.survivesExplosion())
                         .setRolls(ConstantValue.exactly(1))
                         .add(LootItem.lootTableItem(drop.get())
-                                .apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).include(AllDataComponents.BACKTANK_AIR))))))
+                                .apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY)
+                                        .copy("VanillaTag", "{}", CopyNbtFunction.MergeStrategy.MERGE))
+                                .apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY)
+                                        .copy("Air", "Air"))))))
                 .register();
     }
 }

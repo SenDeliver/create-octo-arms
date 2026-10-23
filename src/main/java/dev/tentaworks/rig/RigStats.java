@@ -1,9 +1,9 @@
 package dev.tentaworks.rig;
 
-import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.content.equipment.armor.BacktankBlockEntity;
 import com.simibubi.create.content.equipment.armor.BacktankUtil;
 import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
@@ -22,12 +22,14 @@ public final class RigStats {
     private RigStats() {
     }
 
-    /** The Rig item a placed Rig Block stands for, with its saved components (enchantments, settings). */
+    /** The Rig item a placed Rig Block stands for, with its saved tag (enchantments, settings), as Create's pick-up builds it. */
     public static ItemStack stackOf(BacktankBlockEntity be) {
         if (!(be.getBlockState().getBlock() instanceof RigBlock rig)) return ItemStack.EMPTY;
         Item item = rig.tier() == RigTier.NETHERITE ? TentaworksItems.NETHERITE_TENTACLE_RIG.get() : TentaworksItems.COPPER_TENTACLE_RIG.get();
-        ItemStack stack = new ItemStack(item.builtInRegistryHolder(), 1, be.getComponentPatch());
-        stack.set(AllDataComponents.BACKTANK_AIR, be.getAirLevel());
+        ItemStack stack = new ItemStack(item);
+        CompoundTag tag = be.getVanillaTag().copy();
+        tag.putInt("Air", be.getAirLevel());
+        stack.setTag(tag);
         return stack;
     }
 

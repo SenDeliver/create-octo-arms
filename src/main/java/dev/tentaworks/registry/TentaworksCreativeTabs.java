@@ -1,6 +1,5 @@
 package dev.tentaworks.registry;
 
-import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.content.equipment.armor.BacktankUtil;
 import dev.tentaworks.TentaworksIds;
 import net.minecraft.core.registries.Registries;
@@ -25,7 +24,7 @@ public final class TentaworksCreativeTabs {
                     int air = fullAir();
                     if (air > 0) {
                         ItemStack filled = new ItemStack(rig);
-                        filled.set(AllDataComponents.BACKTANK_AIR, air);
+                        filled.getOrCreateTag().putInt("Air", air);
                         out.accept(filled);
                     }
                 }

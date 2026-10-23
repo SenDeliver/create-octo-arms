@@ -7,7 +7,6 @@ import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.gui.widget.SelectionScrollInput;
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.network.RigSettingsPacket;
-import dev.tentaworks.registry.TentaworksDataComponents;
 import dev.tentaworks.rig.RigSettings;
 import dev.tentaworks.rig.RigSettings.ActivationMode;
 import dev.tentaworks.rig.TentacleRigItem;
@@ -157,7 +156,7 @@ public class RigSettingsScreen extends AbstractSimiScreen {
     @Override
     public void removed() {
         RigSettings s = settings();
-        rig.set(TentaworksDataComponents.RIG_SETTINGS.get(), s);
+        RigSettings.set(rig, s);
         PacketDistributor.sendToServer(new RigSettingsPacket(slot, s));
     }
 }

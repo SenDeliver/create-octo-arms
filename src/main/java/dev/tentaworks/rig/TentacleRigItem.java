@@ -6,11 +6,8 @@ import com.simibubi.create.foundation.item.LayeredArmorItem;
 import dev.tentaworks.client.RigSettingsScreen;
 import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -18,7 +15,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorMaterial;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
@@ -35,7 +31,7 @@ public class TentacleRigItem extends BacktankItem {
     public static final double MAX_REACH = 16.0;
     private final RigTier tier;
 
-    public TentacleRigItem(Holder<ArmorMaterial> material, Properties properties, ResourceLocation textureLoc,
+    public TentacleRigItem(ArmorMaterial material, Properties properties, ResourceLocation textureLoc,
                            Supplier<BacktankBlockItem> placeable, RigTier tier) {
         super(material, properties, textureLoc, placeable);
         this.tier = tier;
@@ -69,10 +65,10 @@ public class TentacleRigItem extends BacktankItem {
         return RigSettings.maxSpeed() * RigEnchants.swift(stack);
     }
 
-    /** Create's BacktankItem refuses Mending and Unbreaking (its backtanks have no durability); a Rig has durability, so it takes them. */
+    /** Create's BacktankItem has no durability (and so refuses Mending and Unbreaking); a Rig has durability, so it takes them. */
     @Override
-    public boolean supportsEnchantment(ItemStack stack, Holder<Enchantment> enchantment) {
-        return stack.is(Items.ENCHANTED_BOOK) || enchantment.value().isSupportedItem(stack);
+    public boolean canBeDepleted() {
+        return true;
     }
 
     /** Elytra-style: at 1 durability the Rig cannot be Activated (an Active one Sets Down) until repaired. */
@@ -82,7 +78,7 @@ public class TentacleRigItem extends BacktankItem {
 
     /** The Rig never breaks: wear stops at 1 durability, so Air, enchantments and Rig Settings stay with it. */
     @Override
-    public <T extends LivingEntity> int damageItem(ItemStack stack, int amount, @Nullable T entity, Consumer<Item> onBroken) {
+    public <T extends LivingEntity> int damageItem(ItemStack stack, int amount, @Nullable T entity, Consumer<T> onBroken) {
         return amount <= 0 ? amount : Math.max(0, Math.min(amount, stack.getMaxDamage() - 1 - stack.getDamageValue()));
     }
 
@@ -98,10 +94,10 @@ public class TentacleRigItem extends BacktankItem {
 
     /** The item bar shows Air, so wear is shown here once the Rig is damaged (advanced tooltips already show it). */
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-        super.appendHoverText(stack, context, tooltip, flag);
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+        super.appendHoverText(stack, level, tooltip, flag);
         tooltip.add(Component.translatable("tentaworks.stats.air").withStyle(ChatFormatting.GRAY).append(" ")
-                .append(Component.translatable("tentaworks.stats.air.value", BacktankUtil.getAir(stack), BacktankUtil.maxAir(stack)).withStyle(ChatFormatting.GOLD)));
+                .append(Component.translatable("tentaworks.stats.air.value", (int) BacktankUtil.getAir(stack), BacktankUtil.maxAir(stack)).withStyle(ChatFormatting.GOLD)));
         RigStats.addRigLines(stack, tooltip, "");
         if (stack.isDamaged() && !flag.isAdvanced())
             tooltip.add(Component.translatable("item.durability", stack.getMaxDamage() - stack.getDamageValue(), stack.getMaxDamage()).withStyle(ChatFormatting.GRAY));
@@ -119,7 +115,7 @@ public class TentacleRigItem extends BacktankItem {
     }
 
     public static class Layered extends TentacleRigItem implements LayeredArmorItem {
-        public Layered(Holder<ArmorMaterial> material, Properties properties, ResourceLocation textureLoc,
+        public Layered(ArmorMaterial material, Properties properties, ResourceLocation textureLoc,
                        Supplier<BacktankBlockItem> placeable, RigTier tier) {
             super(material, properties, textureLoc, placeable, tier);
         }

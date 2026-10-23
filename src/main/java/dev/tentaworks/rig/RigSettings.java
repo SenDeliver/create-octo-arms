@@ -1,20 +1,19 @@
 package dev.tentaworks.rig;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.config.TentaworksConfig;
-import dev.tentaworks.registry.TentaworksDataComponents;
-import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 
 /**
- * The player's Rig Settings, stored on each Rig item (component {@code tentaworks:rig_settings}). Values are clamped to
+ * The player's Rig Settings, stored on each Rig item (stack tag {@code tentaworks:rig_settings}). Values are clamped to
  * the Server Config whenever they are written and again whenever they are read, since an admin can lower the caps later.
  */
 public record RigSettings(float standingHeight, float speed, ActivationMode activation) {
@@ -23,23 +22,14 @@ public record RigSettings(float standingHeight, float speed, ActivationMode acti
     public static final float WALK_SPEED = 4.3F;
     public static final RigSettings DEFAULT = new RigSettings(DEFAULT_HEIGHT, DEFAULT_SPEED, ActivationMode.DOUBLE_JUMP);
 
-    public static final Codec<RigSettings> CODEC = RecordCodecBuilder.create(i -> i.group(
-            Codec.FLOAT.lenientOptionalFieldOf("standing_height", DEFAULT_HEIGHT).forGetter(RigSettings::standingHeight),
-            Codec.FLOAT.lenientOptionalFieldOf("speed", DEFAULT_SPEED).forGetter(RigSettings::speed),
-            ActivationMode.CODEC.lenientOptionalFieldOf("activation", ActivationMode.DOUBLE_JUMP).forGetter(RigSettings::activation)
-    ).apply(i, RigSettings::new));
-    public static final StreamCodec<ByteBuf, RigSettings> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.FLOAT, RigSettings::standingHeight,
-            ByteBufCodecs.FLOAT, RigSettings::speed,
-            ActivationMode.STREAM_CODEC, RigSettings::activation,
-            RigSettings::new);
+    public static final String NBT_KEY = TentaworksIds.MOD_ID + ":" + TentaworksIds.RIG_SETTINGS;
+    private static final String HEIGHT_KEY = "standing_height";
+    private static final String SPEED_KEY = "speed";
+    private static final String ACTIVATION_KEY = "activation";
 
     public enum ActivationMode implements StringRepresentable {
         DOUBLE_JUMP,
         KEY;
-
-        public static final Codec<ActivationMode> CODEC = StringRepresentable.fromEnum(ActivationMode::values);
-        public static final StreamCodec<ByteBuf, ActivationMode> STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(ActivationMode::byName, ActivationMode::getSerializedName);
 
         @Override
         public String getSerializedName() {
@@ -52,8 +42,46 @@ public record RigSettings(float standingHeight, float speed, ActivationMode acti
         }
     }
 
+    /** Each field on its own: a missing or malformed field falls back to its default and keeps the others. */
+    public static RigSettings fromNbt(CompoundTag tag) {
+        float h = tag.contains(HEIGHT_KEY, Tag.TAG_ANY_NUMERIC) ? tag.getFloat(HEIGHT_KEY) : DEFAULT_HEIGHT;
+        float s = tag.contains(SPEED_KEY, Tag.TAG_ANY_NUMERIC) ? tag.getFloat(SPEED_KEY) : DEFAULT_SPEED;
+        ActivationMode a = tag.contains(ACTIVATION_KEY, Tag.TAG_STRING) ? ActivationMode.byName(tag.getString(ACTIVATION_KEY)) : ActivationMode.DOUBLE_JUMP;
+        return new RigSettings(h, s, a);
+    }
+
+    public CompoundTag toNbt() {
+        CompoundTag tag = new CompoundTag();
+        tag.putFloat(HEIGHT_KEY, standingHeight);
+        tag.putFloat(SPEED_KEY, speed);
+        tag.putString(ACTIVATION_KEY, (activation == null ? ActivationMode.DOUBLE_JUMP : activation).getSerializedName());
+        return tag;
+    }
+
+    public void write(FriendlyByteBuf buf) {
+        buf.writeFloat(standingHeight);
+        buf.writeFloat(speed);
+        buf.writeUtf((activation == null ? ActivationMode.DOUBLE_JUMP : activation).getSerializedName());
+    }
+
+    public static RigSettings read(FriendlyByteBuf buf) {
+        return new RigSettings(buf.readFloat(), buf.readFloat(), ActivationMode.byName(buf.readUtf()));
+    }
+
+    /** The settings saved on the stack as they are (not clamped), or null when it has none. */
+    @Nullable
+    public static RigSettings stored(ItemStack rig) {
+        CompoundTag tag = rig.getTag();
+        return tag != null && tag.contains(NBT_KEY, Tag.TAG_COMPOUND) ? fromNbt(tag.getCompound(NBT_KEY)) : null;
+    }
+
+    public static void set(ItemStack rig, RigSettings settings) {
+        rig.getOrCreateTag().put(NBT_KEY, settings.toNbt());
+    }
+
     public static RigSettings of(ItemStack rig) {
-        RigSettings raw = rig.getOrDefault(TentaworksDataComponents.RIG_SETTINGS.get(), DEFAULT);
+        RigSettings stored = stored(rig);
+        RigSettings raw = stored == null ? DEFAULT : stored;
         return rig.getItem() instanceof TentacleRigItem item ? raw.clamped(item.reach(rig)) : raw;
     }
 

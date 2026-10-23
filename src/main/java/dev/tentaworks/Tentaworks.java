@@ -15,6 +15,7 @@ import dev.tentaworks.registry.TentaworksCreativeTabs;
 import dev.tentaworks.registry.TentaworksDisplaySources;
 import dev.tentaworks.registry.TentaworksItems;
 import dev.tentaworks.registry.TentaworksLang;
+import dev.tentaworks.rig.RigEnchants;
 import dev.tentaworks.rig.RigServer;
 import com.google.common.collect.ImmutableSet;
 import dev.tentaworks.client.TentaworksClient;
@@ -45,6 +46,7 @@ public class Tentaworks {
         TentaworksDisplaySources.init();
         TentaworksBlocks.init();
         TentaworksItems.init();
+        RigEnchants.register(modBus);
         TentaworksCreativeTabs.register(modBus);
         TentaworksLang.init();
         TentaworksDatagen.register(modBus);
