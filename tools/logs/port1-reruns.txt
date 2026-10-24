@@ -1,0 +1,51 @@
+# Suites re-run alone after tools/run_all.sh port1 (dev login stall in the full run). Same run_all.sh lines and metrics scripts.
+== main (tag port1r)
+server: moved wrongly=0, moved too quickly=26, Flying is not enabled=0, multiplayer.disconnect.flying=0, lost connection=2, forcing Falling=0, non-finite=0, kicked=0, moves against Crawl=0 exceptions(excl. known)=0
+moved too quickly: 26 total, 26 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=0 []
+tools/logs/port1r-main-client.log exceptions(excl. known)= 0
+tools/logs/port1r-main-client2.log exceptions(excl. known)= 0
+TRACE/STRACE ticks=1942 compared=1523 (Rig not Stowed, teleport ticks +-4 skipped) max drift same gt=1.195 allowing 1 tick lag=0.000 ticks>0.5 (lag-allowed)=0
+== spike_metrics: port1r-main + port1-life + port1-creative
+S1 flat walk: 17.08 blocks in 60 ticks W = 5.69 b/s, y change +0.000, min held 4
+S2 wall climb: start y -58.50, target y>=-50 reached after 1.80 s, top y -43.71 after 3 s, min held 2
+S3 ceiling hang idle: 12.4 s, client y range 0.0000, held min 4, server cf min 1, server state {'ACTIVE'}, feet -52.900 (ceiling -48, floor -60)
+S4 cliff: over edge x>141 and below top: 94 ticks, x max over wall before floor 145.198, ticks pinned at x=145.0 (Reach from wall) descending: 17 (y -53.55 -> -56.72), states {'ACTIVE'}, end 157.28,-60.00
+S5 gap: stop x 174.200, predicted 174.200 (edge x=171, top -50, body y -47.60, Reach 4), y kept -48.500, states {'ACTIVE'}
+S6 grips broken: states ACTIVE -> FALLING -> ACTIVE, Falling 18 ticks, fell 12.00 blocks, re-grab feet y -56.901 (floor -60), server hp min 20.0, cf during Falling [0.0]
+S7 Space/Shift: max feet y -56.901 = 3.10 above floor (body 4.00 = Reach), idle at top 5.0 s with server cf 1, Shift end y -60.000
+S8 Double Jump on/off: client states ACTIVE -> SETTING_DOWN -> STOWED, client fly ever true: False, server abilities.flying samples ['0b', '0b', '0b']
+W underwater: climbed to feet -54.378 (water top -51), idle 3.0 s y range 0.0000, held min 4
+LIFE mayfly samples in order: ['0b', '0b', '0b', '0b', '0b', '0b', '0b', '0b', '0b', '0b', '0b', '0b', '0b', '0b']
+L1 logout/rejoin: server hp min 15.0, end pos (87.5, -60.0, 0.5), cf end 0, flying ever False
+L2 unequip: server hp min 16.0, end pos (87.5, -60.0, 0.5), cf end 0, flying ever False
+L3 death: server hp min 20.0, end pos (5.5, -60.0, 2.5), cf end 0, flying ever False
+L5 forged Active, no Grips: server states ['ACTIVE', 'FALLING', 'STOWED'], cf max while not client-carried 0
+L6b one forged Active with Grips, then silence: float on at gt 817, off after 10 ticks
+L7 float fix off: kicked 79 ticks after the carry started, cf max 0
+CREATIVE flying samples: ['0b', '0b', '1b', '0b', '0b', '1b'] mayfly samples: ['1b', '1b', '1b', '1b', '1b']
+== p6 (tag port1t; port1r and port1s stalled at login again)
+server: moved wrongly=0, moved too quickly=23, Flying is not enabled=0, multiplayer.disconnect.flying=0, lost connection=2, forcing Falling=0, non-finite=0, kicked=0, moves against Crawl=0 exceptions(excl. known)=0
+moved too quickly: 23 total, 23 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=0 []
+tools/logs/port1t-p6-client.log exceptions(excl. known)= 0
+tools/logs/port1t-p6-client2.log exceptions(excl. known)= 0
+TRACE/STRACE ticks=1745 compared=1245 (Rig not Stowed, teleport ticks +-4 skipped) max drift same gt=0.280 allowing 1 tick lag=0.000 ticks>0.5 (lag-allowed)=0
+PASS G1 Copper spread under the ceiling at max depth: 42 ticks, feet y -52.900 (body 4.00 below the ceiling), min pairwise Grip distance 1.706 (>= 1.5), 4 Grips every tick True
+PASS G1 Netherite spread under the ceiling at max depth: 42 ticks, feet y -47.900 (body 7.00 below the ceiling), min pairwise Grip distance 2.641 (>= 1.5), 4 Grips every tick True
+PASS G2 steppers: max simultaneous steppers 2 over 1746 GAIT ticks (<= 2)
+PASS G3 Held while stepping (flat walk): 69 moving ticks, min planted 2 (>= 2), 21 plants (>= 6), server min valid Grips 4 (>= 2), states ['ACTIVE']
+PASS G3 Held while stepping (wall climb): 31 moving ticks, min planted 2 (>= 2), 10 plants (>= 2), server min valid Grips 3 (>= 2), states ['ACTIVE']
+PASS G3 Held while stepping (ceiling walk): 21 moving ticks, min planted 2 (>= 2), 7 plants (>= 2), server min valid Grips 3 (>= 2), states ['ACTIVE']
+PASS G3 Held while stepping (cliff edge): 129 moving ticks, min planted 2 (>= 2), 31 plants (>= 4), server min valid Grips 2 (>= 2), states ['ACTIVE']
+PASS W1 stowed walk animates: 27 ticks, peak walk speed 0.859 (>= 0.1), states ['STOWED']
+PASS W2 body still while Held (flat walk): 60 ticks, peak walk speed 0.000 (<= 0.02)
+PASS W2 body still while Held (wall climb): 22 ticks, peak walk speed 0.000 (<= 0.02)
+PASS W2 body still while Held (ceiling walk): 12 ticks, peak walk speed 0.000 (<= 0.02)
+PASS W2 body still while Held (cliff edge): 120 ticks, peak walk speed 0.000 (<= 0.02)
+PASS W3 Dev2 sees Dev still while Held (flat walk): 60 RWALK ticks, peak 0.000 (<= 0.02)
+PASS P1 frame cost (Dev, two Rigs in view): 531 frames, Tentacle drawing avg 178.0 us/frame, max 241.2 us, fps 105 (avg < 2000 us)
+PASS P1 frame cost (Dev2, two Rigs in view): 530 frames, Tentacle drawing avg 200.7 us/frame, max 263.6 us, fps 105 (avg < 2000 us)
+PASS S1 own plant sounds: gait plants 142, drawn plants 142, plant sounds 142; heard create:cogs=7, create:slime_added=298, create:steam=21, minecraft:block.piston.contract=6, minecraft:block.piston.extend=7
+PASS S2 Dev2 hears Dev: Dev's plants seen near Dev2 92, played 92, slime sounds reaching Dev2's engine 193
+PASS S3 piston + steam: Dev heard create:cogs=7, create:slime_added=298, create:steam=21, minecraft:block.piston.contract=6, minecraft:block.piston.extend=7
+PASS E exceptions: 0 exception lines
+RESULT PASS
