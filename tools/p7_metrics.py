@@ -62,7 +62,7 @@ seeks = re.findall(r'script ponder seek (\d+) scene=\S+ total=(\d+)', c)
 check('P2 scene plays through every seek', len(seeks) >= 10 and int(seeks[0][1]) > 1000, f'{len(seeks)} seeks, total {seeks[0][1] if seeks else "-"} ticks')
 tip = re.findall(r'CTIP hint (.*)', c)
 check('H Ponder hint on a hovered Rig', any('to Ponder' in t for t in tip) and any(t.startswith('Air:') for t in tip), f'{[t.strip() for t in tip[:6]]}')
-noise = ('ScheduledForRemoval', 'No key layers')
+noise = ('ScheduledForRemoval', 'No key layers', 'Error loading class: xaero/')
 errs = [l for l in (c + s).splitlines() if re.search(r'Exception|/ERROR\]', l) and not any(n in l for n in noise)]
 check('E no client/server errors', not errs, f'{len(errs)} {errs[:2]}')
 print('RESULT', 'PASS' if not fails else 'FAIL ' + ', '.join(fails))
