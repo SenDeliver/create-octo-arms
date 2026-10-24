@@ -2,6 +2,14 @@
 
 Create addon for NeoForge 21.1 / MC 1.21.1. Read first: `docs/CONTEXT.md` (glossary, use its terms), `CONTRIBUTING.md` (style, frozen IDs), `tools/README.md` (test harness). Public repo: everything here is visible.
 
+## Branches
+
+- `1.21.1`: NeoForge 21.1 line, versions `x.y.z`, tags `vX.Y.Z`. This worktree.
+- `mc/1.20.1`: Forge 47 line, versions `x.y.z+mc1.20.1`, tags `vX.Y.Z+mc1.20.1`.
+- `main`: frozen at 1.5.0, kept only for history and links. Never commit or merge into it.
+- Fixes land on `1.21.1` first, then `git cherry-pick` onto `mc/1.20.1`. Expected conflicts: loader glue (`Tentaworks`, `TentaworksClient`, `TentaworksNetwork`, `RigEnchants`, `RigSettings`, renderers, datagen, `tentaworks.mixins.json`, build files, docs).
+- PRs target the branch of the version they change.
+
 ## Layout
 
 - `src/main`: the mod. `rig/` server + shared logic, `client/` wearer side (`RigClient` drives movement, `RigVisuals` what every client renders), `mixin/` (common list vs `client` list in `tentaworks.mixins.json`; common code never loads client classes, bridge with a predicate as `RigSneak` does).
@@ -18,8 +26,8 @@ Vanilla + NeoForge sources: `build/moddev/artifacts/neoforge-<ver>-sources.jar` 
 2. `./gradlew build`, run the PR's suite alone first (`tools/run_split.sh ...`, see `tools/README.md`), then `tools/run_all.sh <tag>`.
 3. `run_all.sh` copies screenshots to `tools/shots/` (gitignored, never commit them).
 4. Known timing flakes, re-run the suite alone before blaming the PR: p7 `D1 display board` (RCON read), p8 `forged zero climb` (packet bursts), p9 ride timings.
-5. Comparison baseline: last `tools/logs/*-runall.txt` on `main`.
-6. Merge: squash, `gh pr merge N --squash`. Maintainer pushes to `main` directly for housekeeping; contributors go through PRs.
+5. Comparison baseline: last `tools/logs/*-runall.txt` on `1.21.1` (`port1` on `mc/1.20.1`).
+6. Merge: squash into the PR's version branch, `gh pr merge N --squash`. Maintainer pushes to `1.21.1` / `mc/1.20.1` directly for housekeeping; contributors go through PRs.
 
 ## Harness log contract
 
