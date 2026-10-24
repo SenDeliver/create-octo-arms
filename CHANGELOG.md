@@ -7,6 +7,10 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Fixed
+
+- No view bobbing while the Rig carries you. With the body on the floor (looking down, low Standing Height) vanilla bobbed the camera and the hand as if you walked; with View Bobbing on it looked like a sprint with camera shake. Client only.
+
 ## [1.5.0+mc1.20.1]
 
 First 1.20.1 build. Same gameplay as 1.5.0. Not included: Sable Ships, in-game config screen. Save format is NBT, worlds do not transfer between MC versions.
