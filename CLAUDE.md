@@ -4,7 +4,7 @@ Create addon for NeoForge 21.1 / MC 1.21.1. Read first: `docs/CONTEXT.md` (gloss
 
 ## Branches
 
-- `1.21.1`: NeoForge 21.1 line, versions `x.y.z`, tags `vX.Y.Z`. This worktree.
+- `1.21.1`: NeoForge 21.1 line, versions `x.y.z`, tags `vX.Y.Z`. This branch.
 - `mc/1.20.1`: Forge 47 line, versions `x.y.z+mc1.20.1`, tags `vX.Y.Z+mc1.20.1`.
 - `main`: frozen at 1.5.0, kept only for history and links. Never commit or merge into it.
 - Fixes land on `1.21.1` first, then `git cherry-pick` onto `mc/1.20.1`. Expected conflicts: loader glue (`Tentaworks`, `TentaworksClient`, `TentaworksNetwork`, `RigEnchants`, `RigSettings`, renderers, datagen, `tentaworks.mixins.json`, build files, docs).
