@@ -2,7 +2,7 @@
 
 **A Create Backtank with four pneumatic Tentacles. Climb walls, hang from ceilings, ride Sable and Create Aeronautics Ships.**
 
-![A player lifted off the ground by the four copper Tentacles of a Tentacle Rig](https://raw.githubusercontent.com/SenDeliver/create-octo-arms/main/docs/images/hero-carried-on-tentacles.png)
+![A player lifted off the ground by the four copper Tentacles of a Tentacle Rig](https://raw.githubusercontent.com/SenDeliver/create-octo-arms/1.21.1/docs/images/hero-carried-on-tentacles.png)
 
 ## What it does
 
@@ -23,7 +23,7 @@ Craft a **Tentacle Rig**: a Backtank with four **Tentacles** and a Precision Mec
 - **Ride Ships**: works fully with Sable Ships, Create Aeronautics included. Tentacles grip Ship blocks like world blocks and carry you along with a moving, turning Ship.
 - A stepping gait everyone on the server sees, Sticker and piston sounds, and the "Doc's Rig" advancement.
 
-![A player climbing a stone wall on four Tentacles](https://raw.githubusercontent.com/SenDeliver/create-octo-arms/main/docs/images/climbing-a-wall.png)
+![A player climbing a stone wall on four Tentacles](https://raw.githubusercontent.com/SenDeliver/create-octo-arms/1.21.1/docs/images/climbing-a-wall.png)
 
 ## Quick start
 
@@ -39,7 +39,7 @@ Ponder (hold `W` over a Rig or Tentacle) shows all of this step by step.
 
 Octo Arms works fully with Sable Ships, and Create Aeronautics Ships are Sable Ships, so they are supported the same way. With Sable installed, the blocks of a Ship are Grips like world blocks. Grip a Ship's floor, walls, hull or underside, parked or moving, and move between the world and a Ship both ways. Air use counts only your own move. Server admins can turn it off with `ships.grip = false`.
 
-![A player gripping the side of a Ship moving at 4 blocks per second](https://raw.githubusercontent.com/SenDeliver/create-octo-arms/main/docs/images/ship-moving.png)
+![A player gripping the side of a Ship moving at 4 blocks per second](https://raw.githubusercontent.com/SenDeliver/create-octo-arms/1.21.1/docs/images/ship-moving.png)
 
 ## Compatibility
 
@@ -49,31 +49,34 @@ Octo Arms works fully with Sable Ships, and Create Aeronautics Ships are Sable S
 - **JEI** (optional): all recipes in Create's own categories and in Smithing.
 - **Sable** (optional): full Ship support, Create Aeronautics compatible.
 
-![Engineer's Goggles on a placed Rig Block](https://raw.githubusercontent.com/SenDeliver/create-octo-arms/main/docs/images/goggles-rig-block.png)
+![Engineer's Goggles on a placed Rig Block](https://raw.githubusercontent.com/SenDeliver/create-octo-arms/1.21.1/docs/images/goggles-rig-block.png)
 
 ## Requirements
 
-| Mod | Version |
-|---|---|
-| Minecraft | 1.21.1 |
-| NeoForge | 21.1.228+ |
-| [Create](https://modrinth.com/mod/create) | 6.0.10+, below 6.1.0 |
-| [Sable](https://modrinth.com/mod/sable) | optional, 2.0.5+, below 2.1 (for Ships) |
-| [JEI](https://modrinth.com/mod/jei) | optional |
+Two builds, same version number, same gameplay. Pick the file for your Minecraft version. Ships (Sable) are 1.21.1 only.
 
-Install on **both** client and server, same version on both.
+| | Minecraft 1.21.1 | Minecraft 1.20.1 |
+|---|---|---|
+| Mod loader | NeoForge 21.1.228+ | Forge 47.1.3+ |
+| Java | 21 | 17 |
+| [Create](https://modrinth.com/mod/create) | 6.0.10+, below 6.1.0 | 6.0.8 (the last Create for 1.20.1) |
+| [Sable](https://modrinth.com/mod/sable) | optional, 2.0.5+, below 2.1 (for Ships) | not available |
+| [JEI](https://modrinth.com/mod/jei) | optional | optional (15.x) |
+| Jar | `octo-arms-<version>+mc1.21.1.jar` | `octo-arms-<version>+mc1.20.1.jar` |
+
+Install on **both** client and server, same Octo Arms version and same Minecraft version on both. The 1.20.1 build has no in-game config screen (the config files work the same).
 
 ## Known limitations
 
 - Tentacles grip full block faces only. Slabs, stairs, fences and other partial blocks are not Grips.
 - Mechanical Crafting does not copy the Backtank's Air, so a new Rig starts empty.
-- Ships with a scale other than 1 are ignored.
+- Ships with a scale other than 1 are ignored (1.21.1).
 - Movement is client-driven and checked by the server. Not tested with server anti-cheat plugins or real network latency yet.
 
 ## Links
 
 - [Source and docs](https://github.com/SenDeliver/create-octo-arms)
 - [Issues](https://github.com/SenDeliver/create-octo-arms/issues)
-- [Changelog](https://github.com/SenDeliver/create-octo-arms/blob/main/CHANGELOG.md)
+- [Changelog](https://github.com/SenDeliver/create-octo-arms/blob/1.21.1/CHANGELOG.md)
 
 MIT License. Built on Create (not bundled); uses Create's Backtank, Sticker and Ponder. Ship support through Sable (optional, not bundled). Developed with AI assistance (Claude); design, testing and direction by SenDeliver.

@@ -1,5 +1,5 @@
 <p><strong>A Create Backtank with four pneumatic Tentacles. Climb walls, hang from ceilings, ride Sable and Create Aeronautics Ships.</strong></p>
-<p><img src="https://raw.githubusercontent.com/SenDeliver/create-octo-arms/main/docs/images/hero-carried-on-tentacles.png" alt="A player lifted off the ground by the four copper Tentacles of a Tentacle Rig" width="800"></p>
+<p><img src="https://raw.githubusercontent.com/SenDeliver/create-octo-arms/1.21.1/docs/images/hero-carried-on-tentacles.png" alt="A player lifted off the ground by the four copper Tentacles of a Tentacle Rig" width="800"></p>
 
 <h2>What it does</h2>
 <p>Craft a <strong>Tentacle Rig</strong>: a Backtank with four <strong>Tentacles</strong> and a Precision Mechanism. Wear it in the chest slot and <strong>Double Jump</strong>. The Tentacles grab nearby block faces and carry you where you look: across the floor, up a wall, under a ledge or a ceiling. Your hands stay free, so you can mine, build and fight while you hang. The Rig runs on the Backtank's <strong>Air</strong> and refills like any Backtank.</p>
@@ -19,7 +19,7 @@
 <li><strong>Ride Ships</strong>: works fully with Sable Ships, Create Aeronautics included. Tentacles grip Ship blocks like world blocks and carry you along with a moving, turning Ship.</li>
 <li>A stepping gait everyone on the server sees, Sticker and piston sounds, and the "Doc's Rig" advancement.</li>
 </ul>
-<p><img src="https://raw.githubusercontent.com/SenDeliver/create-octo-arms/main/docs/images/climbing-a-wall.png" alt="A player climbing a stone wall on four Tentacles" width="800"></p>
+<p><img src="https://raw.githubusercontent.com/SenDeliver/create-octo-arms/1.21.1/docs/images/climbing-a-wall.png" alt="A player climbing a stone wall on four Tentacles" width="800"></p>
 
 <h2>Quick start</h2>
 <ol>
@@ -33,7 +33,7 @@
 
 <h2>Ships (Sable, Create Aeronautics)</h2>
 <p>Octo Arms works fully with Sable Ships, and Create Aeronautics Ships are Sable Ships, so they are supported the same way. With Sable installed, the blocks of a Ship are Grips like world blocks. Grip a Ship's floor, walls, hull or underside, parked or moving, and move between the world and a Ship both ways. Air use counts only your own move. Server admins can turn it off with <code>ships.grip = false</code>.</p>
-<p><img src="https://raw.githubusercontent.com/SenDeliver/create-octo-arms/main/docs/images/ship-moving.png" alt="A player gripping the side of a Ship moving at 4 blocks per second" width="800"></p>
+<p><img src="https://raw.githubusercontent.com/SenDeliver/create-octo-arms/1.21.1/docs/images/ship-moving.png" alt="A player gripping the side of a Ship moving at 4 blocks per second" width="800"></p>
 
 <h2>Compatibility</h2>
 <ul>
@@ -43,24 +43,26 @@
 <li><strong>JEI</strong> (optional): all recipes in Create's own categories and in Smithing.</li>
 <li><strong>Sable</strong> (optional): full Ship support, Create Aeronautics compatible.</li>
 </ul>
-<p><img src="https://raw.githubusercontent.com/SenDeliver/create-octo-arms/main/docs/images/goggles-rig-block.png" alt="Engineer's Goggles on a placed Rig Block" width="800"></p>
+<p><img src="https://raw.githubusercontent.com/SenDeliver/create-octo-arms/1.21.1/docs/images/goggles-rig-block.png" alt="Engineer's Goggles on a placed Rig Block" width="800"></p>
 
 <h2>Requirements</h2>
+<p>Two builds, same version number, same gameplay. Pick the file for your Minecraft version. Ships (Sable) are 1.21.1 only.</p>
 <table border="1" cellpadding="4">
-<tr><th>Mod</th><th>Version</th></tr>
-<tr><td>Minecraft</td><td>1.21.1</td></tr>
-<tr><td>NeoForge</td><td>21.1.228+</td></tr>
-<tr><td><a href="https://www.curseforge.com/minecraft/mc-mods/create">Create</a></td><td>6.0.10+, below 6.1.0</td></tr>
-<tr><td><a href="https://www.curseforge.com/minecraft/mc-mods/sable">Sable</a></td><td>optional, 2.0.5+, below 2.1 (for Ships)</td></tr>
-<tr><td><a href="https://www.curseforge.com/minecraft/mc-mods/jei">JEI</a></td><td>optional</td></tr>
+<tr><th></th><th>Minecraft 1.21.1</th><th>Minecraft 1.20.1</th></tr>
+<tr><td>Mod loader</td><td>NeoForge 21.1.228+</td><td>Forge 47.1.3+</td></tr>
+<tr><td>Java</td><td>21</td><td>17</td></tr>
+<tr><td><a href="https://www.curseforge.com/minecraft/mc-mods/create">Create</a></td><td>6.0.10+, below 6.1.0</td><td>6.0.8 (the last Create for 1.20.1)</td></tr>
+<tr><td><a href="https://www.curseforge.com/minecraft/mc-mods/sable">Sable</a></td><td>optional, 2.0.5+, below 2.1 (for Ships)</td><td>not available</td></tr>
+<tr><td><a href="https://www.curseforge.com/minecraft/mc-mods/jei">JEI</a></td><td>optional</td><td>optional (15.x)</td></tr>
+<tr><td>Jar</td><td><code>octo-arms-&lt;version&gt;+mc1.21.1.jar</code></td><td><code>octo-arms-&lt;version&gt;+mc1.20.1.jar</code></td></tr>
 </table>
-<p>Install on <strong>both</strong> client and server, same version on both.</p>
+<p>Install on <strong>both</strong> client and server, same Octo Arms version and same Minecraft version on both. The 1.20.1 build has no in-game config screen (the config files work the same).</p>
 
 <h2>Known limitations</h2>
 <ul>
 <li>Tentacles grip full block faces only. Slabs, stairs, fences and other partial blocks are not Grips.</li>
 <li>Mechanical Crafting does not copy the Backtank's Air, so a new Rig starts empty.</li>
-<li>Ships with a scale other than 1 are ignored.</li>
+<li>Ships with a scale other than 1 are ignored (1.21.1).</li>
 <li>Movement is client-driven and checked by the server. Not tested with server anti-cheat plugins or real network latency yet.</li>
 </ul>
 
@@ -68,6 +70,6 @@
 <ul>
 <li><a href="https://github.com/SenDeliver/create-octo-arms">Source and docs</a></li>
 <li><a href="https://github.com/SenDeliver/create-octo-arms/issues">Issues</a></li>
-<li><a href="https://github.com/SenDeliver/create-octo-arms/blob/main/CHANGELOG.md">Changelog</a></li>
+<li><a href="https://github.com/SenDeliver/create-octo-arms/blob/1.21.1/CHANGELOG.md">Changelog</a></li>
 </ul>
 <p>MIT License. Built on Create (not bundled); uses Create's Backtank, Sticker and Ponder. Ship support through Sable (optional, not bundled). Developed with AI assistance (Claude); design, testing and direction by SenDeliver.</p>
