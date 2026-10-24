@@ -83,48 +83,5 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(gui + "toggle_key", "Toggle key: %s");
         REGISTRATE.addRawLang(gui + "toggle_unbound", "Bind \"Toggle Tentacle Rig\" in Controls");
         REGISTRATE.addRawLang(gui + "double_jump_hint", "Double Jump: activate, Set Down, let go");
-
-        String cfg = TentaworksIds.MOD_ID + ".configuration.";
-        REGISTRATE.addRawLang(cfg + "title", "Octo Arms: Config");
-        REGISTRATE.addRawLang(cfg + "section." + TentaworksIds.MOD_ID + ".client.toml.title", "Client (this computer)");
-        REGISTRATE.addRawLang(cfg + "section." + TentaworksIds.MOD_ID + ".server.toml.title", "Server (this world)");
-        REGISTRATE.addRawLang(cfg + "animation", "Animation");
-        REGISTRATE.addRawLang(cfg + "animation.walkWhileHeld", "Walk animation while carried");
-        REGISTRATE.addRawLang(cfg + "movement", "Movement");
-        REGISTRATE.addRawLang(cfg + "movement.forward", "W and S follow");
-        REGISTRATE.addRawLang(cfg + "movement.forward.look", "Look");
-        REGISTRATE.addRawLang(cfg + "movement.forward.flat", "Flat");
-        REGISTRATE.addRawLang(cfg + "reach", "Reach");
-        REGISTRATE.addRawLang(cfg + "reach.copper", "Copper Reach");
-        REGISTRATE.addRawLang(cfg + "reach.netherite", "Netherite Reach");
-        REGISTRATE.addRawLang(cfg + "speed", "Speed");
-        REGISTRATE.addRawLang(cfg + "speed.max", "Top Speed");
-        REGISTRATE.addRawLang(cfg + "air", "Air");
-        REGISTRATE.addRawLang(cfg + "air.idle", "Idle: ticks per Air");
-        REGISTRATE.addRawLang(cfg + "air.move", "Moving: ticks per Air");
-        REGISTRATE.addRawLang(cfg + "air.climb", "Climbing: ticks per Air");
-        REGISTRATE.addRawLang(cfg + "air.netheriteFactor", "Netherite Air factor");
-        REGISTRATE.addRawLang(cfg + "crawl", "Crawl");
-        REGISTRATE.addRawLang(cfg + "crawl.speed", "Crawl speed");
-        REGISTRATE.addRawLang(cfg + "enchant", "Enchantments");
-        REGISTRATE.addRawLang(cfg + "enchant.farReachPerLevel", "Far Reach per level");
-        REGISTRATE.addRawLang(cfg + "enchant.thriftPerLevel", "Thrift per level");
-        REGISTRATE.addRawLang(cfg + "enchant.swiftPerLevel", "Swift per level");
-        REGISTRATE.addRawLang(cfg + "ships", "Ships");
-        REGISTRATE.addRawLang(cfg + "ships.grip", "Rigs grip Ships");
-        REGISTRATE.addRawLang(cfg + "animation.walkWhileHeld.tooltip", "Vanilla walk animation (swinging arms and legs) while the Rig carries you or a Ship carries you with it. Off: the body hangs still");
-        REGISTRATE.addRawLang(cfg + "movement.forward.tooltip", "What W and S follow while the Rig carries you. Look: the camera, look down and W takes you down. Flat: level only, like walking or creative flight; jump and sneak change the height");
-        REGISTRATE.addRawLang(cfg + "reach.copper.tooltip", "Grip Reach of a Copper Rig, blocks. Far Reach adds to it, up to 16 in total");
-        REGISTRATE.addRawLang(cfg + "reach.netherite.tooltip", "Grip Reach of a Netherite Rig, blocks. Far Reach adds to it, up to 16 in total");
-        REGISTRATE.addRawLang(cfg + "speed.max.tooltip", "Top Rig speed, blocks per second. Caps the Speed in every player's Rig Settings; Swift raises both on its Rig");
-        REGISTRATE.addRawLang(cfg + "air.idle.tooltip", "Copper Rig held still (Idle, Hang): ticks per 1 Air");
-        REGISTRATE.addRawLang(cfg + "air.move.tooltip", "Copper Rig moving level or down: ticks per 1 Air");
-        REGISTRATE.addRawLang(cfg + "air.climb.tooltip", "Copper Rig climbing (net upward): ticks per 1 Air");
-        REGISTRATE.addRawLang(cfg + "air.netheriteFactor.tooltip", "Air use of a Netherite Rig relative to Copper");
-        REGISTRATE.addRawLang(cfg + "crawl.speed.tooltip", "Descent speed with no Air left (Crawl), blocks per second");
-        REGISTRATE.addRawLang(cfg + "enchant.farReachPerLevel.tooltip", "Far Reach: extra Reach per level, blocks");
-        REGISTRATE.addRawLang(cfg + "enchant.thriftPerLevel.tooltip", "Thrift: Air use cut per level (0.15 = -15 %). Level III stays above zero");
-        REGISTRATE.addRawLang(cfg + "enchant.swiftPerLevel.tooltip", "Swift: extra Speed per level (0.15 = +15 %)");
-        REGISTRATE.addRawLang(cfg + "ships.grip.tooltip", "Rigs grip Sable Ships like world blocks. Ignored without Sable");
     }
 }
