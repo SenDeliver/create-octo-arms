@@ -5,6 +5,8 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+Platforms: the same version number ships for every supported Minecraft version (1.21.1 NeoForge, 1.20.1 Forge). An entry that applies to one platform only starts with `**1.20.1 only:**` or `**1.21.1 only:**`; untagged entries apply to all. Release tags carry the platform, `vX.Y.Z+mc1.21.1` and `vX.Y.Z+mc1.20.1`; the bare tags up to `v1.5.0` are 1.21.1 releases.
+
 ## [Unreleased]
 
 ### Fixed
@@ -21,6 +23,10 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 ### Compatibility
 
 - Server and client change (the sight rule is checked on both sides, network payloads unchanged). A 1.4.0 client on a newer server gets its through-block Grips rejected (Falling after 10 ticks if fewer than two remain); a newer client on a 1.4.0 server keeps working. Update both.
+
+### Platforms
+
+- **1.20.1 only:** First Forge 1.20.1 build of 1.5.0 (Create 6.0.8, Forge 47.1.3+, Java 17). Not included: Sable Ships, in-game config screen. Items keep their data in NBT; worlds do not transfer between Minecraft versions. 1.21.1 clients cannot join a 1.20.1 server and the other way round.
 
 ## [1.4.0] - 2026-10-20
 
