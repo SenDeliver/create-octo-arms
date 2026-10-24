@@ -136,6 +136,7 @@ public final class DevScript {
     private static Field holdActive;
     private static final String CONNECT = System.getProperty("tentaworks.connect");
     private static boolean connectStarted;
+    private static int connectTries;
     private static int disconnectedTicks;
 
     private DevScript() {
@@ -179,6 +180,12 @@ public final class DevScript {
         }
         if (mc.level == null || mc.player == null) {
             inWorld = false;
+            if (CONNECT != null && connectStarted && lines == null && mc.screen instanceof DisconnectedScreen && connectTries < 3) {
+                connectTries++;
+                LOG.info("script: disconnected before the first join (Forge 1.20.1 login stall), retry {}", connectTries);
+                connectStarted = false;
+                return;
+            }
             if (CONNECT != null && !connectStarted) {
                 if (mc.getOverlay() == null && Files.exists(mc.gameDirectory.toPath().resolve("signal").resolve("_connect"))) {
                     connectStarted = true;
