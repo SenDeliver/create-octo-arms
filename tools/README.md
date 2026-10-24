@@ -27,6 +27,26 @@ RCON password: `$RCON_PASSWORD`, else the one already in `server.properties`, el
 
 Quick start: `tools/run_all.sh mytest` (one suite: see the matching line in `run_all.sh`).
 
+## Scene NBT syntax (1.20.1)
+
+Scenes and timelines on this branch write item data as 1.20.1 stack NBT, not 1.21.1 component selectors (`[create:banktank_air=N, ...]`). `docs/save-format.md` has the full layout.
+
+| Data | 1.21.1 (`main`) | 1.20.1 (this branch) |
+|---|---|---|
+| Air | `[create:banktank_air=900]` | `{Air:900}` |
+| Damage | `[damage=100]` | `{Damage:100}` |
+| Enchantments | `[enchantments={levels:{"create:capacity":3}}]` | `{Enchantments:[{id:"create:capacity",lvl:3s}]}` |
+| Book enchantments | `[stored_enchantments={levels:{"minecraft:mending":1}}]` | `enchanted_book{StoredEnchantments:[{id:"minecraft:mending",lvl:1s}]}` |
+| Name | `[custom_name='"Rigby"']` | `{display:{Name:'"Rigby"'}}` |
+| Armor trim | `[trim={pattern:"minecraft:sentry",material:"minecraft:gold"}]` | `{Trim:{pattern:"minecraft:sentry",material:"minecraft:gold"}}` |
+| Rig Settings | `[tentaworks:rig_settings={activation:"key"}]` | `{"tentaworks:rig_settings":{standing_height:2.0f,speed:4.5f,activation:"key"}}` |
+| Rig Block | `{Air:100,Components:{"minecraft:enchantments":{levels:{...}}}}` | `{Air:100,VanillaTag:{Enchantments:[...]}}` (the whole stack tag) |
+| Horse | `SaddleItem:{id:"minecraft:saddle",count:1}`, `attributes:[{id:"minecraft:generic.jump_strength",base:0.9d}]` | `SaddleItem:{id:"minecraft:saddle",Count:1b}`, `Attributes:[{Name:"minecraft:horse.jump_strength",Base:0.9d}]` |
+| Flight check | `attribute Dev neoforge:creative_flight get` | `data get entity Dev abilities.mayfly` |
+| Nearest entity | `@n` | `@e[sort=nearest,limit=1]` |
+
+Readback differs too: `data get` prints item NBT (`tag:{Air:...}`), and a Display Board line reads `Text: '{"text":"X"}'` (1.21.1: `Text: '"X"'`); `p7_metrics.py` accepts both. `analyze.py` and the metrics scripts that count exceptions skip Create 6.0.8's `Error loading class: xaero/...` line (its optional Xaero mixins log it on every client start).
+
 ## Pole suite (pole)
 
 A free-standing 1x1 jungle log column (`scene-pole.txt`, x 5000 z 0, 41 high) and a 2x2 one (x 5100..5101 z 0..1, 20 high, wall torch on its east face 6 up). `pole_metrics.py <log prefix>`: F face climb and C/N corner climbs (Copper, Netherite) reach the top of the 1x1 (max feet >= 40); D/E/G/H/J climbs on the 2x2 (hugging the corner, 0.7 west / 0.4 south of it as in the owner's 2026-10-14 report, 0.7 off a face, 1.2 / 0.9 off the corner) reach its top (>= 19) and print the body's offset from the corner; S/T and R/Q go round each pole at height (>= 80 deg round it) with the Rig Active throughout. Corner climbs hold jump only: forward at a corner slides the body round the pole along its faces.
@@ -78,7 +98,7 @@ Log fields (end of line): client `TRACE … veh=<vehicle type id|-> ride=<chain|
 
 ## Log contract (dev source set, `trace on`)
 
-New fields go at the end of existing lines only: the metrics and `analyze.py` match by field order. On this branch (no Sable, `NoShips`) `STRACE … sgrips=0 carry=-` and `TRACE … sheld=0 carry=-` never change; they stay in place.
+New fields go at the end of existing lines only: the metrics and `analyze.py` match by field order. On this branch (no Sable, `NoShips`) `STRACE … sgrips=0 carry=-` and `TRACE … sheld=0 carry=-` never change; they stay in place. The same for `TRACE … hold=-` (Simulated holds, 1.21.1 only).
 
 | Side | Line | Notes |
 |---|---|---|
