@@ -21,9 +21,9 @@ body:
     validations:
       required: true
   - type: input
-    id: neoforge-version
+    id: loader-version
     attributes:
-      label: NeoForge version
+      label: Loader version (NeoForge 21.1 or Forge 47)
       placeholder: "21.1.250"
     validations:
       required: true
