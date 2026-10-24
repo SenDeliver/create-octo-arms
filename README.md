@@ -6,6 +6,8 @@
 
 Fit four pneumatic Tentacles to a Create Backtank and let them carry you over floors, walls and ceilings. Doc Ock style.
 
+For Minecraft **1.21.1** (NeoForge) and **1.20.1** (Forge), see [Downloads](#downloads).
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Minecraft 1.20.1](https://img.shields.io/badge/Minecraft-1.20.1-62B47A.svg)](https://www.minecraft.net/)
 [![Forge](https://img.shields.io/badge/Mod%20Loader-Forge-1E2D3D.svg)](https://minecraftforge.net/)
@@ -119,9 +121,16 @@ Built against Forge 47.1.33 and Create 6.0.8-289; the test harness runs on them.
 
 ## Downloads
 
-- [Modrinth](https://modrinth.com/mod/octo-arms)
-- [CurseForge](https://www.curseforge.com/minecraft/mc-mods/octo-arms)
+Two builds share one version number and the same gameplay. Ships (Sable) are 1.21.1 only.
+
+| Minecraft | Loader | Jar | Branch |
+|---|---|---|---|
+| 1.21.1 | NeoForge 21.1 | `octo-arms-<version>+mc1.21.1.jar` | [`1.21.1`](https://github.com/SenDeliver/create-octo-arms/tree/1.21.1) |
+| 1.20.1 | Forge 47 | `octo-arms-<version>+mc1.20.1.jar` | [`1.20.1`](https://github.com/SenDeliver/create-octo-arms/tree/1.20.1) |
+
+- [CurseForge](https://www.curseforge.com/minecraft/mc-mods/create-octo-arms)
 - [GitHub Releases](https://github.com/SenDeliver/create-octo-arms/releases)
+- Modrinth: not listed yet.
 
 ## Install
 
