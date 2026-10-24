@@ -10,4 +10,4 @@ If you find a security problem (for example a way to crash or exploit a server t
 
 Report it privately with GitHub's [private vulnerability reporting](https://github.com/SenDeliver/create-octo-arms/security/advisories/new) for this repository. If that is not available, open an issue that only asks for a private contact, without details.
 
-Please include the mod version, the versions of Minecraft, NeoForge and Create, and steps to reproduce. You should get an answer within a few days.
+Please include the mod version, the versions of Minecraft, the loader (Forge or NeoForge) and Create, and steps to reproduce. You should get an answer within a few days.

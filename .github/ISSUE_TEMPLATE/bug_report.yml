@@ -17,14 +17,14 @@ body:
     id: minecraft-version
     attributes:
       label: Minecraft version
-      placeholder: "1.21.1"
+      placeholder: "1.20.1"
     validations:
       required: true
   - type: input
-    id: neoforge-version
+    id: loader-version
     attributes:
-      label: NeoForge version
-      placeholder: "21.1.250"
+      label: Loader version (Forge or NeoForge)
+      placeholder: "47.4.27"
     validations:
       required: true
   - type: input

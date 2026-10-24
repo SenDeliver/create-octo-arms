@@ -1,6 +1,6 @@
 """Static Tentacle models (JSON elements), from the same part sizes as TentacleRenderer:
 - block/tentacle_arms_folded[_netherite]: the four Tentacles folded against the tank (TentacleRenderer.SHOULDER / FOLD_* poses),
-- block/<tier>_tentacle_rig + _item: neoforge:composite of Create's backtank model (by path) + the folded arms,
+- block/<tier>_tentacle_rig + _item: forge:composite of Create's backtank model (by path) + the folded arms,
 - item/tentacle_arm, item/incomplete_tentacle_arm: the Tentacle item, a diagonal arm.
 Keep the poses and sizes in sync with TentacleRenderer (FOLD_*, SHOULDER, drawArm).
 usage: python3 tools/gen_models.py"""
@@ -273,7 +273,7 @@ def main():
         for suffix, tank, arms in (('', 'block', 'folded'), ('_item', 'item', 'spread')):
             model = {
                 'parent': 'block/block',
-                'loader': 'neoforge:composite',
+                'loader': 'forge:composite',
                 'render_type': 'minecraft:cutout',
                 'textures': {'particle': f'create:block/{tier}_backtank'},
                 'children': {
