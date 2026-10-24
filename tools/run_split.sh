@@ -65,6 +65,7 @@ if [ -n "$SCRIPT2" ]; then
 fi
 if [ -z "$JOINED" ]; then
   echo "Dev never joined; stopping the clients"
+  cp run/logs/debug.log "$OUT-client-debug.log" 2>/dev/null; cp run/server/logs/debug.log "$OUT-server-debug.log" 2>/dev/null
   pkill -f "$PWD/build/moddev/clientRun" 2>/dev/null
   pkill -f "$PWD/build/moddev/client2Run" 2>/dev/null
 else
