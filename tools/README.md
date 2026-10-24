@@ -80,7 +80,7 @@ Shift with the Rig out counts as sneaking without the crouch (PR #15). Scene `sc
 
 Issue #18: client config `movement.forward`. Scene `empty.txt` (flat ground at x 8100), the client script flips the config in memory with the DevScript line `forward flat`.
 
-- `flat` (`flat_metrics.py`): L in `look` mode, 60 down + W carries the body to the floor. F1/F2 in `flat` mode, 60 down or 60 up + W stays level and advances; F3 Space still climbs, F4 Shift still descends, F5 60 down + S backs up level. S: no kick or speed warning on the server.
+- `flat` (`flat_metrics.py`): L in `look` mode, 60 down + W carries the body to the floor. K then holds the sprint key + W on the floor: no carried tick of the run sprints, widens the FOV (`fovmod` above the walking 1.000) or bobs the view (`bob` > 0; with the body on the floor vanilla `Player.aiStep` bobs it from onGround and the motion, `LocalPlayerBobMixin` zeroes it). F1/F2 in `flat` mode, 60 down or 60 up + W stays level and advances; F3 Space still climbs, F4 Shift still descends, F5 60 down + S backs up level. S: no kick or speed warning on the server.
 
 `tools/run_split.sh tools/scen/empty.txt tools/scen/flat-client.txt tools/logs/x-flat && python3 tools/flat_metrics.py tools/logs/x-flat`
 
@@ -103,6 +103,7 @@ New fields go at the end of existing lines only: the metrics and `analyze.py` ma
 | Side | Line | Notes |
 |---|---|---|
 | client | `TRACE … wa=<speed>` | v1.1.2: own `walkAnimation.speed()` (0 = body still), last field |
+| client | `TRACE … sprint=<isSprinting> fovmod=<getFieldOfViewModifier> bob=<Player.bob> dm=<deltaMovement> wd=<walkDist - walkDistO>` | 1.5.0: sprint FOV and view bob of the wearer (`flat` K check), last fields |
 | client | `RWALK gt=<gt> name=<player> state=<RigState\|-> wa=<speed>` | v1.1.2: every other player in the level, each traced tick: their Rig visual's state and walk animation speed as this client renders them |
 
 ## Asset generators

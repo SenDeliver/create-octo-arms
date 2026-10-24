@@ -690,13 +690,14 @@ public final class DevScript {
         Vec3 d = lastPos == null ? Vec3.ZERO : pos.subtract(lastPos);
         lastPos = pos;
         Entity vehicle = p.getVehicle();
-        LOG.info("TRACE t={} gt={} pos={} d={} cmd={} held={} state={} fly={} mayfly={} press={} jumpkey={} ground={} hp={} air={} ff={} sheld={} carry={} wa={} sneak={} crouch={} pose={} eye={} veh={} ride={} hold={} vrot={}",
+        LOG.info("TRACE t={} gt={} pos={} d={} cmd={} held={} state={} fly={} mayfly={} press={} jumpkey={} ground={} hp={} air={} ff={} sheld={} carry={} wa={} sneak={} crouch={} pose={} eye={} veh={} ride={} hold={} vrot={} sprint={} fovmod={} bob={} dm={} wd={}",
                 clientTicks, mc.level.getGameTime(), fmt(pos), fmt(d), fmt(RigClient.motion()), RigClient.heldCount(), RigClient.state(),
                 p.getAbilities().flying, p.getAbilities().mayfly, RigClient.jumpPressed(), mc.options.keyJump.isDown(), p.onGround(), p.getHealth(), DevTools.air(p.getItemBySlot(EquipmentSlot.CHEST)), p.isFallFlying(),
                 RigClient.shipGrips(), RigClient.carryShip() == null ? "-" : RigClient.carryShip().id(), String.format(Locale.ROOT, "%.4f", p.walkAnimation.speed()),
                 p.isShiftKeyDown(), p.isCrouching(), p.getPose(), String.format(Locale.ROOT, "%.3f", p.getEyeHeight()),
                 vehicle == null ? "-" : BuiltInRegistries.ENTITY_TYPE.getKey(vehicle.getType()), ChainConveyorRidingHandler.ridingChainConveyor != null ? "chain" : "-",
-                hold(), vehicle == null ? "-" : String.format(Locale.ROOT, "%.1f", vehicle.getYRot()));
+                hold(), vehicle == null ? "-" : String.format(Locale.ROOT, "%.1f", vehicle.getYRot()),
+                p.isSprinting(), String.format(Locale.ROOT, "%.3f", p.getFieldOfViewModifier()), String.format(Locale.ROOT, "%.3f", p.bob), fmt(p.getDeltaMovement()), String.format(Locale.ROOT, "%.3f", p.walkDist - p.walkDistO));
         for (var other : mc.level.players()) {
             if (other == p) continue;
             RigVisuals.Visual v = RigVisuals.get(other);
