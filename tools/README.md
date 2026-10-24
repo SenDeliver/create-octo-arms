@@ -124,5 +124,6 @@ Release jar inside a full modpack, as players run it. Build first: `./gradlew bu
 | `prod/run_prod.sh <scene> <client script> <timeline> <log prefix>` | Fresh world on the prod-pack server, `runClientProd` with a DevScript, collects logs and screenshots. |
 | `prod/rcon_prod.py` | Same as `rcon.py` for the prod-pack server. |
 | `prod/scen/`, `prod/prod_metrics.py` | Prod-pack scenario and its checks. |
+| `prod/SMOKE-1.20.1.md` | Release jar smoke checklist for the 1.20.1 build: jar contents, real Forge 47 server and client mixin logs, the AT check, the manual in-game pass. `run_prod.sh`/`runClientProd` cannot load SRG jars on this branch (dev runtime), so the client part uses a real launcher. |
 
 `shots/` (gitignored) gets the screenshots of the last `run_all.sh`.
