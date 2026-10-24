@@ -1,6 +1,6 @@
 # Octo Arms
 
-Create: Octo Arms (mod id `tentaworks`, from its working name Tentaworks) is a Create addon: a worn Tentacle Rig, built from a Backtank, that carries the player on pneumatic tentacles across floors, walls and ceilings, Doc Ock style. Depends only on Create; on 1.21.1 Sable (optional) adds Ships. This branch (`mc/1.20.1`, Forge 1.20.1) has no Ships: the terms marked _1.21.1 only_ below do not apply here.
+Create: Octo Arms (mod id `tentaworks`, from its working name Tentaworks) is a Create addon: a worn Tentacle Rig, built from a Backtank, that carries the player on pneumatic tentacles across floors, walls and ceilings, Doc Ock style. Depends only on Create; on 1.21.1 Sable (optional) adds Ships. This branch (`1.20.1`, Forge 1.20.1) has no Ships: the terms marked _1.21.1 only_ below do not apply here.
 
 ## Language
 

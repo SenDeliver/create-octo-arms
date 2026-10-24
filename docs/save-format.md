@@ -3,7 +3,7 @@
 These strings are stored in worlds or sent between client and server. Renaming any of them breaks existing saves or client/server compatibility.
 Code constants: `src/main/java/dev/tentaworks/TentaworksIds.java`.
 
-This is the 1.20.1 branch (`mc/1.20.1`, Forge 47). Registry ids, block states, field names and config keys are the same as on 1.21.1. What is stored differently: items keep their data in the stack's NBT tag (1.21.1: data components), enchantments are registry objects (1.21.1: data-driven), and the network is a Forge `SimpleChannel`. Worlds do not move between the two versions.
+This is the 1.20.1 branch (`1.20.1`, Forge 47). Registry ids, block states, field names and config keys are the same as on 1.21.1. What is stored differently: items keep their data in the stack's NBT tag (1.21.1: data components), enchantments are registry objects (1.21.1: data-driven), and the network is a Forge `SimpleChannel`. Worlds do not move between the two versions.
 
 ```mermaid
 flowchart LR

@@ -15,7 +15,7 @@ Fit four pneumatic Tentacles to a Create Backtank and let them carry you over fl
 
 ## Minecraft 1.20.1 build
 
-This branch (`mc/1.20.1`) is the Forge 1.20.1 build of Octo Arms. The NeoForge 1.21.1 build is on branch `1.21.1`; `main` is frozen at 1.5.0. Pull requests go to the branch of the version they change.
+This branch (`1.20.1`) is the Forge 1.20.1 build of Octo Arms. The NeoForge 1.21.1 build is on branch `1.21.1`; `main` is frozen at 1.5.0. Pull requests go to the branch of the version they change.
 
 - Same gameplay as the 1.21.1 build of the same version, except: no Sable Ships and no in-game config screen (the config files work the same).
 - Forge 47 (1.20.1), Create 6.0.8, Java 17.
