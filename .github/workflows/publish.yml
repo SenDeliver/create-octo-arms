@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag to (re)publish, e.g. v1.1.2"
+        description: "Release tag to (re)publish: v<mod_version>+mc<minecraft_version>, e.g. v1.6.0+mc1.21.1"
         required: true
       targets:
         description: "Comma list of targets: github,curseforge (modrinth once its project is approved)"
@@ -25,31 +25,60 @@ jobs:
     if: github.repository_owner == 'SenDeliver' && github.actor == 'SenDeliver'
     runs-on: ubuntu-latest
     steps:
+      - name: Parse tag
+        id: tag
+        run: |
+          if [[ ! "$TAG" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)\+mc([0-9]+(\.[0-9]+)+)$ ]]; then
+            echo "::error::tag '$TAG' is not v<mod_version>+mc<minecraft_version>, e.g. v1.6.0+mc1.21.1. Bare tags (v1.0.0 to v1.5.0) are not published by this workflow."
+            exit 1
+          fi
+          echo "version=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+          echo "mc=${BASH_REMATCH[2]}" >> "$GITHUB_OUTPUT"
+
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ env.TAG }}
 
+      - name: Metadata from gradle.properties
+        id: meta
+        env:
+          VER: ${{ steps.tag.outputs.version }}
+          MC: ${{ steps.tag.outputs.mc }}
+        run: |
+          prop() { sed -n "s/^$1=//p" gradle.properties; }
+          v=$(prop mod_version); mc=$(prop minecraft_version); loader=$(prop mod_loader); java=$(prop java_version)
+          [ "$VER" = "$v" ] || { echo "::error::tag $TAG is version $VER, gradle.properties mod_version is $v"; exit 1; }
+          [ "$MC" = "$mc" ] || { echo "::error::tag $TAG is for Minecraft $MC, but it sits on a commit of the $mc line: tag branch $MC"; exit 1; }
+          [ -n "$loader" ] && [ -n "$java" ] || { echo "::error::gradle.properties has no mod_loader or java_version"; exit 1; }
+          python3 tools/release_notes.py "$v" "$mc" > /dev/null || { echo "::error::CHANGELOG.md has no [$v] section with entries for $mc"; exit 1; }
+          {
+            echo "loader=$loader"
+            echo "java=$java"
+            echo "game_version=$mc"
+            echo "version=$v+mc$mc"
+            echo "jar=octo-arms-$v+mc$mc.jar"
+            echo "dependencies<<DEPS_EOF"
+            echo "create(required)"
+            echo "jei(optional)"
+            if [ "$mc" = 1.21.1 ]; then echo "sable(optional)"; fi
+            echo "DEPS_EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: ${{ steps.meta.outputs.java }}
 
       - uses: gradle/actions/setup-gradle@48b5f213c81028ace310571dc5ec0fbbca0b2947 # v4
-
-      - name: Tag matches mod_version
-        run: |
-          v=$(sed -n 's/^mod_version=//p' gradle.properties)
-          [ "v$v" = "$TAG" ] || { echo "tag $TAG != gradle.properties mod_version $v"; exit 1; }
-          grep -q "^## \[$v\]" CHANGELOG.md || { echo "CHANGELOG.md has no [$v] section"; exit 1; }
 
       - name: Already published?
         id: done
         if: github.event_name == 'release'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JAR: ${{ steps.meta.outputs.jar }}
         run: |
-          v=$(sed -n 's/^mod_version=//p' gradle.properties)
-          if gh release view "$TAG" --json assets --jq '.assets[].name' | grep -qx "octo-arms-$v+mc1.21.1.jar"; then
+          if gh release view "$TAG" --json assets --jq '.assets[].name' | grep -qxF "$JAR"; then
             echo "::warning::release $TAG already carries the jar: nothing published. Expected after editing a release; if this is a fresh release, the jar was attached by hand: run this workflow by hand with targets=curseforge (docs/RELEASE.md)"
             echo "skip=true" >> "$GITHUB_OUTPUT"
           fi
@@ -59,37 +88,36 @@ jobs:
 
       - name: Release notes
         if: steps.done.outputs.skip != 'true'
+        env:
+          VER: ${{ steps.tag.outputs.version }}
+          MC: ${{ steps.tag.outputs.mc }}
         run: |
-          f="publishing/release-notes-${TAG#v}.md"
-          if [ -f "$f" ]; then cp "$f" release-notes.md
-          else awk '/^## \[[0-9]/{if(f)exit;f=1;next} f' CHANGELOG.md > release-notes.md; fi
+          for f in "publishing/release-notes-$VER+mc$MC.md" "publishing/release-notes-$VER.md"; do
+            if [ -f "$f" ]; then cp "$f" release-notes.md; break; fi
+          done
+          [ -f release-notes.md ] || python3 tools/release_notes.py "$VER" "$MC" > release-notes.md
           cat release-notes.md
 
       - uses: Kir-Antipov/mc-publish@52307b03863581dec6b652b83e597aec02ebb075 # v3.3
         if: steps.done.outputs.skip != 'true'
         with:
           files: build/libs/!(*-sources|*-javadoc).jar
-          name: Octo Arms ${{ env.TAG }}
+          name: Octo Arms ${{ steps.tag.outputs.version }} for ${{ steps.meta.outputs.game_version }}
+          version: ${{ steps.meta.outputs.version }}
           changelog-file: release-notes.md
           version-type: release
-          loaders: neoforge
-          game-versions: 1.21.1
-          java: 21
+          loaders: ${{ steps.meta.outputs.loader }}
+          game-versions: ${{ steps.meta.outputs.game_version }}
+          java: ${{ steps.meta.outputs.java }}
 
           modrinth-id: octo-arms
           modrinth-token: ${{ contains(env.TARGETS, 'modrinth') && secrets.MODRINTH_TOKEN || '' }}
           modrinth-featured: true
-          modrinth-dependencies: |
-            create(required)
-            sable(optional)
-            jei(optional)
+          modrinth-dependencies: ${{ steps.meta.outputs.dependencies }}
 
           curseforge-id: ${{ secrets.CURSEFORGE_PROJECT_ID }}
           curseforge-token: ${{ contains(env.TARGETS, 'curseforge') && secrets.CURSEFORGE_TOKEN || '' }}
-          curseforge-dependencies: |
-            create(required)
-            sable(optional)
-            jei(optional)
+          curseforge-dependencies: ${{ steps.meta.outputs.dependencies }}
 
           github-tag: ${{ env.TAG }}
           github-token: ${{ contains(env.TARGETS, 'github') && secrets.GITHUB_TOKEN || '' }}
