@@ -2,9 +2,9 @@ name: Build
 
 on:
   pull_request:
-    branches: ['1.21.1', mc/1.20.1, main]
+    branches: ['1.21.1', '1.20.1', main]
   push:
-    branches: ['1.21.1', mc/1.20.1, main]
+    branches: ['1.21.1', '1.20.1', main]
 
 permissions:
   contents: read

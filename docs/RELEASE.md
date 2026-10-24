@@ -2,7 +2,7 @@
 
 Every release of Octo Arms follows these rules. The owner tags and publishes; AI sessions and contributors prepare.
 
-This is the copy on `1.21.1` (NeoForge 1.21.1): tag `vX.Y.Z` on `1.21.1`. The same version for Forge 1.20.1 is released from `mc/1.20.1` as `vX.Y.Z+mc1.20.1` after the fixes are cherry-picked there (rules in that branch's copy). `main` is frozen at 1.5.0: never tag or release from it.
+This is the copy on `1.21.1` (NeoForge 1.21.1): tag `vX.Y.Z` on `1.21.1`. The same version for Forge 1.20.1 is released from `1.20.1` as `vX.Y.Z+mc1.20.1` after the fixes are cherry-picked there (rules in that branch's copy). `main` is frozen at 1.5.0: never tag or release from it.
 
 ## 1. Version bump, every release
 

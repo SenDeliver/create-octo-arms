@@ -226,7 +226,7 @@ Needs JDK 21 or newer (Gradle uses a Java 21 toolchain).
 
 Bug reports, ideas and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md). Design notes are in [docs/](docs/): [glossary](docs/CONTEXT.md), [design](docs/design.html), [decisions](docs/adr/), [save format](docs/save-format.md), [development notes](docs/phase-notes.html).
 
-Branches: `1.21.1` is the NeoForge 1.21.1 build, `mc/1.20.1` the Forge 1.20.1 build, `main` is frozen at 1.5.0. Pull requests go to the branch of the version they change.
+Branches: `1.21.1` is the NeoForge 1.21.1 build, `1.20.1` the Forge 1.20.1 build, `main` is frozen at 1.5.0. Pull requests go to the branch of the version they change.
 
 ## License and credits
 

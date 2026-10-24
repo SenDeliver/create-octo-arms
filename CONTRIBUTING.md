@@ -24,17 +24,17 @@ Thanks for helping with Create: Octo Arms. This page explains how to build the m
 | Branch | Build | Versions, tags |
 |---|---|---|
 | `1.21.1` | NeoForge 21.1, MC 1.21.1, Java 21 | `x.y.z`, `vX.Y.Z` |
-| `mc/1.20.1` | Forge 47, MC 1.20.1, Java 17, no Sable Ships | `x.y.z+mc1.20.1`, `vX.Y.Z+mc1.20.1` |
+| `1.20.1` | Forge 47, MC 1.20.1, Java 17, no Sable Ships | `x.y.z+mc1.20.1`, `vX.Y.Z+mc1.20.1` |
 | `main` | frozen at 1.5.0, history and links only | none |
 
 ```mermaid
 flowchart LR
   pr["Pull request"] -->|squash merge| b121["1.21.1<br/>NeoForge 1.21.1"]
-  b121 -->|git cherry-pick| b120["mc/1.20.1<br/>Forge 1.20.1"]
+  b121 -->|git cherry-pick| b120["1.20.1<br/>Forge 1.20.1"]
 ```
 
-- Fixes and features land on `1.21.1` first, then the maintainer cherry-picks them onto `mc/1.20.1`.
-- Send a pull request against the branch of the version it changes: `1.21.1` for almost everything, `mc/1.20.1` only for a bug that exists only on 1.20.1. Never against `main`.
+- Fixes and features land on `1.21.1` first, then the maintainer cherry-picks them onto `1.20.1`.
+- Send a pull request against the branch of the version it changes: `1.21.1` for almost everything, `1.20.1` only for a bug that exists only on 1.20.1. Never against `main`.
 - File names and class layout are the same on both branches, so cherry-picks apply. Expected conflicts are the loader glue: `Tentaworks`, `TentaworksClient`, `TentaworksNetwork`, `RigEnchants`, `RigSettings`, renderers, datagen, `tentaworks.mixins.json`, build files and the docs.
 
 ## Build and run
@@ -85,7 +85,7 @@ At minimum, before a pull request:
 
 ## Pull requests
 
-1. Fork the repo and create a branch from `1.21.1` (from `mc/1.20.1` only for a bug that exists only there).
+1. Fork the repo and create a branch from `1.21.1` (from `1.20.1` only for a bug that exists only there).
 2. Keep the pull request small and about one thing.
 3. Describe **what** changed, **why**, and **how you tested it** (client or server, screenshots for visual changes).
 4. Add a line to `CHANGELOG.md` under `[Unreleased]`.
@@ -93,7 +93,7 @@ At minimum, before a pull request:
 
 ## Review and merge
 
-- Only the maintainer (@SenDeliver) reviews and merges. `1.21.1` and `mc/1.20.1` accept pull requests only; squash merge into that branch; release tags are made by the maintainer.
+- Only the maintainer (@SenDeliver) reviews and merges. `1.21.1` and `1.20.1` accept pull requests only; squash merge into that branch; release tags are made by the maintainer.
 - The **Build** check (`./gradlew build` on GitHub Actions) must pass before a pull request is merged.
 - Expect a first answer within about a week. Pull requests with no reply to review comments for 30 days may be closed, you can reopen later.
 - Accepted changes land in the next release and get a line in `CHANGELOG.md` with your GitHub name.
