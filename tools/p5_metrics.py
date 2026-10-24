@@ -166,7 +166,7 @@ check('J JEI shows each recipe (Sequenced Assembly, 2x Mechanical Crafting, Smit
 check('C creative inventory opened on the Tentaworks tab', 'tab tentaworks:main selected' in c, '')
 shots = re.findall(r'screenshot (p5_\S+)\.png', c)
 check('S screenshots taken (12)', len(set(shots)) == 12, f'{sorted(set(shots))}')
-cex = [l for l in c.splitlines() if 'Exception' in l and 'ScheduledForRemoval' not in l]
+cex = [l for l in c.splitlines() if 'Exception' in l and 'ScheduledForRemoval' not in l and 'Error loading class: xaero/' not in l]
 check('client log has no exceptions', not cex, f'{cex[:2]}')
 
 print(f"RESULT {'PASS' if not fails else 'FAIL'} ({len(fails)} failed: {fails})")

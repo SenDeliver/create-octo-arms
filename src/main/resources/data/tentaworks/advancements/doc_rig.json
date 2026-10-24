@@ -17,7 +17,7 @@
   },
   "display": {
     "icon": {
-      "id": "tentaworks:copper_tentacle_rig"
+      "item": "tentaworks:copper_tentacle_rig"
     },
     "title": {
       "translate": "advancement.tentaworks.doc_rig"
