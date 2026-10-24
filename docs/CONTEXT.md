@@ -1,6 +1,6 @@
 # Octo Arms
 
-Create: Octo Arms (mod id `tentaworks`, from its working name Tentaworks) is a Create addon: a worn Tentacle Rig, built from a Backtank, that carries the player on pneumatic tentacles across floors, walls and ceilings, Doc Ock style. Depends only on Create; Sable (optional) adds Ships.
+Create: Octo Arms (mod id `tentaworks`, from its working name Tentaworks) is a Create addon: a worn Tentacle Rig, built from a Backtank, that carries the player on pneumatic tentacles across floors, walls and ceilings, Doc Ock style. Depends only on Create; on 1.21.1 Sable (optional) adds Ships. This branch (`mc/1.20.1`, Forge 1.20.1) has no Ships: the terms marked _1.21.1 only_ below do not apply here.
 
 ## Language
 
@@ -17,7 +17,7 @@ The Backtank's air, the only fuel of a Rig. Idle holding drains a trickle, movin
 _Avoid_: pressure, fuel, charge, energy
 
 **Grip**:
-A spot on any solid block surface (floor, wall or ceiling, including the underside of a ledge, the top of a bottom slab or a chest lid at its real height; nothing narrower than half a block) that a Tentacle tip holds on to, in sight of the wearer: the straight line from the body to the spot crosses no block, so nothing behind a wall or under the floor is a Grip. The only place a Tentacle meets the world. Tentacles never push, hit or damage anything (fighting with them is a v2 idea). A Grip on a Ship block is stored in that Ship's plot coordinates; the Ship is implied by the block, so the Grip stays put while the Ship moves.
+A spot on any solid block surface (floor, wall or ceiling, including the underside of a ledge, the top of a bottom slab or a chest lid at its real height; nothing narrower than half a block) that a Tentacle tip holds on to, in sight of the wearer: the straight line from the body to the spot crosses no block, so nothing behind a wall or under the floor is a Grip. The only place a Tentacle meets the world. Tentacles never push, hit or damage anything (fighting with them is a v2 idea). _1.21.1 only:_ a Grip on a Ship block is stored in that Ship's plot coordinates; the Ship is implied by the block, so the Grip stays put while the Ship moves.
 _Avoid_: foothold, anchor, foot, contact
 
 **Held**:
@@ -78,10 +78,10 @@ _Avoid_: re-grip, swing
 ## Rides and controls
 
 **Ride**:
-Anything other than the Rig that carries the wearer: a seat, a mount, a boat or minecart, a chain conveyor, a zipline, a handle pulling the wearer to it. The Rig carries alone: starting a Ride Stows it at once, nothing Activates it during a Ride (jump belongs to the Ride), and it stays Stowed after.
+Anything other than the Rig that carries the wearer: a seat, a mount, a boat or minecart, a chain conveyor (on 1.21.1 also a Simulated zipline or a handle pulling the wearer to it). The Rig carries alone: starting a Ride Stows it at once, nothing Activates it during a Ride (jump belongs to the Ride), and it stays Stowed after.
 _Avoid_: vehicle, riding (a Rig on a Ship is carried, not riding), mount (as the general word)
 
-**Control Hold**:
+**Control Hold** (_1.21.1 only_, Simulated Ship controls):
 Holding use on a Ship control (steering wheel, throttle lever) while the Rig is out. The Rig keeps its Grips and holds the wearer still while the movement keys work the control; jump stays the Rig's (Double Jump still Sets Down); letting go hands the keys back to the Rig. A handle held normally moves the wearer: that is a Ride. A handle grabbed sneaking drags its Ship instead, reads no keys and is neither: the Rig carries on, and the Ship does not move (Simulated drags only for a wearer standing on something).
 _Avoid_: steering mode, piloting
 
@@ -98,7 +98,9 @@ _Avoid_: ceiling mode, climb mode
 **Tiers**:
 Copper Tentacle Rig and Netherite Tentacle Rig, made from the matching Backtank. They differ only in Reach and Air use.
 
-## Ships
+## Ships (_1.21.1 only_, needs Sable)
+
+None of these exist in play on 1.20.1. The code keeps the `Frame`/`ShipFrames` seam with `NoShips` as its only implementation, to keep cherry-picks from 1.21.1 simple.
 
 **Ship**:
 A Sable sub-level: a group of blocks that moves and turns as one body (Create Aeronautics builds its Ships on Sable). Its blocks are Grips like world blocks, if Sable is installed, the server config `ships.grip` is on and the Ship's scale is 1.
@@ -120,5 +122,5 @@ A Rig wears like armor but never breaks (elytra-style): at 1 durability it can't
 _Avoid_: upgrades, modifiers
 
 **Server Config**:
-Admin-set caps per tier: Reach, top Speed, Air costs and enchantment strengths; also whether Ships are Grips (`ships.grip`). Rig Settings are clamped to them.
+Admin-set caps per tier: Reach, top Speed, Air costs and enchantment strengths; also whether Ships are Grips (`ships.grip`, _1.21.1 only_; the key stays in the file on 1.20.1 and has no effect). Rig Settings are clamped to them.
 _Avoid_: balance file, limits
