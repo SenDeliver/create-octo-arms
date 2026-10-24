@@ -8,7 +8,7 @@ Create addon. This branch `1.20.1`: Forge 47.1.33 / MC 1.20.1, Create 6.0.8-289,
 - `1.20.1`: Forge 47 line, versions `x.y.z+mc1.20.1`, tags `vX.Y.Z+mc1.20.1`. This branch.
 - `main`: frozen at 1.5.0, kept only for history and links. Never commit or merge into it.
 - Fixes land on `1.21.1` first, then `git cherry-pick` onto `1.20.1`. Expected conflicts: loader glue (`Tentaworks`, `TentaworksClient`, `TentaworksNetwork`, `RigEnchants`, `RigSettings`, renderers, datagen, `tentaworks.mixins.json`, build files, docs).
-- PRs target the branch of the version they change. Draft PR 20 (this branch against `1.21.1`) only shows the port diff, it is never merged. Keep file names and class layout identical to `1.21.1`.
+- PRs target the branch of the version they change. Draft PR 21 (this branch against `1.21.1`) only shows the port diff, it is never merged. Keep file names and class layout identical to `1.21.1`.
 
 ## Layout
 
