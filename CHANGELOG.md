@@ -9,9 +9,15 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-10-24
+
 ### Fixed
 
 - No view bobbing while the Rig carries you. With the body on the floor (looking down, low Standing Height) vanilla bobbed the camera and the hand as if you walked; with View Bobbing on it looked like a sprint with camera shake. Client only.
+
+### Compatibility
+
+- Client-only change, network unchanged (registrar "8"). 1.5.0 and 1.5.1 clients and servers mix freely.
 
 ## [1.5.0] - 2026-10-20
 
@@ -196,7 +202,8 @@ First release as **Create: Octo Arms** (mod id `tentaworks`), server-internal, n
 
 - Earlier builds were internal test versions and were not published.
 
-[Unreleased]: https://github.com/SenDeliver/create-octo-arms/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/SenDeliver/create-octo-arms/compare/v1.5.1%2Bmc1.21.1...HEAD
+[1.5.1]: https://github.com/SenDeliver/create-octo-arms/compare/v1.5.0...v1.5.1%2Bmc1.21.1
 [1.5.0]: https://github.com/SenDeliver/create-octo-arms/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/SenDeliver/create-octo-arms/compare/v1.3.1...v1.4.0
 [1.3.1]: https://github.com/SenDeliver/create-octo-arms/compare/v1.3.0...v1.3.1
