@@ -7,11 +7,20 @@
 Fit four pneumatic Tentacles to a Create Backtank and let them carry you over floors, walls and ceilings. Doc Ock style.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Minecraft 1.21.1](https://img.shields.io/badge/Minecraft-1.21.1-62B47A.svg)](https://www.minecraft.net/)
-[![NeoForge](https://img.shields.io/badge/Mod%20Loader-NeoForge-E04E14.svg)](https://neoforged.net/)
-[![Create 6.0](https://img.shields.io/badge/Create-6.0.10%2B-B8860B.svg)](https://github.com/Creators-of-Create/Create)
+[![Minecraft 1.20.1](https://img.shields.io/badge/Minecraft-1.20.1-62B47A.svg)](https://www.minecraft.net/)
+[![Forge](https://img.shields.io/badge/Mod%20Loader-Forge-1E2D3D.svg)](https://minecraftforge.net/)
+[![Create 6.0](https://img.shields.io/badge/Create-6.0.8-B8860B.svg)](https://github.com/Creators-of-Create/Create)
 
 ![A player lifted off the ground by four copper Tentacles of a Tentacle Rig](docs/images/hero-carried-on-tentacles.png)
+
+## Minecraft 1.20.1 build
+
+This branch (`mc/1.20.1`) is the Forge 1.20.1 build of Octo Arms. The main build is for NeoForge 1.21.1 (branch `main`).
+
+- Same gameplay as the 1.21.1 build of the same version, except: no Sable Ships and no in-game config screen (the config files work the same).
+- Forge 47 (1.20.1), Create 6.0.8, Java 17.
+- Jars carry the Minecraft version: `octo-arms-<version>+mc1.20.1.jar`, release tags `v<version>+mc1.20.1`.
+- Rigs are saved as item NBT here (data components on 1.21.1). Worlds, clients and servers do not mix between the two Minecraft versions.
 
 ## What it does
 
@@ -19,12 +28,11 @@ Craft a **Tentacle Rig**: a Backtank with four **Tentacles** and a Precision Mec
 
 The Rig runs on the Backtank's **Air**. Holding still uses a trickle, moving uses more, climbing the most. Place the Rig as a block under a spinning shaft to refill it, like any Backtank. Double Jump again and the Rig **Sets you Down** on the floor.
 
-The only required dependency is Create. With Sable (optional) the Rig also grips and rides Ships. The terms used here (Tentacle Rig, Grip, Reach, Air, Crawl, ...) are explained in the [glossary](docs/CONTEXT.md).
+The only required dependency is Create. The terms used here (Tentacle Rig, Grip, Reach, Air, Crawl, ...) are explained in the [glossary](docs/CONTEXT.md).
 
 ## Features
 
 - **Climb anything solid**: Tentacles grip any full block face: floor, wall, ceiling, the underside of a ledge, also underwater.
-- **Ride Ships**: with Sable (or Create Aeronautics) installed, Tentacles grip Ship blocks too and the Rig carries you along with a moving, turning Ship. See [Ships](#ships-sable--create-aeronautics).
 - **Move where you look**: forward follows the camera (also up and down), `Space` goes up, `Shift` goes down. You can't walk off an edge: the Rig only moves you where at least two Tentacles can hold.
 - **Hang** under ledges and ceilings, as long as you like.
 - **Double Jump** to activate, also in mid-air: the Rig catches you as soon as a Grip is in Reach, with no fall damage.
@@ -93,48 +101,21 @@ Ponder (hold `W` over a Rig or Tentacle) shows all of this step by step.
 - **Create Display Link**: a Rig Block is a Display Link source, "Rig Air" (Air number, percent or progress bar). Works with Display Boards and Nixie Tubes.
 - **JEI** (optional): all recipes show up in Create's own categories (Sequenced Assembly, Mechanical Crafting) and in vanilla Smithing.
 - **Jade**: no special support.
-- **Sable / Create Aeronautics** (optional, not needed): Ship blocks are Grips and the Rig rides moving Ships. See [Ships](#ships-sable--create-aeronautics).
-- Tested together with Elytra Slot, Sophisticated Backpacks and Carry On.
+- **Sable / Create Aeronautics**: 1.21.1 only (no Ships on this build).
 
 ![Engineer's Goggles on a placed Rig Block: Air, filling rate, Reach and Top Speed](docs/images/goggles-rig-block.png)
-
-## Ships (Sable / Create Aeronautics)
-
-New in 1.1.0. With Sable installed, blocks of a Ship are Grips like world blocks. Create Aeronautics is not needed, but Aeronautics Ships are Sable Ships, so they work too. Without Sable nothing changes.
-
-- Grip a Ship's floor, walls, hull or underside, parked or moving.
-- A Held wearer is carried with the Ship, also around its turns. The Ship that holds most of your Grips carries you.
-- Move freely between world blocks and a Ship, both ways.
-- Air use counts only your own move, not the Ship's.
-- Standing on the deck works as before: Sable moves you, the Rig adds nothing on top.
-- If the Ship is removed while you hang on it, you fall, as when blocks under your Grips break.
-- Server admins can turn it off: `ships.grip = false` (see [Config](#config)).
-
-Tested: parked and turned 30°, moving at 4 and 15 blocks/s, turning at 20°/s while rolling 10°/s, moving between world and Ship, Ship removed mid-hang, standing on the deck.
-
-| Holding on to a parked, turned Ship | Riding a Ship moving at 4 blocks/s |
-|---|---|
-| ![A player holding on to the edge of a parked Ship turned by 30 degrees](docs/images/ship-parked.png) | ![A player gripping the side of a Ship moving at 4 blocks per second](docs/images/ship-moving.png) |
-
-Limits:
-
-- Ships with a scale other than 1 are ignored.
-- Other players on a fast Ship are drawn about 1.5 ticks behind it.
-- When a Ship speeds up or slows down, the Rig may use a little extra Air.
-- The Rig's own path check does not see Ship hulls; your real move still collides with them.
-- Tested over localhost only. The server accepts Grips from the Ship's last 10 poses, which leaves room for about 400 ms ping, but real latency is not tested yet.
 
 ## Requirements
 
 | Mod | Version |
 |---|---|
-| Minecraft | 1.21.1 |
-| NeoForge | 21.1.228 or newer |
-| Create | 6.0.10 or newer, below 6.1.0 |
-| JEI | optional |
-| Sable | optional, 2.0.5 or newer, below 2.1 (for Ships) |
+| Minecraft | 1.20.1 |
+| Forge | 47.1.3 or newer |
+| Create | 6.0.8 or newer, below 6.1.0 (6.0.8 is the last Create release for 1.20.1) |
+| JEI | optional (15.x) |
+| Java | 17 or newer |
 
-Built and tested with NeoForge 21.1.250 and Create 6.0.10; Ships with Sable 2.0.5 and Create Aeronautics 1.3.2.
+Built against Forge 47.1.33 and Create 6.0.8-289; the test harness runs on them.
 
 ## Downloads
 
@@ -144,10 +125,9 @@ Built and tested with NeoForge 21.1.250 and Create 6.0.10; Ships with Sable 2.0.
 
 ## Install
 
-1. Install NeoForge and Create.
-2. Drop the `octo-arms-<version>+mc1.21.1.jar` file into your `mods/` folder.
-3. Install it on **both** the client and the server. Clients and server must use the same Octo Arms version: 1.0 clients cannot join a 1.1 server.
-4. Optional: install Sable on both sides (Create Aeronautics needs it anyway) to grip Ships.
+1. Install Forge 1.20.1 and Create 6.0.8.
+2. Drop the `octo-arms-<version>+mc1.20.1.jar` file into your `mods/` folder.
+3. Install it on **both** the client and the server. Clients and server must use the same Octo Arms version and the same Minecraft version: a 1.20.1 client cannot join a 1.21.1 server, and 1.0 clients cannot join a 1.1 server.
 
 The server does not need `allow-flight=true`. The Rig works with either setting.
 
@@ -168,13 +148,13 @@ Server config: `serverconfig/tentaworks-server.toml` inside the world folder (pu
 | `enchant` | `farReachPerLevel` | 1.0 | Far Reach: extra Reach per level, blocks |
 | `enchant` | `thriftPerLevel` | 0.15 | Thrift: Air use cut per level (0.15 = −15 %, max 0.3) |
 | `enchant` | `swiftPerLevel` | 0.15 | Swift: extra Speed per level (0.15 = +15 %) |
-| `ships` | `grip` | true | Rigs grip Sable Ships. Off: Ship blocks are never Grips. No effect without Sable |
+| `ships` | `grip` | true | 1.21.1 only (Sable Ships). No effect on 1.20.1 |
 
-Client config: `config/tentaworks-client.toml`, or in game under Mods > Octo Arms > Config (looks and controls only; the server does not read it).
+Client config: `config/tentaworks-client.toml` (looks and controls only; the server does not read it). There is no in-game config screen on 1.20.1: edit the file.
 
 | Section | Key | Default | What it does |
 |---|---|---|---|
-| `animation` | `walkWhileHeld` | false | Vanilla walk animation (swinging arms and legs) while the Rig or a Ship carries you. Off: the body hangs still |
+| `animation` | `walkWhileHeld` | false | Vanilla walk animation (swinging arms and legs) while the Rig carries you. Off: the body hangs still |
 | `movement` | `forward` | look | What `W`/`S` follow while the Rig carries you. `look`: the camera, look down and `W` takes you down. `flat`: level only, like walking or creative flight; `Space`/`Shift` change the height |
 
 Key binds (client, both unbound by default): **Rig Settings (worn Rig)** and **Toggle Tentacle Rig (key-only mode)**.
@@ -182,7 +162,8 @@ Key binds (client, both unbound by default): **Rig Settings (worn Rig)** and **T
 ## Known limitations
 
 - **Full blocks only**: Tentacles grip full block faces. Slabs, stairs, fences and other partial blocks are not Grips.
-- **Ships**: see the limits under [Ships](#ships-sable--create-aeronautics).
+- **No Ships** on 1.20.1: Sable exists only for 1.21.1.
+- **No in-game config screen** on 1.20.1: edit the config files.
 - **Client-driven movement**: the wearer's client moves the player; the server checks Grips, Reach, Air use, speed and direction. Not tested with server anti-cheat plugins.
 - **Crafting resets Air**: Mechanical Crafting does not copy the Backtank's Air, so a Rig made from a full Backtank starts empty. (Smithing Copper → Netherite keeps it.)
 - **Network tests**: tested with up to two players over localhost. Real latency and many players at once are not tested yet.
@@ -196,7 +177,10 @@ Key binds (client, both unbound by default): **Rig Settings (worn Rig)** and **T
 That was the working name. The mod id stays `tentaworks` so worlds keep their Rigs, Rig Blocks, enchantments and settings. Don't rename it in forks if you want save compatibility.
 
 **Does it need Create Aeronautics?**
-No. Octo Arms depends only on Create. With Sable (Create Aeronautics runs on it) the Rig also grips and rides Ships.
+No. Octo Arms depends only on Create. Ship support (Sable, Create Aeronautics) is in the 1.21.1 build only.
+
+**Can I move a world between the 1.20.1 and the 1.21.1 build?**
+No. Rigs are saved differently (item NBT on 1.20.1, data components on 1.21.1) and nothing converts them, and Minecraft does not load a world in an older version.
 
 **Is the Rig still a Backtank?**
 Yes. It holds Backtank Air, feeds a Diving Helmet underwater, takes Capacity, and refills under a spinning shaft when placed. The Rig and a Diving Helmet share the same Air.
@@ -212,12 +196,12 @@ It never breaks. At 1 durability it can't be activated (an Active one Sets you D
 
 ## Building from source
 
-Needs JDK 21 or newer (Gradle uses a Java 21 toolchain).
+Needs JDK 17 or newer (Gradle uses a Java 17 toolchain and downloads it if missing). Built with ModDevGradle Legacy on Forge 47.
 
 ```sh
-./gradlew build        # jar in build/libs/
+./gradlew build        # jar in build/libs/ (octo-arms-<version>+mc1.20.1.jar), runs the tests
+./gradlew test         # unit tests, plus fmlTest (tests that need Forge and Create, in a dev server)
 ./gradlew runClient    # dev client
-./gradlew runClient -PwithSable   # dev client with Sable + Aeronautics
 ./gradlew runServer    # dev server
 ./gradlew runData      # regenerates src/generated
 ```

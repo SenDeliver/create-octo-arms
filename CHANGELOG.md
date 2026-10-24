@@ -7,6 +7,16 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [1.5.0+mc1.20.1]
+
+First 1.20.1 build. Same gameplay as 1.5.0. Not included: Sable Ships, in-game config screen. Save format is NBT, worlds do not transfer between MC versions.
+
+### Compatibility
+
+- Minecraft 1.20.1, Forge 47.1.3 or newer, Create 6.0.8. Java 17.
+- Jar `octo-arms-1.5.0+mc1.20.1.jar`. Clients and server must both run the 1.20.1 build; 1.21.1 clients cannot join a 1.20.1 server and the other way round.
+- The config stays file-based (`tentaworks-server.toml`, `tentaworks-client.toml`, same keys); `ships.grip` has no effect.
+
 ## [1.5.0] - 2026-10-20
 
 ### Fixed
