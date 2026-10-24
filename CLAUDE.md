@@ -4,8 +4,9 @@ Create addon. This branch `1.20.1`: Forge 47.1.33 / MC 1.20.1, Create 6.0.8-289,
 
 ## Branches
 
-- `1.21.1`: NeoForge 21.1 line, versions `x.y.z`, tags `vX.Y.Z`.
-- `1.20.1`: Forge 47 line, versions `x.y.z+mc1.20.1`, tags `vX.Y.Z+mc1.20.1`. This branch.
+- `1.21.1`: NeoForge 21.1 line, tags `vX.Y.Z+mc1.21.1` (bare `v1.0.0`..`v1.5.0` are its history).
+- `1.20.1`: Forge 47 line, tags `vX.Y.Z+mc1.20.1`. This branch.
+- Same `mod_version` X.Y.Z on both for the same changes; `CHANGELOG.md` and the release files are byte-identical on both.
 - `main`: frozen at 1.5.0, kept only for history and links. Never commit or merge into it.
 - Fixes land on `1.21.1` first, then `git cherry-pick` onto `1.20.1`. Expected conflicts: loader glue (`Tentaworks`, `TentaworksClient`, `TentaworksNetwork`, `RigEnchants`, `RigSettings`, renderers, datagen, `tentaworks.mixins.json`, build files, docs).
 - PRs target the branch of the version they change. Draft PR 21 (this branch against `1.21.1`) only shows the port diff, it is never merged. Keep file names and class layout identical to `1.21.1`.
@@ -38,4 +39,4 @@ New TRACE/STRACE fields go at the end of the line only; older parsers match by f
 
 ## Release
 
-Rules in `docs/RELEASE.md` (this branch: tag `vX.Y.Z+mc1.20.1`, jar `octo-arms-X.Y.Z+mc1.20.1.jar`): version bump on every release (patch = client-only, minor = client + server or bigger feature, major = rewrite), all 15 translations complete (`python3 tools/lang_check.py`), changelog, reproducible jar, harness green, owner tests in game and tags. Never tag or create a GitHub release on your own. Server and local client deploy notes live outside the repo (`../../STATE.md`, private), never put server details in this repo.
+Rules in `docs/RELEASE.md`: shared `mod_version` across Minecraft versions, tags `vX.Y.Z+mc<mc>`, one changelog with `**<mc> only:**` entries. Prep with `python3 tools/release_prep.py X.Y.Z` (bump + changelog cut), notes with `python3 tools/release_notes.py X.Y.Z <mc>`. Version bump on every release (patch = client-only, minor = client + server or bigger feature, major = rewrite), all 15 translations complete (`python3 tools/lang_check.py`), reproducible jar, harness green, owner tests in game and tags. Never tag or create a GitHub release on your own. Server and local client deploy notes live outside the repo (`../../STATE.md`, private), never put server details in this repo.

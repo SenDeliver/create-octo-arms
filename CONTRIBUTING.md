@@ -21,10 +21,10 @@ Thanks for helping with Create: Octo Arms. This page explains how to build the m
 
 ## Branches
 
-| Branch | Build | Versions, tags |
+| Branch | Build | Version, tag |
 |---|---|---|
-| `1.21.1` | NeoForge 21.1, MC 1.21.1, Java 21 | `x.y.z`, `vX.Y.Z` |
-| `1.20.1` | Forge 47, MC 1.20.1, Java 17, no Sable Ships, no in-game config screen | `x.y.z+mc1.20.1`, `vX.Y.Z+mc1.20.1` |
+| `1.21.1` | NeoForge 21.1, MC 1.21.1, Java 21 | `X.Y.Z`, `vX.Y.Z+mc1.21.1` (bare `vX.Y.Z` up to 1.5.0) |
+| `1.20.1` | Forge 47, MC 1.20.1, Java 17, no Sable Ships, no in-game config screen | `X.Y.Z`, `vX.Y.Z+mc1.20.1` |
 | `main` | frozen at 1.5.0, history and links only | none |
 
 ```mermaid
@@ -35,6 +35,8 @@ flowchart LR
 ```
 
 - Fixes and features land on `1.21.1` first, then the maintainer cherry-picks them onto `1.20.1`.
+- Both branches carry the same `mod_version` for the same changes; jars and tags add `+mc<minecraft version>` (rules in [docs/RELEASE.md](docs/RELEASE.md)).
+- `CHANGELOG.md` is one file, identical on both branches. A line for one platform starts with `**1.20.1 only:**` or `**1.21.1 only:**`; untagged lines apply to all. Cherry-pick changelog lines verbatim, never reword them on one branch.
 - Send a pull request against the branch of the version it changes: `1.21.1` for almost everything, `1.20.1` only for a bug that exists only on 1.20.1. Never against `main`.
 - File names and class layout are the same on both branches, so cherry-picks apply. Do not rename or move files on one branch only.
 - Expected conflicts are the loader glue: `Tentaworks`, `TentaworksClient`, `TentaworksNetwork`, `RigEnchants`, `RigSettings` (NBT vs data component), the vertex calls in `TentacleRenderer`, `TentacleLayer`, datagen, `tentaworks.mixins.json`, build files and the docs. Logic in `rig/` usually applies clean.
@@ -92,7 +94,7 @@ At minimum, before a pull request:
 1. Fork the repo and create a branch from `1.21.1` (from `1.20.1` only for a bug that exists only there).
 2. Keep the pull request small and about one thing.
 3. Describe **what** changed, **why**, and **how you tested it** (client or server, screenshots for visual changes).
-4. Add a line to `CHANGELOG.md` under `[Unreleased]`.
+4. Add a line to `CHANGELOG.md` under `[Unreleased]`, starting with `**1.20.1 only:**` or `**1.21.1 only:**` when it applies to one platform.
 5. Be ready for review comments.
 
 ## Review and merge
