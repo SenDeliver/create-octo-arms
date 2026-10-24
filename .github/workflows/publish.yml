@@ -40,7 +40,7 @@ jobs:
         run: |
           v=$(sed -n 's/^mod_version=//p' gradle.properties)
           [ "v$v+mc1.20.1" = "$TAG" ] || { echo "tag $TAG != v<gradle.properties mod_version>+mc1.20.1 (v$v+mc1.20.1)"; exit 1; }
-          grep -qF "## [$v+mc1.20.1]" CHANGELOG.md || { echo "CHANGELOG.md has no [$v+mc1.20.1] section"; exit 1; }
+          grep -q "^## \[$v+mc1\.20\.1\]" CHANGELOG.md || { echo "CHANGELOG.md has no [$v+mc1.20.1] section"; exit 1; }
 
       - name: Already published?
         id: done
