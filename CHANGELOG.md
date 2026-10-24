@@ -5,21 +5,13 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+Platforms: the same version number ships for every supported Minecraft version (1.21.1 NeoForge, 1.20.1 Forge). An entry that applies to one platform only starts with `**1.20.1 only:**` or `**1.21.1 only:**`; untagged entries apply to all. Release tags carry the platform, `vX.Y.Z+mc1.21.1` and `vX.Y.Z+mc1.20.1`; the bare tags up to `v1.5.0` are 1.21.1 releases.
+
 ## [Unreleased]
 
 ### Fixed
 
 - No view bobbing while the Rig carries you. With the body on the floor (looking down, low Standing Height) vanilla bobbed the camera and the hand as if you walked; with View Bobbing on it looked like a sprint with camera shake. Client only.
-
-## [1.5.0+mc1.20.1]
-
-First 1.20.1 build. Same gameplay as 1.5.0. Not included: Sable Ships, in-game config screen. Save format is NBT, worlds do not transfer between MC versions.
-
-### Compatibility
-
-- Minecraft 1.20.1, Forge 47.1.3 or newer, Create 6.0.8. Java 17.
-- Jar `octo-arms-1.5.0+mc1.20.1.jar`. Clients and server must both run the 1.20.1 build; 1.21.1 clients cannot join a 1.20.1 server and the other way round.
-- The config stays file-based (`tentaworks-server.toml`, `tentaworks-client.toml`, same keys); `ships.grip` has no effect.
 
 ## [1.5.0] - 2026-10-20
 
@@ -31,6 +23,10 @@ First 1.20.1 build. Same gameplay as 1.5.0. Not included: Sable Ships, in-game c
 ### Compatibility
 
 - Server and client change (the sight rule is checked on both sides, network payloads unchanged). A 1.4.0 client on a newer server gets its through-block Grips rejected (Falling after 10 ticks if fewer than two remain); a newer client on a 1.4.0 server keeps working. Update both.
+
+### Platforms
+
+- **1.20.1 only:** First Forge 1.20.1 build of 1.5.0 (Create 6.0.8, Forge 47.1.3+, Java 17). Not included: Sable Ships, in-game config screen. Items keep their data in NBT; worlds do not transfer between Minecraft versions. 1.21.1 clients cannot join a 1.20.1 server and the other way round.
 
 ## [1.4.0] - 2026-10-20
 
