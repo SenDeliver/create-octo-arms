@@ -15,6 +15,7 @@
     "EntityRendererMixin",
     "KineticBlockEntityGoggleMixin",
     "LivingEntityWalkMixin",
+    "LocalPlayerBobMixin",
     "LocalPlayerSneakMixin"
   ],
   "injectors": {
