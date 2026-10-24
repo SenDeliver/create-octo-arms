@@ -31,7 +31,7 @@ Quick start: `tools/run_all.sh mytest` (one suite: see the matching line in `run
 
 Scenes and timelines on this branch write item data as 1.20.1 stack NBT, not 1.21.1 component selectors (`[create:banktank_air=N, ...]`). `docs/save-format.md` has the full layout.
 
-| Data | 1.21.1 (`main`) | 1.20.1 (this branch) |
+| Data | 1.21.1 (`1.21.1`) | 1.20.1 (this branch) |
 |---|---|---|
 | Air | `[create:banktank_air=900]` | `{Air:900}` |
 | Damage | `[damage=100]` | `{Damage:100}` |
