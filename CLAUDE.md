@@ -1,6 +1,14 @@
 # Octo Arms (mod id `tentaworks`)
 
-Create addon. This branch `mc/1.20.1`: Forge 47.1.33 / MC 1.20.1, Create 6.0.8-289, Java 17, ModDevGradle Legacy, no Sable (Ships are 1.21.1 only, `NoShips` is the only `ShipFrames`). `main` is NeoForge 21.1 / MC 1.21.1. Read first: `docs/CONTEXT.md` (glossary, use its terms), `CONTRIBUTING.md` (style, frozen IDs), `tools/README.md` (test harness). Public repo: everything here is visible.
+Create addon. This branch `mc/1.20.1`: Forge 47.1.33 / MC 1.20.1, Create 6.0.8-289, Java 17, ModDevGradle Legacy, no Sable (Ships are 1.21.1 only, `NoShips` is the only `ShipFrames`). `1.21.1` is NeoForge 21.1 / MC 1.21.1. Read first: `docs/CONTEXT.md` (glossary, use its terms), `CONTRIBUTING.md` (style, frozen IDs), `tools/README.md` (test harness). Public repo: everything here is visible.
+
+## Branches
+
+- `1.21.1`: NeoForge 21.1 line, versions `x.y.z`, tags `vX.Y.Z`.
+- `mc/1.20.1`: Forge 47 line, versions `x.y.z+mc1.20.1`, tags `vX.Y.Z+mc1.20.1`. This branch.
+- `main`: frozen at 1.5.0, kept only for history and links. Never commit or merge into it.
+- Fixes land on `1.21.1` first, then `git cherry-pick` onto `mc/1.20.1`. Expected conflicts: loader glue (`Tentaworks`, `TentaworksClient`, `TentaworksNetwork`, `RigEnchants`, `RigSettings`, renderers, datagen, `tentaworks.mixins.json`, build files, docs).
+- PRs target the branch of the version they change. Draft PR 20 (this branch against `1.21.1`) only shows the port diff, it is never merged. Keep file names and class layout identical to `1.21.1`.
 
 ## Layout
 
@@ -21,9 +29,8 @@ Forge EventBus: `@SubscribeEvent` static handlers and their class must be `publi
 2. `./gradlew build`, run the PR's suite alone first (`tools/run_split.sh ...`, see `tools/README.md`), then `tools/run_all.sh <tag>`.
 3. `run_all.sh` copies screenshots to `tools/shots/` (gitignored, never commit them).
 4. Known timing flakes, re-run the suite alone before blaming the PR: p7 `D1 display board` (RCON read), p8 `forged zero climb` (packet bursts).
-5. Comparison baseline: last `tools/logs/*-runall.txt` on this branch (`main` logs are 1.21.1).
-6. Merge: squash, `gh pr merge N --squash`. Maintainer pushes to `main` directly for housekeeping; contributors go through PRs.
-7. Branch model: fixes land on `main` first, then `git cherry-pick` onto `mc/1.20.1` (see `CONTRIBUTING.md`). The draft PR of this branch is never merged. Keep file names and class layout identical to `main`.
+5. Comparison baseline: last `tools/logs/*-runall.txt` on `1.21.1` (`port1` on `mc/1.20.1`).
+6. Merge: squash into the PR's version branch, `gh pr merge N --squash`. Maintainer pushes to `1.21.1` / `mc/1.20.1` directly for housekeeping; contributors go through PRs.
 
 ## Harness log contract
 
