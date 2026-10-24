@@ -19,25 +19,30 @@ Thanks for helping with Create: Octo Arms. This page explains how to build the m
 - Do not open pull requests only to change versions, wording or formatting.
 - Security problems go through [SECURITY.md](SECURITY.md), not a public issue.
 
-## Branches: 1.21.1 and 1.20.1
+## Branches
 
-`main` is the NeoForge 1.21.1 build. `mc/1.20.1` is the Forge 1.20.1 build (Create 6.0.8, Java 17, no Sable Ships, no in-game config screen). It lives on as its own branch and is never merged into `main`.
+| Branch | Build | Versions, tags |
+|---|---|---|
+| `1.21.1` | NeoForge 21.1, MC 1.21.1, Java 21 | `x.y.z`, `vX.Y.Z` |
+| `mc/1.20.1` | Forge 47, MC 1.20.1, Java 17, no Sable Ships, no in-game config screen | `x.y.z+mc1.20.1`, `vX.Y.Z+mc1.20.1` |
+| `main` | frozen at 1.5.0, history and links only | none |
 
 ```mermaid
 flowchart LR
-  pr["Pull request"] -->|squash merge| main["main<br/>NeoForge 1.21.1"]
-  main -->|git cherry-pick| port["mc/1.20.1<br/>Forge 1.20.1"]
-  port -->|"fix conflicts in loader glue,<br/>build, run the suites"| done["push mc/1.20.1"]
+  pr["Pull request"] -->|squash merge| b121["1.21.1<br/>NeoForge 1.21.1"]
+  b121 -->|git cherry-pick| b120["mc/1.20.1<br/>Forge 1.20.1"]
+  b120 -->|"fix conflicts in loader glue,<br/>build, run the suites"| done["push mc/1.20.1"]
 ```
 
-- Fixes and features land on `main` first, then the maintainer cherry-picks them onto `mc/1.20.1`. Send pull requests against `main`; only a bug that exists only on 1.20.1 goes to `mc/1.20.1`.
+- Fixes and features land on `1.21.1` first, then the maintainer cherry-picks them onto `mc/1.20.1`.
+- Send a pull request against the branch of the version it changes: `1.21.1` for almost everything, `mc/1.20.1` only for a bug that exists only on 1.20.1. Never against `main`.
 - File names and class layout are the same on both branches, so cherry-picks apply. Do not rename or move files on one branch only.
 - Expected conflicts are the loader glue: `Tentaworks`, `TentaworksClient`, `TentaworksNetwork`, `RigEnchants`, `RigSettings` (NBT vs data component), the vertex calls in `TentacleRenderer`, `TentacleLayer`, datagen, `tentaworks.mixins.json`, build files and the docs. Logic in `rig/` usually applies clean.
 - `mc/1.20.1` is Java 17: a cherry-picked change with Java 21 features (record patterns in `switch`, `List.getFirst()`, ...) needs a rewrite there.
 
 ## Build and run
 
-You need **JDK 17 or newer** on `mc/1.20.1` (Gradle uses a Java 17 toolchain), **JDK 21 or newer** on `main`.
+You need **JDK 17 or newer** on `mc/1.20.1` (Gradle uses a Java 17 toolchain), **JDK 21 or newer** on `1.21.1`.
 
 ```sh
 ./gradlew build        # builds build/libs/octo-arms-<version>+mc1.20.1.jar, runs the tests
@@ -53,7 +58,7 @@ New text must reach all 15 languages before a release (`python3 tools/lang_check
 
 ## Code style
 
-- Java 21 on `main`, Java 17 on `mc/1.20.1`. Match the style of the code around your change.
+- Java 21 on `1.21.1`, Java 17 on `mc/1.20.1`. Match the style of the code around your change.
 - No unnecessary comments. Write a comment only when it tells the reader something the code can't.
 - Use the glossary terms in names and player-facing text.
 - Keep changes focused. One topic per pull request.
@@ -84,7 +89,7 @@ At minimum, before a pull request:
 
 ## Pull requests
 
-1. Fork the repo and create a branch from `main` (from `mc/1.20.1` only for a bug that exists only there).
+1. Fork the repo and create a branch from `1.21.1` (from `mc/1.20.1` only for a bug that exists only there).
 2. Keep the pull request small and about one thing.
 3. Describe **what** changed, **why**, and **how you tested it** (client or server, screenshots for visual changes).
 4. Add a line to `CHANGELOG.md` under `[Unreleased]`.
@@ -92,7 +97,7 @@ At minimum, before a pull request:
 
 ## Review and merge
 
-- Only the maintainer (@SenDeliver) reviews and merges. `main` accepts pull requests only; squash merge; release tags are made by the maintainer.
+- Only the maintainer (@SenDeliver) reviews and merges. `1.21.1` and `mc/1.20.1` accept pull requests only; squash merge into that branch; release tags are made by the maintainer.
 - The **Build** check (`./gradlew build` on GitHub Actions) must pass before a pull request is merged.
 - Expect a first answer within about a week. Pull requests with no reply to review comments for 30 days may be closed, you can reopen later.
 - Accepted changes land in the next release and get a line in `CHANGELOG.md` with your GitHub name.

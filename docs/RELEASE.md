@@ -2,7 +2,7 @@
 
 Every release of Octo Arms follows these rules. The owner tags and publishes; AI sessions and contributors prepare.
 
-This is the copy on `mc/1.20.1` (Forge 1.20.1). A 1.20.1 release ships the same `mod_version` as the 1.21.1 release it was cherry-picked from, with `+mc1.20.1` after it: tag `vX.Y.Z+mc1.20.1`, jar `octo-arms-X.Y.Z+mc1.20.1.jar`, built with Java 17. The `main` release of the same version comes first.
+This is the copy on `mc/1.20.1` (Forge 1.20.1). A 1.20.1 release ships the same `mod_version` as the 1.21.1 release it was cherry-picked from, with `+mc1.20.1` after it: tag `vX.Y.Z+mc1.20.1`, jar `octo-arms-X.Y.Z+mc1.20.1.jar`, built with Java 17. The fixes are cherry-picked from `1.21.1`, whose `vX.Y.Z` release of the same version comes first. `main` is frozen at 1.5.0: never tag or release from it.
 
 ## 1. Version bump, every release
 
