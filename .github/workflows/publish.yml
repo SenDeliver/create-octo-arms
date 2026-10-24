@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag to (re)publish, e.g. v1.1.2"
+        description: "Release tag to (re)publish, e.g. v1.5.0+mc1.20.1"
         required: true
       targets:
         description: "Comma list of targets: github,curseforge (modrinth once its project is approved)"
@@ -32,15 +32,15 @@ jobs:
       - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 17
 
       - uses: gradle/actions/setup-gradle@48b5f213c81028ace310571dc5ec0fbbca0b2947 # v4
 
       - name: Tag matches mod_version
         run: |
           v=$(sed -n 's/^mod_version=//p' gradle.properties)
-          [ "v$v" = "$TAG" ] || { echo "tag $TAG != gradle.properties mod_version $v"; exit 1; }
-          grep -q "^## \[$v\]" CHANGELOG.md || { echo "CHANGELOG.md has no [$v] section"; exit 1; }
+          [ "v$v+mc1.20.1" = "$TAG" ] || { echo "tag $TAG != v<gradle.properties mod_version>+mc1.20.1 (v$v+mc1.20.1)"; exit 1; }
+          grep -qF "## [$v+mc1.20.1]" CHANGELOG.md || { echo "CHANGELOG.md has no [$v+mc1.20.1] section"; exit 1; }
 
       - name: Already published?
         id: done
@@ -49,7 +49,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           v=$(sed -n 's/^mod_version=//p' gradle.properties)
-          if gh release view "$TAG" --json assets --jq '.assets[].name' | grep -qx "octo-arms-$v+mc1.21.1.jar"; then
+          if gh release view "$TAG" --json assets --jq '.assets[].name' | grep -qx "octo-arms-$v+mc1.20.1.jar"; then
             echo "::warning::release $TAG already carries the jar: nothing published. Expected after editing a release; if this is a fresh release, the jar was attached by hand: run this workflow by hand with targets=curseforge (docs/RELEASE.md)"
             echo "skip=true" >> "$GITHUB_OUTPUT"
           fi
@@ -72,23 +72,21 @@ jobs:
           name: Octo Arms ${{ env.TAG }}
           changelog-file: release-notes.md
           version-type: release
-          loaders: neoforge
-          game-versions: 1.21.1
-          java: 21
+          loaders: forge
+          game-versions: 1.20.1
+          java: 17
 
           modrinth-id: octo-arms
           modrinth-token: ${{ contains(env.TARGETS, 'modrinth') && secrets.MODRINTH_TOKEN || '' }}
           modrinth-featured: true
           modrinth-dependencies: |
             create(required)
-            sable(optional)
             jei(optional)
 
           curseforge-id: ${{ secrets.CURSEFORGE_PROJECT_ID }}
           curseforge-token: ${{ contains(env.TARGETS, 'curseforge') && secrets.CURSEFORGE_TOKEN || '' }}
           curseforge-dependencies: |
             create(required)
-            sable(optional)
             jei(optional)
 
           github-tag: ${{ env.TAG }}
