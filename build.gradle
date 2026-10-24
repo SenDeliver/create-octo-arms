@@ -19,7 +19,7 @@ configurations {
     testImplementation.extendsFrom fmlTestLibraries
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+java.toolchain.languageVersion = JavaLanguageVersion.of(java_version as int)
 
 repositories {
     mavenCentral()
