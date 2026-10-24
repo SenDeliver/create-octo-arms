@@ -1,0 +1,521 @@
+Dev never joined; stopping the clients
+done: tools/logs/port1-main
+done: tools/logs/port1-life
+done: tools/logs/port1-creative
+done: tools/logs/port1-p1
+done: tools/logs/port1-p2
+done: tools/logs/port1-p3
+done: tools/logs/port1-p4
+done: tools/logs/port1-p5
+done: tools/logs/port1-p6
+done: tools/logs/port1-p6walk
+done: tools/logs/port1-p6fast
+done: tools/logs/port1-p7
+done: tools/logs/port1-p8
+done: tools/logs/port1-p8r16
+done: tools/logs/port1-pole
+done: tools/logs/port1-tank
+done: tools/logs/port1-cave
+done: tools/logs/port1-sneak
+done: tools/logs/port1-sneak2
+done: tools/logs/port1-flat
+done: tools/logs/port1-ride
+== main
+server: moved wrongly=0, moved too quickly=0, Flying is not enabled=0, multiplayer.disconnect.flying=0, lost connection=2, forcing Falling=0, non-finite=0, kicked=0, moves against Crawl=0 exceptions(excl. known)=0
+moved too quickly: 0 total, 0 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=0 []
+tools/logs/port1-main-client.log exceptions(excl. known)= 0
+tools/logs/port1-main-client2.log exceptions(excl. known)= 0
+== life
+server: moved wrongly=0, moved too quickly=14, Flying is not enabled=1, multiplayer.disconnect.flying=0, lost connection=2, forcing Falling=1, non-finite=1, kicked=1, moves against Crawl=0 exceptions(excl. known)=0
+moved too quickly: 14 total, 14 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=0 []
+tools/logs/port1-life-client.log exceptions(excl. known)= 0
+TRACE/STRACE ticks=634 compared=249 (Rig not Stowed, teleport ticks +-4 skipped) max drift same gt=0.000 allowing 1 tick lag=0.000 ticks>0.5 (lag-allowed)=0
+== creative
+server: moved wrongly=0, moved too quickly=0, Flying is not enabled=0, multiplayer.disconnect.flying=0, lost connection=1, forcing Falling=0, non-finite=0, kicked=0, moves against Crawl=0 exceptions(excl. known)=0
+moved too quickly: 0 total, 0 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=0 []
+tools/logs/port1-creative-client.log exceptions(excl. known)= 0
+TRACE/STRACE ticks=232 compared=69 (Rig not Stowed, teleport ticks +-4 skipped) max drift same gt=0.499 allowing 1 tick lag=0.280 ticks>0.5 (lag-allowed)=0
+== p1
+server: moved wrongly=0, moved too quickly=3, Flying is not enabled=0, multiplayer.disconnect.flying=0, lost connection=1, forcing Falling=0, non-finite=0, kicked=0, moves against Crawl=0 exceptions(excl. known)=0
+moved too quickly: 3 total, 3 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=0 []
+tools/logs/port1-p1-client.log exceptions(excl. known)= 0
+TRACE/STRACE ticks=1261 compared=416 (Rig not Stowed, teleport ticks +-4 skipped) max drift same gt=0.966 allowing 1 tick lag=0.000 ticks>0.5 (lag-allowed)=0
+== p2
+server: moved wrongly=0, moved too quickly=34, Flying is not enabled=0, multiplayer.disconnect.flying=0, lost connection=1, forcing Falling=1, non-finite=0, kicked=0, moves against Crawl=1 exceptions(excl. known)=0
+moved too quickly: 34 total, 34 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=0 []
+tools/logs/port1-p2-client.log exceptions(excl. known)= 0
+TRACE/STRACE ticks=4292 compared=3389 (Rig not Stowed, teleport ticks +-4 skipped) max drift same gt=1.249 allowing 1 tick lag=0.000 ticks>0.5 (lag-allowed)=0
+== p3
+server: moved wrongly=0, moved too quickly=24, Flying is not enabled=1, multiplayer.disconnect.flying=0, lost connection=2, forcing Falling=0, non-finite=0, kicked=1, moves against Crawl=0 exceptions(excl. known)=0
+moved too quickly: 24 total, 24 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=0 []
+tools/logs/port1-p3-client.log exceptions(excl. known)= 0
+TRACE/STRACE ticks=3308 compared=1845 (Rig not Stowed, teleport ticks +-4 skipped) max drift same gt=0.906 allowing 1 tick lag=0.000 ticks>0.5 (lag-allowed)=0
+== p4
+server: moved wrongly=0, moved too quickly=20, Flying is not enabled=0, multiplayer.disconnect.flying=0, lost connection=1, forcing Falling=0, non-finite=0, kicked=0, moves against Crawl=0 exceptions(excl. known)=0
+moved too quickly: 20 total, 20 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=0 []
+tools/logs/port1-p4-client.log exceptions(excl. known)= 0
+TRACE/STRACE ticks=4782 compared=2907 (Rig not Stowed, teleport ticks +-4 skipped) max drift same gt=0.966 allowing 1 tick lag=0.000 ticks>0.5 (lag-allowed)=0
+== p5
+server: moved wrongly=0, moved too quickly=21, Flying is not enabled=0, multiplayer.disconnect.flying=0, lost connection=1, forcing Falling=0, non-finite=0, kicked=0, moves against Crawl=0 exceptions(excl. known)=0
+moved too quickly: 21 total, 19 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=2 [('05:19:22', 'Dev'), ('05:19:22', 'Dev')]
+tools/logs/port1-p5-client.log exceptions(excl. known)= 0
+TRACE/STRACE ticks=2095 compared=297 (Rig not Stowed, teleport ticks +-4 skipped) max drift same gt=0.280 allowing 1 tick lag=0.000 ticks>0.5 (lag-allowed)=0
+== p6
+server: moved wrongly=0, moved too quickly=12, Flying is not enabled=0, multiplayer.disconnect.flying=0, lost connection=2, forcing Falling=0, non-finite=0, kicked=0, moves against Crawl=0 exceptions(excl. known)=0
+moved too quickly: 12 total, 12 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=0 []
+tools/logs/port1-p6-client.log exceptions(excl. known)= 0
+tools/logs/port1-p6-client2.log exceptions(excl. known)= 0
+TRACE/STRACE ticks=7952 compared=1245 (Rig not Stowed, teleport ticks +-4 skipped) max drift same gt=0.280 allowing 1 tick lag=0.000 ticks>0.5 (lag-allowed)=0
+== p6walk
+server: moved wrongly=0, moved too quickly=19, Flying is not enabled=0, multiplayer.disconnect.flying=0, lost connection=2, forcing Falling=0, non-finite=0, kicked=0, moves against Crawl=0 exceptions(excl. known)=0
+moved too quickly: 19 total, 19 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=0 []
+tools/logs/port1-p6walk-client.log exceptions(excl. known)= 0
+tools/logs/port1-p6walk-client2.log exceptions(excl. known)= 0
+TRACE/STRACE ticks=1694 compared=1245 (Rig not Stowed, teleport ticks +-4 skipped) max drift same gt=0.280 allowing 1 tick lag=0.000 ticks>0.5 (lag-allowed)=0
+== p6fast
+server: moved wrongly=0, moved too quickly=0, Flying is not enabled=0, multiplayer.disconnect.flying=0, lost connection=1, forcing Falling=0, non-finite=0, kicked=0, moves against Crawl=0 exceptions(excl. known)=0
+moved too quickly: 0 total, 0 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=0 []
+tools/logs/port1-p6fast-client.log exceptions(excl. known)= 0
+TRACE/STRACE ticks=140 compared=129 (Rig not Stowed, teleport ticks +-4 skipped) max drift same gt=1.300 allowing 1 tick lag=0.000 ticks>0.5 (lag-allowed)=0
+== p7
+server: moved wrongly=0, moved too quickly=6, Flying is not enabled=0, multiplayer.disconnect.flying=0, lost connection=1, forcing Falling=0, non-finite=0, kicked=0, moves against Crawl=0 exceptions(excl. known)=0
+moved too quickly: 6 total, 6 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=0 []
+tools/logs/port1-p7-client.log exceptions(excl. known)= 0
+== p8
+server: moved wrongly=0, moved too quickly=34, Flying is not enabled=1, multiplayer.disconnect.flying=0, lost connection=1, forcing Falling=2, non-finite=1, kicked=1, moves against Crawl=0 exceptions(excl. known)=0
+moved too quickly: 34 total, 34 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=0 []
+tools/logs/port1-p8-client.log exceptions(excl. known)= 0
+TRACE/STRACE ticks=1954 compared=830 (Rig not Stowed, teleport ticks +-4 skipped) max drift same gt=1.249 allowing 1 tick lag=0.280 ticks>0.5 (lag-allowed)=0
+== p8r16
+server: moved wrongly=0, moved too quickly=0, Flying is not enabled=0, multiplayer.disconnect.flying=0, lost connection=1, forcing Falling=0, non-finite=0, kicked=0, moves against Crawl=0 exceptions(excl. known)=0
+moved too quickly: 0 total, 0 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=0 []
+tools/logs/port1-p8r16-client.log exceptions(excl. known)= 0
+TRACE/STRACE ticks=131 compared=129 (Rig not Stowed, teleport ticks +-4 skipped) max drift same gt=0.280 allowing 1 tick lag=0.000 ticks>0.5 (lag-allowed)=0
+== pole
+server: moved wrongly=0, moved too quickly=6, Flying is not enabled=0, multiplayer.disconnect.flying=0, lost connection=1, forcing Falling=0, non-finite=0, kicked=0, moves against Crawl=0 exceptions(excl. known)=0
+moved too quickly: 6 total, 6 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=0 []
+tools/logs/port1-pole-client.log exceptions(excl. known)= 0
+TRACE/STRACE ticks=3122 compared=2737 (Rig not Stowed, teleport ticks +-4 skipped) max drift same gt=0.499 allowing 1 tick lag=0.280 ticks>0.5 (lag-allowed)=0
+== tank
+server: moved wrongly=0, moved too quickly=18, Flying is not enabled=0, multiplayer.disconnect.flying=0, lost connection=1, forcing Falling=0, non-finite=0, kicked=0, moves against Crawl=0 exceptions(excl. known)=0
+moved too quickly: 18 total, 18 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=0 []
+tools/logs/port1-tank-client.log exceptions(excl. known)= 0
+TRACE/STRACE ticks=830 compared=717 (Rig not Stowed, teleport ticks +-4 skipped) max drift same gt=0.560 allowing 1 tick lag=0.280 ticks>0.5 (lag-allowed)=0
+== cave
+server: moved wrongly=0, moved too quickly=2, Flying is not enabled=0, multiplayer.disconnect.flying=0, lost connection=1, forcing Falling=0, non-finite=0, kicked=0, moves against Crawl=0 exceptions(excl. known)=0
+moved too quickly: 2 total, 2 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=0 []
+tools/logs/port1-cave-client.log exceptions(excl. known)= 0
+TRACE/STRACE ticks=465 compared=336 (Rig not Stowed, teleport ticks +-4 skipped) max drift same gt=0.280 allowing 1 tick lag=0.000 ticks>0.5 (lag-allowed)=0
+== sneak
+server: moved wrongly=0, moved too quickly=4, Flying is not enabled=0, multiplayer.disconnect.flying=0, lost connection=2, forcing Falling=0, non-finite=0, kicked=0, moves against Crawl=0 exceptions(excl. known)=0
+moved too quickly: 4 total, 4 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=0 []
+tools/logs/port1-sneak-client.log exceptions(excl. known)= 0
+tools/logs/port1-sneak-client2.log exceptions(excl. known)= 0
+TRACE/STRACE ticks=715 compared=492 (Rig not Stowed, teleport ticks +-4 skipped) max drift same gt=0.280 allowing 1 tick lag=0.000 ticks>0.5 (lag-allowed)=0
+== sneak2
+server: moved wrongly=0, moved too quickly=1, Flying is not enabled=0, multiplayer.disconnect.flying=0, lost connection=1, forcing Falling=0, non-finite=0, kicked=0, moves against Crawl=0 exceptions(excl. known)=0
+moved too quickly: 1 total, 1 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=0 []
+tools/logs/port1-sneak2-client.log exceptions(excl. known)= 0
+TRACE/STRACE ticks=359 compared=177 (Rig not Stowed, teleport ticks +-4 skipped) max drift same gt=0.280 allowing 1 tick lag=0.000 ticks>0.5 (lag-allowed)=0
+== flat
+server: moved wrongly=0, moved too quickly=0, Flying is not enabled=0, multiplayer.disconnect.flying=0, lost connection=1, forcing Falling=0, non-finite=0, kicked=0, moves against Crawl=0 exceptions(excl. known)=0
+moved too quickly: 0 total, 0 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=0 []
+tools/logs/port1-flat-client.log exceptions(excl. known)= 0
+== ride
+server: moved wrongly=0, moved too quickly=25, Flying is not enabled=0, multiplayer.disconnect.flying=0, lost connection=1, forcing Falling=0, non-finite=0, kicked=0, moves against Crawl=0 exceptions(excl. known)=0
+moved too quickly: 25 total, 25 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=0 []
+tools/logs/port1-ride-client.log exceptions(excl. known)= 0
+TRACE/STRACE ticks=2343 compared=422 (Rig not Stowed, teleport ticks +-4 skipped) max drift same gt=0.280 allowing 1 tick lag=0.000 ticks>0.5 (lag-allowed)=0
+Traceback (most recent call last):
+  File "/Users/denys/game/minecraft-server/modding/octo-arms/tools/spike_metrics.py", line 24, in <module>
+    w = span(tr, mk['s1a'], mk['s1b'])
+                 ~~^^^^^^^
+KeyError: 's1a'
+N1 netherite Space to max: max feet 6.10 above floor (body 7.00; copper S7 = 3.10), idle 3.0 s server states ['ACTIVE'] cf min 1
+N2 netherite ceiling-only hang: feet -48.500 body -47.60 (ceiling face -41 = 6.60 above body, ground -60), y range 0.0000, client ACTIVE, server ACTIVE, grips min 4, cf min 1
+N2 copper control (Reach 4): client ACTIVE -> FALLING -> ACTIVE, fell to feet -56.99, server ACTIVE -> FALLING -> ACTIVE
+placed rig BE: {Speed: 0.0f, Owner: [I; 940439953, -167562164, -1601161573, -1389718966], Timer: 0, CustomName: '{"text":"Rigby"}', x: 471, y: -60, CapacityEnchantment: 3, z: 0, Air: 0, VanillaTag: {Damage: 0, Enchantments: [{lvl: 3s, id: "create:capacity"}], display: {Name: '"Rigby"'}}, id: "create:backtank"}
+placed rig BE: {Speed: -256.0f, Timer: 0, CustomName: '{"text":"Nethy"}', Network: {Capacity: 4194304.0f, Size: 4, AddedStress: 4.0f, Id: 129467494174663L, Stress: 1024.0f}, x: 471, y: -60, CapacityEnchantment: 1, z: 0, Air: 75, VanillaTag: {Damage: 0, Enchantments: [{lvl: 1s, id: "create:capacity"}], display: {Na
+Air samples (rig 471,-60,0 / Create copper backtank 471,-60,-4): [('0', '495'), ('-4', '495'), ('0', '1495'), ('-4', '900'), ('0', '480')]
+BACKTANK create:copper_backtank cogs=copper shaft=copper name="Copper Backtank"
+BACKTANK create:netherite_backtank cogs=netherite shaft=netherite name="Copper Backtank"
+BACKTANK tentaworks:copper_tentacle_rig cogs=copper shaft=copper name="Copper Tentacle Rig"
+BACKTANK tentaworks:netherite_tentacle_rig cogs=netherite shaft=netherite name="Netherite Tentacle Rig"
+motor ScrollValue: ['256']
+Inventory sample 0: Dev has the following entity data: [{Slot: 102b, id: "tentaworks:copper_tentacle_rig", Count: 1b, tag: {Air: 1650, Damage: 0, Enchantments: [{lvl: 3s, id: "create:capacity"}], display: {Name: '"Rigby"'}}}]
+Inventory sample 1: Dev has the following entity data: [{Slot: 102b, id: "tentaworks:copper_tentacle_rig", Count: 1b, tag: {Air: 1650, Damage: 0, Enchantments: [{lvl: 3s, id: "create:capacity"}], display: {Name: '"Rigby"'}}}]
+Inventory sample 2: Dev has the following entity data: [{Slot: 102b, id: "tentaworks:copper_tentacle_rig", Count: 1b, tag: {Damage: 0, Air: 899.0f}}, {Slot: 103b, id: "create:copper_diving_helmet", Count: 1b, tag: {Damage: 0}}]
+Inventory sample 3: Dev has the following entity data: [{Slot: 102b, id: "tentaworks:copper_tentacle_rig", Count: 1b, tag: {Damage: 0, Air: 894.0f}}, {Slot: 103b, id: "create:copper_diving_helmet", Count: 1b, tag: {Damage: 0}}]
+dropped item: ['Netherite Tentacle Rig has the following entity data: {id: "tentaworks:netherite_tentacle_rig", Count: 1b, tag: {Air: 570, Damage: 0, Enchantments: [{lvl: 1s, id: "create:capacity"}], display: {Name: \'"Nethy"\'}}}']
+Dev Air under water: ['300']
+== Drain (server STRACE air, ticks between decrements)
+PASS D copper idle: 80.0 ticks per Air (config 80, +0.0 %), 5 decrements, 5 Air in 396 ticks, server states ['ACTIVE']
+PASS D copper move: 20.0 ticks per Air (config 20, +0.0 %), 4 decrements, 4 Air in 96 ticks, server states ['ACTIVE']
+PASS D copper climb: 10.0 ticks per Air (config 10, +0.0 %), 8 decrements, 8 Air in 76 ticks, server states ['ACTIVE']
+PASS D netherite idle: 160.0 ticks per Air (config 160, +0.0 %), 4 decrements, 4 Air in 636 ticks, server states ['ACTIVE']
+PASS D netherite move: 40.0 ticks per Air (config 40, +0.0 %), 5 decrements, 5 Air in 196 ticks, server states ['ACTIVE']
+PASS D netherite climb: 20.0 ticks per Air (config 20, +0.0 %), 6 decrements, 6 Air in 116 ticks, server states ['ACTIVE']
+PASS D copper Setting Down along the wall: client ACTIVE -> SETTING_DOWN -> STOWED, end feet -60.00 ground True, hp min 20.0
+PASS D netherite Setting Down along the wall: client ACTIVE -> SETTING_DOWN -> STOWED, end feet -60.00 ground True, hp min 20.0
+== Empty Rig
+PASS E1 empty Rig cannot activate: air 0, client STOWED, server STOWED, max rise 1.252 (plain vanilla jumps, 1.252), cf max 0, back on the floor True
+== C1 Air runs out mid-climb
+PASS C1 Crawl speed: 1.000 b/s down (config 1.0) over 241 ticks, from feet -47.59 (climbed 12.4)
+PASS C1 Crawl ends Stowed on the floor: client ACTIVE -> CRAWL -> STOWED, server ACTIVE -> CRAWL -> STOWED, end feet -60.000, hp min 20.0
+PASS C1 client/server agree on Crawl: server Air 0 at gt 2512, server CRAWL 2512, client CRAWL 2512 (+0 ticks)
+PASS C1 x stays at the wall while crawling: x 679.700, max shift 0.000
+== Warnings
+TITLE lines: [('2502', '⚠ Backtank pressure depleted'), ('2855', '⚠ Backtank pressure low')]
+PASS Create low-air title: [('2855', '⚠ Backtank pressure low')]
+PASS Create depleted title: [('2502', '⚠ Backtank pressure depleted')]
+== C2 Air runs out hanging under a ceiling
+PASS C2 Crawl holds under the ceiling: client ACTIVE -> CRAWL, server ACTIVE -> CRAWL, hold 127 ticks at feet -49.900 (body -49.00, ceiling -45, floor -60), y range 0.0000, cf min 1, grips min 4
+PASS C2 client hitch (0.8 s, no packets): Crawl resumes: server CRAWL -> FALLING -> CRAWL, client CRAWL, y range 0.0000, cf end 1
+PASS C2 pillar brings a floor into Reach: Crawl down, Stowed: client CRAWL -> STOWED, end feet -52.000 (pillar top -52)
+PASS No float kick in p2: 0
+== Setting Down
+PASS SD1 on a floor: on feet, Stowed, no damage: client ACTIVE -> SETTING_DOWN -> STOWED, end feet -60.000, server hp min 20.0
+PASS SD2 under a ceiling: lets go at the lowest Held point: client ACTIVE -> SETTING_DOWN -> STOWED, let go at feet -49.900 (body -49.000; ceiling -45 - Reach 4 = -49), server fall at let-go 0.0, cf after [0.0]
+PASS SD2 vanilla fall damage from the let-go point: server fall distance at landing 10.04 (let-go feet - floor = 10.10; vanilla skips the landing step), damage 8, expected ceil(fall - 3) = 8
+== Mid-air Double Jump
+PASS MJ1 caught next to the wall, no damage: client STOWED -> FALLING -> ACTIVE, caught at feet -47.08 (wall top -50, start -40), held at -47.08, server max fall 7.08, hp min 20.0, fall damage events []
+PASS MJ1 then Setting Down to the floor: client ACTIVE -> SETTING_DOWN -> STOWED, end feet -60.000
+PASS MJ2 empty Rig: no catch, normal damage: air 0, client STOWED, server STOWED, fall 18.77, damage 16, expected 16
+PASS MJ3 fast fall past a thin bar: caught inside its Held band, no damage: client STOWED -> FALLING -> ACTIVE, fastest fall step 2.89 b/tick, catch step -2.036 (swept: cut short inside the band), caught with body at -18.41 (Held band -20.69 .. -18.31, 2.38 high), damage []
+== Negative controls (forged Active climb packets with real Grips)
+PASS NC1 Air 0, Dev on the floor: never Active, no lift: server STOWED, mv.y max 0.000, cf max 0
+PASS NC1 positive control, Air 900: Active, mv up: server STOWED -> ACTIVE -> FALLING, mv.y max 0.280, cf max 1, cf end 0
+PASS NC2 Crawl + forged climb, Air 0: never Active, forced Falling: server CRAWL -> FALLING -> STOWED, Falling after 11 ticks, mv.y max 0.000, warn lines 1, client CRAWL -> FALLING -> STOWED, cf end 0
+== Air agreement (client TRACE vs server STRACE)
+PASS Client and server agree on Air > 0 (+-2 ticks): 4294 ticks compared, 0 disagree []
+max |client air - server air| (+-2 ticks) = 0
+RESULT PASS
+== Rig Settings screen and the component
+PASS B1 sneak + use in the air opens Rig Settings (defaults shown): screen ['dev.tentaworks.client.RigSettingsScreen'], values (1.5, 5.6, 'DOUBLE_JUMP')
+PASS B1 scrolled values written to the Rig in hand (server): screen (1.0, 6.6, 'DOUBLE_JUMP'), server mainhand ((1.0, 6.6, 'DOUBLE_JUMP'), 'tentaworks:copper_tentacle_rig'), chest empty (not equipped), after close ['none']
+PASS B3 drop + pick up keeps the settings: server ((1.0, 6.6, 'DOUBLE_JUMP'), 'tentaworks:copper_tentacle_rig'), reopened screen (1.0, 6.6, 'DOUBLE_JUMP')
+PASS B3 sneak-place as a Rig Block, pick up (worn): settings kept: server chest ((1.0, 6.6, 'DOUBLE_JUMP'), 'tentaworks:copper_tentacle_rig'), mainhand empty
+PASS B2 Rig Settings key while worn opens the screen; mode change saved: screen ['dev.tentaworks.client.RigSettingsScreen'], opened with (1.0, 6.6, 'DOUBLE_JUMP'), server chest ((1.0, 6.6, 'KEY'), 'tentaworks:copper_tentacle_rig')
+PASS R relog keeps the settings: server ((1.0, 6.6, 'KEY'), 'tentaworks:copper_tentacle_rig'), client (1.0, 6.6, 'KEY')
+PASS B4 forged packet Height 50 / Speed 100 clamped (Copper): ((4.0, 8.0, 'KEY'), 'tentaworks:copper_tentacle_rig') (Reach 4, speed.max 8)
+PASS B4 forged NaN / -3 clamped: ((1.5, 4.3, 'DOUBLE_JUMP'), 'tentaworks:copper_tentacle_rig') (NaN -> default 1.5, min speed 4.3)
+PASS B4 forged Height 50 clamped to Netherite Reach: ((7.0, 8.0, 'KEY'), 'tentaworks:netherite_tentacle_rig') (Reach 7)
+== Standing Height and Speed
+PASS B5 Standing Height 1.0 vs 2.5: idle feet above the floor 1.001 and 2.500 (difference 1.499)
+PASS B6 Speed 4.3: 4.30 b/s (+0.0 %), server mirrored 4.30..4.30 b/s, y drift +0.000
+PASS B6 Speed 8.0: 8.00 b/s (-0.0 %), server mirrored 8.00..8.00 b/s, y drift +0.000
+== Key-only Activation Mode
+PASS K1 Double Jump does not activate in key-only mode: client STOWED, server STOWED, rise 1.252 (plain vanilla jumps 1.252), cf max 0
+PASS K1 the toggle key activates (lifts to Standing Height 1.5): client STOWED -> ACTIVE, feet 1.500 above the floor, server ACTIVE
+PASS K1 Double Jump while Active in key-only mode does not Set Down: client ACTIVE
+PASS K1 the toggle key sets down: client ACTIVE -> SETTING_DOWN -> STOWED, end feet -60.000
+PASS K2 mid-air key activation catches at the wall: client STOWED -> FALLING -> ACTIVE, held at feet -47.08 (wall top -50), fall damage []
+PASS K2 key sets down along the wall to the floor: client ACTIVE -> SETTING_DOWN -> STOWED, end feet -60.000
+== Crawl let-go and re-grab (part A 1, 2)
+PASS A1 Double Jump in Crawl lets go, vanilla fall damage: Crawl hold at feet -49.900 (body -49.00, ceiling -45 - Reach 4), client CRAWL -> STOWED, fall 9.67, damage 7, cf after let-go [0.0]
+PASS A1K toggle key in Crawl lets go, vanilla fall damage: Crawl hold at feet -49.900 (body -49.00, ceiling -45 - Reach 4), client CRAWL -> STOWED, fall 9.67, damage 7, cf after let-go [0.0]
+PASS A2 Crawl loses its Grips: Falling, re-grab into Crawl, Stowed: client CRAWL -> FALLING -> CRAWL -> STOWED, server CRAWL -> FALLING -> CRAWL -> STOWED, re-grab at feet -57.03 (floor -60, Reach 4), Crawl 1.00 b/s, fall damage []
+PASS A2 server accepts the re-grab (no forced Falling): 0 forced Falling warns
+== Creative (part A 3)
+PASS CR1 creative with 0 Air activates, moves, never Crawls: client STOWED -> ACTIVE, server STOWED -> ACTIVE, Air 0, climbed 3.10
+PASS CR2 creative uses no Air: Air 900..900 over 252 ticks (moved, climbed, Set Down), server ACTIVE -> SETTING_DOWN -> STOWED
+PASS Creative inventory opens: shot p3_creative_inventory.png
+== Long fall (part A 4)
+PASS A4 120+ tick Stowed fall, mid-air Double Jump, caught at the tall wall, not kicked: Stowed 131 ticks from y 600 (Double Jump at feet 257.6), caught after 174 ticks in the air at feet 102.92 (wall top 100), kicks 0, damage []
+PASS A4 negative control: fall guard off, plain fall is kicked (vanilla zeroes the Y move): kick lines after 'fallfix false': 1, last traced tick 78 after the tp, feet 440.3
+== Log
+PASS No exceptions: 0
+RESULT PASS
+== Enchanting table (vanilla EnchantmentMenu at a real table, 32 bookshelves)
+PASS E table can offer ours + chest + Capacity + Unbreaking (copper_tentacle_rig): max level offered over power 1..50: {'create:capacity': 3, 'minecraft:blast_protection': 4, 'minecraft:fire_protection': 4, 'minecraft:projectile_protection': 4, 'minecraft:protection': 4, 'minecraft:thorns': 3, 'minecraft:unbreaking': 3, 'tentaworks:far_reach': 3, 'tentaworks:swift': 2, 'tentaworks:thrift': 3}; missing {}; forbidden present []
+PASS E table can offer ours + chest + Capacity + Unbreaking (netherite_tentacle_rig): max level offered over power 1..50: {'create:capacity': 3, 'minecraft:blast_protection': 4, 'minecraft:fire_protection': 4, 'minecraft:projectile_protection': 4, 'minecraft:protection': 4, 'minecraft:thorns': 3, 'minecraft:unbreaking': 3, 'tentaworks:far_reach': 3, 'tentaworks:swift': 2, 'tentaworks:thrift': 3}; missing {}; forbidden present []
+PASS E control: Create backtank gets no Rig enchants, no Unbreaking: {'create:capacity': 3, 'minecraft:blast_protection': 4, 'minecraft:fire_protection': 4, 'minecraft:projectile_protection': 4, 'minecraft:protection': 4, 'minecraft:thorns': 3}
+PASS E our enchantments shown as table clues over 300 seeds (copper_tentacle_rig): clue counts slots 1-3: {'tentaworks:far_reach': 42, 'tentaworks:thrift': 143, 'tentaworks:swift': 53}, slot 3 {'create:capacity': 25, 'minecraft:blast_protection': 6, 'minecraft:fire_protection': 32, 'minecraft:protection': 68, 'minecraft:thorns': 9, 'minecraft:unbreaking': 57, 'tentaworks:far_reach': 17, 'tentaworks:swift': 28, 'tentaworks:thrift': 58}
+PASS E our enchantments shown as table clues over 300 seeds (netherite_tentacle_rig): clue counts slots 1-3: {'tentaworks:far_reach': 28, 'tentaworks:thrift': 152, 'tentaworks:swift': 31}, slot 3 {'create:capacity': 53, 'minecraft:blast_protection': 10, 'minecraft:fire_protection': 34, 'minecraft:protection': 71, 'minecraft:thorns': 6, 'minecraft:unbreaking': 41, 'tentaworks:far_reach': 15, 'tentaworks:swift': 20, 'tentaworks:thrift': 50}
+PASS E real client: third offer Far Reach, enchanting gives it: seed ('28', '8,13,30', 'minecraft:projectile_protection:3,minecraft:unbreaking:3,tentaworks:far_reach:2'); client offers ['offer=1 cost=8 clue=minecraft:projectile_protection:3', 'offer=2 cost=13 clue=minecraft:unbreaking:3', 'offer=3 cost=30 clue=tentaworks:far_reach:2']; table after ['slot=0 item=tentaworks:copper_tentacle_rig count=1 ench=[tentaworks:far_reach:2]']; server inventory {'tentaworks:far_reach': 2}
+== Anvil + enchanted book (real client clicks)
+PASS A a1 applies {'minecraft:mending': 1}: result [('tentaworks:copper_tentacle_rig', {'minecraft:mending': 1})], book left 0, cost 2
+PASS A a2 applies {'minecraft:unbreaking': 3}: result [('tentaworks:copper_tentacle_rig', {'minecraft:unbreaking': 3})], book left 0, cost 3
+PASS A a3 applies {'minecraft:protection': 4}: result [('tentaworks:copper_tentacle_rig', {'minecraft:protection': 4})], book left 0, cost 4
+PASS A a4 applies {'create:capacity': 3}: result [('tentaworks:copper_tentacle_rig', {'create:capacity': 3})], book left 0, cost 3
+PASS A a5 applies {'tentaworks:far_reach': 3}: result [('tentaworks:copper_tentacle_rig', {'tentaworks:far_reach': 3})], book left 0, cost 6
+PASS A a6 applies {'tentaworks:thrift': 3}: result [('tentaworks:copper_tentacle_rig', {'tentaworks:thrift': 3})], book left 0, cost 3
+PASS A a7 applies {'tentaworks:swift': 2}: result [('tentaworks:copper_tentacle_rig', {'tentaworks:swift': 2})], book left 0, cost 4
+PASS A a8 applies {'minecraft:thorns': 3, 'minecraft:binding_curse': 1, 'minecraft:vanishing_curse': 1}: result [('tentaworks:netherite_tentacle_rig', {'minecraft:binding_curse': 1, 'minecraft:thorns': 3, 'minecraft:vanishing_curse': 1})], book left 0, cost 20
+PASS A a9 applies {'tentaworks:far_reach': 3, 'tentaworks:thrift': 3, 'tentaworks:swift': 2, 'minecraft:mending': 1, 'minecraft:unbreaking': 3, 'minecraft:protection': 4, 'create:capacity': 3}: result [('tentaworks:copper_tentacle_rig', {'create:capacity': 3, 'minecraft:mending': 1, 'minecraft:protection': 4, 'minecraft:unbreaking': 3, 'tentaworks:far_reach': 3, 'tentaworks:swift': 2, 'tentaworks:thrift': 3})], book left 0, cost 19
+PASS A r1 refused: Blast Protection vs Protection IV: left item [('tentaworks:copper_tentacle_rig', {'minecraft:protection': 4})], book kept 1, result slot [], cost 0
+PASS A r2 refused: Sharpness: left item [('tentaworks:copper_tentacle_rig', {})], book kept 1, result slot [], cost 0
+PASS A r3 refused: Far Reach on a Create backtank: left item [('create:copper_backtank', {})], book kept 1, result slot [], cost 0
+PASS A r4 refused: Mending on a Create backtank (Create still refuses): left item [('create:copper_backtank', {})], book kept 1, result slot [], cost 0
+PASS A r5 refused: Swift Sneak (legs only): left item [('tentaworks:copper_tentacle_rig', {})], book kept 1, result slot [], cost 0
+== Durability and Mending
+PASS D worn Rig wears from a mob hit, Mending repairs it from XP: damage 0 -> 2 (hit 8) -> 0 (XP orb 10) of 112
+== Rig Block place / pick up
+PASS B enchantments, damage, Air kept through Rig Block place + pick up: before ({'create:capacity': 2, 'minecraft:mending': 1, 'minecraft:protection': 4, 'minecraft:unbreaking': 3, 'tentaworks:far_reach': 3, 'tentaworks:swift': 1, 'tentaworks:thrift': 2}, 20, 300), placed BE has ours True, after pick up (chest) ({'create:capacity': 2, 'minecraft:mending': 1, 'minecraft:protection': 4, 'minecraft:unbreaking': 3, 'tentaworks:far_reach': 3, 'tentaworks:swift': 1, 'tentaworks:thrift': 2}, 20, 300)
+== Far Reach
+PASS FX effective reach/top/thrift/swift: server (7.0, 8.0, 0.55, 1.0), client (7.0, 8.0, 0.55, 1.0), expected (7.0, 8.0, 0.55, 1.0)
+PASS FN effective reach/top/thrift/swift: server (10.0, 8.0, 1.0, 1.0), client (10.0, 8.0, 1.0, 1.0), expected (10.0, 8.0, 1.0, 1.0)
+PASS F1 effective reach/top/thrift/swift: server (7.0, 10.4, 1.0, 1.3), client (7.0, 10.4, 1.0, 1.3), expected (7.0, 10.4, 1.0, 1.3)
+PASS F1C effective reach/top/thrift/swift: server (4.0, 8.0, 1.0, 1.0), client (4.0, 8.0, 1.0, 1.0), expected (4.0, 8.0, 1.0, 1.0)
+PASS F1 forged Standing Height 50 clamped to the enchanted Reach: ('7.0', '8.0') (Reach 4+3, speed.max 8)
+PASS F1 max height grows by the Far Reach (III Copper vs plain Copper): max feet 6.10 vs 3.10 above the floor (+3.00; Netherite N1 = 6.10), server at the top ACTIVE, grips min 4
+PASS F2 Far Reach III Copper hangs from the ceiling only: feet -48.500, ceiling face -41 is 6.60 above the body, y range 0.0000, client ACTIVE, server ACTIVE, grips min 4
+PASS F2 control: plain Copper in the same spot falls: client ACTIVE -> FALLING -> ACTIVE, feet -48.50 -> -56.99, server ACTIVE -> FALLING -> ACTIVE
+PASS Server never forced Falling (Far Reach Grips accepted): 0 warn lines
+== Thrift (server STRACE air, ticks between decrements)
+PASS T Thrift I idle: 94.0 ticks per Air (expected 94.1, -0.1 %), 4 decrements, 4 Air in 396 ticks, server states ['ACTIVE']
+PASS T Thrift I move: 23.3 ticks per Air (expected 23.5, -0.8 %), 4 decrements, 4 Air in 96 ticks, server states ['ACTIVE']
+PASS T Thrift I climb: 11.8 ticks per Air (expected 11.8, +0.3 %), 6 decrements, 6 Air in 76 ticks, server states ['ACTIVE']
+PASS T Thrift III idle: 145.3 ticks per Air (expected 145.5, -0.1 %), 4 decrements, 4 Air in 636 ticks, server states ['ACTIVE']
+PASS T Thrift III move: 36.4 ticks per Air (expected 36.4, +0.1 %), 6 decrements, 6 Air in 196 ticks, server states ['ACTIVE']
+PASS T Thrift III climb: 18.2 ticks per Air (expected 18.2, -0.1 %), 7 decrements, 7 Air in 116 ticks, server states ['ACTIVE']
+== Swift
+PASS S s1 Swift I at 5.6: 6.44 b/s (expected 6.44, +0.0 %), server mirrored 6.44..6.44 b/s, y drift +0.000
+PASS S s2 Swift II at 8.0: 10.40 b/s (expected 10.40, +0.0 %), server mirrored 10.40..10.40 b/s, y drift +0.000
+PASS S3 forged packet: Swift II accepts 10.4 b/s: sent 10.4 b/s, server mirrored max 10.40 b/s (expected 10.40), server states STOWED -> ACTIVE -> FALLING
+PASS S3 forged packet: Swift II clamps 20 b/s to 10.4 x 1.05: sent 20.0 b/s, server mirrored max 10.92 b/s (expected 10.92), server states FALLING -> ACTIVE -> FALLING
+PASS S3 forged packet: no Swift clamps 10.4 b/s to 8 x 1.05: sent 10.4 b/s, server mirrored max 8.40 b/s (expected 8.40), server states FALLING -> ACTIVE -> FALLING
+RESULT PASS
+== Recipes (recipe manager after /reload)
+PASS R /reload with no errors: reply 'Reloading!'; server ERROR/Exception lines: 0 []
+PASS R lookups resolve (7 cases): {'copper_rig': 'PASS', 'netherite_rig': 'PASS', 'copper_rig_flipped_none': 'PASS', 'rig_missing_tentacle_none': 'PASS', 'tentacle_sequence': 'PASS', 'smithing': 'PASS', 'smithing_netherite_base_none': 'PASS'}
+PASS R exactly 4 Tentaworks recipes: [tentaworks:mechanical_crafting/copper_tentacle_rig, tentaworks:mechanical_crafting/netherite_tentacle_rig, tentaworks:sequenced_assembly/tentacle, tentaworks:smithing/netherite_tentacle_rig]
+    RECIPE PASS copper_rig id=tentaworks:mechanical_crafting/copper_tentacle_rig result: item=tentaworks:copper_tentacle_rig count=1 air=none damage=0/112 ench=0 settings=null name=none
+    RECIPE PASS netherite_rig id=tentaworks:mechanical_crafting/netherite_tentacle_rig result: item=tentaworks:netherite_tentacle_rig count=1 air=none damage=0/592 ench=0 settings=null name=none
+    RECIPE PASS tentacle_sequence id=tentaworks:sequenced_assembly/tentacle loops=2 steps=[create:deploying, create:pressing, create:deploying] transitional=tentaworks:incomplete_tentacle result=tentaworks:tentacle
+    RECIPE PASS smithing id=tentaworks:smithing/netherite_tentacle_rig result: item=tentaworks:netherite_tentacle_rig count=1 air=444 damage=30/592 ench=0 settings=null name=Smith
+PASS R advancement tentaworks:doc_rig loaded under create:backtank: RECIPE advancement doc_rig present=true parent=create:backtank
+PASS R Tentacle stacks to 64, Incomplete Tentacle to 1: {'tentaworks:tentacle': '64', 'tentaworks:incomplete_tentacle': '1'}
+PASS R Doc's Rig granted once on the first Rig: 1 grant lines
+== In-world machines
+PASS SA Piston Extension Pole -> Tentacle on the Depot (2 loops, 6 stations): last check ('PASS', 'depot:tentaworks:tentaclex1')
+PASS SA each Deployer used exactly once (2 Stickers, 2 Andesite Casings): held after {'0': '63', '2': '63', '3': '63', '5': '63'}
+PASS MC two 9-crafter chains, all spinning: [('9', '128, -128, 128, -128, 128, -128, 128, -128, 128'), ('9', '128, -128, 128, -128, 128, -128, 128, -128, 128')]
+PASS MC all 9 inputs accepted (both grids): ['', '']
+PASS MC Copper grid -> one Copper Rig, starts empty (backtank had 900 Air): ('tentaworks:copper_tentacle_rig', '1', 'none', '0', '112')
+PASS MC Netherite grid -> one Netherite Rig, starts empty (backtank had 500 Air): ('tentaworks:netherite_tentacle_rig', '1', 'none', '0', '592')
+== Rig never breaks
+PASS W1 two 8-point hits on 109/112 stop at 111 (never 112, never broken): damage [109, 111, 111]
+PASS W1 a Rig given at damage 500 reads 111/112 and a hit keeps it: 111 -> 111, air 900
+PASS W2 worn-out Rig: two Double Jumps refused (client and server Stowed), warning subtitle: client STOWED, server STOWED, plain jump rise 1.252, subtitle ['⚠ Tentacle Rig worn out: repair it']
+PASS W3 forged Active packets on the worn Rig refused; control (damage 50) accepted: worn: STOWED; control: STOWED -> ACTIVE -> FALLING
+PASS W4 Active Rig worn out by a hit: Sets Down within 3 ticks, Stowed on the floor: client ACTIVE -> SETTING_DOWN -> STOWED; lifted to -58.5, hit gt 1045, Setting Down after 1 ticks, Stowed after 6, end y -60.0; server ACTIVE -> SETTING_DOWN -> STOWED; damage 111
+PASS W5 worn out while hanging (no floor in Reach): Sets Down, lets go, falls with fall damage: client ACTIVE -> SETTING_DOWN -> STOWED; hang y (2108.5, -49.593, 0.5), fall damage [(1204, 'fall', 8.0)]
+PASS W6 Crawl holding under a ceiling, worn out by a hit: lets go, falls: client ACTIVE -> CRAWL -> STOWED; Crawl before the hit 10 ticks, fall damage [(1485, 'fall', 7.0)]
+== Repair
+PASS A1 anvil: worn Copper (111) + 2 copper ingots -> 55/112, Air/enchants/settings/name kept: before {'slot': '0', 'item': 'tentaworks:copper_tentacle_rig', 'air': '600', 'damage': 111, 'max': 112, 'ench': 2, 'settings': 'RigSettings[standingHeight=2.5, speed=6.0, activation=KEY]', 'name': 'Octo'}; after {'slot': '8', 'item': 'tentaworks:copper_tentacle_rig', 'air': '600', 'damage': 55, 'max': 112, 'ench': 2, 'settings': 'RigSettings[standingHeight=2.5, speed=6.0, activation=KEY]', 'name': 'Octo'}; ['anvil cost=2']
+PASS A2 control: Copper Rig + netherite ingot gives no result: result slot [], rig damage 111
+PASS A3 anvil: worn Netherite (591) + 1 netherite ingot -> 443/592, Thrift kept: {'slot': '8', 'item': 'tentaworks:netherite_tentacle_rig', 'air': '600', 'damage': 443, 'max': 592, 'ench': 1, 'settings': 'null', 'name': 'none'}
+PASS M Mending: worn Rig refused, a 10-XP orb mends 20, then it activates and Sets Down: damage 111 -> 91; worn: STOWED; mended: ACTIVE then STOWED
+== Tooltips (real hover text)
+PASS T undamaged: no durability or worn-out line: 9 lines
+PASS T damaged 50: "Durability: 62 / 112", not worn out: ['Durability: 62 / 112'] []
+PASS T worn Copper: durability 1 / 112 + worn-out line naming the Copper Ingot: ['Durability: 1 / 112'] ['Worn out: repair it with Copper Ingot at an anvil, or by Mending']
+PASS T worn Netherite: worn-out line naming the Netherite Ingot: ['Durability: 1 / 592'] ['Worn out: repair it with Netherite Ingot at an anvil, or by Mending']
+== Smithing (real client clicks)
+PASS SM Copper Rig -> Netherite Rig keeps Air, enchants, settings, name, damage: before {'slot': '1', 'item': 'tentaworks:copper_tentacle_rig', 'air': '500', 'damage': 40, 'max': 112, 'ench': 1, 'settings': 'RigSettings[standingHeight=2.5, speed=6.0, activation=KEY]', 'name': 'Smithy'}; after {'slot': '8', 'item': 'tentaworks:netherite_tentacle_rig', 'air': '500', 'damage': 40, 'max': 592, 'ench': 1, 'settings': 'RigSettings[standingHeight=2.5, speed=6.0, activation=KEY]', 'name': 'Smithy'}
+== JEI and creative tab
+PASS J JEI shows each recipe (Sequenced Assembly, 2x Mechanical Crafting, Smithing): [('create:sequenced_assembly', 'OUTPUT', 'tentacle', '1'), ('create:mechanical_crafting', 'OUTPUT', 'copper_tentacle_rig', '1'), ('create:mechanical_crafting', 'OUTPUT', 'netherite_tentacle_rig', '1'), ('minecraft:smithing', 'OUTPUT', 'netherite_tentacle_rig', '1')]
+PASS C creative inventory opened on the Tentaworks tab: 
+PASS S screenshots taken (12): ['p5_anvil_repair', 'p5_assembly_line', 'p5_crafters', 'p5_creative_tab', 'p5_jei_copper_rig_crafting', 'p5_jei_netherite_rig_crafting', 'p5_jei_netherite_rig_smithing', 'p5_jei_tentacle_sequenced', 'p5_smithing', 'p5_tooltip_damaged', 'p5_tooltip_worn', 'p5_worn_refused']
+PASS client log has no exceptions: []
+RESULT PASS (0 failed: [])
+PASS G1 Copper spread under the ceiling at max depth: 42 ticks, feet y -52.900 (body 4.00 below the ceiling), min pairwise Grip distance 1.706 (>= 1.5), 4 Grips every tick True
+PASS G1 Netherite spread under the ceiling at max depth: 42 ticks, feet y -47.900 (body 7.00 below the ceiling), min pairwise Grip distance 2.641 (>= 1.5), 4 Grips every tick True
+PASS G2 steppers: max simultaneous steppers 2 over 7953 GAIT ticks (<= 2)
+PASS G3 Held while stepping (flat walk): 69 moving ticks, min planted 2 (>= 2), 21 plants (>= 6), server min valid Grips 4 (>= 2), states ['ACTIVE']
+PASS G3 Held while stepping (wall climb): 31 moving ticks, min planted 2 (>= 2), 10 plants (>= 2), server min valid Grips 3 (>= 2), states ['ACTIVE']
+PASS G3 Held while stepping (ceiling walk): 21 moving ticks, min planted 2 (>= 2), 7 plants (>= 2), server min valid Grips 3 (>= 2), states ['ACTIVE']
+PASS G3 Held while stepping (cliff edge): 129 moving ticks, min planted 2 (>= 2), 31 plants (>= 4), server min valid Grips 2 (>= 2), states ['ACTIVE']
+PASS W1 stowed walk animates: 27 ticks, peak walk speed 0.859 (>= 0.1), states ['STOWED']
+PASS W2 body still while Held (flat walk): 60 ticks, peak walk speed 0.000 (<= 0.02)
+PASS W2 body still while Held (wall climb): 22 ticks, peak walk speed 0.000 (<= 0.02)
+PASS W2 body still while Held (ceiling walk): 12 ticks, peak walk speed 0.000 (<= 0.02)
+PASS W2 body still while Held (cliff edge): 120 ticks, peak walk speed 0.000 (<= 0.02)
+FAIL W3 Dev2 sees Dev still while Held (flat walk): 0 RWALK ticks, peak -1.000 (<= 0.02)
+PASS P1 frame cost (Dev, two Rigs in view): 532 frames, Tentacle drawing avg 94.1 us/frame, max 120.3 us, fps 104 (avg < 2000 us)
+FAIL P1 frame cost (Dev2): no CPERF line
+PASS S1 own plant sounds: gait plants 142, drawn plants 142, plant sounds 142; heard create:cogs=6, create:slime_added=286, create:steam=20, minecraft:block.piston.contract=6, minecraft:block.piston.extend=6
+FAIL S2 Dev2 hears Dev: no CSOUND line
+PASS S3 piston + steam: Dev heard create:cogs=6, create:slime_added=286, create:steam=20, minecraft:block.piston.contract=6, minecraft:block.piston.extend=6
+PASS E exceptions: 0 exception lines
+RESULT FAIL W3 Dev2 sees Dev still while Held (flat walk), P1 frame cost (Dev2), S2 Dev2 hears Dev
+PASS G1 Copper spread under the ceiling at max depth: 42 ticks, feet y -52.900 (body 4.00 below the ceiling), min pairwise Grip distance 1.706 (>= 1.5), 4 Grips every tick True
+PASS G1 Netherite spread under the ceiling at max depth: 42 ticks, feet y -47.900 (body 7.00 below the ceiling), min pairwise Grip distance 2.641 (>= 1.5), 4 Grips every tick True
+PASS G2 steppers: max simultaneous steppers 2 over 1695 GAIT ticks (<= 2)
+PASS G3 Held while stepping (flat walk): 69 moving ticks, min planted 2 (>= 2), 21 plants (>= 6), server min valid Grips 4 (>= 2), states ['ACTIVE']
+PASS G3 Held while stepping (wall climb): 31 moving ticks, min planted 2 (>= 2), 10 plants (>= 2), server min valid Grips 3 (>= 2), states ['ACTIVE']
+PASS G3 Held while stepping (ceiling walk): 21 moving ticks, min planted 2 (>= 2), 7 plants (>= 2), server min valid Grips 3 (>= 2), states ['ACTIVE']
+PASS G3 Held while stepping (cliff edge): 129 moving ticks, min planted 2 (>= 2), 31 plants (>= 4), server min valid Grips 2 (>= 2), states ['ACTIVE']
+PASS W1 stowed walk animates: 27 ticks, peak walk speed 0.859 (>= 0.1), states ['STOWED']
+PASS W2 walkWhileHeld=true: body walks while Held (flat walk): 60 ticks, peak walk speed 1.000 (>= 0.1)
+PASS W2 walkWhileHeld=true: body walks while Held (wall climb): 22 ticks, peak walk speed 0.560 (>= 0.1)
+PASS W2 walkWhileHeld=true: body walks while Held (ceiling walk): 12 ticks, peak walk speed 1.000 (>= 0.1)
+PASS W2 walkWhileHeld=true: body walks while Held (cliff edge): 120 ticks, peak walk speed 0.792 (>= 0.1)
+PASS W3 walkWhileHeld=true: Dev2 sees Dev walk while Held: 60 RWALK ticks, peak 1.000 (>= 0.1)
+PASS P1 frame cost (Dev, two Rigs in view): 527 frames, Tentacle drawing avg 194.9 us/frame, max 268.6 us, fps 104 (avg < 2000 us)
+PASS P1 frame cost (Dev2, two Rigs in view): 526 frames, Tentacle drawing avg 187.3 us/frame, max 277.5 us, fps 104 (avg < 2000 us)
+PASS S1 own plant sounds: gait plants 142, drawn plants 142, plant sounds 142; heard create:cogs=7, create:slime_added=298, create:steam=21, minecraft:block.piston.contract=6, minecraft:block.piston.extend=7
+PASS S2 Dev2 hears Dev: Dev's plants seen near Dev2 92, played 92, slime sounds reaching Dev2's engine 193
+PASS S3 piston + steam: Dev heard create:cogs=7, create:slime_added=298, create:steam=21, minecraft:block.piston.contract=6, minecraft:block.piston.extend=7
+PASS E exceptions: 0 exception lines
+RESULT PASS
+PASS F flat at top speed: server states ['ACTIVE'], min valid Grips 2 (>= 2)
+PASS F climb at top speed: server states ['ACTIVE'], min valid Grips 3 (>= 2)
+PASS F speed: 26.00 b/s on the flat (top 26.00 b/s)
+PASS F no forced Falling: 0 "forcing Falling" lines
+RESULT PASS
+PASS G1 goggles show Air rising under the shaft: g1 (341, 900), g2 (411, 900) (60 ticks apart at 20 Air/s)
+PASS G2 fill rate and enchant-derived stats (Copper, Far Reach II, Swift I, 128 RPM): ['Filling: +20.0 Air/s', 'Reach: 6.0 blocks', 'Top Speed: 9.2 b/s']
+PASS G3 Netherite Rig Block without a shaft: ['300 / 900 (33%)', 'Not filling: needs a turning shaft above', 'Reach: 7.0 blocks', 'Top Speed: 8.0 b/s', 'Air use: 50%']
+PASS D1 display board shows the Rig Air and follows it: (rig Air, board) [(355, 339), (424, 419)], label 'Air '
+PASS D2 percent mode: [(485, '53%')]
+PASS D3 link keeps the tentaworks:rig_air source (validated against the Rig Block): ['tentaworks:rig_air', 'tentaworks:rig_air']
+PASS D4 Display Link screen opens on the link: com.simibubi.create.content.redstone.displayLink.DisplayLinkScreen
+PASS P1 Ponder scene for every component: {'tentaworks:copper_tentacle_rig': 'tentaworks:tentacle_rig', 'tentaworks:netherite_tentacle_rig': 'tentaworks:tentacle_rig', 'tentaworks:tentacle': 'tentaworks:tentacle_rig'}
+PASS P2 scene plays through every seek: 10 seeks, total 1232 ticks
+PASS H Ponder hint on a hovered Rig: ['Copper Tentacle Rig', 'Hold [Shift] for Summary', 'Hold [W] to Ponder', 'Air: 0 / 900', 'Reach: 4.0 blocks', 'Top Speed: 8.0 b/s']
+PASS E no client/server errors: 0 []
+RESULT PASS
+PASS A forged zero climb: client rose 12.4 blocks while the server saw claimed motion 0 in 47/47 ticks; Air -5, ticks per Air 10.0 (climb 10, idle 80)
+PASS A idle control: Air -1 in 81 idle ticks (80 per Air)
+PASS P input cost r4: Reach 4.00: 158 Active ticks, avg 369 us, max 5710 us per input tick
+PASS P input cost r10: Reach 10.00: 82 Active ticks, avg 545 us, max 663 us per input tick
+PASS P input cost r16: Reach 16.00: 82 Active ticks, avg 1347 us, max 2163 us per input tick
+PASS G ghost platform: hang feet y -54.80; client started to fall 44 ticks after the ghost (float kick at 80); end client ACTIVE / server ACTIVE at y -56.91
+PASS T through-wall Grips: forged Grips on the far face of a wall: 1 forcing (want 1; the real-Grip control after it adds none)
+PASS E unloaded neighbour: Grips on x=20047 facing east into unloaded chunk 1253: loads during the forged packets 0; control (reading that block) loads it: True
+PASS B burst handled once per tick: 40 ticks x 50 forged packets: handled 61 in 61 ticks (the harness client also sends while Active), relayed 0; server tick avg 1320 us, max 2002 us
+PASS B non-finite log quiet: 2000 non-finite packets: 1 log line(s)
+PASS S speed check: server-side slide 6 b/s: 0 forcing; 20 b/s: 2 forcing (top Speed 8)
+PASS W Setting Down rise: forged Setting Down packets with a rising motion: stowed
+PASS C lenient settings codec: give with activation:"bogus" -> RigSettings[standingHeight=2.5, speed=5.6, activation=DOUBLE_JUMP]
+PASS L goggle sync 16 RPM: client [80, 84, 88] vs server [81, 85, 88]
+PASS U1 key-only toggle on a worn-out Rig: state after the key STOWED; warning ['⚠ Tentacle Rig worn out: repair it']
+PASS U2 Mending keeps Air/enchants/settings: before item=tentaworks:copper_tentacle_rig ench=[minecraft:mending:1,tentaworks:far_reach:2] stored=[] damage=100/112 air=500 settings=RigSettings[standingHeight=2.0, speed=4.5, activation=KEY]; after item=tentaworks:copper_tentacle_rig ench=[minecraft:mending:1,tentaworks:far_reach:2] stored=[] damage=0/112 air=500 settings=RigSettings[standingHeight=2.0, speed=4.5, activation=KEY]
+PASS U4 nixie progress bar: 4611, -59, 0 has the following block data: {CustomTextIndex: 0, CustomText: '{"text":"█▒"}', HasAttachedComputer: 0b, RawCustomText: '{"text":"█▒"}', x: 4611, y: -59, z: 0, id: "create:nixie_tube"}
+PASS U5 Display Link source via GUI: 4621, -60, 0 has the following block data: {Label: "", Id: "tentaworks:rig_air", Mode: 0}
+PASS U6 underwater Active: ('4727.700,-53.996,0.500', 'ACTIVE') (shots p8_underwater*.png)
+PASS K empty Rig not guarded: empty Rig falling from y 300: Dev lost connection: Flying is not enabled
+PASS No kick before K: no kick/flying disconnect before the deliberate one
+RESULT PASS
+PASS F face copper: start feet 1.50, max feet 44.02 above floor (>= 40; pole top 41), end feet 44.02, body at start 0.80 east / -0.50 south of the corner (5001,1), at the top 0.80 / -0.50, held min 2, states ACTIVE
+PASS C corner copper walk-in, jump only: start feet 1.50, max feet 44.05 above floor (>= 40; pole top 41), end feet 44.05, body at start -1.60 east / 0.15 south of the corner (5001,1), at the top -1.60 / 0.15, held min 2, states ACTIVE
+PASS N corner netherite walk-in, jump only: start feet 1.50, max feet 47.07 above floor (>= 40; pole top 41), end feet 47.07, body at start -1.60 east / 0.15 south of the corner (5001,1), at the top -1.60 / 0.15, held min 2, states ACTIVE
+PASS C2 corner copper forward + jump: start feet 1.50, max feet 40.46 above floor (>= 40; pole top 41), end feet 40.46, body at start 0.35 east / 0.35 south of the corner (5001,1), at the top -4.41 / -3.06, held min 2, states ACTIVE
+PASS N2 corner netherite forward + jump: start feet 1.50, max feet 40.19 above floor (>= 40; pole top 41), end feet 40.19, body at start 0.35 east / 0.35 south of the corner (5001,1), at the top -6.64 / -5.15, held min 2, states ACTIVE
+PASS S round copper: furthest 179 deg round the pole (>= 80: past the first corner onto the next face; 32 before the fix), feet y 9.62 -> 9.62, pos 5001.30,0.50 -> 4996.07,-0.75, held min 2, states ACTIVE
+PASS T round netherite: furthest 180 deg round the pole (>= 80: past the first corner onto the next face; 32 before the fix), feet y 13.58 -> 13.58, pos 5001.30,0.50 -> 4993.05,-0.86, held min 2, states ACTIVE
+PASS D 2x2 corner copper hugging: max feet 23.07 above floor (>= 19; pole top 20), body at start 0.35 west / 0.35 south of the corner, at the top 0.35 west / 0.35 south of the corner, end feet 23.07, held min 2, states ACTIVE
+PASS E 2x2 corner copper owner offsets forward + jump: max feet 19.36 above floor (>= 19; pole top 20), body at start 0.70 west / 0.40 south of the corner, at the top -3.34 west / -5.76 south of the corner, end feet 19.36, held min 2, states ACTIVE
+PASS G 2x2 corner netherite owner offsets forward + jump: max feet 19.20 above floor (>= 19; pole top 20), body at start 0.70 west / 0.40 south of the corner, at the top -5.41 west / -8.11 south of the corner, end feet 19.20, held min 2, states ACTIVE
+PASS H 2x2 west face netherite 0.7 off: max feet 26.06 above floor (>= 19; pole top 20), body at start 0.70 west / -0.40 south of the corner, at the top 0.70 west / -0.40 south of the corner, end feet 26.06, held min 2, states ACTIVE
+PASS J 2x2 corner copper far offsets: max feet 22.81 above floor (>= 19; pole top 20), body at start 1.20 west / 0.90 south of the corner, at the top 1.20 west / 0.90 south of the corner, end feet 22.81, held min 2, states ACTIVE
+PASS R 2x2 round copper: furthest 179 deg round the pole (>= 80), feet y 9.62 -> 9.62, pos 5099.70,1.00 -> 5105.91,2.83, held min 2, states ACTIVE
+PASS Q 2x2 round netherite: furthest 180 deg round the pole (>= 80), feet y 13.58 -> 13.58, pos 5099.70,1.00 -> 5108.99,2.37, held min 2, states ACTIVE
+PASS E exceptions: 0 exception lines
+RESULT PASS
+PASS F tank face copper: max feet 23.02 above floor (>= 19; column top 20; 0 before the fix: tanks were no Grips), start feet 1.50, end feet 23.02, held min 2, states ACTIVE
+PASS N tank face netherite: max feet 26.05 above floor (>= 19; column top 20; 0 before the fix: tanks were no Grips), start feet 1.50, end feet 26.05, held min 2, states ACTIVE
+PASS D creative tank 2x2 corner copper: max feet 23.07 above floor (>= 19; column top 20; 0 before the fix: tanks were no Grips), start feet 1.50, end feet 23.07, held min 2, states ACTIVE
+PASS R hang under the tank roof copper: max feet 2.20 above floor (>= 1.0; roof underside at 4), end feet 2.20 (>= 1.0: still hanging 40 ticks after jump released), held min 4, states ACTIVE
+PASS S slab platform edge copper: min feet 12.00 above ground (>= 8.0; platform top 10.5; the body fell to 0 before the fix: a bottom slab's top was no Grip), end x 5505.20 (>= 5501.5: past the east edge), end held 2, states ACTIVE
+PASS E exceptions: 0 exception lines
+RESULT PASS
+PASS N netherite low on the cave roof: lowest Grip y -49.00 (floor top -49.0; the cave floor top is -51, its walls -51..-50), 0 of 448 Grip points under the floor (want 0), >= 2 Grips on 112/112 gait ticks (>= 95 %), stepping ticks 48 (> 0), server >= 2 valid Grips on 112/112 ticks (>= 95 %), max feet -49.00 (<= -48.7: body low), states ACTIVE
+PASS C copper low on the cave roof: lowest Grip y -49.00 (floor top -49.0; the cave floor top is -51, its walls -51..-50), 0 of 448 Grip points under the floor (want 0), >= 2 Grips on 112/112 gait ticks (>= 95 %), stepping ticks 58 (> 0), server >= 2 valid Grips on 112/112 ticks (>= 95 %), max feet -49.00 (<= -48.7: body low), states ACTIVE
+PASS S server never forces Falling: 0 forcing lines (want 0: client and server agree on sight)
+PASS E exceptions: 0 exception lines
+RESULT PASS
+client ticks sneaking with the Rig out: 168, crouching: 0, eye heights: ['1.620']
+server ticks sneaking with the Rig out: 168, crouching: 0
+feet while sneaking: -51.370 -> -60.000 (Shift moves down)
+SNEAKTEST wrench picked up the gearbox
+SNEAKTEST stone placed against the chest
+SCREEN none
+SCREEN none
+PASS E no edge hold: forward + Shift carries off the platform edge (x 6013): x 6011.50 -> 6016.65, feet -60.00
+PASS L no ladder stop: Shift moves down the ladder: feet -51.22 -> -55.87
+PASS U no extra sinking with Shift under water (<= Rig step 0.28 + 0.01): feet -58.50 -> -60.00, max per tick 0.280
+PASS U no sinking at idle under water: max per tick 0.0000 over 27 ticks
+PASS R other players see no crouch (Dev2's client: Dev's model): 170 ticks Dev sneaking with the Rig out as seen by Dev2, crouching on 0
+PASS
+PASS A Stowed sneak untouched: crouch on both sides: client [('STOWED', True, 'CROUCHING'), ('STOWED', True, 'CROUCHING')], server [('STOWED', True, 'CROUCHING'), ('STOWED', True, 'CROUCHING')]
+PASS A Stowed sneak + use picks up the gearbox: ['SNEAK2 A stowed wrench picked up the gearbox']
+PASS T1 Rig out + Shift: sneak without crouch on both sides: client {'state': 'ACTIVE', 'sneak': True, 'crouch': False, 'pose': 'STANDING', 'eye': 1.62}, server {'state': 'ACTIVE', 'sneak': True, 'pose': 'STANDING'}
+PASS T stows while Shift is held: client stow gt 358, server stow gt 359, t2 gt 403
+PASS T2 crouch returns on the client right after the stow: 43 ticks, crouching on 43, poses ['CROUCHING']
+PASS T2 crouch returns on the server right after the stow: 42 ticks, sneak on 42, poses ['CROUCHING']
+PASS T server keeps the sneak across the stow (<= 2 ticks lost): server sneak=false on 1 ticks [359]
+PASS T3 Shift released Stowed: server standing, no sneak: [(False, 'STANDING'), (False, 'STANDING'), (False, 'STANDING')]
+PASS R1 Rig out + Shift: both sides sneak: server {'state': 'ACTIVE', 'sneak': True, 'pose': 'STANDING'}, client {'state': 'ACTIVE', 'sneak': True, 'crouch': False, 'pose': 'STANDING', 'eye': 1.62}
+PASS R2 Shift released with the Rig out: no sneak sticks (server and client, within 5 ticks): server sneak on 0/17 ticks, client on 0/17
+PASS H sneak + use in the air with the Rig in hand opens Rig Settings while the Rig is out: screens ['dev.tentaworks.client.RigSettingsScreen'], state at h1 ACTIVE
+PASS
+PASS L look: 60 down + W goes down to the floor: feet -58.50 -> -60.00, z 0.50 -> 3.44 (dy < -1, dz > 1)
+PASS F1 flat: 60 down + W stays level: feet -58.50 -> -58.50, z 0.50 -> 6.38 (|dy| < 0.05, dz > 3, lifted start)
+PASS F2 flat: 60 up + W stays level: feet -58.50 -> -58.50, z 6.38 -> 12.26 (|dy| < 0.05, dz > 3)
+PASS F3 flat: Space still climbs: feet -58.50 -> -56.90, z 12.26 -> 12.26 (dy > 0.5, |dz| < 0.05)
+PASS F4 flat: Shift still descends: feet -56.90 -> -59.98, z 12.26 -> 12.26 (dy < -0.5, |dz| < 0.05)
+PASS F5 flat: 60 down + S backs up level: feet -59.98 -> -59.98, z 12.26 -> 6.38 (|dy| < 0.05, dz < -3)
+PASS A Rig Active at every mark: all Active
+PASS S server: no kick, no speed warning: 0 hits
+PASS
+PASS [setup] A sits on the seat Stowed (client and server veh create:seat): client gt 236, server gt 236
+PASS [guard] A Stowed Shift dismounts (server): seated at a1: True, server veh cleared at gt 252
+PASS [guard] J after a dismount Double Jump activates, Double Jump again sets down: j0 ('STOWED', '-'), j1 ACTIVE, set down at gt 325, j2 STOWED
+PASS [setup] S1 mounted from ACTIVE: client mount gt 428 (create:seat), server mount gt 428, client state before ACTIVE
+PASS [bug] S1 Ride Stows the Rig (client and server, within 5 ticks): client mount gt 428: stowed at +0, not Stowed on 0/15 ticks after []; server mount gt 428: stowed at +0, not Stowed on 0/15 ticks after []
+PASS [bug] S1 Shift dismounts (server): seated at s1b: True, server veh cleared at gt 444
+PASS [setup] S2 seated Stowed: server ('create:seat', 'STOWED')
+PASS [bug] S2 seated, Double Jump does not Activate the Rig: not Stowed on 0 ticks (client+server) [], 30/30 client/server ticks
+PASS [bug] S2 Shift dismounts (server): seated at s2b: True, server veh cleared at gt 533
+PASS [setup] S3 seated Stowed, Activation Mode key only: server ('create:seat', 'STOWED')
+PASS [bug] S3 seated, the toggle key does not Activate the Rig: not Stowed on 0 ticks [], 27/27 client/server ticks
+PASS [bug] S3 Shift dismounts (server): seated at s3b: True, server veh cleared at gt 625
+PASS [setup] S4 mounted from ACTIVE: client mount gt 708 (create:seat), server mount gt 708, client state before ACTIVE
+PASS [bug] S4 200 ticks seated, no Air used: server Air 900 -> 900, seated throughout True
+PASS [bug] S4 200 ticks seated, Rig Stowed: not Stowed on 0 ticks [], 202/202 client/server ticks
+PASS [setup] S5 seated Stowed, forged Active packets sent: server ('create:seat', 'STOWED'), fake True
+PASS [bug] S5 server keeps the Rig Stowed for a passenger (old client): server not Stowed on 0/69 ticks []
+PASS [setup] S6 mounted from SETTING_DOWN: client mount gt 1114 (minecraft:minecart), server mount gt 1114, client state before SETTING_DOWN
+PASS [bug] S6 Ride Stows the Rig (client and server, within 5 ticks): client mount gt 1114: stowed at +0, not Stowed on 0/11 ticks after []; server mount gt 1114: stowed at +0, not Stowed on 0/11 ticks after []
+PASS [bug] S6 Shift dismounts (server): seated at s6b: True, server veh cleared at gt 1126
+PASS [setup] S7 mounted from CRAWL: client mount gt 1230 (minecraft:minecart), server mount gt 1230, client state before CRAWL
+PASS [bug] S7 Ride Stows the Rig (client and server, within 5 ticks): client mount gt 1230: stowed at +0, not Stowed on 0/11 ticks after []; server mount gt 1230: stowed at +0, not Stowed on 0/11 ticks after []
+PASS [bug] S7 Shift dismounts (server): seated at s7b: True, server veh cleared at gt 1242
+PASS [setup] S8 mounted from FALLING: client mount gt 1328 (minecraft:minecart), server mount gt 1328, client state before FALLING
+PASS [bug] S8 Ride Stows the Rig (client and server, within 5 ticks): client mount gt 1328: stowed at +0, not Stowed on 0/11 ticks after []; server mount gt 1328: stowed at +0, not Stowed on 0/11 ticks after []
+PASS [bug] S8 Shift dismounts (server): seated at s8b: True, server veh cleared at gt 1340
+PASS [setup] B0 Stowed, W moves the boat, A turns it: moved 12.059000000000196, yaw change 213.8
+PASS [setup] B0 Stowed Shift dismounts (server): seated at bb3: True, server veh cleared at gt 1467
+PASS [setup] H0 Stowed, W moves the horse, jump makes it jump: moved 19.597999999999956, rise 3.070999999999998
+PASS [setup] H0 Stowed Shift dismounts (server): seated at hb3: True, server veh cleared at gt 1764
+PASS [setup] B mounted from ACTIVE: client mount gt 1549 (minecraft:boat), server mount gt 1549, client state before ACTIVE
+PASS [bug] B Ride Stows the Rig (client and server, within 5 ticks): client mount gt 1549: stowed at +0, not Stowed on 0/83 ticks after []; server mount gt 1549: stowed at +0, not Stowed on 0/83 ticks after []
+PASS [bug] B W moves the boat (>= 1 block, server): moved 5.346131779145863
+PASS [bug] B A turns the boat (>= 10 deg, client): yaw -391.2 -> -605.3
+PASS [bug] B Shift dismounts (server): seated at b3: True, server veh cleared at gt 1633
+PASS [setup] H mounted from ACTIVE: client mount gt 1846 (minecraft:horse), server mount gt 1846, client state before ACTIVE
+PASS [bug] H Ride Stows the Rig (client and server, within 5 ticks): client mount gt 1846: stowed at +0, not Stowed on 0/87 ticks after []; server mount gt 1846: stowed at +0, not Stowed on 0/87 ticks after []
+PASS [bug] H W moves the horse (>= 1 block, server): moved 19.597999999999956
+PASS [bug] H jump (held, released) makes the horse jump (server y rises >= 0.5): rise 3.070999999999998
+PASS [bug] H Shift dismounts (server): seated at h3: True, server veh cleared at gt 1934
+PASS [setup] H5 on the horse Stowed: server ('minecraft:horse', 'STOWED')
+PASS [bug] H5 on the horse, Double Jump does not Activate the Rig: not Stowed on 0 ticks [], 30/30 client/server ticks
+PASS [setup] M mounted from ACTIVE: client mount gt 2073 (minecraft:minecart), server mount gt 2073, client state before ACTIVE
+PASS [bug] M Ride Stows the Rig (client and server, within 5 ticks): client mount gt 2073: stowed at +0, not Stowed on 0/11 ticks after []; server mount gt 2073: stowed at +0, not Stowed on 0/11 ticks after []
+PASS [bug] M Shift dismounts (server): seated at m1: True, server veh cleared at gt 2085
+PASS [bug] M after the Ride the Rig stays Stowed (no re-grab): 41 ticks after the dismount, states ['STOWED']
+PASS [bug] J3 after the minecart Ride, Stowed, Double Jump activates again: j3a ('STOWED', '-'), j3b ACTIVE
+PASS [setup] C0 Stowed: the chain conveyor ride carries the wearer (path >= 3 blocks): riding 62/62 ticks, path 12.770132047284529
+PASS [setup] C0 server sees the chain ride: first server ride=chain gt 2196
+PASS [setup] C1 chain ride started with the Rig Active: ride start gt 2354, state before ACTIVE
+PASS [bug] C1 chain ride Stows the Rig (client, within 5 ticks): stowed at +0, not Stowed on 0/72 ticks after []
+PASS [bug] C1 chain ride Stows the Rig (server, within 5 ticks of its ride=chain): server ride gt 2362: stowed at +0, not Stowed on 0/64 ticks after []
+PASS [bug] C1 chain ride carries the wearer (path >= 3 blocks, still riding): riding 62/62 ticks, path 12.775209939413278
+PASS [setup] C2 on the chain Stowed (server ride=chain), forged Active packets sent: server ('chain', 'STOWED'), fake True
+PASS [bug] C2 server keeps the Rig Stowed for a chain rider (old client): server not Stowed on 0/44 ticks [], ride=chain on 44
+PASS [guard] no kick, no moved wrongly: [], 0 moved wrongly right after a forced dismount (reset) not counted
+INFO moved too quickly lines: 25 (a tp from spawn logs some)
+PASS
