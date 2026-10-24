@@ -18,7 +18,7 @@ Server dir `run-prod/server` (gitignored): `java -jar forge-1.20.1-<47.x>-instal
 
 - [ ] log has `Mixing <name> from tentaworks.mixins.json` for the 5 common mixins: `LivingEntitySneakMixin`, `PlayerSneakMixin`, `ServerGamePacketListenerImplAccessor`, `BacktankBlockEntityAccessor`, `BacktankBlockEntityMixin`
 - [ ] no `Mixin apply failed`, `RuntimeException: Mixin transformation`, `IllegalAccessError`, `NoSuchMethodError`, `NoSuchFieldError`
-- [ ] access transformer: over RCON `forceload add 0 0`, `setblock 0 -59 0 tentaworks:copper_tentacle_rig{Air:777}`, `data get block 0 -59 0` shows `id: "create:backtank"`, `Air: 777`, `VanillaTag: {}`; no "invalid for block" warning; Air still there after a restart
+- [ ] access transformer: over RCON `forceload add 0 0`, `setblock 0 -59 0 tentaworks:copper_tentacle_rig{Air:777}`, `data get block 0 -59 0` shows `id: "create:backtank"`, `Air: 777`, `VanillaTag: {}`; no `invalid for ticking` warning (the Backtank BE ticks, so a Rig Block missing from `validBlocks` logs it); Air still there after a restart
 
 `runClientProd` cannot join here: it runs the dev (Mojang-named) game, so SRG jars fail to load (Flywheel's mixin fails first). Use a real launcher client.
 

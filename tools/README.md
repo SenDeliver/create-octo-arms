@@ -121,7 +121,7 @@ Release jar inside a full modpack, as players run it. Build first: `./gradlew bu
 |---|---|
 | `prod/setup_prod.sh [--no-devtools]` | Fills `run-prod/server` (Forge 1.20.1 installer layout, install it first, the script prints how) and `run-prod/client` with the pack from `PACK=<dir of jars>` plus the release jar; the client also gets the test-only devtools jar. RCON on 25618, game port 25619. `ALLOW_FLIGHT=true` mirrors a server with flight allowed. |
 | `prod/server.sh start\|stop` | Starts/stops that server with Java 17. |
-| `prod/run_prod.sh <scene> <client script> <timeline> <log prefix>` | Fresh world on the prod-pack server, `runClientProd` with a DevScript, collects logs and screenshots. |
+| `prod/run_prod.sh <scene> <client script> <timeline> <log prefix>` | Fresh world on the prod-pack server, `runClientProd` with a DevScript, collects logs and screenshots. Broken on this branch: `runClientProd` is a Mojang-named dev runtime and cannot load the SRG pack jars. |
 | `prod/rcon_prod.py` | Same as `rcon.py` for the prod-pack server. |
 | `prod/scen/`, `prod/prod_metrics.py` | Prod-pack scenario and its checks. |
 | `prod/SMOKE-1.20.1.md` | Release jar smoke checklist for the 1.20.1 build: jar contents, real Forge 47 server and client mixin logs, the AT check, the manual in-game pass. `run_prod.sh`/`runClientProd` cannot load SRG jars on this branch (dev runtime), so the client part uses a real launcher. |
