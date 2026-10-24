@@ -126,11 +126,6 @@ server: moved wrongly=0, moved too quickly=25, Flying is not enabled=0, multipla
 moved too quickly: 25 total, 25 within 2 s after a tp/kill/rejoin (vanilla teleport artefact), unexplained=0 []
 tools/logs/port1-ride-client.log exceptions(excl. known)= 0
 TRACE/STRACE ticks=2343 compared=422 (Rig not Stowed, teleport ticks +-4 skipped) max drift same gt=0.280 allowing 1 tick lag=0.000 ticks>0.5 (lag-allowed)=0
-Traceback (most recent call last):
-  File "/Users/denys/game/minecraft-server/modding/octo-arms/tools/spike_metrics.py", line 24, in <module>
-    w = span(tr, mk['s1a'], mk['s1b'])
-                 ~~^^^^^^^
-KeyError: 's1a'
 N1 netherite Space to max: max feet 6.10 above floor (body 7.00; copper S7 = 3.10), idle 3.0 s server states ['ACTIVE'] cf min 1
 N2 netherite ceiling-only hang: feet -48.500 body -47.60 (ceiling face -41 = 6.60 above body, ground -60), y range 0.0000, client ACTIVE, server ACTIVE, grips min 4, cf min 1
 N2 copper control (Reach 4): client ACTIVE -> FALLING -> ACTIVE, fell to feet -56.99, server ACTIVE -> FALLING -> ACTIVE
