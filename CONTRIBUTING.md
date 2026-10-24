@@ -19,12 +19,29 @@ Thanks for helping with Create: Octo Arms. This page explains how to build the m
 - Do not open pull requests only to change versions, wording or formatting.
 - Security problems go through [SECURITY.md](SECURITY.md), not a public issue.
 
+## Branches: 1.21.1 and 1.20.1
+
+`main` is the NeoForge 1.21.1 build. `mc/1.20.1` is the Forge 1.20.1 build (Create 6.0.8, Java 17, no Sable Ships, no in-game config screen). It lives on as its own branch and is never merged into `main`.
+
+```mermaid
+flowchart LR
+  pr["Pull request"] -->|squash merge| main["main<br/>NeoForge 1.21.1"]
+  main -->|git cherry-pick| port["mc/1.20.1<br/>Forge 1.20.1"]
+  port -->|"fix conflicts in loader glue,<br/>build, run the suites"| done["push mc/1.20.1"]
+```
+
+- Fixes and features land on `main` first, then the maintainer cherry-picks them onto `mc/1.20.1`. Send pull requests against `main`; only a bug that exists only on 1.20.1 goes to `mc/1.20.1`.
+- File names and class layout are the same on both branches, so cherry-picks apply. Do not rename or move files on one branch only.
+- Expected conflicts are the loader glue: `Tentaworks`, `TentaworksClient`, `TentaworksNetwork`, `RigEnchants`, `RigSettings` (NBT vs data component), the vertex calls in `TentacleRenderer`, `TentacleLayer`, datagen, `tentaworks.mixins.json`, build files and the docs. Logic in `rig/` usually applies clean.
+- `mc/1.20.1` is Java 17: a cherry-picked change with Java 21 features (record patterns in `switch`, `List.getFirst()`, ...) needs a rewrite there.
+
 ## Build and run
 
-You need **JDK 21 or newer**. Gradle uses a Java 21 toolchain.
+You need **JDK 17 or newer** on `mc/1.20.1` (Gradle uses a Java 17 toolchain), **JDK 21 or newer** on `main`.
 
 ```sh
-./gradlew build        # builds build/libs/tentaworks-<version>.jar
+./gradlew build        # builds build/libs/octo-arms-<version>+mc1.20.1.jar, runs the tests
+./gradlew test         # unit tests, plus fmlTest (tests that need Forge and Create, run in a dev server)
 ./gradlew runClient    # dev client
 ./gradlew runServer    # dev server
 ./gradlew runData      # regenerates src/generated (lang, blockstates, models, recipes, tags)
@@ -36,7 +53,7 @@ New text must reach all 15 languages before a release (`python3 tools/lang_check
 
 ## Code style
 
-- Java 21. Match the style of the code around your change.
+- Java 21 on `main`, Java 17 on `mc/1.20.1`. Match the style of the code around your change.
 - No unnecessary comments. Write a comment only when it tells the reader something the code can't.
 - Use the glossary terms in names and player-facing text.
 - Keep changes focused. One topic per pull request.
@@ -48,7 +65,7 @@ Worlds store some strings. **Never rename or remove them**, or existing worlds l
 - the mod id `tentaworks`
 - block, item, enchantment, data component and display source registry names
 - block state properties
-- NBT keys and data component field names
+- NBT keys and data component field names (on `mc/1.20.1` the Rig's data lives in stack NBT with the same field names)
 - config keys
 
 The full list is in [docs/save-format.md](docs/save-format.md). Code constants live in `src/main/java/dev/tentaworks/TentaworksIds.java`. Adding new ids is fine. If you really must change a saved format, add a migration and say so clearly in the pull request.
@@ -67,7 +84,7 @@ At minimum, before a pull request:
 
 ## Pull requests
 
-1. Fork the repo and create a branch from `main`.
+1. Fork the repo and create a branch from `main` (from `mc/1.20.1` only for a bug that exists only there).
 2. Keep the pull request small and about one thing.
 3. Describe **what** changed, **why**, and **how you tested it** (client or server, screenshots for visual changes).
 4. Add a line to `CHANGELOG.md` under `[Unreleased]`.
