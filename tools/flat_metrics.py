@@ -26,8 +26,19 @@ run('F2 flat: 60 up + W stays level', 'fc', 'fd', lambda dy, dz: abs(dy) < 0.05 
 run('F3 flat: Space still climbs', 'fe', 'ff', lambda dy, dz: dy > 0.5 and abs(dz) < 0.05, 'dy > 0.5, |dz| < 0.05')
 run('F4 flat: Shift still descends', 'ff', 'fg', lambda dy, dz: dy < -0.5 and abs(dz) < 0.05, 'dy < -0.5, |dz| < 0.05')
 run('F5 flat: 60 down + S backs up level', 'fh', 'fi', lambda dy, dz: abs(dy) < 0.05 and dz < -3.0, '|dy| < 0.05, dz < -3')
-active = [k for k in ('la', 'fa', 'fb', 'fc', 'fd', 'fe', 'ff', 'fg', 'fh', 'fi') if states.get(k) != 'ACTIVE']
+active = [k for k in ('la', 'ka', 'kb', 'fa', 'fb', 'fc', 'fd', 'fe', 'ff', 'fg', 'fh', 'fi') if states.get(k) != 'ACTIVE']
 check('A Rig Active at every mark', not active, 'not Active at ' + ', '.join(active) if active else 'all Active')
+carried = [m for m in re.findall(r'TRACE t=\d+ gt=(\d+) .*? state=(\S+) .*? ground=(\S+) .* sprint=(\S+) fovmod=(\S+) bob=(\S+)', client) if m[1] in ('ACTIVE', 'SETTING_DOWN', 'CRAWL')]
+sprint = sum(m[3] == 'true' for m in carried)
+fov = max((float(m[4]) for m in carried), default=0.0)
+bob = max((float(m[5]) for m in carried), default=0.0)
+check('K carried (whole run): no sprint, no sprint FOV, no view bob', bool(carried) and sprint == 0 and fov <= 1.0 and bob == 0.0,
+      f'{len(carried)} carried ticks, {sprint} sprinting, max fovmod {fov:.3f} (walk 1.000), max bob {bob:.3f}')
+if 'ka' in mk and 'kb' in mk:
+    floor = sum(1 for m in carried if mk['ka'][0] <= int(m[0]) <= mk['kb'][0] and m[2] == 'true')
+    check('K setup: sprint + W on the floor', floor >= 10, f'{floor} carried ticks on the ground (>= 10)')
+else:
+    check('K setup: sprint + W on the floor', False, 'marks ka/kb missing')
 kicks = len(re.findall(r'moved too quickly|moved wrongly|moves faster than|kicked', server))
 check('S server: no kick, no speed warning', kicks == 0, f'{kicks} hits')
 print('PASS' if all(checks) else 'FAIL')

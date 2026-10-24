@@ -1,4 +1,5 @@
 # Issue #18: client config movement.forward. look (default): W follows the camera, looking 60 down W takes the body to the floor.
+# K: on the floor, sprint key + W: a carried wearer neither sprints nor bobs the view.
 # flat: W moves level while looking 60 down (F1) or 60 up (F2); Space still climbs (F3), Shift still descends (F4); S backs up level (F5).
 # Flat superflat ground at y -60, nothing around x 8100.
 wait 40
@@ -19,6 +20,15 @@ hold up on
 wait 20
 hold up off
 mark lb
+wait 5
+# K body on the floor, sprint key + W: no sprint, no sprint FOV, no view bob while carried
+mark ka
+hold sprint on
+hold up on
+wait 20
+hold up off
+hold sprint off
+mark kb
 wait 10
 doublejump
 wait 40
