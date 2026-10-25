@@ -26,7 +26,7 @@ for d in run run2; do
   [ -n "$TW_CLIENT_FORWARD" ] && printf '[movement]\n\tforward = "%s"\n' "$TW_CLIENT_FORWARD" >> $d/config/tentaworks-client.toml
 done
 [ -f tools/local.env ] && . tools/local.env
-# the clients take the focus when their windows open: hand it back (tools/keep_focus.sh, macOS; TW_KEEP_FOCUS=0 to keep the old behaviour)
+# the clients open without taking the focus (-Ptentaworks.nofocus=1 below); tools/keep_focus.sh is an opt-in fallback (macOS, TW_KEEP_FOCUS=1)
 rm -f run/signal/_focus_done
 tools/keep_focus.sh run/signal/_focus_done 600 &
 FPID=$!
