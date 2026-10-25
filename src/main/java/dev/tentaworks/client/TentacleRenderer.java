@@ -17,22 +17,26 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.util.function.Function;
+import java.util.EnumMap;
+import java.util.Map;
 
 /**
  * Draws the four Tentacles of a Rig in tank space: the Backtank block model's own coordinates (blocks, model native
  * orientation: -Z toward the wearer's back, -X the wearer's left, +Y up), so shoulders sit on the drawn tank.
  * Each Tentacle: shoulder hub on the tank side, telescoping upper segment (sleeve, collar, rod), elbow hub with cogs,
  * forearm, wrist and a Sticker pad whose slime face lies flush on the gripped face. Stowed = folded against the tank;
- * Active = two-segment bend from shoulder to Grip (elbow pushed outward and away from the face). Lighting per part from
- * its world position.
+ * Active = two-segment bend from shoulder to Grip (elbow pushed outward and away from the face, to the far side or straighter
+ * when that side is in a block). Lighting from world positions, a gradient along each segment.
  */
 public final class TentacleRenderer {
     public static final float PX = 1 / 16f;
@@ -51,9 +55,13 @@ public final class TentacleRenderer {
     private static int calls;
 
     public record Style(ResourceLocation sleeve, ResourceLocation rod, ResourceLocation collar, ResourceLocation hub, ResourceLocation cog) {
+        private static final Map<RigTier, Style> BY_TIER = new EnumMap<>(RigTier.class);
+
         static Style of(RigTier tier) {
-            String s = tier == RigTier.NETHERITE ? "_netherite" : "";
-            return new Style(tex("tentacle_sleeve" + s), tex("tentacle_rod" + s), tex("tentacle_collar" + s), tex("tentacle_hub" + s), tex("tentacle_cog" + s));
+            return BY_TIER.computeIfAbsent(tier, t -> {
+                String s = t == RigTier.NETHERITE ? "_netherite" : "";
+                return new Style(tex("tentacle_sleeve" + s), tex("tentacle_rod" + s), tex("tentacle_collar" + s), tex("tentacle_hub" + s), tex("tentacle_cog" + s));
+            });
         }
 
         private static ResourceLocation tex(String name) {
@@ -61,10 +69,40 @@ public final class TentacleRenderer {
         }
     }
 
+    /** The atlas sprites of one Style, looked up once per Rig drawn. */
+    record Sprites(TextureAtlasSprite sleeve, TextureAtlasSprite rod, TextureAtlasSprite collar, TextureAtlasSprite hub, TextureAtlasSprite cog, TextureAtlasSprite sticker) {
+        static Sprites of(Style style) {
+            var atlas = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS);
+            return new Sprites(atlas.apply(style.sleeve), atlas.apply(style.rod), atlas.apply(style.collar), atlas.apply(style.hub), atlas.apply(style.cog), atlas.apply(STICKER));
+        }
+    }
+
     /** Where to light and cull: tank space → camera-relative world, the camera position, and whether this is a world render. */
     record Space(Matrix4f toCamera, Vec3 camera, boolean world, boolean firstPerson, int fallbackLight, int lod) {
-        int light(Level level, Vector3f tankPoint) {
+        private static final float[] WHOLE = {0, 1};
+
+        Vec3 toWorld(Vector3f tankPoint) {
+            Vector3f w = toCamera.transformPosition(tankPoint, new Vector3f());
+            return new Vec3(w.x + camera.x, w.y + camera.y, w.z + camera.z);
+        }
+
+        Vector3f toWorldF(Vector3f tankPoint) {
+            return toCamera.transformPosition(tankPoint, new Vector3f()).add((float) camera.x, (float) camera.y, (float) camera.z);
+        }
+
+        Vector3f direction(Vector3f tankDir) {
+            return toCamera.transformDirection(tankDir, new Vector3f()).normalize();
+        }
+
+        /** Light at a tank point; a point inside a block (no light at all) takes the light half way toward {@code toward}. */
+        int light(Level level, Vector3f tankPoint, Vector3f toward) {
             if (!world) return fallbackLight;
+            int l = sample(level, tankPoint);
+            if (l == 0 && toward != null) l = sample(level, new Vector3f(tankPoint).lerp(toward, 0.5F));
+            return l;
+        }
+
+        private int sample(Level level, Vector3f tankPoint) {
             Vector3f w = toCamera.transformPosition(tankPoint, new Vector3f());
             BlockPos pos = BlockPos.containing(w.x + camera.x, w.y + camera.y, w.z + camera.z);
             return LevelRenderer.getLightColor(level, pos);
@@ -72,17 +110,57 @@ public final class TentacleRenderer {
 
         /** First person only: is the local segment a→b (blocks, along Y) closer than {@code radius} to the eye? */
         boolean nearCamera(PoseStack.Pose pose, float x, float y0, float y1, float z, float radius) {
-            if (!firstPerson) return false;
-            Vector3f a = toCamera.transformPosition(pose.pose().transformPosition(x, y0, z, new Vector3f()));
-            Vector3f b = toCamera.transformPosition(pose.pose().transformPosition(x, y1, z, new Vector3f()));
-            Vector3f ab = new Vector3f(b).sub(a);
-            float t = ab.lengthSquared() < 1.0E-8F ? 0 : Mth.clamp(-a.dot(ab) / ab.lengthSquared(), 0, 1);
-            return new Vector3f(a).fma(t, ab).length() < radius;
+            float[] keep = cut(pose, x, y0, y1, z, radius);
+            return keep == null || keep[0] > 0 || keep[1] < 1;
+        }
+
+        /** First person: the part of the local segment a→b (0..1) farther than {@code radius} from the eye; null when none is. The pose is camera-relative already. */
+        float[] cut(PoseStack.Pose pose, float x, float y0, float y1, float z, float radius) {
+            if (!firstPerson) return WHOLE;
+            Vector3f a = pose.pose().transformPosition(x, y0, z, new Vector3f());
+            Vector3f b = pose.pose().transformPosition(x, y1, z, new Vector3f());
+            return TentacleMath.outsideSphere(a, b, radius);
         }
     }
 
-    /** One drawn Tentacle in tank space (blocks): shoulder, elbow, wrist, pad contact point and the gripped face's normal. */
-    record Arm(Vector3f s, Vector3f e, Vector3f w, Vector3f t, Vector3f n) {
+    /**
+     * One drawn Tentacle in tank space (blocks): shoulder, elbow, wrist, pad contact point and the gripped face's normal.
+     * {@code side} (pad side axis) and {@code hinge} (elbow axis) may be null: derived from the pose then.
+     */
+    record Arm(Vector3f s, Vector3f e, Vector3f w, Vector3f t, Vector3f n, Vector3f side, Vector3f hinge) {
+        /** Axes from the pose: the hinge across the bend, the pad side along it. */
+        Arm(Vector3f s, Vector3f e, Vector3f w, Vector3f t, Vector3f n) {
+            this(s, e, w, t, n, null, null);
+        }
+
+        Arm {
+            if (hinge == null) {
+                hinge = new Vector3f(e).sub(s).cross(new Vector3f(w).sub(e));
+                if (hinge.lengthSquared() < 1.0E-8F) hinge.set(1, 0, 0);
+                hinge.normalize();
+            }
+            if (side == null) {
+                side = new Vector3f(hinge).fma(-hinge.dot(n), n);
+                if (side.lengthSquared() < 1.0E-4F) side.set(Math.abs(n.x) < 0.9F ? 1 : 0, Math.abs(n.x) < 0.9F ? 0 : 1, 0).fma(-n.dot(side), n);
+                side.normalize();
+            }
+        }
+
+        Arm withSide(Vector3f side) {
+            return side == null ? this : new Arm(s, e, w, t, n, side, hinge);
+        }
+    }
+
+    /** Light along a segment frame: {@code l0} at {@code y0} to {@code l1} at {@code y1} (px along +Y). */
+    record Lit(int l0, int l1, float y0, float y1) {
+        static Lit flat(int light) {
+            return new Lit(light, light, 0, 1);
+        }
+
+        int at(float y) {
+            if (l0 == l1 || y1 - y0 < 1.0E-4F) return l0;
+            return TentacleMath.lerpLight(l0, l1, Mth.clamp((y - y0) / (y1 - y0), 0, 1));
+        }
     }
 
     private TentacleRenderer() {
@@ -120,31 +198,32 @@ public final class TentacleRenderer {
         return new Vector3f((slot & 1) == 0 ? -1 : 1, 0, 0);
     }
 
-    /** Free (spare or Falling) Tentacle: hanging out and down from the shoulder, swaying a little. */
+    /** Rest pose of a free (spare or Falling) Tentacle in tank space: hanging out and down from the shoulder, swaying a little. */
     static Arm free(int slot, float time) {
         Vector3f s = new Vector3f(SHOULDER[slot]).mul(PX);
         float sway = Mth.sin(time * 0.08F + slot * 1.7F) * 0.08F;
         Vector3f t = new Vector3f(s).add(new Vector3f(outward(slot)).mul(0.75F + sway)).add(0, -0.85F, slot < 2 ? -0.35F + sway : 0.45F);
         Vector3f n = new Vector3f(outward(slot)).mul(0.35F).add(0, 1, 0).normalize();
-        return reach(s, t, n, slot);
+        return reach(s, t, n, slot, 1);
     }
 
-    /** Active Tentacle to a pad contact point {@code t} on a face with normal {@code n} (tank space). */
-    static Arm reach(Vector3f s, Vector3f t, Vector3f n, int slot) {
+    private static final Vector3f POLE_ALT1 = new Vector3f(0, 0, 1), POLE_ALT2 = new Vector3f(0, 1, 0);
+
+    /**
+     * Active Tentacle to a pad contact point {@code t} on a face with normal {@code n} (tank space). {@code elbow} scales the
+     * elbow's push along its pole: 1 the usual bend, toward 0 a straighter arm, negative the far side.
+     */
+    static Arm reach(Vector3f s, Vector3f t, Vector3f n, int slot, float elbow) {
         Vector3f w = new Vector3f(t).fma(PAD + STEM, n);
         Vector3f d = new Vector3f(w).sub(s);
         float len = d.length();
         Vector3f u = len < 1.0E-4F ? new Vector3f(0, 1, 0) : new Vector3f(d).div(len);
-        Vector3f p = new Vector3f(outward(slot)).mul(1.5F).add(new Vector3f(n).mul(1.0F)).add(0, 0.3F, 0);
-        p.fma(-p.dot(u), u);
-        if (p.lengthSquared() < 1.0E-4F) {
-            p.set(outward(slot)).fma(-outward(slot).dot(u), u);
-            if (p.lengthSquared() < 1.0E-4F) p.set(0, 0, 1);
-        }
-        p.normalize();
-        float h = Mth.clamp(0.4F * len + 0.05F, 0.18F, 2.6F);
+        Vector3f hint = new Vector3f(outward(slot)).mul(1.5F).add(n).add(0, 0.3F, 0).normalize();
+        Vector3f p = TentacleMath.pole(u, hint, POLE_ALT1, POLE_ALT2);
+        float h = Mth.clamp(0.4F * len + 0.05F, 0.18F, 2.6F) * elbow;
         Vector3f e = new Vector3f(s).fma(0.4F, d).fma(h, p);
-        return new Arm(s, e, w, t, n);
+        Vector3f hinge = new Vector3f(u).cross(p).normalize();
+        return new Arm(s, e, w, t, n, null, hinge);
     }
 
     static Arm blend(Arm a, Arm b, float k) {
@@ -155,7 +234,12 @@ public final class TentacleRenderer {
         n.normalize();
         Vector3f t = new Vector3f(a.t).lerp(b.t, k);
         Vector3f w = new Vector3f(t).fma(PAD + STEM, n);
-        return new Arm(a.s, new Vector3f(a.e).lerp(b.e, k), w, t, n);
+        return new Arm(a.s, new Vector3f(a.e).lerp(b.e, k), w, t, n, blendAxis(a.side, b.side, k), blendAxis(a.hinge, b.hinge, k));
+    }
+
+    private static Vector3f blendAxis(Vector3f a, Vector3f b, float k) {
+        Vector3f out = new Vector3f(a).lerp(b, k);
+        return out.lengthSquared() < 1.0E-4F ? b : out.normalize();
     }
 
     static void timed(Runnable r) {
@@ -169,34 +253,155 @@ public final class TentacleRenderer {
      * Draws a Rig's Tentacles. {@code ps} is in tank space; {@code space} maps it to the world (for lights, Grips and the first-person cut).
      */
     static void drawRig(PoseStack ps, MultiBufferSource buffers, Player player, RigTier tier, RigVisuals.Visual visual, float pt, Space space) {
-        Style style = Style.of(tier);
-        Function<ResourceLocation, TextureAtlasSprite> atlas = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS);
+        Sprites sprites = Sprites.of(Style.of(tier));
         VertexConsumer vc = buffers.getBuffer(RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS));
         float deploy = visual == null || !space.world ? 0 : visual.deploy(pt);
         Matrix4f toTank = deploy > 0 ? new Matrix4f(space.toCamera).invert() : null;
         float time = player.tickCount + pt;
+        Vector3f upT = null, xT = null;
+        Vec3 body = null;
+        if (toTank != null) {
+            upT = toTank.transformDirection(0, 1, 0, new Vector3f()).normalize();
+            xT = toTank.transformDirection(1, 0, 0, new Vector3f()).normalize();
+            body = space.toWorld(new Vector3f(0.5F, 0.5F, 0.5F));
+        }
         for (int i = 0; i < Tentacles.SLOTS; i++) {
             Arm arm = folded(i);
             if (deploy > 0) {
                 float k = (float) RigVisuals.smooth(deploy * 1.6F - i * 0.2F);
                 if (k > 0) {
                     RigVisuals.Slot slot = visual.slot(i);
-                    Arm free = free(i, time);
+                    Arm free = freeArm(slot, i, time, pt, player, space, toTank);
                     Arm out = free;
                     if (slot.target() != null) {
-                        Vector3f freeTipCam = space.toCamera.transformPosition(free.t, new Vector3f());
-                        Vec3 freeWorld = new Vec3(freeTipCam.x + space.camera.x, freeTipCam.y + space.camera.y, freeTipCam.z + space.camera.z);
-                        Vec3 tip = slot.tip(pt, freeWorld);
-                        Vec3 n = slot.normal(pt);
-                        Vector3f t = toTank.transformPosition((float) (tip.x - space.camera.x), (float) (tip.y - space.camera.y), (float) (tip.z - space.camera.z), new Vector3f());
+                        Vec3 tip = slot.tip(pt, space.toWorld(free.t), body);
+                        Vec3 n = slot.normal(pt, body);
+                        Vector3f t = toTank(toTank, space, tip);
                         Vector3f nt = toTank.transformDirection((float) n.x, (float) n.y, (float) n.z, new Vector3f()).normalize();
-                        if (t.isFinite() && t.distance(free.s) <= RigVisuals.MAX_GRIP_DISTANCE) out = reach(free.s, t, nt, i);
+                        if (t.isFinite() && t.distance(free.s) <= RigVisuals.MAX_GRIP_DISTANCE) {
+                            out = reach(free.s, t, nt, i, elbow(slot, player, space, free.s, t, nt, i, pt)).withSide(TentacleMath.padSide(nt, upT, xT));
+                            slot.drawn(tip, n, player.tickCount);
+                        }
+                    } else {
+                        float rel = slot.release(pt);
+                        if (rel > 0 && slot.lastTip != null) {
+                            Vector3f t = toTank(toTank, space, slot.lastTip);
+                            Vector3f nt = toTank.transformDirection((float) slot.lastNormal.x, (float) slot.lastNormal.y, (float) slot.lastNormal.z, new Vector3f()).normalize();
+                            if (t.isFinite() && t.distance(free.s) <= RigVisuals.MAX_GRIP_DISTANCE) {
+                                Arm held = reach(free.s, t, nt, i, slot.elbowO + (slot.elbow - slot.elbowO) * pt).withSide(TentacleMath.padSide(nt, upT, xT));
+                                out = blend(free, held, (float) RigVisuals.smooth(rel));
+                            }
+                        }
+                        Vector3f nW = space.direction(out.n);
+                        slot.drawn(space.toWorld(out.t), new Vec3(nW.x, nW.y, nW.z), player.tickCount);
                     }
                     arm = blend(arm, out, k);
                 }
             }
-            drawArm(ps, vc, atlas, style, arm, player.level(), space);
+            drawArm(ps, vc, sprites, arm, player.level(), space);
         }
+    }
+
+    private static Vector3f toTank(Matrix4f toTank, Space space, Vec3 world) {
+        return toTank.transformPosition((float) (world.x - space.camera.x), (float) (world.y - space.camera.y), (float) (world.z - space.camera.z), new Vector3f());
+    }
+
+    /** Ticks for the free Tentacle to cover half its way to the rest point. */
+    private static final float FREE_HALFLIFE = 3;
+    /** Most the elbow's push may change per tick (full flip to the far side in six ticks). */
+    private static final float ELBOW_RATE = 0.34F;
+    /** Clearance kept between the elbow hub and a block it would enter, blocks. */
+    private static final float ELBOW_CLEARANCE = 0.15F;
+
+    /** Farthest the free tip's offset may lag behind its rest offset, blocks. */
+    private static final float FREE_LAG = 1.0F;
+
+    /**
+     * A free Tentacle in the world: its tip's offset from the shoulder (world axes, so a pitched body still hangs it down)
+     * springs after the rest offset, pulled in where the rest point is inside a block. The body's own motion carries the tip
+     * along; only turns and pose changes lag. One spring step per tick; the inventory and Ponder keep the rest pose.
+     */
+    private static Arm freeArm(RigVisuals.Slot slot, int i, float time, float pt, Player player, Space space, Matrix4f toTank) {
+        Arm rest = free(i, time);
+        if (!space.world || toTank == null) return rest;
+        int tick = player.tickCount;
+        Vector3f sW = space.toWorldF(rest.s);
+        if (slot.freeTick != tick) {
+            Vector3f goal = freeGoal(player.level(), space, rest.s, sW, i, time).sub(sW);
+            if (tick - slot.freeTick > 2) {
+                slot.freePos.set(goal);
+                slot.freePosO.set(goal);
+                slot.freeVel.zero();
+            } else {
+                slot.freePosO.set(slot.freePos);
+                TentacleMath.spring(slot.freePos, slot.freeVel, goal, FREE_HALFLIFE, 1);
+                Vector3f lag = new Vector3f(slot.freePos).sub(goal);
+                if (lag.lengthSquared() > FREE_LAG * FREE_LAG) slot.freePos.set(goal).fma(FREE_LAG / lag.length(), lag);
+            }
+            slot.freeShoulder.set(sW);
+            slot.freeTick = tick;
+        }
+        Vector3f tipW = new Vector3f(slot.freePosO).lerp(slot.freePos, pt).add(sW);
+        Vector3f t = toTank.transformPosition(tipW.x - (float) space.camera.x, tipW.y - (float) space.camera.y, tipW.z - (float) space.camera.z, new Vector3f());
+        if (!t.isFinite()) return rest;
+        return reach(rest.s, t, rest.n, i, 1);
+    }
+
+    /** Rest point of a free Tentacle (world): out, down and a little fore or aft of the shoulder; pulled in, then raised, when inside a block. */
+    private static Vector3f freeGoal(Level level, Space space, Vector3f sTank, Vector3f sW, int slot, float time) {
+        float sway = Mth.sin(time * 0.08F + slot * 1.7F) * 0.08F;
+        Vector3f out = space.direction(outward(slot));
+        Vector3f aft = space.direction(new Vector3f(0, 0, 1));
+        float along = slot < 2 ? -0.35F + sway : 0.45F;
+        Vector3f goal = new Vector3f(sW).fma(0.75F + sway, out).add(0, -0.85F, 0).fma(along, aft);
+        if (!solid(level, goal)) return goal;
+        goal.set(sW).fma(0.3F, out).add(0, -0.85F, 0).fma(along, aft);
+        if (!solid(level, goal)) return goal;
+        return goal.set(sW).fma(0.3F, out).add(0, -0.3F, 0);
+    }
+
+    private static boolean solid(Level level, Vector3f world) {
+        BlockPos pos = BlockPos.containing(world.x, world.y, world.z);
+        return !level.getBlockState(pos).getCollisionShape(level, pos).isEmpty();
+    }
+
+    /**
+     * The elbow's push for this frame: once per tick a short ray from the arm's chord to the usual elbow checks for a block; a
+     * blocked elbow straightens or goes to the far side, whichever leaves more room, moving at most {@link #ELBOW_RATE} per tick.
+     */
+    private static float elbow(RigVisuals.Slot slot, Player player, Space space, Vector3f s, Vector3f t, Vector3f n, int i, float pt) {
+        if (!space.world) return 1;
+        int tick = player.tickCount;
+        if (slot.elbowTick != tick) {
+            if (tick - slot.elbowTick > 2) slot.elbow = slot.elbowO = clearElbow(player, space, s, t, n, i);
+            else {
+                slot.elbowO = slot.elbow;
+                float goal = clearElbow(player, space, s, t, n, i);
+                slot.elbow += Mth.clamp(goal - slot.elbow, -ELBOW_RATE, ELBOW_RATE);
+            }
+            slot.elbowTick = tick;
+        }
+        return slot.elbowO + (slot.elbow - slot.elbowO) * pt;
+    }
+
+    private static float clearElbow(Player player, Space space, Vector3f s, Vector3f t, Vector3f n, int i) {
+        Arm near = reach(s, t, n, i, 1);
+        Vector3f chord = new Vector3f(s).lerp(near.w, 0.4F);
+        float h = near.e.distance(chord);
+        if (h < 1.0E-3F) return 1;
+        float kNear = room(player, space, chord, near.e, h);
+        if (kNear >= 1) return 1;
+        Arm far = reach(s, t, n, i, -1);
+        float kFar = room(player, space, chord, far.e, h);
+        return kFar > kNear + 0.2F ? -kFar : kNear;
+    }
+
+    /** How much of the push from {@code from} to {@code elbow} (length {@code h}) is free of blocks, 0..1. */
+    private static float room(Player player, Space space, Vector3f from, Vector3f elbow, float h) {
+        Vec3 a = space.toWorld(from), b = space.toWorld(elbow);
+        BlockHitResult hit = player.level().clip(new ClipContext(a, b, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+        if (hit.getType() == HitResult.Type.MISS) return 1;
+        return Mth.clamp(((float) hit.getLocation().distanceTo(a) - ELBOW_CLEARANCE) / h, 0, 1);
     }
 
     /**
@@ -206,8 +411,7 @@ public final class TentacleRenderer {
      */
     public static void drawPosed(PoseStack ps, MultiBufferSource buffers, RigTier tier, Vector3f[] tips, Vector3f[] normals, float[] attach,
                                  float deploy, float time, int light) {
-        Style style = Style.of(tier);
-        Function<ResourceLocation, TextureAtlasSprite> atlas = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS);
+        Sprites sprites = Sprites.of(Style.of(tier));
         VertexConsumer vc = buffers.getBuffer(RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS));
         Space space = new Space(new Matrix4f(), Vec3.ZERO, false, false, light, 0);
         for (int i = 0; i < Tentacles.SLOTS; i++) {
@@ -215,69 +419,66 @@ public final class TentacleRenderer {
             float k = (float) RigVisuals.smooth(deploy * 1.6F - i * 0.2F);
             if (k > 0) {
                 Arm out = free(i, time);
-                if (tips[i] != null && attach[i] > 0) out = blend(out, reach(out.s, tips[i], normals[i], i), (float) RigVisuals.smooth(attach[i]));
+                if (tips[i] != null && attach[i] > 0) out = blend(out, reach(out.s, tips[i], normals[i], i, 1), (float) RigVisuals.smooth(attach[i]));
                 arm = blend(arm, out, k);
             }
-            drawArm(ps, vc, atlas, style, arm, null, space);
+            drawArm(ps, vc, sprites, arm, null, space);
         }
     }
 
-    static void drawArm(PoseStack ps, VertexConsumer vc, Function<ResourceLocation, TextureAtlasSprite> atlas, Style style, Arm a, Level level, Space space) {
-        TextureAtlasSprite sleeve = atlas.apply(style.sleeve), rod = atlas.apply(style.rod), collar = atlas.apply(style.collar),
-                hub = atlas.apply(style.hub), cog = atlas.apply(style.cog), sticker = atlas.apply(STICKER);
+    static void drawArm(PoseStack ps, VertexConsumer vc, Sprites sp, Arm a, Level level, Space space) {
         Vector3f u1 = new Vector3f(a.e).sub(a.s), u2 = new Vector3f(a.w).sub(a.e);
-        Vector3f hinge = new Vector3f(u1).cross(u2);
-        if (hinge.lengthSquared() < 1.0E-8F) hinge.set(1, 0, 0);
-        hinge.normalize();
+        Vector3f hinge = new Vector3f(a.hinge);
         boolean detail = space.lod < 1, hubs = space.lod < 2;
 
-        int ls = space.light(level, a.s), le = space.light(level, a.e), lw = space.light(level, new Vector3f(a.w).fma(0.2F, a.n));
-        Vector3f midUpper = new Vector3f(a.s).add(a.e).mul(0.5F), midFore = new Vector3f(a.e).add(a.w).mul(0.5F);
-        int lu = space.light(level, midUpper), lf = space.light(level, midFore);
+        int ls = space.light(level, a.s, null), le = space.light(level, a.e, a.s), lw = space.light(level, new Vector3f(a.w).fma(0.2F, a.n), a.e);
 
         ps.pushPose();
         ps.translate(a.s.x, a.s.y, a.s.z);
         if (hubs) {
-            box(ps.last(), vc, hub, ls, space, -1.75f, 1.75f, -1.75f, 1.75f, -1.75f, 1.75f, Mode.BLOCK);
-            if (detail) decalX(ps.last(), vc, cog, ls, space, outward0(a.s) * 1.8f, 4.0f);
+            box(ps.last(), vc, sp.hub, Lit.flat(ls), space, -1.75f, 1.75f, -1.75f, 1.75f, -1.75f, 1.75f, Mode.BLOCK);
+            if (detail) decalX(ps.last(), vc, sp.cog, ls, space, outward0(a.s) * 1.8f, 4.0f);
         }
         ps.popPose();
 
         float l1 = segment(ps, a.s, a.e, hinge);
+        Lit upper = new Lit(ls, le, 0, l1 / PX);
         float sl = Math.max(0.6f * l1, 2.5f * PX);
-        box(ps.last(), vc, sleeve, lu, space, -1.5f, 1.5f, 1.0f, sl / PX - 0.15f, -1.5f, 1.5f, Mode.TUBE);
+        box(ps.last(), vc, sp.sleeve, upper, space, -1.5f, 1.5f, 1.0f, sl / PX - 0.15f, -1.5f, 1.5f, Mode.SLEEVE);
         if (detail) {
-            if (sl / PX >= 4.5f) box(ps.last(), vc, collar, lu, space, -1.9f, 1.9f, 1.75f, 2.75f, -1.9f, 1.9f, Mode.BAND);
-            box(ps.last(), vc, collar, lu, space, -1.9f, 1.9f, sl / PX - 1.2f, sl / PX, -1.9f, 1.9f, Mode.BAND);
+            if (sl / PX >= 4.5f) box(ps.last(), vc, sp.collar, upper, space, -1.9f, 1.9f, 1.75f, 2.75f, -1.9f, 1.9f, Mode.BAND);
+            box(ps.last(), vc, sp.collar, upper, space, -1.9f, 1.9f, sl / PX - 1.2f, sl / PX, -1.9f, 1.9f, Mode.BAND);
         }
-        box(ps.last(), vc, rod, lu, space, -1f, 1f, sl / PX - 1.0f, l1 / PX, -1f, 1f, Mode.TUBE);
+        box(ps.last(), vc, sp.rod, upper, space, -1f, 1f, sl / PX - 1.0f, l1 / PX, -1f, 1f, Mode.TUBE);
         ps.popPose();
 
         segment(ps, a.e, a.e, hinge, u1, u2);
         if (hubs) {
-            box(ps.last(), vc, hub, le, space, -1.5f, 1.5f, -1.65f, 1.65f, -1.65f, 1.65f, Mode.BLOCK);
+            box(ps.last(), vc, sp.hub, Lit.flat(le), space, -1.5f, 1.5f, -1.65f, 1.65f, -1.65f, 1.65f, Mode.BLOCK);
             if (detail) {
-                box(ps.last(), vc, rod, le, space, -2.5f, 2.5f, -0.6f, 0.6f, -0.6f, 0.6f, Mode.AXLE);
-                decalX(ps.last(), vc, cog, le, space, 2.0f, 3.6f);
-                decalX(ps.last(), vc, cog, le, space, -2.0f, 3.6f);
+                box(ps.last(), vc, sp.rod, Lit.flat(le), space, -2.5f, 2.5f, -0.6f, 0.6f, -0.6f, 0.6f, Mode.AXLE);
+                decalX(ps.last(), vc, sp.cog, le, space, 2.0f, 3.6f);
+                decalX(ps.last(), vc, sp.cog, le, space, -2.0f, 3.6f);
             }
         }
         ps.popPose();
 
         float l2 = segment(ps, a.e, a.w, hinge);
+        Lit fore = new Lit(le, lw, 0, l2 / PX);
         float fl = Math.max(0.55f * l2, 2f * PX);
-        box(ps.last(), vc, sleeve, lf, space, -1.2f, 1.2f, 1.5f, fl / PX - 0.15f, -1.2f, 1.2f, Mode.TUBE);
-        if (detail) box(ps.last(), vc, collar, lf, space, -1.55f, 1.55f, fl / PX - 1.0f, fl / PX, -1.55f, 1.55f, Mode.BAND);
-        box(ps.last(), vc, rod, lf, space, -0.75f, 0.75f, fl / PX - 1f, l2 / PX, -0.75f, 0.75f, Mode.TUBE);
-        if (hubs) box(ps.last(), vc, hub, lw, space, -1.25f, 1.25f, l2 / PX - 1.25f, l2 / PX + 1.25f, -1.25f, 1.25f, Mode.BLOCK);
+        box(ps.last(), vc, sp.sleeve, fore, space, -1.2f, 1.2f, 1.5f, fl / PX - 0.15f, -1.2f, 1.2f, Mode.SLEEVE);
+        if (detail) box(ps.last(), vc, sp.collar, fore, space, -1.55f, 1.55f, fl / PX - 1.0f, fl / PX, -1.55f, 1.55f, Mode.BAND);
+        box(ps.last(), vc, sp.rod, fore, space, -0.75f, 0.75f, fl / PX - 1f, l2 / PX, -0.75f, 0.75f, Mode.TUBE);
+        if (hubs) box(ps.last(), vc, sp.hub, Lit.flat(lw), space, -1.25f, 1.25f, l2 / PX - 1.25f, l2 / PX + 1.25f, -1.25f, 1.25f, Mode.BLOCK);
         ps.popPose();
 
         Vector3f padUp = new Vector3f(a.n);
-        Vector3f side = new Vector3f(hinge).fma(-hinge.dot(padUp), padUp);
+        Vector3f side = new Vector3f(a.side).fma(-a.side.dot(padUp), padUp);
+        if (side.lengthSquared() < 1.0E-4F) side.set(hinge).fma(-hinge.dot(padUp), padUp);
         if (side.lengthSquared() < 1.0E-4F) side.set(Math.abs(padUp.x) < 0.9F ? 1 : 0, Math.abs(padUp.x) < 0.9F ? 0 : 1, 0).fma(-padUp.dot(side.x, side.y, side.z), padUp);
         frame(ps, a.t, padUp, side.normalize());
-        pad(ps.last(), vc, sticker, lw, space);
-        box(ps.last(), vc, rod, lw, space, -0.75f, 0.75f, PAD / PX, (PAD + STEM) / PX + 0.5f, -0.75f, 0.75f, Mode.TUBE);
+        pad(ps.last(), vc, sp.sticker, lw, space);
+        box(ps.last(), vc, sp.rod, Lit.flat(lw), space, -0.75f, 0.75f, PAD / PX, (PAD + STEM) / PX + 0.5f, -0.75f, 0.75f, Mode.TUBE);
         ps.popPose();
     }
 
@@ -317,20 +518,28 @@ public final class TentacleRenderer {
         ps.mulPose(new Quaternionf().setFromNormalized(m));
     }
 
-    enum Mode { TUBE, BLOCK, BAND, AXLE }
+    /** TUBE tiles its texture from the top end down, SLEEVE from the bottom end up (the end that does not move as the arm telescopes). */
+    enum Mode { TUBE, SLEEVE, BLOCK, BAND, AXLE }
 
     /** Blocks of sleeve a TUBE may tile; a longer one is a bad pose (unresolved Ship), never a real arm. */
     private static final int MAX_TUBE_RINGS = 64;
     private static final org.slf4j.Logger LOG = com.mojang.logging.LogUtils.getLogger();
     private static long lastCapLog;
 
-    /** Box in px around the current frame. TUBE: sides tile V once per block, U centred; BLOCK: whole texture per face; BAND: centre rows; AXLE: a rod along X. */
-    private static void box(PoseStack.Pose p, VertexConsumer vc, TextureAtlasSprite s, int light, Space space,
+    /**
+     * Box in px around the current frame. TUBE/SLEEVE: sides tile V once per block, U centred, lit along {@code lit}; BLOCK: whole
+     * texture per face; BAND: centre rows; AXLE: a rod along X. In first person a tube loses only the part within reach of the eye.
+     */
+    private static void box(PoseStack.Pose p, VertexConsumer vc, TextureAtlasSprite s, Lit lit, Space space,
                             float x0, float x1, float y0, float y1, float z0, float z1, Mode mode) {
         if (y1 - y0 < 0.01f) return;
-        if (space.nearCamera(p, (x0 + x1) / 2 * PX, y0 * PX, y1 * PX, (z0 + z1) / 2 * PX, 0.6f + Math.max(x1 - x0, z1 - z0) * PX)) return;
+        float[] keep = space.cut(p, (x0 + x1) / 2 * PX, y0 * PX, y1 * PX, (z0 + z1) / 2 * PX, 0.6f + Math.max(x1 - x0, z1 - z0) * PX);
+        if (keep == null) return;
+        boolean tube = mode == Mode.TUBE || mode == Mode.SLEEVE;
+        if (!tube && (keep[0] > 0 || keep[1] < 1)) return;
         float X0 = x0 * PX, X1 = x1 * PX, Y0 = y0 * PX, Y1 = y1 * PX, Z0 = z0 * PX, Z1 = z1 * PX;
         float w = x1 - x0, d = z1 - z0, h = y1 - y0;
+        int light = lit.at((y0 + y1) / 2);
         switch (mode) {
             case BLOCK -> {
                 quad(vc, p, s, light, 0, 1, 0, 0, 16, 0, 16, X0, Y1, Z0, X1, Y1, Z0, X1, Y1, Z1, X0, Y1, Z1);
@@ -338,7 +547,7 @@ public final class TentacleRenderer {
                 sides(vc, p, s, light, X0, X1, Y0, Y1, Z0, Z1, 0, 16, 0, 16, 0, 16);
             }
             case BAND -> {
-                caps(vc, p, s, light, X0, X1, Y0, Y1, Z0, Z1, 8 - w / 2, 8 + w / 2, 8 - d / 2, 8 + d / 2);
+                caps(vc, p, s, light, light, X0, X1, Y0, Y1, Z0, Z1, 8 - w / 2, 8 + w / 2, 8 - d / 2, 8 + d / 2);
                 sides(vc, p, s, light, X0, X1, Y0, Y1, Z0, Z1, 0, 16, 0, 16, 8 - h / 2, 8 + h / 2);
             }
             case AXLE -> {
@@ -349,30 +558,45 @@ public final class TentacleRenderer {
                 quad(vc, p, s, light, 0, 0, -1, 0, 16, 8 - h / 2, 8 + h / 2, X1, Y1, Z0, X0, Y1, Z0, X0, Y0, Z0, X1, Y0, Z0);
                 quad(vc, p, s, light, 0, 0, 1, 0, 16, 8 - h / 2, 8 + h / 2, X0, Y1, Z1, X1, Y1, Z1, X1, Y0, Z1, X0, Y0, Z1);
             }
-            case TUBE -> {
-                caps(vc, p, s, light, X0, X1, Y0, Y1, Z0, Z1, 8 - w / 2, 8 + w / 2, 8 - d / 2, 8 + d / 2);
+            case TUBE, SLEEVE -> {
                 float span = Y1 - Y0;
                 if (!Float.isFinite(span) || span <= 0) return;
+                float K0 = Y0 + keep[0] * span, K1 = Y0 + keep[1] * span;
+                caps(vc, p, s, lit.at(K0 / PX), lit.at(K1 / PX), X0, X1, K0, K1, Z0, Z1, 8 - w / 2, 8 + w / 2, 8 - d / 2, 8 + d / 2);
                 int rings = Math.min(MAX_TUBE_RINGS, (int) Math.ceil(span - 1.0E-4F));
                 if (rings == MAX_TUBE_RINGS && System.currentTimeMillis() - lastCapLog > 1000) {
                     lastCapLog = System.currentTimeMillis();
                     LOG.warn("Tentacle sleeve of {} blocks capped at {}: a bad pose reached the renderer", span, MAX_TUBE_RINGS);
                 }
-                float top = Y1;
                 for (int i = 0; i < rings; i++) {
-                    float bottom = Math.max(Y0, top - 1);
-                    float hv = (top - bottom) * 16;
-                    sides(vc, p, s, light, X0, X1, bottom, top, Z0, Z1, 8 - w / 2, 8 + w / 2, 8 - d / 2, 8 + d / 2, 0, hv);
-                    top = bottom;
+                    float top, bottom;
+                    if (mode == Mode.TUBE) {
+                        top = Y1 - i;
+                        bottom = Math.max(Y0, top - 1);
+                    } else {
+                        bottom = Y0 + i;
+                        top = Math.min(Y1, bottom + 1);
+                    }
+                    float rb = Math.max(bottom, K0), rt = Math.min(top, K1);
+                    if (rt - rb < 1.0E-5F) continue;
+                    float v0, v1;
+                    if (mode == Mode.TUBE) {
+                        v0 = (top - rt) * 16;
+                        v1 = (top - rb) * 16;
+                    } else {
+                        v0 = 16 - (rt - bottom) * 16;
+                        v1 = 16 - (rb - bottom) * 16;
+                    }
+                    sides(vc, p, s, lit.at((rb + rt) / 2 / PX), X0, X1, rb, rt, Z0, Z1, 8 - w / 2, 8 + w / 2, 8 - d / 2, 8 + d / 2, v0, v1);
                 }
             }
         }
     }
 
-    private static void caps(VertexConsumer vc, PoseStack.Pose p, TextureAtlasSprite s, int light, float X0, float X1, float Y0, float Y1, float Z0, float Z1,
+    private static void caps(VertexConsumer vc, PoseStack.Pose p, TextureAtlasSprite s, int lightBottom, int lightTop, float X0, float X1, float Y0, float Y1, float Z0, float Z1,
                              float u0, float u1, float v0, float v1) {
-        quad(vc, p, s, light, 0, 1, 0, u0, u1, v0, v1, X0, Y1, Z0, X1, Y1, Z0, X1, Y1, Z1, X0, Y1, Z1);
-        quad(vc, p, s, light, 0, -1, 0, u0, u1, v0, v1, X0, Y0, Z1, X1, Y0, Z1, X1, Y0, Z0, X0, Y0, Z0);
+        quad(vc, p, s, lightTop, 0, 1, 0, u0, u1, v0, v1, X0, Y1, Z0, X1, Y1, Z0, X1, Y1, Z1, X0, Y1, Z1);
+        quad(vc, p, s, lightBottom, 0, -1, 0, u0, u1, v0, v1, X0, Y0, Z1, X1, Y0, Z1, X1, Y0, Z0, X0, Y0, Z0);
     }
 
     private static void sides(VertexConsumer vc, PoseStack.Pose p, TextureAtlasSprite s, int light, float X0, float X1, float Y0, float Y1, float Z0, float Z1,
@@ -391,9 +615,9 @@ public final class TentacleRenderer {
         quad(vc, p, s, light, 1, 0, 0, 0, 16, 0, 16, X, r, r, X, r, -r, X, -r, -r, X, -r, r);
     }
 
-    /** Sticker pad: slime face down (-Y, on the gripped face, lifted 0.004 against z-fighting), planks back, side strips. */
+    /** Sticker pad: slime face down (-Y, on the gripped face, lifted a little against z-fighting, more at a distance), planks back, side strips. */
     private static void pad(PoseStack.Pose p, VertexConsumer vc, TextureAtlasSprite s, int light, Space space) {
-        float r = 2.25f * PX, Y0 = 0.004f, Y1 = PAD;
+        float r = 2.25f * PX, Y0 = space.lod >= 1 ? 0.01f : 0.004f, Y1 = PAD;
         if (space.nearCamera(p, 0, 0, PAD, 0, 0.5f)) return;
         quad(vc, p, s, light, 0, -1, 0, 8.5f, 15.5f, 8.5f, 15.5f, -r, Y0, r, r, Y0, r, r, Y0, -r, -r, Y0, -r);
         quad(vc, p, s, light, 0, 1, 0, 0.5f, 7.5f, 8.5f, 15.5f, -r, Y1, -r, r, Y1, -r, r, Y1, r, -r, Y1, r);

@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tentacle animation ideas</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<style>
+  :root { --bg:#fff; --fg:#1d1d1f; --mut:#6b6b70; --line:#e3e3e8; --hi:#fff6e0; --h:#c62828; --m:#ef6c00; --l:#2e7d32; --code:#f4f4f7; }
+  * { box-sizing:border-box }
+  body { margin:0; padding:24px 32px; background:var(--bg); color:var(--fg); font:15px/1.45 -apple-system,Segoe UI,Helvetica,Arial,sans-serif }
+  h1 { font-size:26px; margin:0 0 4px } h2 { font-size:19px; margin:32px 0 8px; border-bottom:1px solid var(--line); padding-bottom:4px } h3 { font-size:16px; margin:20px 0 6px }
+  .sub { color:var(--mut); margin-bottom:20px }
+  table { width:100%; border-collapse:collapse; font-size:14px } th,td { border:1px solid var(--line); padding:7px 9px; vertical-align:top; text-align:left } th { background:#f7f7fa }
+  code,pre { font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; background:var(--code); border-radius:4px } code { padding:1px 4px } pre { padding:10px 12px; overflow:auto; margin:6px 0 }
+  .tag { display:inline-block; font-size:11px; font-weight:700; padding:1px 6px; border-radius:3px; color:#fff } .H{background:var(--h)} .M{background:var(--m)} .L{background:var(--l)}
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(360px,1fr)); gap:14px }
+  .card { border:1px solid var(--line); border-radius:8px; padding:12px 14px } .card h3 { margin-top:0 }
+  .ok { background:#eef7ee; border-left:4px solid var(--l); padding:8px 12px } .warn { background:var(--hi); border-left:4px solid var(--m); padding:8px 12px }
+  .mermaid { background:#fafafa; border:1px solid var(--line); border-radius:8px; padding:8px }
+  small { color:var(--mut) }
+</style>
+</head>
+<body>
+<h1>Tentacle animation: smoothness, clipping, cheap fixes</h1>
+<div class="sub">Octo Arms 1.20.1 branch, 2026-10-25. Code audit of <code>TentacleRenderer</code>, <code>RigVisuals</code>, <code>TentacleGait</code>, <code>TentacleLayer</code>, <code>RigClient</code>, <code>RigServer</code> plus research on procedural limb animation. All fixes client-only, network registrar stays "8", no save-format change.</div>
+
+<div class="ok"><b>Already good:</b> Step arcs use partialTick + smoothstep (zero speed at lift and plant), Grip points stay fixed in world space, gait and visual update in the same tick. Geometry is ~90 quads/arm, rebuilt per frame; that is fine and not worth caching (pose changes every frame). Per-frame budget of every idea below is ~200 flops per arm with <b>zero world lookups per frame</b> (collision/light cached per tick).</div>
+
+<h2>1. Findings, ranked</h2>
+<table>
+<tr><th style="width:40px">#</th><th style="width:22%">Where</th><th>What happens now</th><th>Visible result</th><th style="width:30%">Fix (cost)</th></tr>
+
+<tr><td><span class="tag H">H1</span></td><td><code>RigVisuals.normal</code> ~L79-85, <code>TentacleRenderer.blend</code> L153</td><td>Normals blended by linear lerp. For opposite faces (<code>from ≈ -to</code>) the lerp passes through zero and flips direction at e=0.5, exactly where the <code>sin(πe)</code> lift peaks.</td><td>Wall→opposite wall in a 1-3 wide shaft, floor→ceiling in 2-high tunnel: tip jumps up to 2 blocks and pad flips 180° in one frame.</td><td>If <code>dot(from,to) &lt; -0.3</code> lift toward body: <code>n = normalize(bodyCentre - chordMid)</code>; pad normal via slerp through that perpendicular. ~10 vec ops, only during a Step.</td></tr>
+
+<tr><td><span class="tag H">H2</span></td><td><code>TentacleRenderer</code> L186 (<code>target==null → free</code>), <code>RigVisuals</code> L165/248, <code>RigClient</code> L424-437</td><td>When a target becomes null the arm jumps from Grip to <code>free()</code> in one frame. Cases: Stow clears targets before the fold starts; Falling; gait drops a Grip; server drops a Grip for 1 tick (<code>RigServer</code> L289-298) and relays grip→free→grip.</td><td>Pop on Stow (arm snaps to free pose, then folds 8 ticks), pop on Fall, flicker on remote players.</td><td>Keep <code>lastTip/lastNormal</code> per Slot and a <code>release</code> float decaying 1→0 over 3-4 ticks; render <code>blend(free, reach(last), smooth(release))</code>. On Stow blend <code>reach(last)</code>→folded directly. For remotes hold a lost target 2-3 ticks before releasing. 1 float + 1 blend per slot.</td></tr>
+
+<tr><td><span class="tag H">H3</span></td><td><code>TentacleGait</code> L129-134, <code>TentacleRenderer</code> L181/195</td><td>First grab (Activate, or re-grab after Falling) sets all 4 slots to <code>phase=1</code>: Grips appear planted. Only motion is <code>blend(folded, reach, deploy)</code>, a straight line through the body.</td><td>Tips for front/low Grips pass through torso and head. Mid-air catch is a hard pop (deploy already 1).</td><td>In <code>RigVisuals.apply</code> on null→target set <code>phaseO=phase=0</code>, drive a local phase (1/4 per tick); the existing arc in <code>tip()</code> runs from the free pose. 0 cost.</td></tr>
+
+<tr><td><span class="tag H">H4</span></td><td>vanilla <code>LivingEntity</code> body yaw; renderer <code>TentacleLayer</code> L54/104; gait <code>RigClient</code> L256</td><td>Vanilla <code>yBodyRot</code> follows motion direction (&gt;0.05 b/t), flips 180° for backward motion, snaps to head while <code>attackAnim&gt;0</code> (mining). <code>clampHeld</code> changes axis tries tick to tick so motion direction wobbles → body yaw wobbles. Runs on every client (remote too).</td><td>Shoulders, elbow poles (<code>outward(slot)</code> is tank space) and free arms swing/jitter. Fast camera turn drags the body while Grips stay: arms cross through tank/torso until re-step. Turning alone triggers Idle steps.</td><td>Client mixin (next to <code>LivingEntityWalkMixin</code>): while Carried, <code>yBodyRot</code> = damped follow of head yaw (0.2/tick, max ~15°/tick), ignore motion dir and attackAnim. Same for local + remote. 1 rotLerp per player per tick.</td></tr>
+
+<tr><td><span class="tag H">H5</span></td><td><code>TentacleRenderer.reach</code> L138-146</td><td>Elbow = <code>s + 0.4d + h·p</code>, <code>h = clamp(0.4·len+0.05, 0.18, 2.6)</code> along <code>1.5·outward + n + 0.3·up</code>. No world check; sight rule only traces body→Grip.</td><td>In 1-3 wide shafts, 2-high tunnels, inner corners the elbow and both segments sink into blocks; hub renders black (light 0 inside solid).</td><td>Once per tick per arm (cache in Slot, lerp with pt): clip <code>s+0.4d → +h·p</code> against collision; on hit clamp <code>h</code> to hitDist-0.15 or try <code>-p</code> if that ray is longer. Alternative without raycast: point-in-block test at elbow, rotate pole about <code>d</code> by ±30/±60/±90/180° until free, slerp toward chosen angle. 1-2 short clips per arm per tick, 0 per frame.</td></tr>
+
+<tr><td><span class="tag H">H6</span></td><td><code>RigServer</code> L254-265, L391-397; <code>RigVisuals</code> L163-167, L246</td><td>Remote phase arrives ≤1 sample/tick, dropped under jitter. Tick without packet freezes tip (<code>phaseO=phase</code>). Lost phase-0 packet → arc starts at 0.5. 2-tick steps can arrive already planted. Body trails ~2 ticks (vanilla 3-step lerp), arcs are not delayed.</td><td>Remote gait stutters, skips arcs, teleports. Worse over a real network than locally.</td><td>Client-side per remote slot: on new target start local phase 0, advance per tick by <code>max(observedΔ, 1/4)</code>, use <code>max(local, received)</code> (never backwards). Optionally delay remote Visuals 2 ticks to match body lerp. 1 float per slot.</td></tr>
+
+<tr><td><span class="tag M">M1</span></td><td><code>TentacleRenderer</code> L138-144 (pole), L228-231 (hinge), L275-278 (pad roll)</td><td>Pole <code>p</code> projected ⊥ arm and normalized; near-parallel case → tiny vector, direction spins; hard fallback at 1e-4 jumps. Hinge <code>u1×u2</code> with (1,0,0) fallback; pad side axis derived from hinge.</td><td>Elbow whips around arm, tubes/cogs roll, planted pad spins on the face as body moves.</td><td>Store previous <code>p</code> per slot and blend toward it; build hinge from <code>u×p</code>; lock pad roll to a face tangent captured at plant time. ~10 vec ops.</td></tr>
+
+<tr><td><span class="tag M">M2</span></td><td><code>RigVisuals.tip</code> L75</td><td>Arc = chord lerp + lift along blended normal, <code>h ≤ 1</code>, no world check.</td><td>Steps around an outer corner/pillar or over a protruding block pass through it.</td><td>Quadratic Bézier, control = <code>lerp(chordMid, bodyCentre, 0.5) + lift</code>; stays in triangle a-body-b whose body edges are clear by the sight rule. ~8 vec ops. Optional: 6 sample point-in-block checks once at Step start, raise lift on hit.</td></tr>
+
+<tr><td><span class="tag M">M3</span></td><td><code>TentacleRenderer.free</code> L124-130</td><td>Free pose fixed in tank space (0.75 out, 0.85 down), same sway freq all 4 arms, no world down, no collision.</td><td>Spare arms go into walls of 1-wide shaft or floor at low Standing Height; point forward when body is pitched (swim pose); look rigid.</td><td>World-space free tip (shoulder + horizontal outward + world down) with per-slot spring-damper (f≈2-3 Hz, z≈0.5), pull in if tip block solid (1 lookup/tick). Different sway phase per slot. ~30 flops + 1 lookup per free arm per tick.</td></tr>
+
+<tr><td><span class="tag M">M4</span></td><td><code>TentacleGait</code> L279-280, L319; <code>TentacleRenderer.pad</code> L395-404</td><td>Grip points land exactly on face edge when the aim is outside the rectangle; pad radius 2.25 px.</td><td>Pad hangs half off ledges or digs into wall at inner corners.</td><td>Inset clamp by <code>min(0.15, halfSize)</code>. Server check <code>rect.inflate(0.02)</code> still passes. Client gait only.</td></tr>
+
+<tr><td><span class="tag M">M5</span></td><td><code>TentacleRenderer</code> L234-236, <code>Space.light</code> L66-71</td><td>One light per part (5 lookups/arm/frame); inside opaque block = 0.</td><td>Whole segment flips brightness crossing a block boundary; elbow in wall goes black.</td><td>(a) If sample block is solid, sample neighbour toward body. (b) Per-ring light on TUBEs, lerp block and sky channels separately (vanilla <code>renderLeash</code> does this). Cache samples per tick. 0-4 extra lookups per arm per tick.</td></tr>
+
+<tr><td><span class="tag M">M6</span></td><td><code>TentacleRenderer</code> L331/389/397 <code>nearCamera</code></td><td>First person drops a whole box if any part is within ~0.6 of the eye; TUBE tested as one box.</td><td>Long sleeves/rods blink on and off near the head.</td><td>Trim tube <code>y0/y1</code> where segment exits the sphere (one quadratic per box). ~15 flops.</td></tr>
+
+<tr><td><span class="tag M">M7</span></td><td><code>RigVisuals</code> L235</td><td>Retarget mid-arc with <code>from==null</code>: <code>tip(1,null)</code> returns old target, not current arc point.</td><td>Start point snaps to old Grip.</td><td>Store last drawn tip per slot, use it as <code>from</code>. 0 cost.</td></tr>
+
+<tr><td><span class="tag M">M8</span></td><td><code>TentacleGait</code> L142-145</td><td>Mid-Step slot losing target gets new Grip but keeps <code>phase</code>.</td><td>Arc restarts at e.g. 60% toward new target, tip jumps.</td><td>Reset <code>phaseO/phase</code> to 0 in <code>RigVisuals</code> on mid-step retarget (render only). 0 cost.</td></tr>
+
+<tr><td><span class="tag M">M9</span></td><td><code>TentacleRenderer</code> L44/119/138</td><td>No body/tank capsule test; same outward bias for upper and lower slot on one side.</td><td>Forward upper segments cut the player arm model (swings while mining); opposite-side Grips after yaw turn pass through tank/torso; lower arms pass through upper shoulder hubs when hanging.</td><td>Segment vs torso capsule (r≈0.3) + tank box in tank space, push elbow out on hit. Per-slot bias: upper +Y/forward, lower -Y/back. ~20 flops per segment.</td></tr>
+
+<tr><td><span class="tag M">M10</span></td><td><code>RigVisuals</code> L90/208, <code>RigServer</code> L145-149</td><td>New tracker Visual starts STOWED, deploy 0; first ACTIVE packet plays unfold + sound.</td><td>Walking into view of an Active Rig: arms unfold from the back and the hiss plays.</td><td>First packet of a new Visual: <code>deploy=deployO=1</code>, skip sounds. 0 cost.</td></tr>
+
+<tr><td><span class="tag L">L1</span></td><td><code>TentacleLayer</code> L68-77</td><td>Cull box = player bbox + Grips, inflated 0.6; misses elbows (up to 2.6), <code>from</code>, free arms, lift.</td><td>Whole Rig pops at screen edges.</td><td>Add <code>from</code> points, inflate ~2.0. Few ops.</td></tr>
+<tr><td><span class="tag L">L2</span></td><td><code>TentacleLayer</code> L79-81</td><td>LOD cuts at 24/48 blocks, no hysteresis.</td><td>Hubs/cogs pop at the boundary.</td><td>±2 block hysteresis per Visual.</td></tr>
+<tr><td><span class="tag L">L3</span></td><td><code>TentacleRenderer</code> L247-253, L268-271, L361-366</td><td>Sleeve length <code>0.6·l1</code> stretches with the arm; TUBE V seam anchored at moving end.</td><td>Texture swims every frame; no real telescoping look.</td><td>Fixed (clamped) sleeve length; anchor sleeve rings at <code>Y0</code>, rod rings at <code>Y1</code>. 0 cost.</td></tr>
+<tr><td><span class="tag L">L4</span></td><td><code>TentacleRenderer</code> L396</td><td>Slime face 0.004 above block face.</td><td>Z-fight at distance.</td><td>0.01 at lod ≥ 1.</td></tr>
+<tr><td><span class="tag L">L5</span></td><td><code>TentacleLayer</code> L102-108</td><td>First-person uses standing pose only.</td><td>In 1-high gaps shoulders sit in the ceiling; jump on F5.</td><td>Use model body transform / <code>getSwimAmount(pt)</code>.</td></tr>
+<tr><td><span class="tag L">L6</span></td><td><code>TentacleRenderer</code> L193</td><td>Tip beyond <code>MAX_GRIP_DISTANCE</code> → silent free pose.</td><td>Rare pop.</td><td>Blend via <code>release</code> from H2.</td></tr>
+</table>
+
+<h2>2. Cheap perf wins (not animation, but free)</h2>
+<ul>
+  <li><code>Style.of</code> builds 5 <code>ResourceLocation</code>s by string concat on every <code>drawRig</code> (L53-57, L172) + 6 atlas lookups per arm (L226-227). Make Style static per tier, cache sprites, refresh on resource reload.</li>
+  <li>~30 <code>Vector3f</code> allocations per arm per frame. Reuse scratch vectors in the renderer (single-threaded).</li>
+  <li>20 <code>getLightColor</code> per Rig per frame → sample per tick, lerp (M5).</li>
+  <li>Flywheel instancing: not worth it, 4 arms whose transforms change every frame.</li>
+</ul>
+
+<h2>3. Techniques worth adopting (from research)</h2>
+<div class="grid">
+<div class="card"><h3>Advance state once per tick, render read-only</h3>Render layers can run &gt;1× per frame (Iris/Oculus shadow pass, inventory paperdoll). Springs integrated inside <code>render()</code> step twice. Keep all springs/damping in ClientTick END (as RigVisuals already does for phase), render only lerps with pt.</div>
+
+<div class="card"><h3>Never spring a discrete Grip jump</h3>Grip changes are events; smoothing them makes the pad slide without an arc. Replay the Step (A, B, normals, startTick) with the same curve on every client. Springs only for continuous values: free arm, telescope length, body lag.</div>
+
+<div class="card"><h3>Bézier arc with normal-aware lift</h3>
+<pre>m = (A+B)/2
+n = normalize(nA+nB); if |nA+nB|&lt;1e-3: n = normalize(body - m)
+C = lerp(m, body, 0.5) + n*h       // h ≈ 0.6 (peak is h/2)
+P(s) = (1-s)²A + 2s(1-s)C + s²B,  s = smoothstep(t)</pre>Fixes H1 + M2 in one formula, ~15 flops.</div>
+
+<div class="card"><h3>Stable elbow pole</h3>
+<pre>dir  = normalize(grip - shoulder)
+pole = normalize(faceN*0.6 + bodyUp*0.4)
+perp = pole - dir*dot(pole,dir)
+if |perp|&lt;1e-3: perp = lastPerp[slot]
+perp = lerp(lastPerp, normalize(perp), 0.3); lastPerp = perp
+elbow = shoulder + L1*(cos α·dir + sin α·perp)</pre>Keep <code>lastPerp</code> per slot; slerp when the face changes. Fixes M1 whip.</div>
+
+<div class="card"><h3>Frame-rate independent damper</h3>
+<pre>dt = Minecraft.getDeltaFrameTime()/20   // seconds
+x = lerp(x, goal, 1 - exp(-0.693*dt/halflife))</pre>Use for body-yaw follow (H4), shoulder lag, free arm. Stable at any dt.</div>
+
+<div class="card"><h3>Critically damped spring (exact)</h3>
+<pre>y = (4·ln2/halflife)/2; j0 = x-g; j1 = v + j0*y
+e = 1/(1 + y·dt + 0.48(y·dt)² + 0.235(y·dt)³)
+x = e*(j0 + j1*dt) + g;  v = e*(v - j1*y*dt)</pre>Same as Unity SmoothDamp. For the free hanging arm (M3) with a little under-damping for swing.</div>
+
+<div class="card"><h3>Pneumatic settle on plant</h3>Put overshoot on <b>telescope length</b> or elbow angle, not pad position: <code>L1 *= 1 + a·e^(-kτ)·sin(ωτ)</code> over 4-6 ticks after plant. Pad may bump only outward along the face normal, so it never enters the block.</div>
+
+<div class="card"><h3>Light like a leash</h3>Vanilla <code>MobRenderer.renderLeash</code> samples block + sky at both ends and lerps each channel per segment. Sample pad light at <code>pad + n*0.5</code> (outside the face, a solid block reads 0). Shoulder light = the layer's <code>packedLight</code>, free.</div>
+
+<div class="card"><h3>Step gating (reference)</h3>TheCymaera minecraft-spider: trigger radius 0.25 standing / 0.8 moving, comfort 1.2, lift 0.35, diagonal-pair cooldown 1 tick; lifted foot inherits body velocity so it never slides; forced step when stretch &gt; comfort. Our gait already does most of this; the <code>IDLE_GAIN</code> re-step from body yaw (H4) is the main leak.</div>
+</div>
+
+<h2>4. Proposed order</h2>
+<pre class="mermaid">
+flowchart LR
+  A[H2 release blend<br>+ H1 opposite-face lift] --> B[H4 body yaw mixin]
+  B --> C[H3 M7 M8<br>arcs from free pose]
+  C --> D[H5 M1 M2<br>elbow out of walls, stable pole, Bezier arc]
+  D --> E[H6 remote phase driver]
+  E --> F[M3 M4 M5 M6 M9 M10]
+  F --> G[L1-L6 + perf wins]
+</pre>
+<p>Each step is verifiable with the existing harness (screenshots in <code>tools/shots/</code>) plus a new scene: 1-wide shaft climb, 2-high tunnel floor→ceiling, outer-corner step, camera spin while Held, Stow while Held, remote watcher under simulated packet loss.</p>
+
+<div class="warn"><b>Compatibility:</b> all client-only. M4 changes which Grip points the client picks but the server accepts them (older servers too). H4 is a mixin on <code>LivingEntity</code> body yaw: only while Carried, visual only, no gameplay effect, but it is the one change other mods could notice. Fixes land on <code>1.21.1</code> first, cherry-pick to <code>1.20.1</code>; the files touched are the same on both lines.</div>
+
+<h2>5. Sources</h2>
+<ul>
+  <li>TheCymaera minecraft-spider: <a href="https://github.com/TheCymaera/minecraft-spider">github.com/TheCymaera/minecraft-spider</a> (Leg.kt, GaitType.kt, Gait.kt)</li>
+  <li>Holden, two-joint IK: <a href="https://theorangeduck.com/page/simple-two-joint">theorangeduck.com/page/simple-two-joint</a>; springs: <a href="https://theorangeduck.com/page/spring-roll-call">spring-roll-call</a>; inertial easing: <a href="https://theorangeduck.com/page/inertial-easing">inertial-easing</a></li>
+  <li>Juckett, analytic 2-bone IK: <a href="https://ryanjuckett.com/analytic-two-bone-ik-in-2d">ryanjuckett.com</a></li>
+  <li>t3ssel8r second-order dynamics (Rust port): <a href="https://docs.rs/spring_motion/latest/src/spring_motion/lib.rs.html">docs.rs/spring_motion</a></li>
+  <li>Godot procedural spider: <a href="https://80.lv/articles/ik-driven-procedural-spider-locomotion-in-godot-4-5">80.lv</a>; goo-critter devlog (Rain World style legs): <a href="https://ash-k.itch.io/goocritter">itch.io</a></li>
+  <li>Easing functions: <a href="https://easings.net">easings.net</a></li>
+  <li>Vanilla checked in <code>forge-1.20.1-47.1.33-sources.jar</code>: <code>MobRenderer.renderLeash</code>, <code>LivingEntity</code> body yaw L2363-2392, <code>ClientPacketListener</code> L578 (3-step lerp), <code>Minecraft.getDeltaFrameTime</code>.</li>
+</ul>
+<script>mermaid.initialize({startOnLoad:true, theme:'neutral'});</script>
+</body>
+</html>

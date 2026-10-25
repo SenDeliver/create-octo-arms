@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Discord Owner Guide</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1d2129;--muted:#5b6370;--line:#e2e5ea;--accent:#b8860b;--accent2:#5865f2;--ok:#2e8b57;--warn:#c0392b;--code:#f1f3f6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{padding:24px 32px 16px;border-bottom:1px solid var(--line);background:var(--card);display:flex;gap:18px;align-items:center}
+header img{width:56px;height:56px;border-radius:50%}
+header h1{margin:0;font-size:24px}
+header p{margin:2px 0 0;color:var(--muted)}
+nav{padding:10px 32px;background:var(--card);border-bottom:1px solid var(--line);display:flex;gap:16px;flex-wrap:wrap;font-size:14px}
+nav a{color:var(--accent2);text-decoration:none}
+main{padding:24px 32px 60px;display:grid;grid-template-columns:repeat(auto-fit,minmax(460px,1fr));gap:22px}
+@media(max-width:700px){main{grid-template-columns:1fr;padding:16px}header,nav{padding-left:16px;padding-right:16px}}
+.wide{grid-column:1/-1}
+h2{font-size:18px;margin:0 0 10px}
+h3{font-size:15px;margin:14px 0 6px}
+section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+.muted{color:var(--muted)}
+.warn{border-left:4px solid var(--warn);background:#fdf2f1;padding:10px 14px;border-radius:6px;margin:10px 0}
+.tip{border-left:4px solid var(--ok);background:#eef8f2;padding:10px 14px;border-radius:6px;margin:10px 0}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:13px}
+pre{background:var(--code);padding:12px 14px;border-radius:8px;font-size:13px;white-space:pre-wrap;margin:8px 0}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;text-transform:uppercase;color:var(--muted);letter-spacing:.03em}
+td:first-child{font-weight:600;white-space:nowrap}
+ol,ul{margin:6px 0;padding-left:20px}
+li{margin:3px 0}
+.check li{list-style:none;margin-left:-20px}
+.check li::before{content:"☐ ";color:var(--muted)}
+.mermaid{background:#fff;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <img src="icon-512.png" alt="">
+  <div>
+    <h1>Running Sendeliver's MC mods</h1>
+    <p>Owner guide: what to do day to day, on a release, and when a new mod joins. Invite: <a href="https://discord.gg/PTZbtAVxYr">discord.gg/PTZbtAVxYr</a></p>
+  </div>
+</header>
+<nav>
+  <a href="#map">Channel map</a><a href="#daily">Daily check</a><a href="#release">Release</a><a href="#devlog">Dev log</a><a href="#help">Help forum</a><a href="#newmod">Add a mod</a><a href="#mod">Moderation</a><a href="#small">Keep it small</a><a href="#dont">Don'ts</a>
+</nav>
+<main>
+
+<section id="map" class="wide">
+  <h2>Channel map: who writes where</h2>
+  <table>
+    <tr><th>Channel</th><th>Members</th><th>You</th></tr>
+    <tr><td>#rules</td><td>Read only</td><td>Rules + pinned "Our mods" list. Edit when a mod is added.</td></tr>
+    <tr><td>#moderator-only</td><td>Hidden</td><td>Discord safety and community notices land here. Read them.</td></tr>
+    <tr><td>#announcements</td><td>Read only, can Follow</td><td>Releases and news. Ping the mod role, then Publish.</td></tr>
+    <tr><td>#general</td><td>Chat</td><td>Any mod, Create, Minecraft. Just hang out.</td></tr>
+    <tr><td>#help (forum)</td><td>One post per problem, mod tag required</td><td>Answer, tag <code>solved</code>, close.</td></tr>
+    <tr><td>#dev-log</td><td>Reply in threads only</td><td>WIP clips, plans, beta builds.</td></tr>
+    <tr><td>#octo-arms, #landing-legs</td><td>Chat, clips, builds</td><td>Per-mod talk. FAQ pinned in each.</td></tr>
+    <tr><td>voice</td><td>Voice</td><td>Playtests, streams.</td></tr>
+  </table>
+  <p class="muted">Roles <b>Octo Arms</b> and <b>Landing Legs</b> are ping roles only, no permissions. Members pick them in Onboarding or later in Channels &amp; Roles.</p>
+</section>
+
+<section id="daily">
+  <h2>Daily check (a few minutes)</h2>
+  <ol>
+    <li><b>#help</b>: open posts without <code>solved</code>. Reply or ask for the log.</li>
+    <li><b>#moderator-only</b>: any Discord notice.</li>
+    <li><b>Mod channels</b>: questions that belong in #help? Reply "please open a #help post with your log".</li>
+    <li><b>Mod queue</b>: the inbox icon (top right) shows reports and mentions.</li>
+  </ol>
+  <div class="tip">Reply fast in the first weeks. A small server lives on the owner answering.</div>
+</section>
+
+<section id="release">
+  <h2>Release a version</h2>
+  <div class="mermaid">
+flowchart LR
+  A[Release on Modrinth / CurseForge] --> B[Post in #announcements]
+  B --> C[Ping the mod role]
+  C --> D[Click Publish]
+  D --> E[Short note in the mod channel]
+  E --> F[Clip in #dev-log or mod channel]
+  </div>
+  <h3>Post template</h3>
+<pre>## Octo Arms 1.3.2 is out
+@Octo Arms
+- What changed, one line each
+- Fixes: ...
+Client only / Client + server: update both
+Needs: Create 6.0.x, NeoForge 21.1
+Download: &lt;modrinth link&gt; · &lt;curseforge link&gt;</pre>
+  <ul>
+    <li>Type <code>@Octo Arms</code> and pick the role from the list. As owner you can always ping it.</li>
+    <li><b>Publish</b> button under the message: sends it to servers that follow the channel. Do it once, after the text is final.</li>
+    <li>Say if the server needs updating too (patch = client only, minor = client + server).</li>
+    <li>Wrap links in <code>&lt;&gt;</code> to hide the big preview: <code>&lt;https://...&gt;</code>.</li>
+    <li>Optional: GitHub releases webhook (see the setup kit) can post automatically, but it cannot ping roles. Then add a short ping message.</li>
+  </ul>
+</section>
+
+<section id="devlog">
+  <h2>Dev log</h2>
+  <ul>
+    <li>Post WIP clips, gifs, plans, beta jars. Members reply in a thread under each post.</li>
+    <li>One post per topic. Title-style first line: <code>**Landing Legs: terrain snapping**</code>.</li>
+    <li>Beta jars: say clearly "beta, back up your world".</li>
+    <li>Ask questions here ("which feature next?"). Use a Poll (the + button in the composer).</li>
+  </ul>
+</section>
+
+<section id="help">
+  <h2>Help forum</h2>
+  <ol>
+    <li>Check the post has the mod tag. Wrong tag: open the post menu, Edit Tags.</li>
+    <li>Ask for: mod version, Create version, NeoForge version, <code>latest.log</code> or crash report (on <a href="https://mclo.gs">mclo.gs</a>), client or server.</li>
+    <li>Fixed: add tag <code>solved</code>, then post menu, <b>Close Post</b>.</li>
+    <li>Real bug: link the GitHub issue in the post, add tag <code>bug</code>.</li>
+    <li>Same question many times? Add it to that mod's pinned FAQ (right-click, Edit Message).</li>
+  </ol>
+  <p class="muted">Tags: octo-arms, landing-legs, client, server, crash, bug, config, solved. Max 20 tags per forum.</p>
+</section>
+
+<section id="newmod" class="wide">
+  <h2>Add a new mod</h2>
+  <div class="mermaid">
+flowchart LR
+  A[Category + channel] --> B[Role]
+  B --> C[#help tag]
+  C --> D[Onboarding answer]
+  D --> E[Edit texts]
+  E --> F[Announce]
+  </div>
+  <ul class="check">
+    <li><b>Category + channel</b>: create category named after the mod, then text channel <code>#mod-name</code> inside. Set topic. Post and pin a short FAQ (copy the Landing Legs one as a base).</li>
+    <li><b>Role</b>: Server Settings, Roles, Create Role. Mod name, a new color, <b>no permissions</b>.</li>
+    <li><b>#help tag</b>: forum settings, Tags, add <code>mod-name</code>, drag it next to the other mod tags. Edit the guidelines line "Pick the mod tag (...)".</li>
+    <li><b>Onboarding</b>: Server Settings, Onboarding, Questions. Add an answer to "Which mods do you use?": mod name, one-line description, the channel and the role. If the new channel is not a default channel, it shows only to people who pick it.</li>
+    <li><b>Texts</b>: edit the pinned "Our mods" message in #rules, the welcome post in #announcements, and the server description (Server Settings, Server Profile).</li>
+    <li><b>Webhook</b> in the new repo, if you use it.</li>
+    <li><b>Announce</b> in #announcements with <code>@everyone</code> once, and Publish.</li>
+  </ul>
+  <div class="tip">Edit old messages, don't delete and repost: pins and links keep working.</div>
+</section>
+
+<section id="mod">
+  <h2>Moderation</h2>
+  <table>
+    <tr><th>Tool</th><th>Use</th></tr>
+    <tr><td>AutoMod</td><td>Already blocks mention spam, spam content, slurs, sexual words. Settings: Safety Setup, AutoMod.</td></tr>
+    <tr><td>Verification</td><td>Medium: account must be 5 min old on Discord. Raise to High only during a raid.</td></tr>
+    <tr><td>Delete message</td><td>Hover the message, trash icon. Shift-click skips the confirm.</td></tr>
+    <tr><td>Timeout</td><td>Right-click user, Timeout. First step for rude people (1 h to 1 day).</td></tr>
+    <tr><td>Kick / Ban</td><td>Right-click user. Ban for spam bots and repeat offenders. Ban can delete their recent messages.</td></tr>
+    <tr><td>Raid</td><td>Server Settings, Safety Setup: pause invites, then clean up.</td></tr>
+  </table>
+  <p class="muted">Point to the rule number in #rules when you act. Stay calm and short.</p>
+</section>
+
+<section id="small">
+  <h2>Keep it small: add only when needed</h2>
+  <table>
+    <tr><th>Add</th><th>When</th></tr>
+    <tr><td>Moderator role</td><td>You can't answer within a day, or a trusted regular shows up. Give: manage messages, timeout. Not admin.</td></tr>
+    <tr><td>#showcase</td><td>Mod channels get flooded with builds.</td></tr>
+    <tr><td>#suggestions forum</td><td>Feature ideas get lost in chat. Use GitHub issues until then.</td></tr>
+    <tr><td>Server Guide</td><td>Optional Onboarding step (welcome + tasks). Skipped for now.</td></tr>
+    <tr><td>Bots</td><td>Not needed yet. Discord built-ins cover it.</td></tr>
+  </table>
+</section>
+
+<section id="dont">
+  <h2>Don'ts</h2>
+  <ul>
+    <li>Don't share the webhook URL: anyone with it can post as the server. Repos are public.</li>
+    <li>Don't give the mod roles permissions. They are for pings.</li>
+    <li>Don't make a new invite for every place: use the one permanent link.</li>
+    <li>Don't ping <code>@everyone</code> for normal releases, only the mod role.</li>
+    <li>Don't do many edits fast in a row: Discord rate-limits the account (error 429, "Messages Failed To Load"). It clears in about an hour.</li>
+  </ul>
+</section>
+
+</main>
+<script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs";
+mermaid.initialize({startOnLoad:true,theme:"default"});
+</script>
+</body>
+</html>

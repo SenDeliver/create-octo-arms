@@ -34,7 +34,8 @@ import org.joml.Vector3f;
 /**
  * The Tentacles on every player wearing a Rig (third person, other players, inventory preview = Stowed pose), drawn in
  * the body's space on top of Create's Backtank layer. First person has no player model: the local wearer's Tentacles are
- * drawn from the level stage instead, without the parts within reach of the eye (shoulders and upper segments behind the head).
+ * drawn from the level stage instead, in the body's pose (upright, or flat for a swimming or crawling wearer), without the
+ * parts within reach of the eye (shoulders and upper segments behind the head).
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
@@ -58,13 +59,20 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
             Vec3 body = player.getPosition(pt).add(0, 1.1, 0).subtract(cam);
             Vector3f c = m.transformPosition(0.5F, 0.5F, 0.5F, new Vector3f());
             boolean world = c.distance((float) body.x, (float) body.y, (float) body.z) < 1.5F;
-            TentacleRenderer.drawRig(ps, buffers, player, rig.tier(), RigVisuals.get(player), pt,
-                    new TentacleRenderer.Space(m, cam, world, false, light, lod(body.length())));
+            RigVisuals.Visual visual = RigVisuals.get(player);
+            TentacleRenderer.drawRig(ps, buffers, player, rig.tier(), visual, pt,
+                    new TentacleRenderer.Space(m, cam, world, false, light, lod(visual, body.length())));
             ps.popPose();
         });
     }
 
-    /** Culling box of a Rig's Tentacles: the body plus every Grip it holds (world coords, over this frame's Ship motion). */
+    /** Elbows reach this far past the body and the Grips (blocks). */
+    private static final double ARM_SLACK = 2.0;
+
+    /**
+     * Culling box of a Rig's Tentacles: the body plus every Grip it holds and the pad it last drew (world coords, over this
+     * frame's Ship motion), grown by the elbows' reach.
+     */
     public static boolean inView(Player player, Frustum frustum) {
         RigVisuals.Visual v = RigVisuals.get(player);
         if (v == null || !v.visible()) return false;
@@ -72,12 +80,22 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
         for (int i = 0; i < Tentacles.SLOTS; i++) {
             RigVisuals.Slot s = v.slot(i);
             if (s.target() != null) box = box.minmax(new AABB(s.point(0), s.point(1)));
+            if (s.fresh(player.tickCount)) box = box.minmax(new AABB(s.drawnTip, s.drawnTip));
         }
-        return frustum.isVisible(box.inflate(0.6));
+        return frustum.isVisible(box.inflate(ARM_SLACK));
     }
 
-    static int lod(double distance) {
-        return distance < 24 ? 0 : distance < 48 ? 1 : 2;
+    /** Level of detail by distance, with a two-block hysteresis per Rig so parts do not pop at the boundary. */
+    static int lod(RigVisuals.Visual visual, double distance) {
+        int prev = visual == null ? 0 : visual.lod;
+        int lod = lod(distance, prev);
+        if (visual != null) visual.lod = lod;
+        return lod;
+    }
+
+    static int lod(double distance, int prev) {
+        double near = prev >= 1 ? 22 : 24, far = prev >= 2 ? 46 : 48;
+        return distance < near ? 0 : distance < far ? 1 : 2;
     }
 
     /** The level's PoseStack carries the camera rotation on 1.20.1: undo it so {@code toCamera} maps to camera-relative world. */
@@ -102,6 +120,12 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
             Vec3 at = player.getPosition(pt).subtract(cam);
             ps.translate(at.x, at.y, at.z);
             ps.mulPose(Axis.YP.rotationDegrees(180.0F - Mth.rotLerp(pt, player.yBodyRotO, player.yBodyRot)));
+            float swim = player.getSwimAmount(pt);
+            if (swim > 0) {
+                float flat = player.isInWater() || player.isInFluidType((fluidType, height) -> player.canSwimInFluidType(fluidType)) ? -90.0F - player.getXRot() : -90.0F;
+                ps.mulPose(Axis.XP.rotationDegrees(Mth.lerp(swim, 0.0F, flat)));
+                if (player.isVisuallySwimming()) ps.translate(0.0F, -1.0F, 0.3F);
+            }
             ps.scale(-1.0F, -1.0F, 1.0F);
             ps.scale(0.9375F, 0.9375F, 0.9375F);
             ps.translate(0.0F, -1.501F, 0.0F);

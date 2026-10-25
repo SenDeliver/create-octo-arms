@@ -20,6 +20,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.event.TickEvent;
+import org.joml.Vector3f;
 
 /**
  * What every client draws for each Rig it sees: the wearer's own gait output and other players' relayed Tentacles go
@@ -42,19 +43,46 @@ public final class RigVisuals {
     private static final int[] PLANT_SOUNDS = new int[2];
 
     public static final class Slot {
+        /** Ticks a drawn tip stays a trustworthy start for the next arc (a Rig off screen is not drawn). */
+        static final int DRAWN_FRESH = 2;
+        /** Ticks over which a Tentacle that lost its Grip lets go of the pad pose. */
+        static final float RELEASE_PER_TICK = 0.25F;
+        /** A tick count no tick has: "never happened", far enough from 0 that subtractions do not overflow. */
+        static final int NEVER = -1_000_000;
+
         Grip target;
         Frame frame;
         Vec3 from;
         Vec3 fromNormal;
         Frame fromFrame;
-        float phase = 1, phaseO = 1;
+        final StepPhase step = new StepPhase();
+        /** Last tip and pad normal drawn (world), and when: the arc of a new Step starts where the Tentacle is, not where it was. */
+        Vec3 drawnTip, drawnNormal;
+        int drawnTick = NEVER;
+        /** Where the pad was when the Grip went away (world), blended out over {@link #RELEASE_PER_TICK}. */
+        Vec3 lastTip, lastNormal;
+        float release, releaseO;
+        /** A Step that started from nothing to hold does not count as a plant (Activation). */
+        boolean silent;
+        /** Elbow push along its pole, signed (-1..1; the far side when the near side is in a block), one value per tick. */
+        float elbow = 1, elbowO = 1;
+        int elbowTick = NEVER;
+        /** Free pose spring: the hanging tip's offset from its shoulder (world axes) follows the rest offset with a little lag. */
+        final Vector3f freePos = new Vector3f(), freePosO = new Vector3f(), freeVel = new Vector3f();
+        /** The shoulder's world position when the free pose was last stepped. */
+        final Vector3f freeShoulder = new Vector3f();
+        int freeTick = NEVER;
 
         public Grip target() {
             return target;
         }
 
         public float phase(float pt) {
-            return phaseO + (phase - phaseO) * pt;
+            return step.at(pt);
+        }
+
+        public float release(float pt) {
+            return releaseO + (release - releaseO) * pt;
         }
 
         /** The target point in world coords (Ship render pose), or null. */
@@ -62,26 +90,56 @@ public final class RigVisuals {
             return target == null ? null : toWorld(frame, target.point(), pt);
         }
 
-        /** Tip on the arc from the last Grip (or null: from the free pose) to the target, world coords. */
-        public Vec3 tip(float pt, Vec3 free) {
+        /**
+         * Tip on the arc from where the Tentacle was (its last Grip, or {@code free}: the free pose) to the target, world coords.
+         * {@code body} is the wearer's centre: the arc bows toward it, away from blocks.
+         */
+        public Vec3 tip(float pt, Vec3 free, Vec3 body) {
             if (target == null) return null;
-            float ph = phase(pt);
+            float ph = step.at(pt);
             Vec3 a = from != null ? toWorld(fromFrame, from, pt) : free;
             Vec3 b = point(pt);
             if (ph >= 1 || a == null) return b;
-            double e = smooth(ph);
-            Vec3 n = normal(pt);
-            double h = Math.min(1.0, 0.3 + 0.3 * a.distanceTo(b));
-            return a.lerp(b, e).add(n.scale(h * Math.sin(Math.PI * e)));
+            Vec3 nA = from == null || fromNormal == null ? null : normalToWorld(fromFrame, fromNormal, pt);
+            return TentacleMath.arc(a, b, body, nA, targetNormal(pt), smooth(ph));
         }
 
-        /** World coords. */
-        public Vec3 normal(float pt) {
-            Vec3 to = normalToWorld(frame, faceNormal(target.face()), pt);
-            if (fromNormal == null) return to;
-            double e = smooth(phase(pt));
-            Vec3 n = normalToWorld(fromFrame, fromNormal, pt).lerp(to, e);
-            return n.lengthSqr() < 1.0E-4 ? to : n.normalize();
+        /** Pad normal, world coords. */
+        public Vec3 normal(float pt, Vec3 body) {
+            Vec3 to = targetNormal(pt);
+            if (from == null || fromNormal == null || step.at(pt) >= 1) return to;
+            Vec3 nA = normalToWorld(fromFrame, fromNormal, pt);
+            Vec3 a = toWorld(fromFrame, from, pt);
+            Vec3 q = TentacleMath.liftAxis(nA, to, a.add(point(pt)).scale(0.5), body);
+            return TentacleMath.normalBetween(nA, to, q, smooth(step.at(pt)));
+        }
+
+        Vec3 targetNormal(float pt) {
+            return normalToWorld(frame, faceNormal(target.face()), pt);
+        }
+
+        /** Called by the renderer: where the Tentacle's pad was drawn this frame (world). */
+        void drawn(Vec3 tip, Vec3 normal, int tick) {
+            drawnTip = tip;
+            drawnNormal = normal;
+            drawnTick = tick;
+        }
+
+        boolean fresh(int tick) {
+            return drawnTip != null && tick - drawnTick <= DRAWN_FRESH;
+        }
+
+        /** Where the Tentacle's pad is now (world): drawn this tick or last, else its Grip, else the pad it is letting go of. */
+        Vec3 tipNow(int tick) {
+            if (fresh(tick)) return drawnTip;
+            if (target != null) return point(1);
+            return release > 0 ? lastTip : null;
+        }
+
+        Vec3 normalNow(int tick) {
+            if (fresh(tick)) return drawnNormal;
+            if (target != null) return targetNormal(1);
+            return release > 0 ? lastNormal : null;
         }
     }
 
@@ -99,6 +157,7 @@ public final class RigVisuals {
         int plants, plantSounds, lifts;
         RigSounds.Whir whir;
         int whirStarted = -1000;
+        int lod;
 
         Visual() {
             for (int i = 0; i < slots.length; i++) slots[i] = new Slot();
@@ -160,8 +219,21 @@ public final class RigVisuals {
         v.pendingState = state;
     }
 
+    /** A player this many ticks old on this client (or not here yet) has just come into view: its Active Rig is drawn deployed at once. */
+    private static final int JUST_APPEARED = 20;
+
     static void remote(RigStatePacket packet) {
-        Visual v = VISUALS.computeIfAbsent(packet.entityId(), k -> new Visual());
+        Visual v = VISUALS.get(packet.entityId());
+        if (v == null) {
+            v = new Visual();
+            Level level = Minecraft.getInstance().level;
+            Entity entity = level == null ? null : level.getEntity(packet.entityId());
+            if (packet.state() != RigState.STOWED && (entity == null || entity.tickCount < JUST_APPEARED)) {
+                v.state = packet.state();
+                v.deploy = v.deployO = 1;
+            }
+            VISUALS.put(packet.entityId(), v);
+        }
         v.pending = packet.state() == RigState.STOWED ? Tentacles.NONE : packet.tentacles();
         v.pendingState = packet.state();
     }
@@ -181,6 +253,7 @@ public final class RigVisuals {
             if (!VISUALS.isEmpty()) clear();
             return;
         }
+        if (mc.isPaused()) return;
         var it = VISUALS.int2ObjectEntrySet().iterator();
         while (it.hasNext()) {
             var e = it.next();
@@ -211,6 +284,7 @@ public final class RigVisuals {
 
         Level level = player.level();
         ShipFrames ships = ShipFrames.get();
+        int tick = player.tickCount;
         for (int i = 0; i < Tentacles.SLOTS; i++) {
             Slot s = v.slots[i];
             Grip next = v.pending.grips()[i];
@@ -226,31 +300,49 @@ public final class RigVisuals {
                 next = null;
                 nextFrame = null;
             }
-            float ph = next == null ? 1 : v.pending.phase(i);
-            s.phaseO = s.phase;
-            boolean moved = next != null && (s.target == null || s.target.point().distanceToSqr(next.point()) > 1.0E-6);
-            if (moved) {
+            s.releaseO = s.release;
+            boolean planted = false;
+            if (next == null) {
                 if (s.target != null) {
-                    s.fromFrame = s.frame;
-                    s.from = toLocal(s.fromFrame, s.tip(1, null), 1);
-                    s.fromNormal = normalToLocal(s.fromFrame, s.normal(1), 1);
-                    if (s.phase >= 1) {
+                    s.lastTip = s.tipNow(tick);
+                    s.lastNormal = s.normalNow(tick);
+                    s.release = s.releaseO = s.lastTip == null ? 0 : 1;
+                    if (s.lastTip != null && tick - s.freeTick <= Slot.DRAWN_FRESH) {
+                        s.freePos.set((float) s.lastTip.x, (float) s.lastTip.y, (float) s.lastTip.z).sub(s.freeShoulder);
+                        s.freePosO.set(s.freePos);
+                        s.freeVel.zero();
+                        s.freeTick = tick;
+                    }
+                    s.elbowO = s.elbow;
+                } else if (s.release > 0) {
+                    s.release = Math.max(0, s.release - Slot.RELEASE_PER_TICK);
+                }
+                s.from = null;
+                s.fromNormal = null;
+                s.fromFrame = null;
+                s.step.settle();
+            } else {
+                float wire = v.pending.phase(i);
+                boolean moved = s.target == null || s.target.point().distanceToSqr(next.point()) > 1.0E-6;
+                if (moved) {
+                    Vec3 tipNow = s.tipNow(tick), normalNow = s.normalNow(tick);
+                    if (s.target != null && !s.step.stepping()) {
                         v.lifts++;
                         RigSounds.lift(player, s.point(1));
                     }
+                    s.silent = s.target == null && s.release <= 0 && wire >= 1;
+                    Frame fromFrame = s.target != null ? s.frame : null;
+                    s.fromFrame = tipNow == null ? null : fromFrame;
+                    s.from = tipNow == null ? null : toLocal(s.fromFrame, tipNow, 1);
+                    s.fromNormal = normalNow == null ? null : normalToLocal(s.fromFrame, normalNow, 1);
+                    s.step.start(wire);
                 } else {
-                    s.from = null;
-                    s.fromNormal = null;
-                    s.fromFrame = null;
+                    planted = s.step.advance(wire) && !s.silent;
                 }
-                s.phaseO = Math.min(s.phaseO, ph);
+                s.release = s.releaseO = 0;
             }
-            if (next == null) s.from = null;
-            boolean planted = next != null && ph >= 1 && s.phase < 1 && !moved;
-            planted |= next != null && moved && ph >= 1 && s.target != null && v.deploy >= 1;
             s.target = next;
             s.frame = nextFrame;
-            s.phase = ph;
             if (planted) {
                 v.plants++;
                 boolean own = player == Minecraft.getInstance().player;

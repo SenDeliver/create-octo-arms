@@ -26,19 +26,24 @@ for d in run run2; do
   [ -n "$TW_CLIENT_FORWARD" ] && printf '[movement]\n\tforward = "%s"\n' "$TW_CLIENT_FORWARD" >> $d/config/tentaworks-client.toml
 done
 [ -f tools/local.env ] && . tools/local.env
+# the clients take the focus when their windows open: hand it back (tools/keep_focus.sh, macOS; TW_KEEP_FOCUS=0 to keep the old behaviour)
+rm -f run/signal/_focus_done
+tools/keep_focus.sh run/signal/_focus_done 600 &
+FPID=$!
 ./gradlew runServer $GRADLE_ARGS > "$OUT-server.log" 2>&1 &
 SPID=$!
 if [ "${TW_PREBOOT:-1}" = 0 ]; then
 for i in $(seq 1 150); do grep -q 'RCON running' "$OUT-server.log" && break; grep -qE 'BUILD FAILED' "$OUT-server.log" && break; sleep 2; done
 python3 tools/rcon.py < "$SCENE" > "$OUT-rcon.txt"
-./gradlew runClient $GRADLE_ARGS -Pconnect=localhost:25609 -Ptentaworks.script="$PWD/$SCRIPT" > "$OUT-client.log" 2>&1 &
+./gradlew runClient $GRADLE_ARGS -Ptentaworks.nofocus=1 -Pconnect=localhost:25609 -Ptentaworks.script="$PWD/$SCRIPT" > "$OUT-client.log" 2>&1 &
 CPID=$!
 for i in $(seq 1 150); do grep -q 'Dev joined the game' "$OUT-server.log" && break; kill -0 $CPID 2>/dev/null || break; sleep 2; done
 if [ -n "$SCRIPT2" ]; then
-  ./gradlew runClient2 $GRADLE_ARGS -Pconnect=localhost:25609 -Ptentaworks.script2="$PWD/$SCRIPT2" > "$OUT-client2.log" 2>&1 &
+  ./gradlew runClient2 $GRADLE_ARGS -Ptentaworks.nofocus=1 -Pconnect=localhost:25609 -Ptentaworks.script2="$PWD/$SCRIPT2" > "$OUT-client2.log" 2>&1 &
   C2PID=$!
   for i in $(seq 1 150); do grep -q 'Dev2 joined the game' "$OUT-server.log" && break; kill -0 $C2PID 2>/dev/null || break; sleep 2; done
 fi
+mkdir -p run/signal && touch run/signal/_focus_done
 [ -n "$TIMELINE" ] && python3 tools/rcon.py < "$TIMELINE" >> "$OUT-rcon.txt"
 wait $CPID
 [ -n "$C2PID" ] && wait $C2PID
@@ -46,12 +51,12 @@ printf 'tentaworks trace off\nstop\n' | python3 tools/rcon.py >> "$OUT-rcon.txt"
 for i in $(seq 1 60); do kill -0 $SPID 2>/dev/null || break; sleep 2; done
 else
 for i in $(seq 1 1200); do grep -q '> Task :runServer' "$OUT-server.log" && break; grep -qE 'BUILD FAILED' "$OUT-server.log" && break; sleep 0.25; done
-./gradlew runClient $GRADLE_ARGS -Ptentaworks.connect=localhost:25609 -Ptentaworks.script="$PWD/$SCRIPT" > "$OUT-client.log" 2>&1 &
+./gradlew runClient $GRADLE_ARGS -Ptentaworks.nofocus=1 -Ptentaworks.connect=localhost:25609 -Ptentaworks.script="$PWD/$SCRIPT" > "$OUT-client.log" 2>&1 &
 CPID=$!
 if [ -n "$SCRIPT2" ]; then
   # Dev2 starts once Dev's window exists, so Dev2's window still opens last
   for i in $(seq 1 1200); do grep -q 'Backend library' "$OUT-client.log" && break; kill -0 $CPID 2>/dev/null || break; sleep 0.25; done
-  ./gradlew runClient2 $GRADLE_ARGS -Ptentaworks.connect=localhost:25609 -Ptentaworks.script2="$PWD/$SCRIPT2" > "$OUT-client2.log" 2>&1 &
+  ./gradlew runClient2 $GRADLE_ARGS -Ptentaworks.nofocus=1 -Ptentaworks.connect=localhost:25609 -Ptentaworks.script2="$PWD/$SCRIPT2" > "$OUT-client2.log" 2>&1 &
   C2PID=$!
 fi
 for i in $(seq 1 1200); do grep -q 'RCON running' "$OUT-server.log" && break; grep -qE 'BUILD FAILED' "$OUT-server.log" && break; sleep 0.25; done
@@ -63,6 +68,7 @@ if [ -n "$SCRIPT2" ]; then
   mkdir -p run2/signal && touch run2/signal/_connect
   for i in $(seq 1 1200); do grep -q 'Dev2 joined the game' "$OUT-server.log" && break; kill -0 $C2PID 2>/dev/null || break; sleep 0.25; done
 fi
+touch run/signal/_focus_done
 if [ -z "$JOINED" ]; then
   echo "Dev never joined; stopping the clients"
   cp run/logs/debug.log "$OUT-client-debug.log" 2>/dev/null; cp run/server/logs/debug.log "$OUT-server-debug.log" 2>/dev/null
@@ -79,5 +85,6 @@ for i in $(seq 1 480); do kill -0 $SPID 2>/dev/null || break; sleep 0.25; done
 fi
 kill $SPID 2>/dev/null
 wait $SPID 2>/dev/null
+kill $FPID 2>/dev/null
 pkill -f "$PWD/run/server" 2>/dev/null
 echo "done: $OUT"

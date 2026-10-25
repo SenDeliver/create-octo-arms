@@ -32,6 +32,8 @@ public final class TentacleGait {
      * checks the packet against its pre-move position and the tick against the post-move one, allowing Reach + 0.75.
      */
     private static final double KEEP_SLACK = 0.68;
+    /** How far inside a face's edges a Grip point stays: a little less than the pad's half width (2.25 px). */
+    static final double EDGE = 0.12;
 
     private final Grip[] grips = new Grip[SLOTS];
     private final float[] phase = {1, 1, 1, 1};
@@ -274,12 +276,12 @@ public final class TentacleGait {
             Direction d = f.dir();
             double plane = d.getAxisDirection() == Direction.AxisDirection.POSITIVE ? r.max(d.getAxis()) : r.min(d.getAxis());
             if ((body.get(d.getAxis()) - plane) * d.getAxisDirection().getStep() <= 0.05) continue;
-            Vec3 foot = clampTo(body, r);
+            Vec3 foot = nearest(body, r);
             if (foot.distanceToSqr(body) > l2) continue;
             Vec3 p = clampTo(aim, r);
             if (p.distanceToSqr(body) > l2) p = pullIn(foot, p, body, limit);
             if (p.distanceToSqr(ahead) > l2) {
-                Vec3 footAhead = clampTo(ahead, r);
+                Vec3 footAhead = nearest(ahead, r);
                 if (footAhead.distanceToSqr(ahead) > l2) continue;
                 p = pullIn(footAhead, p, ahead, limit);
                 if (p.distanceToSqr(body) > l2) continue;
@@ -316,7 +318,18 @@ public final class TentacleGait {
         return foot.add(d.scale(t));
     }
 
-    private static Vec3 clampTo(Vec3 p, AABB r) {
+    /** Nearest point of the face to {@code p}: the reach test, where the old edge-on Grips still count. */
+    private static Vec3 nearest(Vec3 p, AABB r) {
         return new Vec3(Mth.clamp(p.x, r.minX, r.maxX), Mth.clamp(p.y, r.minY, r.maxY), Mth.clamp(p.z, r.minZ, r.maxZ));
+    }
+
+    /** Grip point of the face nearest {@code p}, kept {@link #EDGE} inside its edges (less on a small face) so the pad sits on the face, not half off it. */
+    static Vec3 clampTo(Vec3 p, AABB r) {
+        return new Vec3(clampInset(p.x, r.minX, r.maxX), clampInset(p.y, r.minY, r.maxY), clampInset(p.z, r.minZ, r.maxZ));
+    }
+
+    private static double clampInset(double v, double lo, double hi) {
+        double inset = Math.min(EDGE, (hi - lo) / 2);
+        return Mth.clamp(v, lo + inset, hi - inset);
     }
 }

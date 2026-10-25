@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sendeliver's MC mods Discord</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1d2129;--muted:#5b6370;--line:#e2e5ea;--accent:#b8860b;--accent2:#5865f2;--ok:#2e8b57;--warn:#c0392b;--code:#f1f3f6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{padding:28px 32px 18px;border-bottom:1px solid var(--line);background:var(--card);display:flex;gap:18px;align-items:center}
+header img{width:56px;height:56px;border-radius:50%}
+header h1{margin:0;font-size:24px}
+header p{margin:2px 0 0;color:var(--muted)}
+main{padding:24px 32px 60px;display:grid;grid-template-columns:320px 1fr;gap:28px}
+@media(max-width:900px){main{grid-template-columns:1fr;padding:16px}header{padding:18px 16px}}
+h2{font-size:18px;margin:0 0 12px}
+section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:22px}
+.muted{color:var(--muted)}
+.warn{border-left:4px solid var(--warn);background:#fdf2f1;padding:10px 14px;border-radius:6px;margin:10px 0}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:13px}
+.mock{position:sticky;top:16px;align-self:start}
+.dc{background:#f2f3f5;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:14px}
+.dc .srv{background:#fff;padding:12px 14px;font-weight:700;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.dc .srv img{width:28px;height:28px;border-radius:50%}
+.dc ul{list-style:none;margin:0;padding:8px}
+.dc li{padding:5px 10px;border-radius:6px;color:#4e5058;display:flex;gap:8px;align-items:baseline}
+.dc li .ic{width:16px;text-align:center;color:#80848e;font-weight:700}
+.dc li small{margin-left:auto;font-size:11px;color:#80848e}
+.dc .cat{font-size:11px;font-weight:700;text-transform:uppercase;color:#80848e;padding:10px 10px 2px;letter-spacing:.03em}
+.dc .priv{opacity:.65;font-style:italic}
+.roles{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.role{padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;text-transform:uppercase;color:var(--muted);letter-spacing:.03em}
+td:first-child{font-weight:600;white-space:nowrap}
+.status{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:600}
+.done{background:#eef8f2;color:var(--ok)}
+.todo{background:#fbf6e9;color:var(--accent)}
+ul.plain{margin:0;padding-left:18px}
+</style>
+</head>
+<body>
+<header>
+  <img src="icon-512.png" alt="">
+  <div>
+    <h1>Sendeliver's MC mods: Discord server</h1>
+    <p>One server for all mods: shared rules, news, chat and help, plus one channel per mod. Invite: <a href="https://discord.gg/PTZbtAVxYr">discord.gg/PTZbtAVxYr</a> (never expires).</p>
+  </div>
+</header>
+<main>
+  <aside class="mock">
+    <div class="dc">
+      <div class="srv"><img src="icon-512.png" alt="">Sendeliver's MC mods</div>
+      <ul>
+        <li><span class="ic">📌</span>rules <small>read-only</small></li>
+        <li class="priv"><span class="ic">🔒</span>moderator-only <small>private</small></li>
+        <li><span class="ic">📣</span>announcements <small>read-only</small></li>
+        <div class="cat">Community</div>
+        <li><span class="ic">#</span>general</li>
+        <li><span class="ic">💬</span>help <small>forum</small></li>
+        <li><span class="ic">#</span>dev-log <small>you post</small></li>
+        <div class="cat">Octo Arms</div>
+        <li><span class="ic">#</span>octo-arms</li>
+        <div class="cat">Landing Legs</div>
+        <li><span class="ic">#</span>landing-legs</li>
+        <div class="cat">Voice</div>
+        <li><span class="ic">🔊</span>voice</li>
+      </ul>
+    </div>
+    <div class="roles">
+      <span class="role" style="color:#c26a12;border-color:#efc58f;background:#fdf4ea">Octo Arms</span>
+      <span class="role" style="color:#2f7fc1;border-color:#a9cdee;background:#eef5fc">Landing Legs</span>
+      <span class="role" style="color:#5b6370;border-color:#d5d9df;background:#f4f5f7">@everyone</span>
+    </div>
+    <p class="muted" style="font-size:13px;margin-top:12px">Mod roles are for release pings. Add a new mod as its own category with one channel, a role and a #help tag.</p>
+  </aside>
+  <div>
+    <section>
+      <h2>Channels</h2>
+      <table>
+        <tr><th>Channel</th><th>Type</th><th>Content</th><th>Permissions</th></tr>
+        <tr><td>rules</td><td>Text</td><td>Rules, plus a pinned "Our mods" index linking each mod channel</td><td>@everyone can't post or make threads</td></tr>
+        <tr><td>announcements</td><td>Announcement</td><td>Welcome post. Releases for every mod. Others can Follow it.</td><td>@everyone can't post or make threads</td></tr>
+        <tr><td>general</td><td>Text</td><td>Chat about our mods or any other mod</td><td>default</td></tr>
+        <tr><td>help</td><td>Forum</td><td>Post template in guidelines. Tag required.<br>Tags: <code>octo-arms</code> <code>landing-legs</code> <code>client</code> <code>server</code> <code>crash</code> <code>bug</code> <code>config</code> <code>solved</code></td><td>default</td></tr>
+        <tr><td>dev-log</td><td>Text</td><td>WIP for all mods</td><td>@everyone can't post, can make public threads</td></tr>
+        <tr><td>octo-arms</td><td>Text</td><td>Pinned Octo Arms FAQ</td><td>default</td></tr>
+        <tr><td>landing-legs</td><td>Text</td><td>Pinned Landing Legs FAQ</td><td>default</td></tr>
+        <tr><td>voice</td><td>Voice</td><td>—</td><td>default</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>Status</h2>
+      <table>
+        <tr><th>Item</th><th>State</th><th>Notes</th></tr>
+        <tr><td>Community mode</td><td><span class="status done">done</span></td><td>Verification Medium, explicit media filter for all, AutoMod: mention spam, spam content, slurs, sexual content</td></tr>
+        <tr><td>Channels and texts</td><td><span class="status done">done</span></td><td>Rules, Our mods index, welcome, dev-log post, both FAQs pinned, help template</td></tr>
+        <tr><td>Mod roles</td><td><span class="status done">done</span></td><td>Octo Arms and Landing Legs, no extra permissions</td></tr>
+        <tr><td>Onboarding</td><td><span class="status done">done</span></td><td>On. One question, both mods; Server Guide skipped</td></tr>
+        <tr><td>Releases webhook</td><td><span class="status todo">to do</span></td><td>See below</td></tr>
+        <tr><td>Share the invite</td><td><span class="status todo">to do</span></td><td>README of both repos, Modrinth and CurseForge pages, GitHub About field, next release notes</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>Onboarding (so people can pick mod roles)</h2>
+      <ul class="plain">
+        <li>Server Settings, then Onboarding.</li>
+        <li>Default channels: all of them.</li>
+        <li>Pre-join question: "Which mods do you use? You get pings for their releases." Allow multiple answers.</li>
+        <li>Answer "Octo Arms": channel #octo-arms, role Octo Arms.</li>
+        <li>Answer "Landing Legs": channel #landing-legs, role Landing Legs.</li>
+        <li>Finish the Server Guide and Review steps, then enable.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>GitHub releases to #announcements</h2>
+      <ul class="plain">
+        <li>Discord: edit #announcements, then Integrations, Webhooks, New Webhook. Copy its URL.</li>
+        <li>In each mod repo: Settings, Webhooks, Add webhook. Payload URL is the Discord URL plus <code>/github</code>. Content type <code>application/json</code>. Events: only Releases.</li>
+        <li>Check Recent Deliveries for a green tick on the ping.</li>
+      </ul>
+      <div class="warn">The webhook URL is a secret: anyone with it can post in the server. Never put it in a repo, a commit or a screenshot. Both repos are public.</div>
+    </section>
+  </div>
+</main>
+</body>
+</html>
