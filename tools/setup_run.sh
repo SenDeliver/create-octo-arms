@@ -17,6 +17,9 @@ OPT
   grep -q '^soundCategory_master:0.0' $d/options.txt || { sed -i '' '/^soundCategory_master:/d' $d/options.txt; echo 'soundCategory_master:0.0' >> $d/options.txt; }
   sed -i '' '/^key_key.tentaworks./d' $d/options.txt
   grep -q '^pauseOnLostFocus:false' $d/options.txt || { sed -i '' '/^pauseOnLostFocus:/d' $d/options.txt; echo 'pauseOnLostFocus:false' >> $d/options.txt; }
+  # no FML early window: it takes the focus before the mod can ask for a window that does not (DevWindowFocusMixin)
+  if [ -f $d/config/fml.toml ]; then sed -i '' 's/^earlyWindowControl = true/earlyWindowControl = false/' $d/config/fml.toml
+  else printf 'earlyWindowControl = false\n' > $d/config/fml.toml; fi
 done
 echo 'eula=true' > run/server/eula.txt
 PW=$(sed -n 's/^rcon.password=//p' run/server/server.properties 2>/dev/null)

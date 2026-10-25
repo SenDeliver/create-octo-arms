@@ -9,6 +9,18 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ## [Unreleased]
 
+### Changed
+
+- Smoother Tentacles. A Tentacle that loses its Grip (Stow, a fall, a Grip gone) lets go and swings in over a few ticks instead of snapping to its hanging pose. Activating and catching yourself in the air arc the Tentacles out from the back instead of drawing them straight through the body. A Step to the opposite wall or from floor to ceiling arcs across (the tip used to jump and the pad flip half way). Steps around a corner bow toward the wearer, away from the block.
+- Tentacles keep out of walls: an elbow that would sit in a block straightens or bends to the far side; the spare Tentacles hang down in world space, swing after the wearer, and pull in from a wall or the floor instead of going through it.
+- The body of a carried wearer turns with the head, smoothly. The shoulders and all four Tentacles used to twitch with the direction of travel and swing across the back on a fast turn; turning on the spot no longer makes the Rig re-step.
+- Other players' Rigs animate every Step in full under packet loss (arcs used to freeze, skip or teleport), and a Rig walked into view is drawn deployed, without the unfold and the activation hiss.
+- Pads sit inside the edges of a face (no more half off a ledge) and keep their orientation on the face while the wearer turns. Lighting runs along each segment (no brightness flip at a block edge, no black elbow in a wall). In first person the segments near the eye are trimmed instead of blinking out. Level of detail and view culling no longer pop at their boundaries. The sleeve texture no longer crawls as the arm telescopes.
+
+### Compatibility
+
+- Client-only change, network unchanged (registrar "8"). Mixes freely with 1.5.x.
+
 ## [1.5.1] - 2026-10-24
 
 ### Fixed

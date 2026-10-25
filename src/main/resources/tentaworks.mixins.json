@@ -2,6 +2,7 @@
   "required": true,
   "minVersion": "0.8",
   "package": "dev.tentaworks.mixin",
+  "plugin": "dev.tentaworks.mixin.TentaworksMixinPlugin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "BacktankBlockEntityAccessor",
@@ -14,6 +15,7 @@
     "BacktankRendererMixin",
     "EntityRendererMixin",
     "KineticBlockEntityGoggleMixin",
+    "LivingEntityBodyYawMixin",
     "LivingEntityWalkMixin",
     "LocalPlayerBobMixin",
     "LocalPlayerSneakMixin"
