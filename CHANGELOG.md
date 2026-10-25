@@ -9,6 +9,15 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ## [Unreleased]
 
+### Added
+
+- Silent Step, a fourth Rig enchantment (one level, enchanting table and anvil like the others). While the Rig is out the wearer dampens their own vibrations, like an item on wool: Sculk Sensors, Shriekers and Wardens hear neither the Tentacles, nor the wearer's steps, blocks broken or placed and items used; and the Rig plays none of its sounds. Stowed, the wearer walks and sounds as usual.
+
+### Fixed
+
+- Mining while carried ran at a fifth of the speed: vanilla slows anyone not on the ground, and a Held wearer is not. Mining with the Rig out is now as fast as standing (Falling stays slow). The same airborne check also blocked sword sweep attacks while carried; they work again.
+- A spectator wearing a Rig could Double Jump: the Rig activated, took the spectator's flight away and the server fought the client over it. Spectators never activate the Rig; switching to spectator with the Rig out stows it, and nothing of a spectator's jumps reaches the Rig.
+
 ### Changed
 
 - Smoother Tentacles. A Tentacle that loses its Grip (Stow, a fall, a Grip gone) lets go and swings in over a few ticks instead of snapping to its hanging pose. Activating and catching yourself in the air arc the Tentacles out from the back instead of drawing them straight through the body. A Step to the opposite wall or from floor to ceiling arcs across (the tip used to jump and the pad flip half way). Steps around a corner bow toward the wearer, away from the block.
@@ -19,7 +28,7 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ### Compatibility
 
-- Client-only change, network unchanged (registrar "8"). Mixes freely with 1.5.x.
+- Network unchanged (registrar "8"). Silent Step and the mining fix need the new build on both sides: the enchantment is server data (an old client shows its raw id), the mining speed is checked on both, and the Rig sounds are the client's. The Tentacle animation changes are client-only.
 
 ## [1.5.1] - 2026-10-24
 

@@ -5,6 +5,8 @@
   "block.tentaworks.netherite_tentacle_rig": "네더라이트 촉수 장비",
   "enchantment.tentaworks.far_reach": "멀리 뻗기",
   "enchantment.tentaworks.far_reach.desc": "촉수가 길어집니다. 레벨마다 도달 거리가 늘어나 장비가 더 먼 곳을 붙잡고, 매달리고, 오를 수 있습니다.",
+  "enchantment.tentaworks.silent_step": "조용한 발걸음",
+  "enchantment.tentaworks.silent_step.desc": "장비가 조용히 옮겨 줍니다: 장비 소리가 나지 않고, 펼쳐진 동안 스컬크 감지체, 스컬크 비명체, 워든이 당신을 알아채지 못합니다.",
   "enchantment.tentaworks.swift": "신속",
   "enchantment.tentaworks.swift.desc": "장비가 더 빠르게 옮겨 줍니다. 레벨마다 속도와 최고 속도가 올라갑니다.",
   "enchantment.tentaworks.thrift": "절약",

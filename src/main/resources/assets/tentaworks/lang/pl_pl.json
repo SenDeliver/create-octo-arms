@@ -5,6 +5,8 @@
   "block.tentaworks.netherite_tentacle_rig": "Netherytowy zestaw macek",
   "enchantment.tentaworks.far_reach": "Daleki zasięg",
   "enchantment.tentaworks.far_reach.desc": "Dłuższe macki: większy zasięg z każdym poziomem, więc zestaw chwyta, wisi i wspina się z większej odległości.",
+  "enchantment.tentaworks.silent_step": "Cichy Krok",
+  "enchantment.tentaworks.silent_step.desc": "Zestaw niesie cię bezszelestnie: żadnych dźwięków zestawu, a czujniki sculk, wrzeszczacze i Wardeni nie zauważają cię, dopóki jest rozłożony.",
   "enchantment.tentaworks.swift": "Zwinność",
   "enchantment.tentaworks.swift.desc": "Zestaw niesie cię szybciej: z każdym poziomem większa prędkość i wyższa maksymalna prędkość.",
   "enchantment.tentaworks.thrift": "Oszczędność",

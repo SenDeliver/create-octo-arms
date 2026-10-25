@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class RigEnchantsTest {
     private static Enchantment[] ours() {
-        return new Enchantment[]{RigEnchants.FAR_REACH.get(), RigEnchants.THRIFT.get(), RigEnchants.SWIFT.get()};
+        return new Enchantment[]{RigEnchants.FAR_REACH.get(), RigEnchants.THRIFT.get(), RigEnchants.SWIFT.get(), RigEnchants.SILENT_STEP.get()};
     }
 
     private static Item[] rigs() {
@@ -53,6 +53,8 @@ class RigEnchantsTest {
         assertEquals("tentaworks:far_reach", ForgeRegistries.ENCHANTMENTS.getKey(RigEnchants.FAR_REACH.get()).toString());
         assertEquals("tentaworks:thrift", ForgeRegistries.ENCHANTMENTS.getKey(RigEnchants.THRIFT.get()).toString());
         assertEquals("tentaworks:swift", ForgeRegistries.ENCHANTMENTS.getKey(RigEnchants.SWIFT.get()).toString());
+        assertEquals("tentaworks:silent_step", ForgeRegistries.ENCHANTMENTS.getKey(RigEnchants.SILENT_STEP.get()).toString());
+        assertEquals(1, RigEnchants.SILENT_STEP.get().getMaxLevel());
         assertEquals("enchantment.tentaworks.far_reach", RigEnchants.FAR_REACH.get().getDescriptionId());
     }
 
@@ -88,7 +90,8 @@ class RigEnchantsTest {
         int[][] farReach = {{15, 65}, {27, 77}, {39, 89}};
         int[][] thrift = {{5, 55}, {15, 65}, {25, 75}};
         int[][] swift = {{15, 65}, {30, 80}};
-        int[][][] costs = {farReach, thrift, swift};
+        int[][] silentStep = {{20, 70}};
+        int[][][] costs = {farReach, thrift, swift, silentStep};
         Enchantment[] all = ours();
         for (int i = 0; i < all.length; i++)
             for (int lvl = 1; lvl <= costs[i].length; lvl++) {
@@ -103,6 +106,7 @@ class RigEnchantsTest {
         assertEquals(Enchantment.Rarity.RARE, RigEnchants.FAR_REACH.get().getRarity());
         assertEquals(Enchantment.Rarity.UNCOMMON, RigEnchants.THRIFT.get().getRarity());
         assertEquals(Enchantment.Rarity.RARE, RigEnchants.SWIFT.get().getRarity());
+        assertEquals(Enchantment.Rarity.RARE, RigEnchants.SILENT_STEP.get().getRarity());
         assertEquals(2, RigEnchants.FAR_REACH.get().getRarity().getWeight());
         assertEquals(5, RigEnchants.THRIFT.get().getRarity().getWeight());
         assertEquals(2, RigEnchants.SWIFT.get().getRarity().getWeight());

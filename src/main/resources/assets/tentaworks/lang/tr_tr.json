@@ -5,6 +5,8 @@
   "block.tentaworks.netherite_tentacle_rig": "Netherit Dokunaç Teçhizatı",
   "enchantment.tentaworks.far_reach": "Uzun Erişim",
   "enchantment.tentaworks.far_reach.desc": "Daha uzun Dokunaçlar: her seviyede daha fazla Erişim; Teçhizat daha uzaktan tutunur, asılır ve tırmanır.",
+  "enchantment.tentaworks.silent_step": "Sessiz Adım",
+  "enchantment.tentaworks.silent_step.desc": "Teçhizat sizi sessizce taşır: teçhizat sesi çıkmaz ve açıkken sculk sensörleri, çığlıkçılar ve Wardenler sizi fark etmez.",
   "enchantment.tentaworks.swift": "Çeviklik",
   "enchantment.tentaworks.swift.desc": "Teçhizat sizi daha hızlı taşır: her seviyede daha fazla Hız ve daha yüksek azami Hız.",
   "enchantment.tentaworks.thrift": "Tutumluluk",

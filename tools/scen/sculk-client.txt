@@ -1,0 +1,77 @@
+# sculk: Silent Step. A Sculk Sensor at 8400 -60 6 (floor y -61, the wearer starts 5.5 blocks away) latches last_vibration_frequency.
+# P Stowed walk (control, heard). A plain Rig carried: walk + break a block (heard, the Rig itself is not quiet). E Silent Step Rig
+# carried: walk + break a block (not heard). E2 the same Rig Stowed, walking (heard again: Silent Step works only while the Rig is out).
+# The sensor is reset (air, sensor) right before each window: tp, equip and the block reset are vibrations of their own. doTileDrops is off:
+# the dropped item would hit the ground (frequency 2) as a vibration of its own. The sensor keeps the last frequency heard.
+wait 40
+trace on
+cmd tentaworks trace on
+hud off
+view third
+cmd tp @s 8400.5 -60 0.5 0 0
+cmd item replace entity @s armor.chest with air
+cmd item replace entity @s weapon.mainhand with minecraft:wooden_pickaxe
+wait 10
+cmd setblock 8400 -60 6 minecraft:air
+cmd setblock 8400 -60 6 minecraft:sculk_sensor
+wait 10
+cmd tentaworks nbt 8400 -60 6 p0
+hold up on
+wait 15
+hold up off
+wait 20
+cmd tentaworks nbt 8400 -60 6 p1
+cmd tp @s 8400.5 -60 0.5 0 0
+cmd setblock 8400 -61 3 minecraft:stone
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
+wait 10
+doublejump
+wait 40
+cmd setblock 8400 -60 6 minecraft:air
+cmd setblock 8400 -60 6 minecraft:sculk_sensor
+wait 10
+cmd tentaworks nbt 8400 -60 6 a0
+hold up on
+wait 15
+hold up off
+wait 10
+lookat 8400.5 -60.5 3.5
+dig 8400 -61 3 a
+wait 20
+cmd tentaworks nbt 8400 -60 6 a1
+doublejump
+wait 40
+cmd tp @s 8400.5 -60 0.5 0 0
+cmd setblock 8400 -61 3 minecraft:stone
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900,Enchantments:[{id:"tentaworks:silent_step",lvl:1s}]}
+wait 10
+doublejump
+wait 40
+cmd setblock 8400 -60 6 minecraft:air
+cmd setblock 8400 -60 6 minecraft:sculk_sensor
+wait 10
+cmd tentaworks nbt 8400 -60 6 e0
+hold up on
+wait 15
+hold up off
+wait 10
+lookat 8400.5 -60.5 3.5
+dig 8400 -61 3 e
+wait 20
+cmd tentaworks nbt 8400 -60 6 e1
+mark e
+doublejump
+wait 40
+cmd tp @s 8400.5 -60 0.5 0 0
+wait 10
+cmd setblock 8400 -60 6 minecraft:air
+cmd setblock 8400 -60 6 minecraft:sculk_sensor
+wait 10
+cmd tentaworks nbt 8400 -60 6 f0
+hold up on
+wait 15
+hold up off
+wait 20
+cmd tentaworks nbt 8400 -60 6 f1
+mark end
+quit

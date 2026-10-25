@@ -39,6 +39,7 @@ public final class TentaworksLang {
         enchantment(TentaworksIds.FAR_REACH, "Far Reach", "Longer Tentacles: more Reach per level, so the Rig grips, hangs and climbs from farther away.");
         enchantment(TentaworksIds.THRIFT, "Thrift", "The Rig uses less Air per level while holding, moving and climbing.");
         enchantment(TentaworksIds.SWIFT, "Swift", "The Rig carries you faster: more Speed and a higher top Speed per level.");
+        enchantment(TentaworksIds.SILENT_STEP, "Silent Step", "The Rig carries you in silence: no Rig sounds, and Sculk Sensors, Shriekers and Wardens do not notice you while it is out.");
 
         REGISTRATE.addRawLang("advancement.tentaworks.doc_rig", "Doc's Rig");
         REGISTRATE.addRawLang("advancement.tentaworks.doc_rig.desc", "Get a Tentacle Rig: four Tentacles on a Backtank");

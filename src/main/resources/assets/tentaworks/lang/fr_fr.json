@@ -5,6 +5,8 @@
   "block.tentaworks.netherite_tentacle_rig": "Appareil à tentacules en Netherite",
   "enchantment.tentaworks.far_reach": "Longue portée",
   "enchantment.tentaworks.far_reach.desc": "Tentacules plus longs : plus de portée par niveau, l'appareil peut donc s'agripper, se suspendre et grimper de plus loin.",
+  "enchantment.tentaworks.silent_step": "Pas Silencieux",
+  "enchantment.tentaworks.silent_step.desc": "L'appareil vous porte en silence : aucun bruit de l'appareil, et les capteurs sculk, les hurleurs et les Wardens ne vous remarquent pas tant qu'il est déployé.",
   "enchantment.tentaworks.swift": "Célérité",
   "enchantment.tentaworks.swift.desc": "L'appareil vous porte plus vite : plus de vitesse et une vitesse maximale plus élevée par niveau.",
   "enchantment.tentaworks.thrift": "Économie",

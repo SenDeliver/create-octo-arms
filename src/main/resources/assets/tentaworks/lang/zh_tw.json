@@ -5,6 +5,8 @@
   "block.tentaworks.netherite_tentacle_rig": "獄髓觸手背架",
   "enchantment.tentaworks.far_reach": "長臂",
   "enchantment.tentaworks.far_reach.desc": "更長的觸手：每級提升臂展，背架能從更遠處抓握、懸掛與攀爬。",
+  "enchantment.tentaworks.silent_step": "靜步",
+  "enchantment.tentaworks.silent_step.desc": "背架靜默地帶著你：沒有背架聲音，展開時伏聆感測體、伏聆尖嘯體和循聲守衛都不會察覺你。",
   "enchantment.tentaworks.swift": "迅捷",
   "enchantment.tentaworks.swift.desc": "背架帶你移動得更快：每級提升速度與最高速度。",
   "enchantment.tentaworks.thrift": "節約",

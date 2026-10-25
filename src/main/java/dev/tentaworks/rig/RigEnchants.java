@@ -5,6 +5,7 @@ import dev.tentaworks.config.TentaworksConfig;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
@@ -23,6 +24,7 @@ public final class RigEnchants {
     public static final RegistryObject<Enchantment> FAR_REACH = REGISTER.register(TentaworksIds.FAR_REACH, FarReach::new);
     public static final RegistryObject<Enchantment> THRIFT = REGISTER.register(TentaworksIds.THRIFT, Thrift::new);
     public static final RegistryObject<Enchantment> SWIFT = REGISTER.register(TentaworksIds.SWIFT, Swift::new);
+    public static final RegistryObject<Enchantment> SILENT_STEP = REGISTER.register(TentaworksIds.SILENT_STEP, SilentStep::new);
     /** Thrift can never cut Air use by more than this, whatever the config and level. */
     private static final double MAX_THRIFT = 0.9;
 
@@ -61,6 +63,15 @@ public final class RigEnchants {
     /** Speed and top Speed multiplier, 1 without Swift. */
     public static double swift(ItemStack rig) {
         return 1.0 + level(rig, SWIFT) * TentaworksConfig.value(TentaworksConfig.ENCHANT_SWIFT);
+    }
+
+    public static boolean silentStep(ItemStack rig) {
+        return level(rig, SILENT_STEP) > 0;
+    }
+
+    /** Silent Step in force: the Rig is out and makes no sound, and the wearer's vibrations reach no Sculk Sensor, Shrieker or Warden. */
+    public static boolean silent(Player player) {
+        return RigSide.deployed(player) && silentStep(RigAir.worn(player));
     }
 
     /** min cost = minBase + perLevel * (level - 1), max cost = maxBase + perLevel * (level - 1). */
@@ -106,6 +117,12 @@ public final class RigEnchants {
     public static class Swift extends RigEnchantment {
         public Swift() {
             super(Rarity.RARE, 2, 15, 65, 15);
+        }
+    }
+
+    public static class SilentStep extends RigEnchantment {
+        public SilentStep() {
+            super(Rarity.RARE, 1, 20, 70, 15);
         }
     }
 }

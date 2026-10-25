@@ -43,7 +43,7 @@ The only required dependency is Create. The terms used here (Tentacle Rig, Grip,
 - **Hands free**: mining, placing, fighting and using items all work while the Rig carries you. `Shift` also sneaks, so sneak + right click works, without the crouch.
 - **Still a Backtank**: it holds Air, feeds a Diving Helmet, takes Capacity and refills under a shaft.
 - **Two tiers**: Copper (Reach 4) and Netherite (Reach 7, half the Air use, fire resistant).
-- **Three own enchantments**: Far Reach, Thrift and Swift, plus vanilla chest armor enchantments and Create's Capacity.
+- **Four own enchantments**: Far Reach, Thrift, Swift and Silent Step, plus vanilla chest armor enchantments and Create's Capacity.
 - **Never breaks**: like an Elytra, a worn-out Rig stops working at 1 durability until you repair it. Air, enchantments and settings are kept.
 - **Rig Settings** screen: Standing Height, Speed and Activation Mode (Double Jump or a key).
 - A stepping gait everyone on the server sees, with Sticker and piston sounds.
@@ -85,6 +85,7 @@ Getting your first Rig unlocks the advancement **Doc's Rig** (after Create's Bac
    - **Far Reach** I–III: +1 block of Reach per level.
    - **Thrift** I–III: −15 % Air use per level.
    - **Swift** I–II: +15 % Speed and top Speed per level.
+   - **Silent Step**: with the Rig out, Sculk Sensors, Shriekers and Wardens do not hear you (steps, blocks, items) and the Rig makes no sound.
    - Also Protection (all kinds), Unbreaking, Mending, Thorns and Create's Capacity.
 10. **Repair** a worn-out Rig at an anvil with a Copper Ingot (Copper Rig) or Netherite Ingot (Netherite Rig), or with Mending. The tooltip turns red when it is worn out.
 

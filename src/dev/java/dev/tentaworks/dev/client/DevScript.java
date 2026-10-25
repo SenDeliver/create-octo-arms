@@ -68,6 +68,9 @@ import dev.tentaworks.rig.RigEnchants;
 import dev.tentaworks.rig.TentacleRigItem;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.inventory.ClickType;
@@ -111,13 +114,17 @@ import java.util.Set;
  * | lookat x y z (turns the eye to that point) | mousebtn left|right press|release (a real mouse button event, as GLFW sends it)
  * | hit tag (CHIT: the crosshair target, the Simulated hold interaction, steering wheel raw/effective angle)
  * | gait on|off (GAIT line per tick: own gait slots) | key key.keyboard.e (one click; key.mouse.right = use) | tab ns:id (select a creative tab, any page) | backtanks (BACKTANK lines: cogs/shaft partial and default name per backtank block) | rejoin ticks (disconnect, reconnect to the same server after ticks) | view first|third|front
- * | forward look|flat (client config movement.forward, in memory only).
+ * | forward look|flat (client config movement.forward, in memory only)
+ * | dig x y z tag (mines that block like a held attack button: start, then continue + swing every tick until it is air or 600 ticks; CDIG tag gt0 gt1 ticks).
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public final class DevScript {
     private static final Logger LOG = LoggerFactory.getLogger("tentaworks-script");
     private static final Set<KeyMapping> HELD = new LinkedHashSet<>();
     private static final Deque<Boolean> JUMP_SEQ = new ArrayDeque<>();
+    private static BlockPos digPos;
+    private static String digTag;
+    private static long digStart;
     private static Deque<String> lines;
     private static int waitTicks;
     private static boolean trace;
@@ -149,6 +156,26 @@ public final class DevScript {
         if (mc.player == null) return;
         for (KeyMapping k : HELD) k.setDown(true);
         if (!JUMP_SEQ.isEmpty()) mc.options.keyJump.setDown(JUMP_SEQ.poll());
+        if (digPos != null) dig(mc);
+    }
+
+    private static void dig(Minecraft mc) {
+        long gt = mc.level.getGameTime();
+        if (digStart == 0) {
+            digStart = gt;
+            mc.gameMode.startDestroyBlock(digPos, Direction.UP);
+        } else {
+            mc.gameMode.continueDestroyBlock(digPos, Direction.UP);
+        }
+        mc.player.swing(InteractionHand.MAIN_HAND);
+        boolean done = mc.level.getBlockState(digPos).isAir();
+        if (done || gt - digStart > 600) {
+            LOG.info("CDIG {} gt0={} gt1={} ticks={} broken={} ground={} state={}", digTag, digStart, gt, gt - digStart, done, mc.player.onGround(), RigClient.state());
+            mc.gameMode.stopDestroyBlock();
+            digPos = null;
+            digStart = 0;
+            waitTicks = 2;
+        }
     }
 
     /** Forged client (phase 8): "zero" sends a second motion packet per tick claiming no motion; the server keeps the latest. */
@@ -235,14 +262,6 @@ public final class DevScript {
             lastLogged = line;
             String[] a = line.split("\\s+");
             switch (a[0]) {
-                case "await" -> {
-                    Path signal = mc.gameDirectory.toPath().resolve("signal").resolve(a[1]);
-                    if (!Files.exists(signal)) {
-                        lines.addFirst(line);
-                        waitTicks = 2;
-                        return;
-                    }
-                }
                 case "signal" -> {
                     try {
                         Path dir = mc.gameDirectory.toPath().resolve("signal");
@@ -361,6 +380,28 @@ public final class DevScript {
                     } else {
                         HELD.remove(km);
                         km.setDown(false);
+                    }
+                }
+                case "dig" -> {
+                    digPos = new BlockPos(Integer.parseInt(a[1]), Integer.parseInt(a[2]), Integer.parseInt(a[3]));
+                    digTag = a[4];
+                    digStart = 0;
+                    lines.addFirst("await _dig");
+                }
+                case "await" -> {
+                    if (a[1].equals("_dig")) {
+                        if (digPos != null) {
+                            lines.addFirst(line);
+                            waitTicks = 1;
+                            return;
+                        }
+                        continue;
+                    }
+                    Path signal = mc.gameDirectory.toPath().resolve("signal").resolve(a[1]);
+                    if (!Files.exists(signal)) {
+                        lines.addFirst(line);
+                        waitTicks = 2;
+                        return;
                     }
                 }
                 case "taps", "doublejump" -> {

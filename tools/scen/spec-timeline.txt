@@ -1,0 +1,14 @@
+op Dev
+tentaworks trace on
+#await s1
+data get entity Dev abilities.flying
+data get entity Dev playerGameType
+#signal s1checked
+#await s4
+data get entity Dev abilities.flying
+data get entity Dev playerGameType
+#signal s4checked
+#await s6
+data get entity Dev abilities.flying
+data get entity Dev playerGameType
+#signal s6checked

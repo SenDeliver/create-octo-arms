@@ -24,7 +24,7 @@ RCON password: `$RCON_PASSWORD`, else the one already in `server.properties`, el
 | `scen/` | Scenes (`scene-*.txt`, RCON setup), timelines (`*-timeline.txt`, RCON during the run) and client scripts (`*-client.txt`, `*-watch.txt`) per suite. |
 | `lang_check.py` | Every lang file has every key of the generated `en_us.json` (release rule, `docs/RELEASE.md`). Exit 1 on a miss. |
 | `analyze.py <log prefix>` | Kick/warn counts and client vs server position drift for one run. |
-| `spike_metrics.py`, `p1_metrics.py` … `p8_metrics.py`, `p6fast_metrics.py`, `ride_metrics.py` | Per-suite checks on the logs; print PASS/FAIL lines. |
+| `spike_metrics.py`, `p1_metrics.py` … `p8_metrics.py`, `p6fast_metrics.py`, `ride_metrics.py`, `spec_metrics.py`, `dig_metrics.py`, `sculk_metrics.py` | Per-suite checks on the logs; print PASS/FAIL lines. |
 
 Quick start: `tools/run_all.sh mytest` (one suite: see the matching line in `run_all.sh`).
 
@@ -86,6 +86,30 @@ Issue #18: client config `movement.forward`. Scene `empty.txt` (flat ground at x
 `tools/run_split.sh tools/scen/empty.txt tools/scen/flat-client.txt tools/logs/x-flat && python3 tools/flat_metrics.py tools/logs/x-flat`
 
 `TW_CLIENT_FORWARD=flat` on `run_split.sh` writes the config for both clients instead (any suite).
+
+## Spectator suite (spec)
+
+A spectator wearing a Rig. Scene `empty.txt` (flat ground at x 8200), timeline `spec-timeline.txt` reads `abilities.flying` and `playerGameType` over RCON.
+
+- `spec` (`spec_metrics.py`): S0 the Rig is Active, then `gamemode spectator`: S1/S2 every client and server tick from s1 to s4 (a Double Jump, three taps, a held jump) is Stowed with `flying` and `mayfly` on, S3 RCON sees game type 3 and flying at s1 and s4. S4 back in survival a Double Jump activates again (flying off). S: no kick.
+
+`TIMELINE=tools/scen/spec-timeline.txt tools/run_split.sh tools/scen/empty.txt tools/scen/spec-client.txt tools/logs/x-spec && python3 tools/spec_metrics.py tools/logs/x-spec`
+
+## Dig suite (dig)
+
+Mining while carried. Scene `empty.txt` (flat ground at x 8300); the DevScript line `dig x y z tag` mines a block like a held attack button and logs `CDIG tag gt0= gt1= ticks= broken= ground= state=`; the dev server logs `SBREAK` per accepted break.
+
+- `dig` (`dig_metrics.py`): a wooden pickaxe on stone in the floor. B0 Stowed on the floor, about 23 ticks (the control). B1 carried at Standing Height (`ground=false`) and B2 carried with the body on the floor take no longer than B0 × 1.3 + 2 (vanilla's airborne fifth would take about 113). S: three `SBREAK` lines, no kick.
+
+`tools/run_split.sh tools/scen/empty.txt tools/scen/dig-client.txt tools/logs/x-dig && python3 tools/dig_metrics.py tools/logs/x-dig`
+
+## Sculk suite (sculk)
+
+Silent Step. Scene `scene-sculk.txt` (flat ground at x 8400, a Sculk Sensor at 8400 -60 6, the wearer 5.5 blocks away); the sensor's `last_vibration_frequency` latches the first vibration heard, read with `tentaworks nbt` (SNBT) after each window, reset (air, sensor) before it. With trace on the dev server logs `SGEVENT` per game event with a player cause (`dampens=` is `Entity.dampensVibrations`).
+
+- `sculk` (`sculk_metrics.py`): P a Stowed walk is heard (control). A a plain Rig carried, walking and breaking a block, is heard. E the same with Silent Step is not heard; E2 that Rig Stowed walking is heard again. D both blocks broke while carried; G the dampened game events are all carried, the plain carried ones are not dampened. S: no kick.
+
+`tools/run_split.sh tools/scen/scene-sculk.txt tools/scen/sculk-client.txt tools/logs/x-sculk && python3 tools/sculk_metrics.py tools/logs/x-sculk`
 
 ## Ride suite (ride)
 

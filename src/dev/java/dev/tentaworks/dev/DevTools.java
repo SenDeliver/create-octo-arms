@@ -35,6 +35,8 @@ import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.VanillaGameEvent;
+import net.minecraftforge.event.level.BlockEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +52,7 @@ import java.util.Locale;
  * (east) face of the wall column at x=X; Grips on a block at x=20047 whose outer neighbour is in unloaded chunk 1253 when only 20000 0 is forceloaded), burst N (each fake packet
  * sent N times per tick), netstats TAG (NETSTATS: motion packets handled, relays, server tick time), probe X Y Z (reads a block:
  * CHUNKLOAD control), fake slideN (real Grips, zero claimed motion, the server moves the player N blocks per second: speed check),
- * ghost FROM TO (air on the server only: a client ghost block), nbt X Y Z TAG (SNBT: a block entity's NBT), chain FROM TO (connects two Create chain conveyors). Logs CHUNKLOAD for chunks at x ≥ 1250. Logs FALL (LivingFallEvent distance) and HURT (damage taken) lines for fall-damage checks.
+ * ghost FROM TO (air on the server only: a client ghost block), nbt X Y Z TAG (SNBT: a block entity's NBT), chain FROM TO (connects two Create chain conveyors). Logs CHUNKLOAD for chunks at x ≥ 1250. Logs FALL (LivingFallEvent distance) and HURT (damage taken) lines for fall-damage checks, SBREAK (a player broke a block) and, with trace on, SGEVENT (game events with a player source: what Sculk Sensors hear).
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID)
 public final class DevTools {
@@ -212,6 +214,20 @@ public final class DevTools {
         if (event.getEntity() instanceof ServerPlayer p)
             LOG.info("FALL gt={} {} distance={} multiplier={}", p.level().getGameTime(), p.getName().getString(),
                     String.format("%.3f", event.getDistance()), event.getDamageMultiplier());
+    }
+
+    @SubscribeEvent
+    public static void onBreak(BlockEvent.BreakEvent event) {
+        if (event.getPlayer() instanceof ServerPlayer p)
+            LOG.info("SBREAK gt={} {} pos={} block={} ground={} state={}", p.level().getGameTime(), p.getName().getString(), event.getPos().toShortString(),
+                    BuiltInRegistries.BLOCK.getKey(event.getState().getBlock()), p.onGround(), RigServer.state(p));
+    }
+
+    @SubscribeEvent
+    public static void onGameEvent(VanillaGameEvent event) {
+        if (trace && event.getCause() instanceof ServerPlayer p)
+            LOG.info("SGEVENT gt={} {} event={} pos={} dampens={} state={}", p.level().getGameTime(), p.getName().getString(),
+                    BuiltInRegistries.GAME_EVENT.getKey(event.getVanillaEvent()), event.getEventPosition(), p.dampensVibrations(), RigServer.state(p));
     }
 
     @SubscribeEvent(priority = net.minecraftforge.eventbus.api.EventPriority.LOWEST)

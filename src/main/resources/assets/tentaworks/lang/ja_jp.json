@@ -5,6 +5,8 @@
   "block.tentaworks.netherite_tentacle_rig": "ネザライトのテンタクルリグ",
   "enchantment.tentaworks.far_reach": "リーチ延長",
   "enchantment.tentaworks.far_reach.desc": "テンタクルが長くなる。レベルごとにリーチが伸び、より遠くからつかまり、ぶら下がり、登れる。",
+  "enchantment.tentaworks.silent_step": "静かな一歩",
+  "enchantment.tentaworks.silent_step.desc": "リグが静かに運ぶ：リグの音はせず、展開中はスカルクセンサー、スカルクシュリーカー、ウォーデンに気づかれない。",
   "enchantment.tentaworks.swift": "高速移動",
   "enchantment.tentaworks.swift.desc": "リグの移動が速くなる。レベルごとに速度と最高速度が上がる。",
   "enchantment.tentaworks.thrift": "空気節約",

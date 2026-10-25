@@ -1,0 +1,39 @@
+# dig: mining with the Rig out is as fast as standing. B0 Stowed on the floor, B1 carried at Standing Height, B2 carried with the body
+# on the floor (looking 60 down + W): a wooden pickaxe breaks stone in about 23 ticks; vanilla's airborne fifth would take about 113.
+# Flat superflat ground at y -60, nothing around x 8300. The stone sits in the floor, 3 blocks ahead.
+wait 40
+trace on
+hud off
+view third
+cmd tp @s 8300.5 -60 0.5 0 0
+cmd item replace entity @s armor.chest with air
+cmd item replace entity @s weapon.mainhand with minecraft:wooden_pickaxe
+cmd setblock 8300 -61 3 minecraft:stone
+wait 10
+lookat 8300.5 -60.5 3.5
+mark b0
+dig 8300 -61 3 b0
+wait 10
+cmd setblock 8300 -61 3 minecraft:stone
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
+wait 10
+doublejump
+wait 40
+lookat 8300.5 -60.5 3.5
+mark b1
+dig 8300 -61 3 b1
+wait 10
+cmd setblock 8300 -61 3 minecraft:stone
+look 0 60
+hold up on
+wait 15
+hold up off
+wait 10
+lookat 8300.5 -60.5 3.5
+mark b2
+dig 8300 -61 3 b2
+wait 10
+doublejump
+wait 40
+mark end
+quit

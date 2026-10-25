@@ -1,0 +1,43 @@
+# spec: a spectator wearing a Rig. Switching to spectator while Active stows the Rig; Double Jump, three taps and a held jump
+# do nothing in spectator (state STOWED, flying stays on); back in survival a Double Jump activates again.
+# Flat superflat ground at y -60, nothing around x 8200.
+wait 40
+trace on
+hud off
+view third
+cmd tp @s 8200.5 -60 0.5 0 0
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:900}
+wait 10
+doublejump
+wait 40
+mark s0
+cmd gamemode spectator @s
+wait 20
+mark s1
+signal s1
+await s1checked
+doublejump
+wait 20
+mark s2
+taps 3
+wait 20
+mark s3
+hold jump on
+wait 20
+hold jump off
+wait 10
+mark s4
+signal s4
+await s4checked
+cmd gamemode survival @s
+wait 20
+mark s5
+doublejump
+wait 40
+mark s6
+signal s6
+await s6checked
+doublejump
+wait 40
+mark end
+quit
