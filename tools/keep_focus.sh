@@ -1,9 +1,10 @@
 #!/bin/bash
 # macOS: while dev Minecraft clients boot they take the keyboard focus (GLFW activates the new window). Run in the background
 # alongside them: whenever a java process becomes the front app, the app that was in front before it gets the focus back,
-# so the person can keep working. Stops when the file $1 appears or after $2 seconds (default 300). TW_KEEP_FOCUS=0 disables.
+# so the person can keep working. Stops when the file $1 appears or after $2 seconds (default 300). Off by default: it cannot tell
+# a harness client from the Minecraft client the person plays in (both are `java`) and would pause that game. TW_KEEP_FOCUS=1 enables.
 [ "$(uname)" = Darwin ] || exit 0
-[ "${TW_KEEP_FOCUS:-1}" = 0 ] && exit 0
+[ "${TW_KEEP_FOCUS:-0}" = 1 ] || exit 0
 STOP=$1; LIMIT=${2:-300}
 front() { osascript -e 'tell application "System Events" to get name of first application process whose frontmost is true' 2>/dev/null; }
 LAST=$(front)
