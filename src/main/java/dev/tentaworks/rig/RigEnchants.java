@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -18,6 +19,7 @@ public final class RigEnchants {
     public static final ResourceKey<Enchantment> FAR_REACH = key(TentaworksIds.FAR_REACH);
     public static final ResourceKey<Enchantment> THRIFT = key(TentaworksIds.THRIFT);
     public static final ResourceKey<Enchantment> SWIFT = key(TentaworksIds.SWIFT);
+    public static final ResourceKey<Enchantment> SILENT_STEP = key(TentaworksIds.SILENT_STEP);
     /** Thrift can never cut Air use by more than this, whatever the config and level. */
     private static final double MAX_THRIFT = 0.9;
 
@@ -51,5 +53,14 @@ public final class RigEnchants {
     /** Speed and top Speed multiplier, 1 without Swift. */
     public static double swift(ItemStack rig) {
         return 1.0 + level(rig, SWIFT) * TentaworksConfig.value(TentaworksConfig.ENCHANT_SWIFT);
+    }
+
+    public static boolean silentStep(ItemStack rig) {
+        return level(rig, SILENT_STEP) > 0;
+    }
+
+    /** Silent Step in force: the Rig is out and makes no sound, and the wearer's vibrations reach no Sculk Sensor, Shrieker or Warden. */
+    public static boolean silent(Player player) {
+        return RigSide.deployed(player) && silentStep(RigAir.worn(player));
     }
 }

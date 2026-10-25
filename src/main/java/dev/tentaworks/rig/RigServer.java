@@ -209,7 +209,7 @@ public final class RigServer {
     private static void fallGuard(ServerPlayer player) {
         double y = player.getY();
         Double last = LAST_Y.put(player.getUUID(), y);
-        if (!fallFix || last == null || player.connection == null || !TentacleRigItem.isWorn(player)) return;
+        if (!fallFix || last == null || player.connection == null || !TentacleRigItem.isWorn(player) || player.isSpectator()) return;
         RigState state = state(player);
         if (state.carries() || !RigAir.has(player) || TentacleRigItem.wornOut(RigAir.worn(player))) return;
         if (last - y > FALL_STEP) ((ServerGamePacketListenerImplAccessor) player.connection).tentaworks$setAboveGroundTickCount(0);
@@ -256,7 +256,7 @@ public final class RigServer {
 
     private static void process(ServerPlayer player, RigMotionPacket packet) {
         processed++;
-        if (packet.state() == RigState.STOWED || !TentacleRigItem.isWorn(player) || !player.isAlive()) {
+        if (packet.state() == RigState.STOWED || !TentacleRigItem.isWorn(player) || !player.isAlive() || player.isSpectator()) {
             stow(player, packet.state() != RigState.STOWED);
             return;
         }
@@ -491,7 +491,7 @@ public final class RigServer {
     private static void tick(ServerPlayer player) {
         Wearer w = WEARERS.get(player.getUUID());
         if (w == null) return;
-        if (!TentacleRigItem.isWorn(player) || riding(player)) {
+        if (!TentacleRigItem.isWorn(player) || riding(player) || player.isSpectator()) {
             stow(player, true);
             return;
         }
@@ -587,7 +587,7 @@ public final class RigServer {
     }
 
     private static void noFlying(ServerPlayer player) {
-        if (player.getAbilities().flying) {
+        if (player.getAbilities().flying && !player.isSpectator()) {
             player.getAbilities().flying = false;
             player.onUpdateAbilities();
         }

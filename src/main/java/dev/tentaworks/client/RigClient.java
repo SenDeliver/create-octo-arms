@@ -140,7 +140,7 @@ public final class RigClient {
             if (state != RigState.STOWED) setState(player, RigState.STOWED);
             return;
         }
-        if (Rides.riding(player)) {
+        if (Rides.riding(player) || player.isSpectator()) {
             while (TentaworksKeys.TOGGLE.consumeClick()) {
             }
             lastPress = -100;
@@ -442,7 +442,7 @@ public final class RigClient {
     }
 
     private static void noFlying(LocalPlayer player) {
-        if (player.getAbilities().flying) {
+        if (player.getAbilities().flying && !player.isSpectator()) {
             player.getAbilities().flying = false;
             player.onUpdateAbilities();
         }

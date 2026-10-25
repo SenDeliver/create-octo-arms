@@ -5,6 +5,8 @@
   "block.tentaworks.netherite_tentacle_rig": "下界合金触手装置",
   "enchantment.tentaworks.far_reach": "长臂",
   "enchantment.tentaworks.far_reach.desc": "触手更长：每级提升臂展，装置能从更远处抓握、悬挂和攀爬。",
+  "enchantment.tentaworks.silent_step": "静步",
+  "enchantment.tentaworks.silent_step.desc": "装置静默地带着你：没有装置声音，展开时幽匿感测体、幽匿尖啸体和监守者都不会察觉你。",
   "enchantment.tentaworks.swift": "疾行",
   "enchantment.tentaworks.swift.desc": "装置带你移动得更快：每级提升速度和最高速度。",
   "enchantment.tentaworks.thrift": "节俭",

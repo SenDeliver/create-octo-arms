@@ -17,7 +17,7 @@ Craft a **Tentacle Rig**: a Backtank with four **Tentacles** and a Precision Mec
 - **Hands free**: mining, placing, fighting and using items all work while the Rig carries you.
 - **Still a Backtank**: it holds Air, feeds a Diving Helmet, takes Capacity and refills under a spinning shaft.
 - **Two tiers**: Copper (Reach 4) and Netherite (Reach 7, half the Air use, fire resistant).
-- **Three enchantments**: Far Reach, Thrift and Swift, plus vanilla chest armor enchantments.
+- **Four enchantments**: Far Reach, Thrift, Swift and Silent Step (quiet for Sculk Sensors and Wardens), plus vanilla chest armor enchantments.
 - **Never breaks**: like an Elytra, a worn-out Rig stops at 1 durability until you repair it.
 - **Rig Settings** screen: Standing Height, Speed and Activation Mode (Double Jump or a key).
 - **Ride Ships**: works fully with Sable Ships, Create Aeronautics included. Tentacles grip Ship blocks like world blocks and carry you along with a moving, turning Ship.

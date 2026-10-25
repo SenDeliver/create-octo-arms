@@ -5,6 +5,8 @@
   "block.tentaworks.netherite_tentacle_rig": "Netherite Tentacle Rig",
   "enchantment.tentaworks.far_reach": "Far Reach",
   "enchantment.tentaworks.far_reach.desc": "Longer Tentacles: more Reach per level, so the Rig grips, hangs and climbs from farther away.",
+  "enchantment.tentaworks.silent_step": "Silent Step",
+  "enchantment.tentaworks.silent_step.desc": "The Rig carries you in silence: no Rig sounds, and Sculk Sensors, Shriekers and Wardens do not notice you while it is out.",
   "enchantment.tentaworks.swift": "Swift",
   "enchantment.tentaworks.swift.desc": "The Rig carries you faster: more Speed and a higher top Speed per level.",
   "enchantment.tentaworks.thrift": "Thrift",

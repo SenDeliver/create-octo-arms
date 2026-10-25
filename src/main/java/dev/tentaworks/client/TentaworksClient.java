@@ -3,7 +3,7 @@ package dev.tentaworks.client;
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.client.ponder.TentaworksPonderPlugin;
 import dev.tentaworks.config.TentaworksClientConfig;
-import dev.tentaworks.rig.RigSneak;
+import dev.tentaworks.rig.RigSide;
 import dev.tentaworks.rig.RigState;
 import net.createmod.ponder.foundation.PonderIndex;
 import net.minecraft.client.player.LocalPlayer;
@@ -22,10 +22,10 @@ public class TentaworksClient {
         container.registerConfig(ModConfig.Type.CLIENT, TentaworksClientConfig.SPEC);
         container.registerExtensionPoint(IConfigScreenFactory.class, (mc, parent) -> new ConfigurationScreen(container, parent));
         PonderIndex.addPlugin(new TentaworksPonderPlugin());
-        RigSneak.clientSide(player -> {
-            if (player instanceof LocalPlayer) return RigClient.state() != RigState.STOWED;
+        RigSide.clientSide(player -> {
+            if (player instanceof LocalPlayer) return RigClient.state();
             RigVisuals.Visual v = RigVisuals.get(player);
-            return v != null && v.state() != RigState.STOWED;
+            return v == null ? RigState.STOWED : v.state();
         });
     }
 }

@@ -5,6 +5,8 @@
   "block.tentaworks.netherite_tentacle_rig": "Apparato a tentacoli di netherite",
   "enchantment.tentaworks.far_reach": "Portata estesa",
   "enchantment.tentaworks.far_reach.desc": "Tentacoli più lunghi: più portata per livello, così l'apparato si aggrappa, resta appeso e si arrampica da più lontano.",
+  "enchantment.tentaworks.silent_step": "Passo Silenzioso",
+  "enchantment.tentaworks.silent_step.desc": "L'apparato ti trasporta in silenzio: nessun suono dell'apparato, e sensori sculk, urlatori e Warden non ti notano finché è in uso.",
   "enchantment.tentaworks.swift": "Rapidità",
   "enchantment.tentaworks.swift.desc": "L'apparato ti trasporta più in fretta: più velocità e una velocità massima più alta per livello.",
   "enchantment.tentaworks.thrift": "Parsimonia",

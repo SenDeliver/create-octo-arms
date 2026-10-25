@@ -1,0 +1,6 @@
+gamerule doDaylightCycle false
+time set noon
+op Dev
+gamerule doTileDrops false
+forceload add 8400 0
+setblock 8400 -60 6 minecraft:sculk_sensor

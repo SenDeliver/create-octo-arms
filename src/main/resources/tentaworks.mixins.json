@@ -7,7 +7,9 @@
   "mixins": [
     "BacktankBlockEntityAccessor",
     "BacktankBlockEntityMixin",
+    "EntityVibrationMixin",
     "LivingEntitySneakMixin",
+    "PlayerHandsMixin",
     "PlayerSneakMixin",
     "ServerGamePacketListenerImplAccessor"
   ],

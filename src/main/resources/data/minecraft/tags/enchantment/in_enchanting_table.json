@@ -2,6 +2,7 @@
   "values": [
     "tentaworks:far_reach",
     "tentaworks:thrift",
-    "tentaworks:swift"
+    "tentaworks:swift",
+    "tentaworks:silent_step"
   ]
 }

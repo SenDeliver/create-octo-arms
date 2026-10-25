@@ -5,6 +5,8 @@
   "block.tentaworks.netherite_tentacle_rig": "Equipo de tentáculos de netherita",
   "enchantment.tentaworks.far_reach": "Largo alcance",
   "enchantment.tentaworks.far_reach.desc": "Tentáculos más largos: más alcance por nivel, así el equipo se agarra, cuelga y trepa desde más lejos.",
+  "enchantment.tentaworks.silent_step": "Paso Silencioso",
+  "enchantment.tentaworks.silent_step.desc": "El equipo te lleva en silencio: sin sonidos del equipo, y los sensores de sculk, los chilladores y los Wardens no te notan mientras está desplegado.",
   "enchantment.tentaworks.swift": "Rapidez",
   "enchantment.tentaworks.swift.desc": "El equipo te lleva más rápido: más velocidad y mayor velocidad máxima por nivel.",
   "enchantment.tentaworks.thrift": "Ahorro",

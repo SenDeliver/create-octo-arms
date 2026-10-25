@@ -5,6 +5,8 @@
   "block.tentaworks.netherite_tentacle_rig": "Netherit-Tentakel-Rig",
   "enchantment.tentaworks.far_reach": "Weitgriff",
   "enchantment.tentaworks.far_reach.desc": "Längere Tentakel: mehr Reichweite pro Stufe, sodass das Rig aus größerer Entfernung greifen, hängen und klettern kann.",
+  "enchantment.tentaworks.silent_step": "Leiser Schritt",
+  "enchantment.tentaworks.silent_step.desc": "Das Rig trägt dich lautlos: keine Rig-Geräusche, und Sculk-Sensoren, Sculk-Kreischer und Wärter bemerken dich nicht, solange es ausgefahren ist.",
   "enchantment.tentaworks.swift": "Flinkheit",
   "enchantment.tentaworks.swift.desc": "Das Rig trägt dich schneller: mehr Tempo und ein höheres Höchsttempo pro Stufe.",
   "enchantment.tentaworks.thrift": "Sparsamkeit",

@@ -1,6 +1,7 @@
 package dev.tentaworks.client;
 
 import com.simibubi.create.AllSoundEvents;
+import dev.tentaworks.rig.RigEnchants;
 import dev.tentaworks.rig.RigState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
@@ -15,7 +16,7 @@ import net.minecraft.world.phys.Vec3;
 /**
  * Rig sounds, played on every client that sees the Rig (positional, players category): the Sticker's slime squish on a
  * Step plant (and a soft one on lift), Create's steam hiss when the height starts changing, piston extend / retract on
- * activate / stow, and a quiet cog rumble loop while moving.
+ * activate / stow, and a quiet cog rumble loop while moving. A Rig with Silent Step plays none of them.
  */
 public final class RigSounds {
     private static final double HEAR = 32;
@@ -47,7 +48,7 @@ public final class RigSounds {
     }
 
     static void whir(Player player, RigVisuals.Visual v) {
-        if (v.speed < 0.05 || v.state == RigState.STOWED) return;
+        if (v.speed < 0.05 || v.state == RigState.STOWED || RigEnchants.silent(player)) return;
         if (v.whir != null && !v.whir.isStopped()) return;
         if (player.tickCount - v.whirStarted < 40) return;
         v.whirStarted = player.tickCount;
@@ -62,7 +63,7 @@ public final class RigSounds {
 
     private static boolean at(Player player, Vec3 p, SoundEvent sound, float volume, float pitch) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null || !inHearing(p)) return false;
+        if (mc.level == null || !inHearing(p) || RigEnchants.silent(player)) return false;
         mc.level.playLocalSound(p.x, p.y, p.z, sound, SoundSource.PLAYERS, volume, pitch, false);
         return true;
     }

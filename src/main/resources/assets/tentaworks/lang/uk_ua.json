@@ -5,6 +5,8 @@
   "block.tentaworks.netherite_tentacle_rig": "Незеритовий щупальцевий апарат",
   "enchantment.tentaworks.far_reach": "Далекосяжність",
   "enchantment.tentaworks.far_reach.desc": "Довші щупальця: більший засяг із кожним рівнем, тож апарат чіпляється, висить і дереться вгору з більшої відстані.",
+  "enchantment.tentaworks.silent_step": "Тихий крок",
+  "enchantment.tentaworks.silent_step.desc": "Апарат носить вас безшумно: жодних звуків апарата, а сенсори скалку, верескуни та Вартові не помічають вас, поки він розгорнутий.",
   "enchantment.tentaworks.swift": "Прудкість",
   "enchantment.tentaworks.swift.desc": "Апарат носить вас швидше: із кожним рівнем зростають швидкість і максимальна швидкість.",
   "enchantment.tentaworks.thrift": "Ощадливість",

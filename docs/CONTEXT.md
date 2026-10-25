@@ -115,7 +115,7 @@ _Avoid_: parent ship, host, anchor ship
 ## Enchanting
 
 **Rig Enchantments**:
-A Rig takes every vanilla chest-armor enchantment (Protection line, Unbreaking, Mending, Thorns), Create's Capacity (more Air), and three of its own: Far Reach (more Reach), Thrift (less Air per move) and Swift (faster movement).
+A Rig takes every vanilla chest-armor enchantment (Protection line, Unbreaking, Mending, Thorns), Create's Capacity (more Air), and four of its own: Far Reach (more Reach), Thrift (less Air per move), Swift (faster movement) and Silent Step (with the Rig out, no vibrations for Sculk Sensors, Shriekers and Wardens, and no Rig sounds).
 A Rig wears like armor but never breaks (elytra-style): at 1 durability it can't be Activated (an Active one Sets Down) until repaired by anvil or Mending; Air, enchantments and Rig Settings are never lost.
 _Avoid_: upgrades, modifiers
 

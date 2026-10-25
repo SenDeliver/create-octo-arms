@@ -5,6 +5,8 @@
   "block.tentaworks.netherite_tentacle_rig": "Giàn xúc tu Netherite",
   "enchantment.tentaworks.far_reach": "Vươn xa",
   "enchantment.tentaworks.far_reach.desc": "Xúc tu dài hơn: thêm Tầm với mỗi cấp, giúp Giàn bám, treo và leo từ xa hơn.",
+  "enchantment.tentaworks.silent_step": "Bước Lặng",
+  "enchantment.tentaworks.silent_step.desc": "Giàn đưa bạn đi trong im lặng: không có âm thanh của giàn, và cảm biến sculk, kẻ gào thét cùng Warden không nhận ra bạn khi giàn đang mở.",
   "enchantment.tentaworks.swift": "Thần tốc",
   "enchantment.tentaworks.swift.desc": "Giàn đưa bạn đi nhanh hơn: thêm Tốc độ và Tốc độ tối đa cao hơn mỗi cấp.",
   "enchantment.tentaworks.thrift": "Tiết kiệm",

@@ -5,6 +5,8 @@
   "block.tentaworks.netherite_tentacle_rig": "Netheritová chapadlová souprava",
   "enchantment.tentaworks.far_reach": "Dlouhý dosah",
   "enchantment.tentaworks.far_reach.desc": "Delší chapadla: s každou úrovní větší dosah, takže se souprava chytá, visí a šplhá z větší dálky.",
+  "enchantment.tentaworks.silent_step": "Tichý krok",
+  "enchantment.tentaworks.silent_step.desc": "Souprava vás nese potichu: žádné zvuky soupravy a senzory sculku, skřeky ani Wardeni si vás nevšimnou, dokud je venku.",
   "enchantment.tentaworks.swift": "Hbitost",
   "enchantment.tentaworks.swift.desc": "Souprava vás nese rychleji: s každou úrovní vyšší rychlost i maximální rychlost.",
   "enchantment.tentaworks.thrift": "Šetrnost",

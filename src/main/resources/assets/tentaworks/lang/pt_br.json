@@ -5,6 +5,8 @@
   "block.tentaworks.netherite_tentacle_rig": "Aparato de Tentáculos de Netherita",
   "enchantment.tentaworks.far_reach": "Longo Alcance",
   "enchantment.tentaworks.far_reach.desc": "Tentáculos mais longos: mais Alcance por nível, para o Aparato se agarrar, se pendurar e escalar de mais longe.",
+  "enchantment.tentaworks.silent_step": "Passo Silencioso",
+  "enchantment.tentaworks.silent_step.desc": "O Aparato leva você em silêncio: sem sons do Aparato, e sensores de sculk, guinchadores e Wardens não notam você enquanto ele está ativo.",
   "enchantment.tentaworks.swift": "Rapidez",
   "enchantment.tentaworks.swift.desc": "O Aparato leva você mais rápido: mais Velocidade e uma Velocidade máxima maior por nível.",
   "enchantment.tentaworks.thrift": "Economia",

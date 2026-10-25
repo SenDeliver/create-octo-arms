@@ -38,6 +38,8 @@ import net.neoforged.neoforge.common.NeoForgeMod;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
+import net.neoforged.neoforge.event.VanillaGameEvent;
+import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.slf4j.Logger;
@@ -57,7 +59,7 @@ import java.util.Locale;
  * (east) face of the wall column at x=X; Grips on a block at x=20047 whose outer neighbour is in unloaded chunk 1253 when only 20000 0 is forceloaded), burst N (each fake packet
  * sent N times per tick), netstats TAG (NETSTATS: motion packets handled, relays, server tick time), probe X Y Z (reads a block:
  * CHUNKLOAD control), fake slideN (real Grips, zero claimed motion, the server moves the player N blocks per second: speed check),
- * ghost FROM TO (air on the server only: a client ghost block), nbt X Y Z TAG (SNBT: a block entity's NBT), chain FROM TO (connects two Create chain conveyors). With Sable: ship NAME drive|stop and SSHIP lines ({@link DevShips}). Logs CHUNKLOAD for chunks at x ≥ 1250. Logs FALL (LivingFallEvent distance) and HURT (damage taken) lines for fall-damage checks.
+ * ghost FROM TO (air on the server only: a client ghost block), nbt X Y Z TAG (SNBT: a block entity's NBT), chain FROM TO (connects two Create chain conveyors). With Sable: ship NAME drive|stop and SSHIP lines ({@link DevShips}). Logs CHUNKLOAD for chunks at x ≥ 1250. Logs FALL (LivingFallEvent distance) and HURT (damage taken) lines for fall-damage checks, SBREAK (a player broke a block) and, with trace on, SGEVENT (game events with a player source: what Sculk Sensors hear).
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID)
 public final class DevTools {
@@ -220,6 +222,20 @@ public final class DevTools {
         if (event.getEntity() instanceof ServerPlayer p)
             LOG.info("FALL gt={} {} distance={} multiplier={}", p.level().getGameTime(), p.getName().getString(),
                     String.format("%.3f", event.getDistance()), event.getDamageMultiplier());
+    }
+
+    @SubscribeEvent
+    static void onBreak(BlockEvent.BreakEvent event) {
+        if (event.getPlayer() instanceof ServerPlayer p)
+            LOG.info("SBREAK gt={} {} pos={} block={} ground={} state={}", p.level().getGameTime(), p.getName().getString(), event.getPos().toShortString(),
+                    BuiltInRegistries.BLOCK.getKey(event.getState().getBlock()), p.onGround(), RigServer.state(p));
+    }
+
+    @SubscribeEvent
+    static void onGameEvent(VanillaGameEvent event) {
+        if (trace && event.getCause() instanceof ServerPlayer p)
+            LOG.info("SGEVENT gt={} {} event={} pos={} dampens={} state={}", p.level().getGameTime(), p.getName().getString(),
+                    event.getVanillaEvent().getRegisteredName(), event.getEventPosition(), p.dampensVibrations(), RigServer.state(p));
     }
 
     @SubscribeEvent

@@ -14,6 +14,7 @@ public final class TentaworksIds {
     public static final String FAR_REACH = "far_reach";
     public static final String THRIFT = "thrift";
     public static final String SWIFT = "swift";
+    public static final String SILENT_STEP = "silent_step";
     public static final String RIG_ENCHANTABLE = "enchantable/tentacle_rig";
     public static final String RIG_AIR_SOURCE = "rig_air";
 
