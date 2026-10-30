@@ -9,6 +9,10 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ## [Unreleased]
 
+### Changed
+
+- Ukrainian translation reads more naturally: Reach is now «Дальність», and Create and vanilla names (Backtank, Precision Mechanism, Sculk Sensor, Sculk Shrieker, Warden) match the game. Thanks @Zhenkass.
+
 ## [1.6.0] - 2026-10-26
 
 ### Added
