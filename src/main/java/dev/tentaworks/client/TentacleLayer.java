@@ -4,12 +4,15 @@ import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.tentaworks.TentaworksIds;
+import dev.tentaworks.rig.RigSlot;
 import dev.tentaworks.rig.TentacleRigItem;
+import dev.tentaworks.rig.WornRig;
 import dev.tentaworks.rig.Tentacles;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -19,7 +22,6 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -32,8 +34,9 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 /**
- * The Tentacles on every player wearing a Rig (third person, other players, inventory preview = Stowed pose), drawn in
- * the body's space on top of Create's Backtank layer. First person has no player model: the local wearer's Tentacles are
+ * The Tentacles on every player wearing a Rig in the chest slot (third person, other players, inventory preview = Stowed pose), drawn in
+ * the body's space on top of Create's Backtank layer; a Back Slot Rig is drawn by the Curios renderer through {@link #drawOnBody}.
+ * First person has no player model: the local wearer's Tentacles are
  * drawn from the level stage instead, in the body's pose (upright, or flat for a swimming or crawling wearer), without the
  * parts within reach of the eye (shoulders and upper segments behind the head).
  */
@@ -49,19 +52,25 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
     public void render(PoseStack ps, MultiBufferSource buffers, int light, AbstractClientPlayer player, float limbSwing, float limbSwingAmount,
                        float pt, float ageInTicks, float netHeadYaw, float headPitch) {
         if (player.getPose() == Pose.SLEEPING || player.isSpectator()) return;
-        if (!(player.getItemBySlot(EquipmentSlot.CHEST).getItem() instanceof TentacleRigItem rig)) return;
+        WornRig worn = WornRig.of(player);
+        if (worn.slot() != RigSlot.CHEST) return;
+        drawOnBody(ps, buffers, light, player, worn.item(), pt, getParentModel().body);
+    }
+
+    /** The Tentacles in the body's space; the Back Slot renderer draws them here too, over the chest armor. */
+    public static void drawOnBody(PoseStack ps, MultiBufferSource buffers, int light, Player player, TentacleRigItem rig, float pt, ModelPart body) {
         TentacleRenderer.timed(() -> {
             ps.pushPose();
-            getParentModel().body.translateAndRotate(ps);
+            body.translateAndRotate(ps);
             TentacleRenderer.toTankSpace(ps);
             Matrix4f m = new Matrix4f(ps.last().pose());
             Vec3 cam = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
-            Vec3 body = player.getPosition(pt).add(0, 1.1, 0).subtract(cam);
+            Vec3 at = player.getPosition(pt).add(0, 1.1, 0).subtract(cam);
             Vector3f c = m.transformPosition(0.5F, 0.5F, 0.5F, new Vector3f());
-            boolean world = c.distance((float) body.x, (float) body.y, (float) body.z) < 1.5F;
+            boolean world = c.distance((float) at.x, (float) at.y, (float) at.z) < 1.5F;
             RigVisuals.Visual visual = RigVisuals.get(player);
             TentacleRenderer.drawRig(ps, buffers, player, rig.tier(), visual, pt,
-                    new TentacleRenderer.Space(m, cam, world, false, light, lod(visual, body.length())));
+                    new TentacleRenderer.Space(m, cam, world, false, light, lod(visual, at.length())));
             ps.popPose();
         });
     }
@@ -117,7 +126,7 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         if (player == null || !mc.options.getCameraType().isFirstPerson() || mc.getCameraEntity() != player || player.isSpectator()) return;
-        if (!(player.getItemBySlot(EquipmentSlot.CHEST).getItem() instanceof TentacleRigItem rig)) return;
+        if (!(WornRig.of(player).item() instanceof TentacleRigItem rig)) return;
         RigVisuals.Visual visual = RigVisuals.get(player);
         if (visual == null || !visual.visible() || player.getPose() == Pose.SLEEPING) return;
         float pt = event.getPartialTick().getGameTimeDeltaPartialTick(false);

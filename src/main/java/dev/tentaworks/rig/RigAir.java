@@ -19,9 +19,9 @@ public final class RigAir {
     private RigAir() {
     }
 
+    /** The worn Rig's stack (chest slot or Back Slot, {@link WornRig}), or EMPTY. */
     public static ItemStack worn(Player player) {
-        ItemStack stack = player.getItemBySlot(TentacleRigItem.SLOT);
-        return stack.getItem() instanceof TentacleRigItem ? stack : ItemStack.EMPTY;
+        return WornRig.of(player).stack();
     }
 
     public static int air(Player player) {

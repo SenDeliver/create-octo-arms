@@ -30,6 +30,11 @@ public final class RigEnchants {
         return ResourceKey.create(Registries.ENCHANTMENT, TentaworksIds.id(path));
     }
 
+    /** One of the Rig's own enchantments (they work in every slot the Rig is worn in). */
+    public static boolean isRigEnchant(Holder<Enchantment> holder) {
+        return holder.is(FAR_REACH) || holder.is(THRIFT) || holder.is(SWIFT) || holder.is(SILENT_STEP);
+    }
+
     /** Side-safe: the holder comes from the stack itself, so client and server stacks resolve alike. */
     public static int level(ItemStack stack, ResourceKey<Enchantment> key) {
         if (stack.isEmpty() || !stack.isEnchanted()) return 0;

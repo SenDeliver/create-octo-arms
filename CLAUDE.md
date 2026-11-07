@@ -2,6 +2,10 @@
 
 Create addon for NeoForge 21.1 / MC 1.21.1. Read first: `docs/CONTEXT.md` (glossary, use its terms), `CONTRIBUTING.md` (style, frozen IDs), `tools/README.md` (test harness). Public repo: everything here is visible.
 
+## Before any work
+
+Always `git fetch --all --prune` and fast-forward the branch you work on (and `1.20.1` in `../octo-arms-1201`) before reading or changing code. Releases land between sessions.
+
 ## Branches
 
 - `1.21.1`: NeoForge 21.1 line, tags `vX.Y.Z+mc1.21.1` (bare `v1.0.0`..`v1.5.0` are its history). This branch.

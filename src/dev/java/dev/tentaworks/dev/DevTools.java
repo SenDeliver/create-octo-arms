@@ -19,6 +19,9 @@ import dev.tentaworks.registry.TentaworksDataComponents;
 import dev.tentaworks.rig.RigEnchants;
 import dev.tentaworks.rig.RigServer;
 import dev.tentaworks.rig.TentacleRigItem;
+import dev.tentaworks.rig.RigSlot;
+import dev.tentaworks.rig.WornRig;
+import dev.tentaworks.rig.RigAir;
 import dev.tentaworks.rig.RigState;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -87,6 +90,7 @@ public final class DevTools {
         DevPonder.register(event.getDispatcher());
         LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("tentaworks").requires(s -> s.hasPermission(2));
         if (ModList.get().isLoaded("sable")) DevShips.attach(root);
+        if (ModList.get().isLoaded("curios")) DevCurios.attach(root);
         event.getDispatcher().register(root
                 .then(Commands.literal("trace").then(Commands.argument("on", StringArgumentType.word()).executes(c -> {
                     trace = StringArgumentType.getString(c, "on").equals("on");
@@ -107,14 +111,14 @@ public final class DevTools {
                 .then(Commands.literal("rigs").then(Commands.argument("tag", StringArgumentType.word()).executes(c -> {
                     String tag = StringArgumentType.getString(c, "tag");
                     for (ServerPlayer p : c.getSource().getServer().getPlayerList().getPlayers())
-                        for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND, EquipmentSlot.CHEST}) {
-                            ItemStack st = p.getItemBySlot(slot);
+                        for (RigSlot slot : RigSlot.values()) {
+                            ItemStack st = slot.stack(p);
                             if (st.isEmpty()) continue;
                             LOG.info("SRIG {} {} slot={} item={} settings={}", tag, p.getName().getString(), slot.getName(),
                                     st.getItemHolder().getRegisteredName(), st.get(TentaworksDataComponents.RIG_SETTINGS.get()));
                         }
                     for (ServerPlayer p : c.getSource().getServer().getPlayerList().getPlayers()) {
-                        ItemStack worn = p.getItemBySlot(EquipmentSlot.CHEST);
+                        ItemStack worn = RigAir.worn(p);
                         if (worn.getItem() instanceof TentacleRigItem)
                             LOG.info("SREACH {} {} reach={} top={} thrift={} swift={}", tag, p.getName().getString(), String.format("%.2f", RigServer.reach(p)),
                                     String.format("%.2f", TentacleRigItem.topSpeed(worn)), String.format("%.3f", RigEnchants.thrift(worn)), String.format("%.3f", RigEnchants.swift(worn)));
@@ -130,7 +134,7 @@ public final class DevTools {
                 .then(Commands.literal("air").then(Commands.argument("n", IntegerArgumentType.integer(0)).executes(c -> {
                     int n = IntegerArgumentType.getInteger(c, "n");
                     for (ServerPlayer p : c.getSource().getServer().getPlayerList().getPlayers()) {
-                        ItemStack rig = p.getItemBySlot(EquipmentSlot.CHEST);
+                        ItemStack rig = WornRig.of(p).worn() ? RigAir.worn(p) : p.getItemBySlot(EquipmentSlot.CHEST);
                         if (!rig.isEmpty()) rig.set(AllDataComponents.BACKTANK_AIR, n);
                     }
                     LOG.info("air set {}", n);
@@ -311,17 +315,19 @@ public final class DevTools {
     }
 
     private static String line(ServerPlayer p) {
+        WornRig worn = WornRig.of(p);
         var flight = p.getAttribute(NeoForgeMod.CREATIVE_FLIGHT);
         Entity vehicle = p.getVehicle();
-        return String.format("gt=%d %s pos=%.3f,%.3f,%.3f v=%.3f,%.3f,%.3f state=%s grips=%d cf=%.0f flying=%b fall=%.2f hp=%.1f ground=%b air=%d mv=%.3f,%.3f,%.3f%s sneak=%b pose=%s veh=%s ride=%s vrot=%s",
+        return String.format("gt=%d %s pos=%.3f,%.3f,%.3f v=%.3f,%.3f,%.3f state=%s grips=%d cf=%.0f flying=%b fall=%.2f hp=%.1f ground=%b air=%d mv=%.3f,%.3f,%.3f%s sneak=%b pose=%s veh=%s ride=%s vrot=%s armor=%d rigslot=%s rigdmg=%d ff=%b",
                 p.level().getGameTime(), p.getName().getString(), p.getX(), p.getY(), p.getZ(),
                 p.getDeltaMovement().x, p.getDeltaMovement().y, p.getDeltaMovement().z,
                 RigServer.state(p), RigServer.grips(p).size(), flight == null ? -1 : flight.getValue(),
-                p.getAbilities().flying, p.fallDistance, p.getHealth(), p.onGround(), BacktankUtil.getAir(p.getItemBySlot(EquipmentSlot.CHEST)),
+                p.getAbilities().flying, p.fallDistance, p.getHealth(), p.onGround(), RigAir.air(p),
                 RigServer.motion(p).x, RigServer.motion(p).y, RigServer.motion(p).z, shipFields(p), p.isShiftKeyDown(), p.getPose(),
                 vehicle == null ? "-" : BuiltInRegistries.ENTITY_TYPE.getKey(vehicle.getType()),
                 ServerChainConveyorHandler.hangingPlayers.containsKey(p.getUUID()) ? "chain" : "-",
-                vehicle == null ? "-" : String.format(Locale.ROOT, "%.1f", vehicle.getYRot()));
+                vehicle == null ? "-" : String.format(Locale.ROOT, "%.1f", vehicle.getYRot()),
+                p.getArmorValue(), worn.worn() ? worn.slot().getName() : "-", worn.stack().getDamageValue(), p.isFallFlying());
     }
 
     /** {@code sgrips}: valid Grips on a Ship; {@code carry}: the Ship holding most of them (at least {@link Grips#HELD}), as RigServer picks it. */

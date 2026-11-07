@@ -34,6 +34,7 @@ The only required dependency is Create. With Sable (optional) the Rig also grips
 - **Crawl**: out of Air, the Rig does not drop you. It slowly lowers you to the nearest floor, then folds up.
 - **Hands free**: mining, placing, fighting and using items all work while the Rig carries you. `Shift` also sneaks, so sneak + right click works, without the crouch.
 - **Still a Backtank**: it holds Air, feeds a Diving Helmet, takes Capacity and refills under a shaft.
+- **Keep your chestplate**: with [Curios](https://www.curseforge.com/minecraft/mc-mods/curios-continuation) installed the Rig also fits the back slot. There it is a Rig and not armor: everything works, it gives no armor value and armor enchantments on it are idle. See [Curios](#curios-back-slot).
 - **Two tiers**: Copper (Reach 4) and Netherite (Reach 7, half the Air use, fire resistant).
 - **Four own enchantments**: Far Reach, Thrift, Swift and Silent Step, plus vanilla chest armor enchantments and Create's Capacity.
 - **Never breaks**: like an Elytra, a worn-out Rig stops working at 1 durability until you repair it. Air, enchantments and settings are kept.
@@ -67,7 +68,7 @@ Getting your first Rig unlocks the advancement **Doc's Rig** (after Create's Bac
 
 1. **Craft Tentacles** on a Sequenced Assembly line, then the **Rig** on Mechanical Crafters. A new Rig starts with **no Air**.
 2. **Fill it**: use the Rig on a block to place it (Rig Block), put a spinning shaft above it and wait. Use it with an empty hand to pick it up again; Air, enchantments and settings stay on the item.
-3. **Wear it** in the chest slot (it replaces your chestplate, like a Backtank).
+3. **Wear it** in the chest slot (it replaces your chestplate, like a Backtank), or with Curios in the back slot and keep your chestplate (use the Rig while wearing a chestplate and it goes there). One Rig at a time.
 4. **Double Jump** (press jump twice quickly) to activate. The Rig lifts you to your Standing Height.
 5. **Move**: look where you want to go and walk. `Space` = up, `Shift` = down. Look up at a wall and walk into it to climb it. Walk under a ledge to hang under it.
 6. **Double Jump again** to be Set Down.
@@ -97,9 +98,21 @@ Ponder (hold `W` over a Rig or Tentacle) shows all of this step by step.
 - **JEI** (optional): all recipes show up in Create's own categories (Sequenced Assembly, Mechanical Crafting) and in vanilla Smithing.
 - **Jade**: no special support.
 - **Sable / Create Aeronautics** (optional, not needed): Ship blocks are Grips and the Rig rides moving Ships. See [Ships](#ships-sable--create-aeronautics).
+- **Curios** (optional): the Rig fits the back slot. See [Curios](#curios-back-slot).
 - Tested together with Elytra Slot, Sophisticated Backpacks and Carry On.
 
 ![Engineer's Goggles on a placed Rig Block: Air, filling rate, Reach and Top Speed](docs/images/goggles-rig-block.png)
+
+## Curios back slot
+
+With Curios installed (1.21.1: Curios 9.5.1 or newer; 1.20.1: Curios 5.3.0 or newer) both Rigs fit the `back` slot and players get that slot from this mod. A Rig in the back slot is a Rig, not armor:
+
+- Works: Air (also for a Diving Helmet and the air HUD), Reach, Far Reach, Thrift, Swift, Silent Step, Capacity, Rig Settings, the Rig Settings key, Mending, repair at an anvil. Hits wear it like chest armor, it never breaks.
+- Does nothing: armor value, armor toughness, knockback resistance, Protection and its kinds, Thorns. The tooltip says so.
+- One Rig at a time. The back slot refuses a Rig while the chest slot holds one and the chest slot refuses a Rig while the back slot holds one. If both end up with a Rig anyway, the chest Rig wins and the other does nothing (red tooltip).
+- Using a Rig from the hand: empty chest slot, it is worn as armor as before; a chestplate on and a free back slot, it goes to the back slot; otherwise the usual armor swap.
+- Elytra in the chest slot and the Rig in the back slot: the Elytra never opens while the Rig is out; Set Down, then jump and glide.
+- Server owners who want to keep the chestplate trade-off set `curios.backSlot = false` in the server config.
 
 ## Ships (Sable / Create Aeronautics)
 
@@ -179,6 +192,7 @@ Server config: `serverconfig/tentaworks-server.toml` inside the world folder (pu
 | `enchant` | `thriftPerLevel` | 0.15 | Thrift: Air use cut per level (0.15 = −15 %, max 0.3) |
 | `enchant` | `swiftPerLevel` | 0.15 | Swift: extra Speed per level (0.15 = +15 %) |
 | `ships` | `grip` | true | Rigs grip Sable Ships. Off: Ship blocks are never Grips. No effect without Sable |
+| `curios` | `backSlot` | true | A Rig in the Curios back slot works (Air, Reach, Rig Settings) but is not armor. Off: the back slot refuses Rigs and one already there does nothing. No effect without Curios |
 
 Client config: `config/tentaworks-client.toml`, or in game under Mods > Octo Arms > Config (looks and controls only; the server does not read it).
 

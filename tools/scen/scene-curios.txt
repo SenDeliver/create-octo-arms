@@ -1,0 +1,11 @@
+# curios suite (issue #17, adr/0006: Curios Back Slot). Flat world: ground top at y=-60, area x 10000..10040. Needs GRADLE_ARGS=-PwithCurios.
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+gamerule doImmediateRespawn true
+gamerule keepInventory true
+gamerule doMobSpawning false
+time set noon
+op Dev
+op Dev2
+tentaworks trace on
+forceload add 9990 -20 10040 20

@@ -45,6 +45,13 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang("advancement.tentaworks.doc_rig.desc", "Get a Tentacle Rig: four Tentacles on a Backtank");
         REGISTRATE.addRawLang("tentaworks.rig.worn_out", "Worn out: repair it with %s at an anvil, or by Mending");
         REGISTRATE.addRawLang("tentaworks.rig.worn_out.warning", "Tentacle Rig worn out: repair it");
+        REGISTRATE.addRawLang("tentaworks.rig.one_at_a_time", "One Rig at a time: take off the Rig you wear first");
+        REGISTRATE.addRawLang("tentaworks.rig.back.not_armor", "In the back slot: no armor, armor enchantments idle");
+        REGISTRATE.addRawLang("tentaworks.rig.back.idle_enchants", "Protection, Thorns and other armor enchantments do nothing in the back slot");
+        REGISTRATE.addRawLang("tentaworks.rig.back.inert", "In the back slot: does nothing while a Rig is in the chest slot");
+        REGISTRATE.addRawLang("tentaworks.rig.back.off", "In the back slot: disabled on this server");
+        REGISTRATE.addRawLang("tentaworks.rig.back.refused_off", "The back slot takes no Rig on this server");
+        REGISTRATE.addRawLang("tentaworks.rig.wears_any_slot", "Wears from hits in the chest slot and in the back slot");
 
         REGISTRATE.addRawLang("key.categories.tentaworks", "Octo Arms");
         REGISTRATE.addRawLang("key.tentaworks.settings", "Rig Settings (worn Rig)");
@@ -113,6 +120,8 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(cfg + "enchant.swiftPerLevel", "Swift per level");
         REGISTRATE.addRawLang(cfg + "ships", "Ships");
         REGISTRATE.addRawLang(cfg + "ships.grip", "Rigs grip Ships");
+        REGISTRATE.addRawLang(cfg + "curios", "Curios");
+        REGISTRATE.addRawLang(cfg + "curios.backSlot", "Rig in the back slot");
         REGISTRATE.addRawLang(cfg + "animation.walkWhileHeld.tooltip", "Vanilla walk animation (swinging arms and legs) while the Rig carries you or a Ship carries you with it. Off: the body hangs still");
         REGISTRATE.addRawLang(cfg + "movement.forward.tooltip", "What W and S follow while the Rig carries you. Look: the camera, look down and W takes you down. Flat: level only, like walking or creative flight; jump and sneak change the height");
         REGISTRATE.addRawLang(cfg + "reach.copper.tooltip", "Grip Reach of a Copper Rig, blocks. Far Reach adds to it, up to 16 in total");
@@ -127,5 +136,6 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(cfg + "enchant.thriftPerLevel.tooltip", "Thrift: Air use cut per level (0.15 = -15 %). Level III stays above zero");
         REGISTRATE.addRawLang(cfg + "enchant.swiftPerLevel.tooltip", "Swift: extra Speed per level (0.15 = +15 %)");
         REGISTRATE.addRawLang(cfg + "ships.grip.tooltip", "Rigs grip Sable Ships like world blocks. Ignored without Sable");
+        REGISTRATE.addRawLang(cfg + "curios.backSlot.tooltip", "A Rig in the Curios back slot works (Air, Reach, Rig Settings) but is not armor. Off: the back slot refuses Rigs and one already there does nothing. Ignored without Curios");
     }
 }

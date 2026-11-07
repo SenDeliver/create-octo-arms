@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Curios Back Slot plan</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<style>
+  :root { --ink:#1d2430; --muted:#5b6573; --line:#d9dee5; --head:#f3f5f8; --ok:#1f7a3a; --warn:#a15c00; --bad:#b3261e; --acc:#0b57d0; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:24px 32px; font:15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color:var(--ink); background:#fff; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:19px; margin:32px 0 8px; border-bottom:2px solid var(--line); padding-bottom:4px; }
+  h3 { font-size:16px; margin:20px 0 6px; }
+  p.sub { color:var(--muted); margin:0 0 16px; }
+  table { width:100%; border-collapse:collapse; margin:8px 0 16px; font-size:14px; }
+  th, td { border:1px solid var(--line); padding:6px 9px; vertical-align:top; text-align:left; }
+  th { background:var(--head); font-weight:600; }
+  td.n { width:34px; text-align:center; color:var(--muted); }
+  code { background:#f1f3f6; padding:1px 5px; border-radius:4px; font-size:13px; }
+  .tag { display:inline-block; padding:0 7px; border-radius:10px; font-size:12px; font-weight:600; color:#fff; }
+  .rule { background:var(--acc); } .fix { background:var(--ok); } .ux { background:var(--warn); } .risk { background:var(--bad); }
+  .grid { display:grid; grid-template-columns: 1fr 1fr; gap:24px; }
+  .mermaid { background:#fff; border:1px solid var(--line); border-radius:8px; padding:12px; }
+  ul { margin:6px 0 12px 20px; } li { margin:2px 0; }
+  .small { color:var(--muted); font-size:13px; }
+</style>
+</head>
+<body>
+<h1>Curios Back Slot for Octo Arms 1.8.0</h1>
+<p class="sub">Issue <a href="https://github.com/SenDeliver/create-octo-arms/issues/17">#17</a>. Both lines: <code>1.21.1</code> (NeoForge, Curios 9.5.1) and <code>1.20.1</code> (Forge 47, Curios 5.x). Source: v2 slice 7 (<code>3a00ceb</code>, ADR 0006) backported, plus the gameplay rules below. Minor bump: client + server change, registrar 8 → 9.</p>
+
+<h2>1. Rules</h2>
+<p>A Rig in the Curios <code>back</code> slot is a Rig, not armor. Everything that makes it a Rig stays: Air, Reach, Rig enchantments (Far Reach, Thrift, Swift, Silent Step), Capacity, Rig Settings, durability wear. Nothing that makes it armor applies: no armor value, toughness, knockback resistance; Protection, Thorns and the other armor enchantments are idle there. The chest slot keeps today's behaviour unchanged.</p>
+
+<table>
+<tr><th>#</th><th>Collision / gap</th><th>Resolution</th><th>Kind</th></tr>
+<tr><td class="n">1</td><td>Rig in both slots</td><td>One Rig at a time. Curios refuses a Rig into <code>back</code> while the chest holds one; <code>canEquip</code> refuses the chest while <code>back</code> holds one. If both exist anyway (commands, dispensers, other mods): chest wins, the back Rig is inert, red tooltip "Inert: a Rig is worn on the chest".</td><td><span class="tag rule">rule</span></td></tr>
+<tr><td class="n">2</td><td>Cosmetic back slot</td><td>Refused for Rigs. Never render-only arms.</td><td><span class="tag rule">rule</span></td></tr>
+<tr><td class="n">3</td><td>Worn stack changes mid-use</td><td>Server: the Wearer remembers the worn stack by identity; a different stack or slot forces Set Down (stow, tell the client). Client: slot change (chest ↔ back ↔ none) resets to Stowed. Stops Air draining from the wrong stack and settings jumping.</td><td><span class="tag fix">fix</span></td></tr>
+<tr><td class="n">4</td><td>Chestplate trade-off gone for packs that want it</td><td>Server config <code>curios.backSlot</code> (default <code>true</code>). Off: Curios refuses the equip with an action-bar line, a Rig already in <code>back</code> is inert, tooltip says why.</td><td><span class="tag rule">rule</span></td></tr>
+<tr><td class="n">5</td><td>Armor value / attributes</td><td>None from the back slot. Curios applies no item attributes by default, nothing to do. Harness asserts armor = chestplate only.</td><td><span class="tag rule">rule</span></td></tr>
+<tr><td class="n">6</td><td>Protection / Thorns on a back Rig</td><td>Idle, no code. Tooltip adds "(idle in the back slot)" to each armor enchantment line while the stack sits in <code>back</code>. Table and anvil still allow them.</td><td><span class="tag ux">ux</span></td></tr>
+<tr><td class="n">7</td><td>Elytra chestplate + back Rig</td><td>Allowed. <code>stopFallFlying</code> while carried stays on both sides. Harness: no gliding tick while deployed, glide after Set Down works.</td><td><span class="tag rule">rule</span></td></tr>
+<tr><td class="n">8</td><td>Netherite tier value in back slot</td><td>Keeps Reach, air factor, fire-resistant item. Accepted, changelog note.</td><td><span class="tag rule">rule</span></td></tr>
+<tr><td class="n">9</td><td>Durability</td><td>Back Rig wears from hits exactly like chest armor: mixin at <code>Player.hurtArmor</code> head, same amount, same armor-bypass gate. Never breaks (stops at 1). Tooltip "Wears from hits in any slot".</td><td><span class="tag fix">fix</span></td></tr>
+<tr><td class="n">10</td><td>Mending</td><td>Must work in <code>back</code>. If Curios already feeds Mending to curio stacks (research says 9.5.1 does), only a harness check. Otherwise our XP-pickup hook mends the back Rig with vanilla's formula.</td><td><span class="tag fix">fix</span></td></tr>
+<tr><td class="n">11</td><td>Air drain</td><td>Slot-agnostic through one <code>WornRig</code> lookup. No cost change.</td><td><span class="tag fix">fix</span></td></tr>
+<tr><td class="n">12</td><td>Create diving helmet / air HUD</td><td>1.21.1: Create 6.0.10's Curios compat supplies curio stacks tagged <code>create:pressurized_air_sources</code>. 1.20.1: verify Create 6.0.8; if absent, register our own backtank supplier.</td><td><span class="tag fix">fix</span></td></tr>
+<tr><td class="n">13</td><td>Right-click equip</td><td>Chest empty → chest (vanilla). Chest holds a non-Rig chestplate, <code>back</code> has a free index and the config allows → into <code>back</code>, equip sound. Otherwise vanilla (swap). Sneak + use stays Rig Settings.</td><td><span class="tag ux">ux</span></td></tr>
+<tr><td class="n">14</td><td>Silent refusals</td><td>Action-bar line on every refusal, once per second per player: "One Rig at a time", "Back slot disabled on this server".</td><td><span class="tag ux">ux</span></td></tr>
+<tr><td class="n">15</td><td>Rig Settings key</td><td>Opens for whatever slot is worn. Packet slot codec gains <code>BACK</code> (id 3). Registrar "9".</td><td><span class="tag fix">fix</span></td></tr>
+<tr><td class="n">16</td><td>Render</td><td>Back Rig: Curios renderer draws Create's tank model + our Tentacles over the chestplate. Chest Rig: today's layer. Each skips the other slot, never two draws. Sleeping, spectator, inert, cosmetic: no draw. First person reads the worn lookup.</td><td><span class="tag fix">fix</span></td></tr>
+<tr><td class="n">17</td><td>Other readers of the chest slot</td><td>Every <code>getItemBySlot(CHEST)</code> in <code>src/main</code> and <code>src/dev</code> goes through <code>WornRig</code> / <code>RigSlot</code>. Display Link and goggles already read Rig state through <code>RigServer</code>.</td><td><span class="tag fix">fix</span></td></tr>
+<tr><td class="n">18</td><td>Curios absent</td><td>Optional dependency. Compile against the API only, compat classes load only when <code>curios</code> is present, <code>NoBackSlot</code> otherwise. Mixin list never names a Curios class. Data files are inert without Curios.</td><td><span class="tag fix">fix</span></td></tr>
+</table>
+
+<h2>2. Lookup</h2>
+<div class="grid">
+<div class="mermaid">
+flowchart TD
+  A[WornRig.of player] --> B{chest slot holds a Rig?}
+  B -- yes --> C[WornRig chest]
+  B -- no --> D{Curios loaded and config backSlot on?}
+  D -- no --> N[NONE]
+  D -- yes --> E{first functional back index holding a Rig?}
+  E -- yes --> F[WornRig back]
+  E -- no --> N
+</div>
+<div class="mermaid">
+flowchart TD
+  U[Right click with a Rig in hand] --> S{sneaking?}
+  S -- yes --> R[Rig Settings screen]
+  S -- no --> C{chest empty?}
+  C -- yes --> V[vanilla: equip to chest]
+  C -- no --> K{chest is a Rig, or back holds a Rig?}
+  K -- yes --> X[refuse, action bar One Rig at a time]
+  K -- no --> B{Curios, config on, free back index?}
+  B -- yes --> W[into back slot, equip sound]
+  B -- no --> V2[vanilla: swap with chestplate]
+</div>
+</div>
+<p class="small">The back lookup is cached per entity and tick on each side (hot paths ask many times a tick); <code>CurioChangeEvent</code> drops the entry.</p>
+
+<h2>3. Code map (1.21.1)</h2>
+<table>
+<tr><th>Area</th><th>Files</th><th>Change</th></tr>
+<tr><td>Lookup</td><td><code>rig/WornRig.java</code>, <code>rig/RigSlot.java</code> (new)</td><td>Stack + slot record, cached back lookup, <code>wearBack</code>. <code>RigSlot</code> = MAINHAND, OFFHAND, CHEST, BACK (wire ids).</td></tr>
+<tr><td>Compat</td><td><code>compat/BackSlot.java</code>, <code>compat/NoBackSlot.java</code>, <code>compat/curios/CuriosBackSlot.java</code>, <code>compat/curios/CuriosClient.java</code> (new)</td><td>Door to Curios: find, canEquip event (one Rig, cosmetic, config), change event, equip-into-back, renderer.</td></tr>
+<tr><td>Rig</td><td><code>TentacleRigItem</code>, <code>RigAir</code>, <code>RigServer</code>, <code>RigClient</code></td><td>Worn lookups; <code>canEquip</code>; <code>use</code> routing; wearer stack identity guard (server) and slot guard (client); tooltip lines.</td></tr>
+<tr><td>Mixin</td><td><code>mixin/PlayerBackWearMixin.java</code> (new), <code>tentaworks.mixins.json</code></td><td><code>hurtArmor</code> HEAD inject → <code>WornRig.wearBack</code>.</td></tr>
+<tr><td>Network</td><td><code>RigSettingsPacket</code>, <code>TentaworksNetwork</code></td><td>Slot codec by <code>RigSlot</code> id; registrar "9".</td></tr>
+<tr><td>Client</td><td><code>RigSettingsScreen</code>, <code>TentacleLayer</code>, <code>TentaworksClient</code></td><td>Open by <code>RigSlot</code>; layer draws only the chest Rig, <code>drawOnBody</code> shared with the Curios renderer; first person reads the worn Rig.</td></tr>
+<tr><td>Config</td><td><code>TentaworksConfig</code></td><td><code>curios.backSlot</code> boolean, default true.</td></tr>
+<tr><td>Data</td><td><code>data/tentaworks/curios/entities/back.json</code>, <code>curios:back</code> item tag (datagen), lang keys in <code>TentaworksLang</code> + 15 translations</td><td>Player gets the slot; both Rigs fit it.</td></tr>
+<tr><td>Build</td><td><code>build.gradle</code>, <code>gradle.properties</code>, <code>neoforge.mods.toml</code></td><td>Curios maven, <code>compileOnly</code> API, <code>-PwithCurios</code> runtime, optional dependency <code>[9.5.1,10)</code>.</td></tr>
+<tr><td>Dev</td><td><code>dev/DevCurios.java</code> (new), <code>DevTools</code>, <code>DevScript</code></td><td><code>/tentaworks back set|mending|try|info|cosmetic</code>; STRACE/TRACE tail fields <code>armor= rigslot= rigdmg=</code>; <code>rawsettings back</code>, <code>itemtip back</code>.</td></tr>
+<tr><td>Docs</td><td><code>docs/adr/0006-back-slot-rig-is-not-armor.md</code>, <code>CONTEXT.md</code>, <code>CHANGELOG.md</code>, <code>README.md</code>, <code>tools/README.md</code></td><td>ADR copied from v2 with the config and equip rules; Unreleased changelog entry.</td></tr>
+</table>
+
+<h3>1.20.1 port</h3>
+<p>Cherry-pick the 1.21.1 commit, then rewrite the compat package for Curios 5 (Forge events, <code>LazyOptional</code>, 1.20.1 slot/tag paths, Forge renderer signature), the mixin, the SimpleChannel packet codec and the build glue. Verify Create 6.0.8's Curios air supplier; add our own if missing.</p>
+
+<h2>4. Harness: suite <code>curios</code> (the only suite built with <code>-PwithCurios</code>)</h2>
+<p>Scene: flat ground, Dev with an iron chestplate and a Copper Rig (900 Air) in the back slot, Dev2 spectator observer. Every other suite keeps running without Curios (no-Curios path).</p>
+<table>
+<tr><th>Check</th><th>Covers</th></tr>
+<tr><td>B0 worn from back, armor = 6, Create sees 1 Air source, Claw-free inventory shot</td><td>5, 12, 18</td></tr>
+<tr><td>T tooltip: no armor, armor enchantment marked idle (Rig pre-enchanted with Protection)</td><td>6</td></tr>
+<tr><td>A Rise and hang from the back Rig: Active on both sides, <code>rigslot=back</code>, armor stays 6, Air drains from the back stack</td><td>11</td></tr>
+<tr><td>H three cactus hits wear it 1 each, a fall hit does not, never below 1 durability</td><td>9</td></tr>
+<tr><td>M Mending + XP orbs repair the back Rig</td><td>10</td></tr>
+<tr><td>S Settings key opens for back, <code>rawsettings back</code> writes to the back stack</td><td>15</td></tr>
+<tr><td>U right-click with a Rig in hand while a chestplate is worn and back is empty → lands in back, chestplate stays; with back full → vanilla swap refused message / stays</td><td>13, 14</td></tr>
+<tr><td>R1 hotbar Rig refused while back holds one, chest keeps the chestplate, action-bar line seen (TITLE/CHAT log)</td><td>1, 14</td></tr>
+<tr><td>R2 forced double: chest wins, back refuses a second, inert tooltip; R3 chest emptied → back worn again</td><td>1</td></tr>
+<tr><td>W swap mid-Active: Rig Active from back, <code>/item replace</code> a Rig into the chest → server stows within 2 ticks, client Stowed, no Air drain from the back stack after</td><td>3</td></tr>
+<tr><td>K cosmetic back slot Rig: not worn, no arms drawn (observer shot), lookup NONE</td><td>2</td></tr>
+<tr><td>C config <code>backSlot=false</code> (second run of the scene via <code>TW_BACK_SLOT=0</code>): equip refused with the message, pre-placed back Rig inert</td><td>4</td></tr>
+<tr><td>E Elytra chestplate + back Rig: no gliding tick while deployed; after Set Down a jump + glide works</td><td>7</td></tr>
+<tr><td>O Dev2 shots from behind and the side, RWALK sees Dev Active; wearer first/third-person shots</td><td>16</td></tr>
+<tr><td>N no kick, no Rig warning, no exceptions</td><td>all</td></tr>
+</table>
+<p class="small">Config-off run: <code>run_split.sh</code> gains <code>TW_BACK_SLOT</code> (writes <code>curios.backSlot</code> into the server config like <code>TW_SPEED_MAX</code>); <code>run_all.sh</code> runs <code>curios</code> and <code>curiosoff</code>.</p>
+
+<h2>5. Order</h2>
+<ol>
+<li>1.21.1: branch <code>curios-back-slot</code> from <code>1.21.1</code>. Backport + rules, build, <code>runData</code>, <code>lang_check.py</code>.</li>
+<li>Suites <code>curios</code> and <code>curiosoff</code> alone, then <code>run_all.sh</code> (full regression).</li>
+<li>1.20.1: cherry-pick onto a branch from <code>1.20.1</code> in <code>../octo-arms-1201</code>, Curios 5 compat, build, both suites, <code>run_all.sh</code>.</li>
+<li>Push both branches. Test build <code>-Pmod_version=1.8.0-beta</code>: local clients (<code>aoca-v1</code>, <code>octoarms-support-1.20.1</code>) and prod (deploy script pattern, cold backup). No tag, no release, <code>gradle.properties</code> untouched.</li>
+</ol>
+
+<h2>6. Risks</h2>
+<ul>
+<li><span class="tag risk">risk</span> Create 6.0.8 (1.20.1) may lack the curio air supplier: own supplier, verified by B0.</li>
+<li><span class="tag risk">risk</span> Curios event spam on <code>isItemValid</code> during menu hovering: refusal message throttled per player.</li>
+<li><span class="tag risk">risk</span> Client-side identity of the worn stack changes on every inventory sync: the client guard compares slots, not objects; the server guard decides.</li>
+<li><span class="tag risk">risk</span> Old client (registrar 8) cannot join a 1.8.0 server. Changelog "Compatibility" line.</li>
+</ul>
+<script>mermaid.initialize({ startOnLoad: true, theme: 'neutral' });</script>
+</body>
+</html>

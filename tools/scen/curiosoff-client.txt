@@ -1,0 +1,39 @@
+# curiosoff: the curios scene with the server config curios.backSlot = false (TW_BACK_SLOT=false). C0 a Rig put into the back slot by the dev command is inert:
+# not worn, Double Jump does nothing, tooltip says disabled; C1 the back slot refuses a Rig (Curios' own check through our rule) and the action-bar line says so;
+# C2 use with a chestplate on swaps into the chest as vanilla does (the inert back Rig does not block the chest); C3 the chest Rig works as always.
+wait 40
+trace on
+cmd tp @s 10000.5 -60 0.5 0 0
+cmd item replace entity @s armor.chest with minecraft:iron_chestplate
+cmd tentaworks back set tentaworks:copper_tentacle_rig 900
+wait 20
+cmd tentaworks back info c0
+cmd tentaworks back try c0
+itemtip back c0
+wait 5
+close
+mark c0a
+doublejump
+wait 40
+mark c0
+cmd tentaworks back info c0b
+# C2: use with the chestplate on: vanilla swap into the chest
+cmd item replace entity @s hotbar.0 with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+key key.keyboard.1
+wait 5
+key key.mouse.right
+wait 10
+cmd tentaworks back info c2
+cmd tentaworks inv c2
+# C3: the chest Rig works
+doublejump
+wait 40
+mark c3a
+wait 40
+mark c3
+cmd tentaworks back info c3
+doublejump
+wait 40
+mark end
+wait 10
+quit

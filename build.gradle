@@ -27,6 +27,10 @@ repositories {
     }
     maven { url = "https://maven.createmod.net" }
     exclusiveContent {
+        forRepository { maven { url = "https://maven.theillusivec4.top/" } }
+        filter { includeGroup "top.theillusivec4.curios" }
+    }
+    exclusiveContent {
         forRepository { maven { url = "https://maven.blamejared.com" } }
         filter { includeGroup "mezz.jei" }
     }
@@ -148,6 +152,9 @@ dependencies {
         }
         runtimeOnly "maven.modrinth:create-aeronautics:${aero_bundle_version}"
     }
+
+    compileOnly("top.theillusivec4.curios:curios-neoforge:${curios_version}:api")
+    if (project.hasProperty('withCurios')) runtimeOnly("top.theillusivec4.curios:curios-neoforge:${curios_version}")
 
     compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
     compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")

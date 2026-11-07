@@ -5,8 +5,12 @@ Create: Octo Arms (mod id `tentaworks`, from its working name Tentaworks) is a C
 ## Language
 
 **Tentacle Rig**:
-A Backtank that has been fitted with four Tentacles and a controller. Worn in the chest slot, it still holds and supplies air like the Backtank it was made from. Comes in Copper and Netherite.
+A Backtank that has been fitted with four Tentacles and a controller. Worn in the chest slot (or the Back Slot), it still holds and supplies air like the Backtank it was made from. Comes in Copper and Netherite.
 _Avoid_: harness, backpack, octopus pack, tentacle backtank
+
+**Back Slot**:
+The Curios `back` slot, a second place to wear a Rig when Curios is installed (adr/0006). A Back Slot Rig is a Rig and not armor: Air, Reach, Rig enchantments and Rig Settings work, armor value and armor enchantments do not. One Rig at a time; a chest Rig wins over a Back Slot one. The server config `curios.backSlot` can turn it off.
+_Avoid_: curio slot, accessory slot, backpack slot
 
 **Tentacle**:
 One of the four pneumatic arms of a Rig. Also the crafted item that becomes one. A Tentacle reaches out to a Grip and holds the wearer there.

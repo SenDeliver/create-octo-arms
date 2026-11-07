@@ -2,7 +2,7 @@
 # Dedicated server + client(s) over localhost. Fresh world each run.
 # GRADLE_ARGS (e.g. -PnoJei) go to every gradle run.
 # Clients boot while the server boots and join once the scene is done (signal/_connect, DevScript); TW_PREBOOT=0: old flow (client started after the scene, 2 s polls).
-# usage: [TW_SPEED_MAX=20] [TW_REACH_COPPER=N] [TW_REACH_NETHERITE=N] [TW_CLIENT_WALK=true] [TW_CLIENT_FORWARD=flat] [TIMELINE=<rcon file run after Dev joins>] [SCRIPT2=<client script for Dev2>] [GAMEMODE=creative] [ANIMALS=true] tools/run_split.sh <rcon scene> <client script> <log prefix>
+# usage: [TW_SPEED_MAX=20] [TW_REACH_COPPER=N] [TW_REACH_NETHERITE=N] [TW_BACK_SLOT=false] [TW_CLIENT_WALK=true] [TW_CLIENT_FORWARD=flat] [TIMELINE=<rcon file run after Dev joins>] [SCRIPT2=<client script for Dev2>] [GAMEMODE=creative] [ANIMALS=true] tools/run_split.sh <rcon scene> <client script> <log prefix>
 cd "$(dirname "$0")/.."
 SCENE=$1; SCRIPT=$2; OUT=$3
 mkdir -p "$(dirname "$OUT")"
@@ -10,13 +10,16 @@ for i in $(seq 1 480); do pgrep -f "bootstraplauncher.*$PWD/build/moddev" > /dev
 if pgrep -f "bootstraplauncher.*$PWD/build/moddev" > /dev/null; then echo "a dev Minecraft of this repo is already running; not starting"; exit 1; fi
 tools/setup_run.sh > /dev/null
 rm -rf run/server/world run/signal run2/signal
-# TW_SPEED_MAX (e.g. 20), TW_REACH_COPPER / TW_REACH_NETHERITE: this run's world overrides those keys (world/serverconfig beats config/)
-if [ -n "$TW_SPEED_MAX$TW_REACH_COPPER$TW_REACH_NETHERITE" ] && [ -f run/server/config/tentaworks-server.toml ]; then
+# TW_SPEED_MAX (e.g. 20), TW_REACH_COPPER / TW_REACH_NETHERITE, TW_BACK_SLOT (true|false): this run's world overrides those keys (world/serverconfig beats config/).
+# A [curios] section missing from an older config/ copy is appended (NeoForge fills the other keys with defaults).
+if [ -n "$TW_SPEED_MAX$TW_REACH_COPPER$TW_REACH_NETHERITE$TW_BACK_SLOT" ] && [ -f run/server/config/tentaworks-server.toml ]; then
   mkdir -p run/server/world/serverconfig
-  awk -v sp="$TW_SPEED_MAX" -v rc="$TW_REACH_COPPER" -v rn="$TW_REACH_NETHERITE" '/^\[/{sec=$0}
+  awk -v sp="$TW_SPEED_MAX" -v rc="$TW_REACH_COPPER" -v rn="$TW_REACH_NETHERITE" -v bs="$TW_BACK_SLOT" '/^\[/{sec=$0}
     sec=="[speed]" && $1=="max" && sp!="" {sub(/=.*/, "= " sp)}
     sec=="[reach]" && $1=="copper" && rc!="" {sub(/=.*/, "= " rc)}
-    sec=="[reach]" && $1=="netherite" && rn!="" {sub(/=.*/, "= " rn)} {print}' run/server/config/tentaworks-server.toml > run/server/world/serverconfig/tentaworks-server.toml
+    sec=="[reach]" && $1=="netherite" && rn!="" {sub(/=.*/, "= " rn)}
+    sec=="[curios]" && $1=="backSlot" && bs!="" {sub(/=.*/, "= " bs); seen=1} {print}
+    END {if (bs!="" && !seen) printf "\n[curios]\n\tbackSlot = %s\n", bs}' run/server/config/tentaworks-server.toml > run/server/world/serverconfig/tentaworks-server.toml
 fi
 # TW_CLIENT_WALK (true|false): this run's client config animation.walkWhileHeld on both clients (default: the mod default, false)
 # TW_CLIENT_FORWARD (look|flat): this run's client config movement.forward on both clients (default: the mod default, look)

@@ -10,6 +10,7 @@ import dev.tentaworks.network.RigSettingsPacket;
 import dev.tentaworks.registry.TentaworksDataComponents;
 import dev.tentaworks.rig.RigSettings;
 import dev.tentaworks.rig.RigSettings.ActivationMode;
+import dev.tentaworks.rig.RigSlot;
 import dev.tentaworks.rig.TentacleRigItem;
 import net.createmod.catnip.gui.AbstractSimiScreen;
 import net.createmod.catnip.gui.ScreenOpener;
@@ -19,7 +20,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -38,14 +38,14 @@ public class RigSettingsScreen extends AbstractSimiScreen {
     private static final int ROW = 22;
     private static final int TITLE_COLOR = 0x592424;
 
-    private final EquipmentSlot slot;
+    private final RigSlot slot;
     private final ItemStack rig;
     private final double reach;
     private int height;
     private int speed;
     private ActivationMode mode;
 
-    public RigSettingsScreen(EquipmentSlot slot, ItemStack rig) {
+    public RigSettingsScreen(RigSlot slot, ItemStack rig) {
         super(Component.translatable(key("title"), rig.getHoverName()));
         this.slot = slot;
         this.rig = rig;
@@ -57,13 +57,13 @@ public class RigSettingsScreen extends AbstractSimiScreen {
     }
 
     public static void openInHand(InteractionHand hand) {
-        open(hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
+        open(RigSlot.of(hand));
     }
 
-    public static void open(EquipmentSlot slot) {
+    public static void open(RigSlot slot) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null) return;
-        ItemStack stack = mc.player.getItemBySlot(slot);
+        if (mc.player == null || slot == null) return;
+        ItemStack stack = slot.stack(mc.player);
         if (stack.getItem() instanceof TentacleRigItem) ScreenOpener.open(new RigSettingsScreen(slot, stack));
     }
 

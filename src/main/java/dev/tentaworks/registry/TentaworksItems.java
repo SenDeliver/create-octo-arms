@@ -20,6 +20,8 @@ import static dev.tentaworks.Tentaworks.REGISTRATE;
 
 public final class TentaworksItems {
     public static final TagKey<Item> RIG_ENCHANTABLE = TagKey.create(Registries.ITEM, TentaworksIds.id(TentaworksIds.RIG_ENCHANTABLE));
+    /** Curios' back slot validator (plain data: harmless without Curios). Players get the slot from data/tentaworks/curios/entities/back.json. */
+    public static final TagKey<Item> CURIOS_BACK = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("curios", "back"));
 
     public static final ItemEntry<Item> TENTACLE = REGISTRATE.item(TentaworksIds.TENTACLE, Item::new)
             .model((c, p) -> p.withExistingParent(c.getName(), p.modLoc("item/tentacle_arm")))
@@ -45,14 +47,14 @@ public final class TentaworksItems {
                     create("copper_diving"), COPPER_TENTACLE_RIG_PLACEABLE, RigTier.COPPER))
             .properties(p -> p.durability(ArmorItem.Type.CHESTPLATE.getDurability(7)))
             .model((c, p) -> p.withExistingParent(c.getName(), p.modLoc("block/copper_tentacle_rig_item")))
-            .tag(AllTags.AllItemTags.PRESSURIZED_AIR_SOURCES.tag, ItemTags.CHEST_ARMOR, RIG_ENCHANTABLE)
+            .tag(AllTags.AllItemTags.PRESSURIZED_AIR_SOURCES.tag, ItemTags.CHEST_ARMOR, RIG_ENCHANTABLE, CURIOS_BACK)
             .register();
     public static final ItemEntry<TentacleRigItem.Layered> NETHERITE_TENTACLE_RIG = REGISTRATE
             .item(TentaworksIds.NETHERITE_TENTACLE_RIG, p -> new TentacleRigItem.Layered(ArmorMaterials.NETHERITE, p,
                     create("netherite_diving"), NETHERITE_TENTACLE_RIG_PLACEABLE, RigTier.NETHERITE))
             .properties(p -> p.fireResistant().durability(ArmorItem.Type.CHESTPLATE.getDurability(37)))
             .model((c, p) -> p.withExistingParent(c.getName(), p.modLoc("block/netherite_tentacle_rig_item")))
-            .tag(AllTags.AllItemTags.PRESSURIZED_AIR_SOURCES.tag, ItemTags.CHEST_ARMOR, RIG_ENCHANTABLE)
+            .tag(AllTags.AllItemTags.PRESSURIZED_AIR_SOURCES.tag, ItemTags.CHEST_ARMOR, RIG_ENCHANTABLE, CURIOS_BACK)
             .register();
 
     private TentaworksItems() {
