@@ -9,6 +9,16 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ## [Unreleased]
 
+## [1.7.1] - 2026-11-07
+
+### Changed
+
+- New textures for the Tentacles and the Rig, 16x16 in Create's palette: shaded copper sleeves with a riveted seam, polished steel rods, bevelled brass collars with bolts, a riveted joint housing with a brass bearing, and a proper brass cogwheel. Netherite is no longer a recolour: blackstone housings, dark steel and crimson fittings like the Netherite Backtank. Pure resource change, a resource pack can still override every file.
+
+### Compatibility
+
+- Network unchanged (registrar "8"). Client-only: an old client or server pairs with the new one.
+
 ## [1.7.0] - 2026-11-07
 
 ### Fixed
@@ -240,7 +250,8 @@ First release as **Create: Octo Arms** (mod id `tentaworks`), server-internal, n
 
 - Earlier builds were internal test versions and were not published.
 
-[Unreleased]: https://github.com/SenDeliver/create-octo-arms/compare/v1.7.0%2Bmc1.21.1...HEAD
+[Unreleased]: https://github.com/SenDeliver/create-octo-arms/compare/v1.7.1%2Bmc1.21.1...HEAD
+[1.7.1]: https://github.com/SenDeliver/create-octo-arms/compare/v1.7.0%2Bmc1.21.1...v1.7.1%2Bmc1.21.1
 [1.7.0]: https://github.com/SenDeliver/create-octo-arms/compare/v1.6.0%2Bmc1.21.1...v1.7.0%2Bmc1.21.1
 [1.6.0]: https://github.com/SenDeliver/create-octo-arms/compare/v1.5.1%2Bmc1.21.1...v1.6.0%2Bmc1.21.1
 [1.5.1]: https://github.com/SenDeliver/create-octo-arms/compare/v1.5.0...v1.5.1%2Bmc1.21.1
