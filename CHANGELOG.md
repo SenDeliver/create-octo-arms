@@ -16,6 +16,7 @@ Platforms: the same version number ships for every supported Minecraft version (
 ### Compatibility
 
 - Network unchanged (registrar "8"). Mixin-only change on both sides; an old client or server pairs with the new one.
+- **1.20.1 only:** the jar now bundles MixinExtras 0.4.1 (Jar-in-Jar), which the wrapped mixins need; NeoForge ships it on 1.21.1.
 
 ## [1.6.0] - 2026-10-26
 
