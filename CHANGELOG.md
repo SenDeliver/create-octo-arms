@@ -9,6 +9,8 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-11-07
+
 ### Fixed
 
 - The game died at startup, without a crash report, next to Forbidden Arcanus (issue #23): both mods replaced the same airborne check in the mining speed, and Mixin lets only one mod replace a call. Octo Arms now wraps the calls it changes (mining speed, sweep attacks, the sneak pose and the client crouch) instead of replacing them, so any mod touching the same code keeps working alongside it.
@@ -238,7 +240,8 @@ First release as **Create: Octo Arms** (mod id `tentaworks`), server-internal, n
 
 - Earlier builds were internal test versions and were not published.
 
-[Unreleased]: https://github.com/SenDeliver/create-octo-arms/compare/v1.6.0%2Bmc1.21.1...HEAD
+[Unreleased]: https://github.com/SenDeliver/create-octo-arms/compare/v1.7.0%2Bmc1.21.1...HEAD
+[1.7.0]: https://github.com/SenDeliver/create-octo-arms/compare/v1.6.0%2Bmc1.21.1...v1.7.0%2Bmc1.21.1
 [1.6.0]: https://github.com/SenDeliver/create-octo-arms/compare/v1.5.1%2Bmc1.21.1...v1.6.0%2Bmc1.21.1
 [1.5.1]: https://github.com/SenDeliver/create-octo-arms/compare/v1.5.0...v1.5.1%2Bmc1.21.1
 [1.5.0]: https://github.com/SenDeliver/create-octo-arms/compare/v1.4.0...v1.5.0
