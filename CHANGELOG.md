@@ -13,6 +13,10 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 - The game died at startup, without a crash report, next to Forbidden Arcanus (issue #23): both mods replaced the same airborne check in the mining speed, and Mixin lets only one mod replace a call. Octo Arms now wraps the calls it changes (mining speed, sweep attacks, the sneak pose and the client crouch) instead of replacing them, so any mod touching the same code keeps working alongside it.
 
+### Changed
+
+- Ukrainian translation reads more naturally: Reach is now «Дальність», and Create and vanilla names (Backtank, Precision Mechanism, Sculk Sensor, Sculk Shrieker, Warden) match the game. Thanks @Zhenkass.
+
 ### Compatibility
 
 - Network unchanged (registrar "8"). Mixin-only change on both sides; an old client or server pairs with the new one.
