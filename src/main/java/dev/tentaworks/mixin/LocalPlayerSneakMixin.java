@@ -4,9 +4,10 @@ import dev.tentaworks.client.RigClient;
 import dev.tentaworks.rig.RigSneak;
 import net.minecraft.client.player.LocalPlayer;
 import org.spongepowered.asm.mixin.Mixin;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
@@ -20,8 +21,8 @@ public class LocalPlayerSneakMixin {
         if (RigClient.sneaking()) cir.setReturnValue(true);
     }
 
-    @Redirect(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isShiftKeyDown()Z"))
-    private boolean tentaworks$noCrouch(LocalPlayer player) {
-        return player.isShiftKeyDown() && !RigSneak.deployed(player);
+    @WrapOperation(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isShiftKeyDown()Z"))
+    private boolean tentaworks$noCrouch(LocalPlayer player, Operation<Boolean> original) {
+        return original.call(player) && !RigSneak.deployed(player);
     }
 }

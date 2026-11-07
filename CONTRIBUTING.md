@@ -60,6 +60,7 @@ New text must reach all 15 languages before a release (`python3 tools/lang_check
 - No unnecessary comments. Write a comment only when it tells the reader something the code can't.
 - Use the glossary terms in names and player-facing text.
 - Keep changes focused. One topic per pull request.
+- Mixins: never `@Redirect` or `@Overwrite`. Two mods redirecting the same call is a hard crash for the one that loads second (issue #23, Forbidden Arcanus). Use MixinExtras `@WrapOperation` (or `@ModifyExpressionValue`, `@ModifyReturnValue`) and call `original`, so other mods' changes to the same call stay in effect. Prefer `@Inject` at `HEAD`/`RETURN` over cancelling where a hook exists.
 
 ## Frozen IDs (save compatibility)
 

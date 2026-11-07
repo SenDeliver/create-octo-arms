@@ -9,6 +9,14 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ## [Unreleased]
 
+### Fixed
+
+- The game died at startup, without a crash report, next to Forbidden Arcanus (issue #23): both mods replaced the same airborne check in the mining speed, and Mixin lets only one mod replace a call. Octo Arms now wraps the calls it changes (mining speed, sweep attacks, the sneak pose and the client crouch) instead of replacing them, so any mod touching the same code keeps working alongside it.
+
+### Compatibility
+
+- Network unchanged (registrar "8"). Mixin-only change on both sides; an old client or server pairs with the new one.
+
 ## [1.6.0] - 2026-10-26
 
 ### Added
