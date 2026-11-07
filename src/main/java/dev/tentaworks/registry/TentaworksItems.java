@@ -8,13 +8,18 @@ import com.tterrag.registrate.util.entry.ItemEntry;
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.rig.RigTier;
 import dev.tentaworks.rig.TentacleRigItem;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.Item;
 
 import static dev.tentaworks.Tentaworks.REGISTRATE;
 
 public final class TentaworksItems {
+    /** Curios' back slot validator (plain data: harmless without Curios). Players get the slot from data/tentaworks/curios/entities/back.json. */
+    public static final TagKey<Item> CURIOS_BACK = TagKey.create(Registries.ITEM, new ResourceLocation("curios", "back"));
+
     public static final ItemEntry<Item> TENTACLE = REGISTRATE.item(TentaworksIds.TENTACLE, Item::new)
             .model((c, p) -> p.withExistingParent(c.getName(), p.modLoc("item/tentacle_arm")))
             .register();
@@ -38,14 +43,14 @@ public final class TentaworksItems {
             .item(TentaworksIds.COPPER_TENTACLE_RIG, p -> new TentacleRigItem(AllArmorMaterials.COPPER, p,
                     create("copper_diving"), COPPER_TENTACLE_RIG_PLACEABLE, RigTier.COPPER))
             .model((c, p) -> p.withExistingParent(c.getName(), p.modLoc("block/copper_tentacle_rig_item")))
-            .tag(AllTags.AllItemTags.PRESSURIZED_AIR_SOURCES.tag)
+            .tag(AllTags.AllItemTags.PRESSURIZED_AIR_SOURCES.tag, CURIOS_BACK)
             .register();
     public static final ItemEntry<TentacleRigItem.Layered> NETHERITE_TENTACLE_RIG = REGISTRATE
             .item(TentaworksIds.NETHERITE_TENTACLE_RIG, p -> new TentacleRigItem.Layered(ArmorMaterials.NETHERITE, p,
                     create("netherite_diving"), NETHERITE_TENTACLE_RIG_PLACEABLE, RigTier.NETHERITE))
             .properties(p -> p.fireResistant())
             .model((c, p) -> p.withExistingParent(c.getName(), p.modLoc("block/netherite_tentacle_rig_item")))
-            .tag(AllTags.AllItemTags.PRESSURIZED_AIR_SOURCES.tag)
+            .tag(AllTags.AllItemTags.PRESSURIZED_AIR_SOURCES.tag, CURIOS_BACK)
             .register();
 
     private TentaworksItems() {

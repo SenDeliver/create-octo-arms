@@ -6,6 +6,7 @@ import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipModifier;
 import net.createmod.catnip.lang.FontHelper;
+import dev.tentaworks.compat.BackSlot;
 import dev.tentaworks.compat.ShipFrames;
 import dev.tentaworks.config.TentaworksConfig;
 import dev.tentaworks.data.TentaworksDatagen;
@@ -55,6 +56,7 @@ public class Tentaworks {
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, TentaworksConfig.SPEC);
         RigServer.init();
         ShipFrames.init();
+        BackSlot.init();
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> TentaworksClient.init(modBus));
     }
 

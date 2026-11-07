@@ -75,6 +75,8 @@ public final class RigServer {
 
     private static final class Wearer {
         RigState state = RigState.STOWED;
+        /** The Rig stack this Wearer deployed from: another stack or slot taking over mid-use Sets Down (adr/0006). */
+        ItemStack rig = ItemStack.EMPTY;
         List<Grip> grips = List.of();
         Tentacles tentacles = Tentacles.NONE;
         int unheldTicks;
@@ -283,7 +285,11 @@ public final class RigServer {
         }
         if (w == null) {
             w = new Wearer();
+            w.rig = RigAir.worn(player);
             WEARERS.put(player.getUUID(), w);
+        } else if (w.rig != RigAir.worn(player)) {
+            stow(player, true);
+            return;
         }
         Vec3 body = Grips.body(player);
         double reach = reach(player) + GRIP_SLACK;
@@ -501,7 +507,7 @@ public final class RigServer {
     private static void tick(ServerPlayer player) {
         Wearer w = WEARERS.get(player.getUUID());
         if (w == null) return;
-        if (!TentacleRigItem.isWorn(player) || riding(player) || player.isSpectator()) {
+        if (!TentacleRigItem.isWorn(player) || riding(player) || player.isSpectator() || w.rig != RigAir.worn(player)) {
             stow(player, true);
             return;
         }

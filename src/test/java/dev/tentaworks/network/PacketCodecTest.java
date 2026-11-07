@@ -3,13 +3,13 @@ package dev.tentaworks.network;
 import dev.tentaworks.rig.Grip;
 import dev.tentaworks.rig.RigSettings;
 import dev.tentaworks.rig.RigSettings.ActivationMode;
+import dev.tentaworks.rig.RigSlot;
 import dev.tentaworks.rig.RigState;
 import dev.tentaworks.rig.Tentacles;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
 
@@ -86,7 +86,7 @@ class PacketCodecTest {
 
     @Test
     void settingsPacket() {
-        for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND, EquipmentSlot.CHEST}) {
+        for (RigSlot slot : RigSlot.values()) {
             RigSettingsPacket p = new RigSettingsPacket(slot, new RigSettings(Float.NaN, 6.1F, ActivationMode.KEY));
             assertEquals(p, roundTrip(p, RigSettingsPacket::write, RigSettingsPacket::read));
         }

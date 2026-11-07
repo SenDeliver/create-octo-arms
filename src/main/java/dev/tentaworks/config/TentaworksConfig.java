@@ -17,6 +17,7 @@ public final class TentaworksConfig {
     public static final ForgeConfigSpec.DoubleValue ENCHANT_THRIFT;
     public static final ForgeConfigSpec.DoubleValue ENCHANT_SWIFT;
     public static final ForgeConfigSpec.BooleanValue SHIPS_GRIP;
+    public static final ForgeConfigSpec.BooleanValue BACK_SLOT;
 
     static {
         String t = TentaworksIds.MOD_ID + ".configuration.";
@@ -44,6 +45,10 @@ public final class TentaworksConfig {
         b.pop();
         b.translation(t + "ships").push("ships");
         SHIPS_GRIP = b.comment("Rigs grip Sable Ships like world blocks. Ignored without Sable").translation(t + "ships.grip").define("grip", true);
+        b.pop();
+        b.translation(t + "curios").push("curios");
+        BACK_SLOT = b.comment("A Rig in the Curios back slot works (Air, Reach, Rig Settings) but is not armor. Off: the back slot refuses Rigs and one already there does nothing. Ignored without Curios")
+                .translation(t + "curios.backSlot").define("backSlot", true);
         b.pop();
         SPEC = b.build();
     }

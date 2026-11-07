@@ -1,0 +1,15 @@
+# curios timeline: Dev2 (spectator) watches Dev's Back Slot Rig over the iron chestplate from behind and from the side, then waits for the end.
+gamemode spectator Dev2
+tp Dev2 10020.5 -50 10.5
+#await pose
+execute as Dev at @s rotated ~ 0 run tp Dev2 ^ ^0.6 ^-3 facing entity Dev eyes
+#sleep 0.5
+#signal look_back
+#sleep 2.5
+execute as Dev at @s rotated ~ 0 run tp Dev2 ^3 ^0.6 ^-1 facing entity Dev eyes
+#sleep 0.5
+#signal look_side
+#sleep 2.5
+#signal resume
+#await done
+#signal end

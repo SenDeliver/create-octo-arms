@@ -25,6 +25,10 @@ repositories {
     mavenCentral()
     maven { url = "https://maven.createmod.net" }
     exclusiveContent {
+        forRepository { maven { url = "https://maven.theillusivec4.top/" } }
+        filter { includeGroup "top.theillusivec4.curios" }
+    }
+    exclusiveContent {
         forRepository { maven { url = "https://maven.tterrag.com" } }
         filter { includeGroup "com.tterrag.registrate" }
     }
@@ -153,6 +157,9 @@ dependencies {
     compileOnly("io.github.llamalad7:mixinextras-common:${mixinextras_version}")
     annotationProcessor("io.github.llamalad7:mixinextras-common:${mixinextras_version}")
     jarJar(implementation("io.github.llamalad7:mixinextras-forge:${mixinextras_version}"))
+
+    modCompileOnly("top.theillusivec4.curios:curios-forge:${curios_version}:api")
+    if (project.hasProperty('withCurios')) modRuntimeOnly("top.theillusivec4.curios:curios-forge:${curios_version}")
 
     modCompileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
     modCompileOnly("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")

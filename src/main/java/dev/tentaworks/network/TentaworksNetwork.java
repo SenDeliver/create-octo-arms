@@ -13,7 +13,7 @@ import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public final class TentaworksNetwork {
-    private static final String PROTOCOL = "8";
+    private static final String PROTOCOL = "9";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(TentaworksIds.id("main"),
             () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
 

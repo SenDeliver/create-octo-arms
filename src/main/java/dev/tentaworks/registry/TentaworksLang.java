@@ -45,6 +45,13 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang("advancement.tentaworks.doc_rig.desc", "Get a Tentacle Rig: four Tentacles on a Backtank");
         REGISTRATE.addRawLang("tentaworks.rig.worn_out", "Worn out: repair it with %s at an anvil, or by Mending");
         REGISTRATE.addRawLang("tentaworks.rig.worn_out.warning", "Tentacle Rig worn out: repair it");
+        REGISTRATE.addRawLang("tentaworks.rig.one_at_a_time", "One Rig at a time: take off the Rig you wear first");
+        REGISTRATE.addRawLang("tentaworks.rig.back.not_armor", "In the back slot: no armor, armor enchantments idle");
+        REGISTRATE.addRawLang("tentaworks.rig.back.idle_enchants", "Protection, Thorns and other armor enchantments do nothing in the back slot");
+        REGISTRATE.addRawLang("tentaworks.rig.back.inert", "In the back slot: does nothing while a Rig is in the chest slot");
+        REGISTRATE.addRawLang("tentaworks.rig.back.off", "In the back slot: disabled on this server");
+        REGISTRATE.addRawLang("tentaworks.rig.back.refused_off", "The back slot takes no Rig on this server");
+        REGISTRATE.addRawLang("tentaworks.rig.wears_any_slot", "Wears from hits in the chest slot and in the back slot");
 
         REGISTRATE.addRawLang("key.categories.tentaworks", "Octo Arms");
         REGISTRATE.addRawLang("key.tentaworks.settings", "Rig Settings (worn Rig)");

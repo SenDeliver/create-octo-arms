@@ -1,0 +1,13 @@
+# curios suite, Dev2 (spectator, placed by curios-timeline.txt): shots of Dev's Back Slot Rig as another player draws it (Curios renderer, synced back slot).
+trace on
+hud off
+await look_back
+wait 15
+mark w_back
+shot curios_observer_back
+await look_side
+wait 15
+mark w_side
+shot curios_observer_side
+await end
+quit

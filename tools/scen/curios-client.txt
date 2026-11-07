@@ -1,0 +1,164 @@
+# curios: a Rig in the Curios back slot (adr/0006) over an iron chestplate. U0 use with an empty chest slot equips into the chest as vanilla does;
+# B0 setup: Copper Rig (900 Air) put into the back slot by the dev command, worn from there, armor = the chestplate's 6, Create sees one Air source;
+# T tooltip: "no armor" + idle armor enchantments (Protection II on it); A Rise and hang: Active from the back slot on both sides, armor stays 6, Air drains
+# from the back stack; O Dev2 shots and own shots; H three cactus hits wear the back Rig 1 each, a fall hit (bypasses armor) does not; S Rig Settings key
+# opens the screen for the back slot, settings written to it; W a Rig forced into the chest while Active: Set Down within a few ticks, the chest Rig wins,
+# the back Rig stops draining; R2 the back slot refuses a second Rig, its tooltip says inert; R3 chestplate back: the back Rig is worn again;
+# R1 a Rig used from the hotbar is refused with the action-bar line; U1 back slot emptied: use puts the hotbar Rig into the back slot, chestplate stays;
+# M Mending + XP orbs repair the back Rig; E Elytra in the chest with the back Rig: never opens while deployed, glides after Set Down.
+wait 40
+trace on
+cmd tp @s 10000.5 -60 0.5 0 0
+bind key.tentaworks.settings key.keyboard.o
+wait 10
+# U0: empty chest, use equips into the chest (vanilla)
+cmd item replace entity @s hotbar.0 with tentaworks:copper_tentacle_rig{Air:900}
+key key.keyboard.1
+wait 5
+key key.mouse.right
+wait 10
+cmd tentaworks back info u0
+cmd tentaworks inv u0
+# B0: chestplate on, Rig into the back slot
+cmd item replace entity @s armor.chest with minecraft:iron_chestplate
+cmd tentaworks back set tentaworks:copper_tentacle_rig 900
+wait 20
+cmd tentaworks back info b0
+cmd tentaworks back try b0
+# T: tooltip of the back slot Rig with Protection II on it
+cmd tentaworks back enchant minecraft:protection 2
+wait 5
+key key.keyboard.e
+wait 10
+shot curios_inventory
+close
+wait 5
+itemtip back t0
+wait 5
+close
+wait 5
+# A: Rise, hang
+doublejump
+wait 40
+mark a0
+cmd tentaworks back info a0
+wait 100
+mark a1
+cmd tentaworks back info a1
+# O: Dev2 shots from behind and the side; own third-person shots
+hud off
+view third
+wait 4
+shot curios_third
+view front
+wait 4
+shot curios_front
+view first
+wait 4
+shot curios_first
+hud on
+signal pose
+await resume
+# H: hits wear the back slot Rig like chest armor
+cmd tentaworks back info h0
+cmd damage @s 4 minecraft:cactus
+wait 20
+cmd damage @s 4 minecraft:cactus
+wait 20
+cmd damage @s 4 minecraft:cactus
+wait 20
+cmd tentaworks back info h1
+cmd damage @s 4 minecraft:fall
+wait 20
+cmd tentaworks back info h2
+cmd effect give @s minecraft:instant_health 1 4
+mark h2
+# S: Rig Settings for the back slot
+key key.keyboard.o
+wait 10
+screen
+rigs s0
+close
+wait 5
+rawsettings back 1.2 5.6 double_jump
+wait 5
+cmd tentaworks rigs s1
+rigs s1
+wait 20
+mark s1
+# W: a Rig forced into the chest while Active: Set Down, chest wins, back Rig stops draining
+cmd tentaworks back info w0
+mark w0
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig{Air:300}
+wait 30
+mark w1
+cmd tentaworks back info w1
+wait 60
+mark w2
+cmd tentaworks back info w2
+# R2: forced double, chest wins, the back slot refuses a second Rig, the back Rig is inert
+cmd tentaworks back try r2
+itemtip back r2
+wait 5
+close
+mark r2
+# R3: chestplate back, the back Rig is worn again
+cmd item replace entity @s armor.chest with minecraft:iron_chestplate
+wait 10
+cmd tentaworks back info r3
+# R1: a second Rig used from the hotbar is refused with the action-bar line
+cmd item replace entity @s hotbar.0 with tentaworks:copper_tentacle_rig{Air:900}
+key key.keyboard.1
+wait 5
+mark r1a
+key key.mouse.right
+wait 10
+cmd tentaworks back info r1
+cmd tentaworks back try r1
+cmd tentaworks inv r1
+mark r1
+# U1: back slot emptied, use puts the hotbar Rig into the back slot, the chestplate stays
+cmd tentaworks back set minecraft:empty 0
+wait 10
+cmd tentaworks back info u1a
+key key.mouse.right
+wait 10
+cmd tentaworks back info u1
+cmd tentaworks inv u1
+mark u1
+# M: Mending repairs the back slot Rig (Curios feeds curio stacks)
+cmd tentaworks back mending 20
+wait 5
+cmd tentaworks back info m0
+cmd summon experience_orb ~ ~ ~ {Value:10}
+cmd summon experience_orb ~ ~ ~ {Value:10}
+wait 40
+cmd tentaworks back info m1
+# E: Elytra in the chest, back slot Rig: no glide while deployed
+cmd tp @s 10010.5 -60 0.5 0 0
+cmd item replace entity @s armor.chest with minecraft:elytra
+wait 10
+doublejump
+wait 40
+look 0 0
+mark e0
+hold jump on
+wait 30
+hold jump off
+wait 20
+mark e1
+cmd tentaworks back info e1
+doublejump
+wait 60
+mark e2
+# E2: Set Down done: a fall with a jump tap opens the Elytra
+cmd tp @s 10010.5 -30 0.5 0 0
+wait 8
+taps 1
+wait 40
+mark e3
+wait 40
+mark end
+signal done
+wait 20
+quit

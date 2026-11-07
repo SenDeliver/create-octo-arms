@@ -19,8 +19,12 @@
 # ride suite (adr/0003: a Ride Stows the Rig: Create seat, boat, horse, minecart, chain conveyor; old-client server check; needs ANIMALS=true for the horse);
 # spec suite (a spectator wearing a Rig: no Double Jump, flight kept, Rig back in survival); dig suite (mining while carried as fast as standing);
 # sculk suite (Silent Step: a Sculk Sensor hears a Stowed walk and a plain carried Rig, not a carried Rig with Silent Step);
-# 1.20.1 branch: no Sable Ships, so no p9, rideaero, obs* or listship suites.
-# usage: tools/run_all.sh <tag>   logs land in tools/logs/<tag>-{main,life,creative,p1,p2,p3,p4,p5,p6,p6walk,p6fast,p7,p8,p8r16,pole,tank,cave,sneak,sneak2,flat,ride,spec,dig,sculk}-*
+# curios suite (issue #17, adr/0006, the only suite built with -PwithCurios: a Rig in the Curios back slot over an iron chestplate is a Rig and not armor: Rise + Air drain,
+# hits wear it and a fall does not, Mending, Rig Settings for the back slot, one Rig at a time both ways with the action-bar line, use puts a Rig into a free back slot,
+# a Rig forced into the chest mid-use Sets Down and wins, Elytra in the chest never opens while deployed and glides after Set Down, Dev2 shots);
+# curiosoff suite (same scene with the server config curios.backSlot = false: a Rig placed in the back slot is inert, the slot refuses Rigs, use swaps into the chest as vanilla does).
+# 1.20.1 branch: no Sable Ships, so no p9, rideaero, obs* or listship suites; every suite but curios and curiosoff runs without Curios (no-Curios regression path).
+# usage: tools/run_all.sh <tag>   logs land in tools/logs/<tag>-{main,life,creative,p1,p2,p3,p4,p5,p6,p6walk,p6fast,p7,p8,p8r16,pole,tank,cave,sneak,sneak2,flat,ride,spec,dig,sculk,curios,curiosoff}-*
 cd "$(dirname "$0")/.."
 TAG=${1:-reg}
 S=tools/scen
@@ -49,8 +53,10 @@ ANIMALS=true TIMELINE=$S/ride-timeline.txt tools/run_split.sh $S/scene-ride.txt 
 TIMELINE=$S/spec-timeline.txt tools/run_split.sh $S/empty.txt $S/spec-client.txt tools/logs/$TAG-spec
 tools/run_split.sh $S/empty.txt $S/dig-client.txt tools/logs/$TAG-dig
 tools/run_split.sh $S/scene-sculk.txt $S/sculk-client.txt tools/logs/$TAG-sculk
+GRADLE_ARGS="$GRADLE_ARGS -PwithCurios" TIMELINE=$S/curios-timeline.txt SCRIPT2=$S/curios-watch.txt tools/run_split.sh $S/scene-curios.txt $S/curios-client.txt tools/logs/$TAG-curios
+GRADLE_ARGS="$GRADLE_ARGS -PwithCurios" TW_BACK_SLOT=false tools/run_split.sh $S/scene-curios.txt $S/curiosoff-client.txt tools/logs/$TAG-curiosoff
 mkdir -p tools/shots && cp run/screenshots/*.png run2/screenshots/*.png tools/shots/ 2>/dev/null
-for r in main life creative p1 p2 p3 p4 p5 p6 p6walk p6fast p7 p8 p8r16 pole tank cave sneak sneak2 flat ride spec dig sculk; do echo "== $r"; python3 tools/analyze.py tools/logs/$TAG-$r | grep -v '^mark'; done
+for r in main life creative p1 p2 p3 p4 p5 p6 p6walk p6fast p7 p8 p8r16 pole tank cave sneak sneak2 flat ride spec dig sculk curios curiosoff; do echo "== $r"; python3 tools/analyze.py tools/logs/$TAG-$r | grep -v '^mark'; done
 python3 tools/spike_metrics.py tools/logs/$TAG
 python3 tools/p1_metrics.py tools/logs/$TAG-p1
 python3 tools/p2_metrics.py tools/logs/$TAG-p2
@@ -72,3 +78,5 @@ python3 tools/ride_metrics.py tools/logs/$TAG-ride
 python3 tools/spec_metrics.py tools/logs/$TAG-spec
 python3 tools/dig_metrics.py tools/logs/$TAG-dig
 python3 tools/sculk_metrics.py tools/logs/$TAG-sculk
+python3 tools/curios_metrics.py tools/logs/$TAG-curios
+python3 tools/curiosoff_metrics.py tools/logs/$TAG-curiosoff

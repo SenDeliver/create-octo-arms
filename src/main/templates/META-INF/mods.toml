@@ -14,7 +14,7 @@ displayURL="https://github.com/SenDeliver/create-octo-arms"
 logoFile="octo_arms_logo.png"
 logoBlur=false
 description='''Octo Arms, a Create addon: the Tentacle Rig, a Backtank fitted with four pneumatic Tentacles.
-Worn in the chest slot, it carries you over floors, walls and ceilings and lets you hang under ledges, powered by the Backtank's Air.
+Worn in the chest slot (or the Curios back slot, as a Rig that is not armor), it carries you over floors, walls and ceilings and lets you hang under ledges, powered by the Backtank's Air.
 Double Jump to activate, Double Jump again to be set down. Copper and Netherite tiers, three enchantments (Far Reach, Thrift, Swift),
 Sequenced Assembly and Mechanical Crafting recipes, goggles info, a Display Link source and a Ponder scene.'''
 
@@ -37,4 +37,11 @@ modId="create"
 mandatory=true
 versionRange="[6.0.8,6.1)"
 ordering="AFTER"
+side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="curios"
+mandatory=false
+versionRange="[5.3.0,)"
+ordering="NONE"
 side="BOTH"

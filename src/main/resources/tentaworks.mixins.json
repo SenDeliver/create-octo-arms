@@ -10,6 +10,7 @@
     "BacktankBlockEntityMixin",
     "EntityVibrationMixin",
     "LivingEntitySneakMixin",
+    "PlayerBackWearMixin",
     "PlayerHandsMixin",
     "PlayerSneakMixin",
     "ServerGamePacketListenerImplAccessor"

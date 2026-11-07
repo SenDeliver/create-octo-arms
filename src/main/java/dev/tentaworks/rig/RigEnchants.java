@@ -65,6 +65,11 @@ public final class RigEnchants {
         return 1.0 + level(rig, SWIFT) * TentaworksConfig.value(TentaworksConfig.ENCHANT_SWIFT);
     }
 
+    /** One of the Rig's own enchantments (they work in every slot the Rig is worn in). */
+    public static boolean isRigEnchant(Enchantment enchantment) {
+        return enchantment == FAR_REACH.get() || enchantment == THRIFT.get() || enchantment == SWIFT.get() || enchantment == SILENT_STEP.get();
+    }
+
     public static boolean silentStep(ItemStack rig) {
         return level(rig, SILENT_STEP) > 0;
     }

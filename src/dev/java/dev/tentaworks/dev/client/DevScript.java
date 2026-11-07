@@ -4,6 +4,9 @@ import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.client.RigClient;
 import dev.tentaworks.dev.DevTools;
 import dev.tentaworks.client.RigVisuals;
+import dev.tentaworks.rig.RigSlot;
+import dev.tentaworks.rig.WornRig;
+import dev.tentaworks.rig.RigAir;
 import dev.tentaworks.client.RigSettingsScreen;
 import dev.tentaworks.config.TentaworksClientConfig;
 import dev.tentaworks.network.RigSettingsPacket;
@@ -100,16 +103,16 @@ import java.util.Set;
  * Lines: wait N | await name (run/signal/name exists) | signal name (writes run/signal/c_name for rcon.py #await) | cmd /x (needs op) | shot name (toasts cleared first) | hud on|off | close | quit
  * | hold up|down|left|right|jump|shift|sprint on|off (re-pressed every tick) | taps N (jump down 1 tick, up 2, N times)
  * | doublejump (taps 2) | look yaw pitch | trace on|off (TRACE line per tick) | mark tag (CPOS line + /tentaworks pos tag)
- * | freeze ms (blocks the client thread: a real hitch, no packets) | TITLE lines whenever the on-screen subtitle changes (Create's backtank warnings)
+ * | freeze ms (blocks the client thread: a real hitch, no packets) | TITLE lines whenever the on-screen subtitle changes (Create's backtank warnings), OVERLAY lines whenever the action-bar text changes
  * | bind key.tentaworks.toggle key.keyboard.r (rebinds a KeyMapping, not saved to options.txt) | scroll N delta (N-th ScrollInput of the open screen, delta steps)
  * | rigs tag (CRIG lines: open Rig Settings screen values + stored Rig Settings per slot) | screen (SCREEN line: open screen class)
- * | rawsettings mainhand|offhand|chest height speed double_jump|key (sends the settings packet as is, unclamped)
+ * | rawsettings mainhand|offhand|chest|back height speed double_jump|key (sends the settings packet as is, unclamped)
  * | tooltips shift|noshift ns:id... (Create ItemDescription of each item, as with/without Shift)
  * | slot N [quick|pickup] (real container click on menu slot N) | enchbutton N (enchanting table option N, 0-based) | menu tag (CMENU lines: menu, anvil cost,
  * enchanting offers, non-inventory slots with enchantments) | reach tag (CREACH: effective Reach, top Speed, Thrift and Swift factors of the worn Rig)
  * | mouse x y (GUI coordinates, relative to an open container screen) | ponder ns:id (Ponder screen of that item) | ponderseek ticks
  * | goggles tag (CGOGGLE lines: the goggle text of the looked-at block entity)
- * | clearchat | jei ns:id recipes|uses ns:category (JEI recipe view, JEI only; our recipes only when the view has any) | itemtip chest|mainhand|N tag (CTIP lines: the real tooltip of that stack, drawn for a shot)
+ * | clearchat | jei ns:id recipes|uses ns:category (JEI recipe view, JEI only; our recipes only when the view has any) | itemtip chest|back|mainhand|N tag (CTIP lines: the real tooltip of that stack, drawn for a shot)
  * | icons ns:id... (items drawn large) | griplines on|off (debug Grip lines) | perf tag (CPERF: Tentacle draw time since the last perf) | sounds tag (CSOUND: Rig sounds heard, plants seen)
  * | lookat x y z (turns the eye to that point) | mousebtn left|right press|release (a real mouse button event, as GLFW sends it)
  * | hit tag (CHIT: the crosshair target, the Simulated hold interaction, steering wheel raw/effective angle)
@@ -137,6 +140,10 @@ public final class DevScript {
     private static int outTicks;
     private static Field subtitleField;
     private static String lastSubtitle;
+    private static Field overlayField;
+    private static Field overlayTimeField;
+    private static String lastOverlay;
+    private static int lastOverlayTime;
     private static boolean toastsCleared;
     private static String forge;
     private static final boolean SIMULATED = ModList.get() != null && ModList.get().isLoaded("simulated");
@@ -330,14 +337,14 @@ public final class DevScript {
                 case "screen" -> LOG.info("SCREEN {}", mc.screen == null ? "none" : mc.screen.getClass().getName());
                 case "rigs" -> {
                     if (mc.screen instanceof RigSettingsScreen rs) LOG.info("CRIG {} screen settings={}", a[1], rs.settings());
-                    for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND, EquipmentSlot.CHEST}) {
-                        ItemStack st = mc.player.getItemBySlot(slot);
+                    for (RigSlot slot : RigSlot.values()) {
+                        ItemStack st = slot.stack(mc.player);
                         if (!st.isEmpty()) LOG.info("CRIG {} slot={} item={} settings={}", a[1], slot.getName(), BuiltInRegistries.ITEM.getKey(st.getItem()),
                                 RigSettings.stored(st));
                     }
                 }
                 case "rawsettings" -> {
-                    EquipmentSlot slot = EquipmentSlot.byName(a[1]);
+                    RigSlot slot = RigSlot.byName(a[1]);
                     RigSettings raw = new RigSettings(Float.parseFloat(a[2]), Float.parseFloat(a[3]),
                             a[4].equals("key") ? RigSettings.ActivationMode.KEY : RigSettings.ActivationMode.DOUBLE_JUMP);
                     TentaworksNetwork.sendToServer(new RigSettingsPacket(slot, raw));
@@ -538,6 +545,7 @@ public final class DevScript {
                 case "itemtip" -> {
                     ItemStack st = switch (a[1]) {
                         case "chest" -> mc.player.getItemBySlot(EquipmentSlot.CHEST);
+                        case "back" -> RigSlot.BACK.stack(mc.player);
                         case "mainhand" -> mc.player.getMainHandItem();
                         default -> mc.player.getInventory().getItem(Integer.parseInt(a[1]));
                     };
@@ -548,7 +556,7 @@ public final class DevScript {
                     return;
                 }
                 case "reach" -> {
-                    ItemStack worn = mc.player.getItemBySlot(EquipmentSlot.CHEST);
+                    ItemStack worn = RigAir.worn(mc.player);
                     LOG.info("CREACH {} reach={} top={} thrift={} swift={}", a[1], String.format("%.2f", TentacleRigItem.reach(mc.player)),
                             String.format("%.2f", worn.getItem() instanceof TentacleRigItem ? TentacleRigItem.topSpeed(worn) : 0),
                             String.format("%.3f", RigEnchants.thrift(worn)), String.format("%.3f", RigEnchants.swift(worn)));
@@ -727,6 +735,19 @@ public final class DevScript {
             String text = sub == null ? null : sub.getString();
             if (text != null && !text.equals(lastSubtitle)) LOG.info("TITLE gt={} subtitle=\"{}\"", mc.level.getGameTime(), text);
             lastSubtitle = text;
+            if (overlayField == null) {
+                overlayField = Gui.class.getDeclaredField("overlayMessageString");
+                overlayField.setAccessible(true);
+                overlayTimeField = Gui.class.getDeclaredField("overlayMessageTime");
+                overlayTimeField.setAccessible(true);
+            }
+            Component over = (Component) overlayField.get(mc.gui);
+            String overlay = over == null ? null : over.getString();
+            int overlayTime = overlayTimeField.getInt(mc.gui);
+            // a new message with the same text only resets the timer (back to 60)
+            if (overlay != null && (!overlay.equals(lastOverlay) || overlayTime > lastOverlayTime)) LOG.info("OVERLAY gt={} text=\"{}\"", mc.level.getGameTime(), overlay);
+            lastOverlay = overlay;
+            lastOverlayTime = overlayTime;
         } catch (ReflectiveOperationException e) {
             LOG.error("script: cannot read the subtitle", e);
             subtitleField = null;
@@ -738,14 +759,15 @@ public final class DevScript {
         Vec3 d = lastPos == null ? Vec3.ZERO : pos.subtract(lastPos);
         lastPos = pos;
         Entity vehicle = p.getVehicle();
-        LOG.info("TRACE t={} gt={} pos={} d={} cmd={} held={} state={} fly={} mayfly={} press={} jumpkey={} ground={} hp={} air={} ff={} sheld={} carry={} wa={} sneak={} crouch={} pose={} eye={} veh={} ride={} hold={} vrot={} sprint={} fovmod={} bob={} dm={} wd={}",
+        LOG.info("TRACE t={} gt={} pos={} d={} cmd={} held={} state={} fly={} mayfly={} press={} jumpkey={} ground={} hp={} air={} ff={} sheld={} carry={} wa={} sneak={} crouch={} pose={} eye={} veh={} ride={} hold={} vrot={} sprint={} fovmod={} bob={} dm={} wd={} armor={} rigslot={}",
                 clientTicks, mc.level.getGameTime(), fmt(pos), fmt(d), fmt(RigClient.motion()), RigClient.heldCount(), RigClient.state(),
-                p.getAbilities().flying, p.getAbilities().mayfly, RigClient.jumpPressed(), mc.options.keyJump.isDown(), p.onGround(), p.getHealth(), DevTools.air(p.getItemBySlot(EquipmentSlot.CHEST)), p.isFallFlying(),
+                p.getAbilities().flying, p.getAbilities().mayfly, RigClient.jumpPressed(), mc.options.keyJump.isDown(), p.onGround(), p.getHealth(), DevTools.air(RigAir.worn(p)), p.isFallFlying(),
                 RigClient.shipGrips(), RigClient.carryShip() == null ? "-" : RigClient.carryShip().id(), String.format(Locale.ROOT, "%.4f", p.walkAnimation.speed()),
                 p.isShiftKeyDown(), p.isCrouching(), p.getPose(), String.format(Locale.ROOT, "%.3f", p.getEyeHeight()),
                 vehicle == null ? "-" : BuiltInRegistries.ENTITY_TYPE.getKey(vehicle.getType()), ChainConveyorRidingHandler.ridingChainConveyor != null ? "chain" : "-",
                 hold(), vehicle == null ? "-" : String.format(Locale.ROOT, "%.1f", vehicle.getYRot()),
-                p.isSprinting(), String.format(Locale.ROOT, "%.3f", p.getFieldOfViewModifier()), String.format(Locale.ROOT, "%.3f", p.bob), fmt(p.getDeltaMovement()), String.format(Locale.ROOT, "%.3f", p.walkDist - p.walkDistO));
+                p.isSprinting(), String.format(Locale.ROOT, "%.3f", p.getFieldOfViewModifier()), String.format(Locale.ROOT, "%.3f", p.bob), fmt(p.getDeltaMovement()), String.format(Locale.ROOT, "%.3f", p.walkDist - p.walkDistO),
+                p.getArmorValue(), WornRig.of(p).worn() ? WornRig.of(p).slot().getName() : "-");
         for (var other : mc.level.players()) {
             if (other == p) continue;
             RigVisuals.Visual v = RigVisuals.get(other);

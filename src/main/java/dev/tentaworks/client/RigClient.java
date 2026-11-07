@@ -17,7 +17,12 @@ import dev.tentaworks.rig.RigState;
 import dev.tentaworks.rig.TentacleGait;
 import dev.tentaworks.rig.Tentacles;
 import dev.tentaworks.rig.TentacleRigItem;
+import dev.tentaworks.rig.RigSlot;
+import dev.tentaworks.rig.WornRig;
 import net.minecraft.ChatFormatting;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.network.chat.CommonComponents;
@@ -26,7 +31,6 @@ import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.Level;
@@ -63,6 +67,8 @@ public final class RigClient {
     public static final int DOUBLE_JUMP_TICKS = 7;
 
     private static RigState state = RigState.STOWED;
+    /** Where the worn Rig sat last tick: a Rig that moves between the chest slot and the Back Slot mid-use Sets Down. */
+    private static RigSlot wornSlot;
     private static final TentacleGait GAIT = new TentacleGait();
     private static int heldCount;
     private static Frame carryShip;
@@ -131,12 +137,16 @@ public final class RigClient {
         ticks++;
         jumpPressed = input.jumping && !jumpWasDown;
         jumpWasDown = input.jumping;
-        if (!TentacleRigItem.isWorn(player)) {
+        WornRig rig = WornRig.of(player);
+        if (!rig.worn()) {
             while (TentaworksKeys.TOGGLE.consumeClick()) {
             }
+            wornSlot = null;
             if (state != RigState.STOWED) setState(player, RigState.STOWED);
             return;
         }
+        if (wornSlot != null && wornSlot != rig.slot() && state != RigState.STOWED) setState(player, RigState.STOWED);
+        wornSlot = rig.slot();
         if (Rides.riding(player) || player.isSpectator()) {
             while (TentaworksKeys.TOGGLE.consumeClick()) {
             }
@@ -473,12 +483,28 @@ public final class RigClient {
         RigVisuals.remote(packet);
     }
 
+    /**
+     * A Rig in the Back Slot says what it is there (adr/0006): not armor, idle armor enchantments; or inert while the chest slot
+     * holds a Rig too, or while the server config has the Back Slot off.
+     */
+    @SubscribeEvent
+    public static void onTooltip(ItemTooltipEvent event) {
+        Player p = event.getEntity();
+        ItemStack stack = event.getItemStack();
+        if (p == null || !(stack.getItem() instanceof TentacleRigItem) || WornRig.backRig(p) != stack) return;
+        String key = WornRig.chestRig(p) ? "tentaworks.rig.back.inert" : !WornRig.backSlotAllowed() ? "tentaworks.rig.back.off" : "tentaworks.rig.back.not_armor";
+        boolean inert = !key.endsWith("not_armor");
+        event.getToolTip().add(Component.translatable(key).withStyle(inert ? ChatFormatting.RED : ChatFormatting.GRAY));
+        if (!inert && TentacleRigItem.hasArmorEnchant(stack))
+            event.getToolTip().add(Component.translatable("tentaworks.rig.back.idle_enchants").withStyle(ChatFormatting.DARK_GRAY));
+    }
+
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         while (TentaworksKeys.SETTINGS.consumeClick()) {
-            if (mc.player != null && mc.screen == null && TentacleRigItem.isWorn(mc.player)) RigSettingsScreen.open(EquipmentSlot.CHEST);
+            if (mc.player != null && mc.screen == null) RigSettingsScreen.open(WornRig.of(mc.player).slot());
         }
     }
 
