@@ -126,7 +126,8 @@ check('F2 Far Reach III Copper hangs from the ceiling only', w and max(ys) - min
       and all(x['state'] == 'ACTIVE' and x['grips'] >= 2 and x['cf'] == 1 for _, x in sw),
       f'feet {ys[-1]:.3f}, ceiling face -41 is {-41 - ys[-1] - 0.9:.2f} above the body, y range {max(ys) - min(ys):.4f}, client {states(w)}, server {states(sw)}, grips min {min(x["grips"] for _, x in sw)}')
 w = span(tr, mk['f2hang'] + 1, mk['f2fell']); sw = span(st, mk['f2hang'] + 1, mk['f2fell'])
-check('F2 control: plain Copper in the same spot falls', 'FALLING' in states(w) and w[-1][1]['p'][1] < ys[-1] - 5,
+# the swap to a plain Copper is a new worn stack: the Rig Sets Down first (adr/0006), then the body drops to the floor
+check('F2 control: swapped to a plain Copper the Rig Sets Down and falls', ('FALLING' in states(w) or 'STOWED' in states(w)) and 'STOWED' in states(sw) and w[-1][1]['p'][1] < ys[-1] - 5,
       f'client {states(w)}, feet {ys[-1]:.2f} -> {w[-1][1]["p"][1]:.2f}, server {states(sw)}')
 warn = s.count('forcing Falling') + s.count('moves against Crawl')
 check('Server never forced Falling (Far Reach Grips accepted)', warn == 0, f'{warn} warn lines')
