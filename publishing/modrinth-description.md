@@ -48,6 +48,7 @@ Octo Arms works fully with Sable Ships, and Create Aeronautics Ships are Sable S
 - **Create Display Link**: a Rig Block is a "Rig Air" source for Display Boards and Nixie Tubes.
 - **JEI** (optional): all recipes in Create's own categories and in Smithing.
 - **Sable** (optional): full Ship support, Create Aeronautics compatible.
+- **Curios** (optional): the Rig fits the back slot, so a chestplate stays on. A Rig there is a Rig, not armor.
 
 ![Engineer's Goggles on a placed Rig Block](https://raw.githubusercontent.com/SenDeliver/create-octo-arms/1.21.1/docs/images/goggles-rig-block.png)
 
@@ -59,8 +60,9 @@ Two builds, same version number, same gameplay. Pick the file for your Minecraft
 |---|---|---|
 | Mod loader | NeoForge 21.1.228+ | Forge 47.1.3+ |
 | Java | 21 | 17 |
-| [Create](https://modrinth.com/mod/create) | 6.0.10+, below 6.1.0 | 6.0.8 (the last Create for 1.20.1) |
-| [Sable](https://modrinth.com/mod/sable) | optional, 2.0.5+, below 2.1 (for Ships) | not available |
+| [Create](https://modrinth.com/mod/create) | 6.0.4+, below 6.1.0 | 6.0.4+, below 6.1.0 (6.0.8 is the last Create for 1.20.1) |
+| [Sable](https://modrinth.com/mod/sable) | optional, 2.0.0+, below 2.1 (for Ships) | not available |
+| [Curios](https://modrinth.com/mod/curios) | optional, 9.2.0+ (Rig in the back slot) | optional, 5.3.0+ (Rig in the back slot) |
 | [JEI](https://modrinth.com/mod/jei) | optional | optional (15.x) |
 | Jar | `octo-arms-<version>+mc1.21.1.jar` | `octo-arms-<version>+mc1.20.1.jar` |
 
