@@ -17,7 +17,8 @@ Platforms: the same version number ships for every supported Minecraft version (
 ### Compatibility
 
 - Network changed (registrar "9"): the Rig Settings packet names the slot, so clients and servers must both run this version or newer.
-- Curios is optional on both lines: 1.21.1 Curios 9.5.1+ (NeoForge), 1.20.1 Curios 5.3.0+ (Forge). Nothing changes without it.
+- Curios is optional on both lines: 1.21.1 Curios 9.2.0+ (NeoForge), 1.20.1 Curios 5.3.0+ (Forge). Nothing changes without it.
+- Wider dependency ranges, checked by compiling against every release and comparing every mixin target: Create 6.0.4 or newer (was 6.0.10 on 1.21.1, 6.0.8 on 1.20.1), Sable 2.0.0 or newer on 1.21.1 (was 2.0.5; built against 2.0.6 now). Create 6.0.0 to 6.0.3 stay out: they lack the recipe datagen API this mod uses.
 
 ## [1.7.1] - 2026-11-07
 

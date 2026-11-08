@@ -11,7 +11,7 @@ For Minecraft **1.21.1** (NeoForge) and **1.20.1** (Forge), see [Downloads](#dow
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Minecraft 1.21.1](https://img.shields.io/badge/Minecraft-1.21.1-62B47A.svg)](https://www.minecraft.net/)
 [![NeoForge](https://img.shields.io/badge/Mod%20Loader-NeoForge-E04E14.svg)](https://neoforged.net/)
-[![Create 6.0](https://img.shields.io/badge/Create-6.0.10%2B-B8860B.svg)](https://github.com/Creators-of-Create/Create)
+[![Create 6.0](https://img.shields.io/badge/Create-6.0.4%2B-B8860B.svg)](https://github.com/Creators-of-Create/Create)
 
 ![A player lifted off the ground by four copper Tentacles of a Tentacle Rig](docs/images/hero-carried-on-tentacles.png)
 
@@ -105,7 +105,7 @@ Ponder (hold `W` over a Rig or Tentacle) shows all of this step by step.
 
 ## Curios back slot
 
-With Curios installed (1.21.1: Curios 9.5.1 or newer; 1.20.1: Curios 5.3.0 or newer) both Rigs fit the `back` slot and players get that slot from this mod. A Rig in the back slot is a Rig, not armor:
+With Curios installed (1.21.1: Curios 9.2.0 or newer; 1.20.1: Curios 5.3.0 or newer) both Rigs fit the `back` slot and players get that slot from this mod. A Rig in the back slot is a Rig, not armor:
 
 - Works: Air (also for a Diving Helmet and the air HUD), Reach, Far Reach, Thrift, Swift, Silent Step, Capacity, Rig Settings, the Rig Settings key, Mending, repair at an anvil. Hits wear it like chest armor, it never breaks.
 - Does nothing: armor value, armor toughness, knockback resistance, Protection and its kinds, Thorns. The tooltip says so.
@@ -146,11 +146,11 @@ Limits:
 |---|---|
 | Minecraft | 1.21.1 |
 | NeoForge | 21.1.228 or newer |
-| Create | 6.0.10 or newer, below 6.1.0 |
+| Create | 6.0.4 or newer, below 6.1.0 |
 | JEI | optional |
-| Sable | optional, 2.0.5 or newer, below 2.1 (for Ships) |
+| Sable | optional, 2.0.0 or newer, below 2.1 (for Ships) |
 
-Built and tested with NeoForge 21.1.250 and Create 6.0.10; Ships with Sable 2.0.5 and Create Aeronautics 1.3.2.
+Built and tested with NeoForge 21.1.250 and Create 6.0.10; Ships with Sable 2.0.6 and Create Aeronautics 1.3.2.
 
 ## Downloads
 

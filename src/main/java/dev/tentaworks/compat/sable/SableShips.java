@@ -95,7 +95,7 @@ public final class SableShips implements ShipFrames {
         return s != null && frame.id().equals(s.getUniqueId());
     }
 
-    /** Sable internal (its LivingEntity mixin), the only one used: pinned to Sable [2.0.5,2.1). */
+    /** Sable internal (its LivingEntity mixin), the only one used: descriptor identical across Sable 1.0.4 to 2.0.6, declared range [2.0.0,2.1). */
     @Override
     public void dropInherited(Entity entity) {
         if (entity instanceof LivingEntityMovementExtension m) m.sable$getInheritedVelocity().zero();
