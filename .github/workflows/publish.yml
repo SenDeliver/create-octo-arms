@@ -60,6 +60,7 @@ jobs:
             echo "dependencies<<DEPS_EOF"
             echo "create(required)"
             echo "jei(optional)"
+            echo "curios(optional)"
             if [ "$mc" = 1.21.1 ]; then echo "sable(optional)"; fi
             echo "DEPS_EOF"
           } >> "$GITHUB_OUTPUT"
