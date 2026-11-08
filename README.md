@@ -20,7 +20,7 @@ For Minecraft **1.21.1** (NeoForge) and **1.20.1** (Forge), see [Downloads](#dow
 This branch (`1.20.1`) is the Forge 1.20.1 build of Octo Arms. The NeoForge 1.21.1 build is on branch `1.21.1`; `main` is frozen at 1.5.0. Pull requests go to the branch of the version they change.
 
 - Same gameplay as the 1.21.1 build of the same version, except: no Sable Ships and no in-game config screen (the config files work the same).
-- Forge 47 (1.20.1), Create 6.0.8, Java 17.
+- Forge 47 (1.20.1), Create 6.0.4 or newer (6.0.8 is the last Create for 1.20.1), Java 17.
 - Jars carry the Minecraft version: `octo-arms-<version>+mc1.20.1.jar`, release tags `v<version>+mc1.20.1`.
 - Rigs are saved as item NBT here (data components on 1.21.1). Worlds, clients and servers do not mix between the two Minecraft versions.
 
@@ -148,7 +148,7 @@ Two builds share one version number and the same gameplay. Ships (Sable) are 1.2
 
 ## Install
 
-1. Install Forge 1.20.1 and Create 6.0.8.
+1. Install Forge 1.20.1 and Create 6.0.4 or newer (6.0.8 is the last Create for 1.20.1).
 2. Drop the `octo-arms-<version>+mc1.20.1.jar` file into your `mods/` folder.
 3. Install it on **both** the client and the server. Clients and server must use the same Octo Arms version and the same Minecraft version: a 1.20.1 client cannot join a 1.21.1 server, and 1.0 clients cannot join a 1.1 server.
 
