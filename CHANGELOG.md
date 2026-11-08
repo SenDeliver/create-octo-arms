@@ -9,6 +9,8 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-11-08
+
 ### Added
 
 - Curios support (issue #17): with Curios installed the Rig fits the back slot, so a chestplate stays on. A Rig in the back slot is a Rig and not armor: Air, Reach, Far Reach, Thrift, Swift, Silent Step, Capacity and Rig Settings all work from there, Create's Diving Helmet and air HUD draw on it, Mending repairs it and hits wear it like chest armor; it gives no armor value and Protection, Thorns and the other armor enchantments do nothing there (the tooltip says so). One Rig at a time: the back slot refuses a Rig while the chest slot holds one and the other way round, with an action-bar line; if both get one anyway, the chest Rig wins and the other is inert. A Rig that changes slot or is swapped for another while out Sets Down first. Using a Rig from the hand with a chestplate on puts it into a free back slot; with an empty chest slot it is worn as armor, as before. Elytra in the chest slot and the Rig in the back slot work together: the Elytra never opens while the Rig is deployed. Both Rigs are tagged `curios:back`; players get the slot from the mod's own Curios entity file.
@@ -261,7 +263,8 @@ First release as **Create: Octo Arms** (mod id `tentaworks`), server-internal, n
 
 - Earlier builds were internal test versions and were not published.
 
-[Unreleased]: https://github.com/SenDeliver/create-octo-arms/compare/v1.7.1%2Bmc1.21.1...HEAD
+[Unreleased]: https://github.com/SenDeliver/create-octo-arms/compare/v1.8.0%2Bmc1.21.1...HEAD
+[1.8.0]: https://github.com/SenDeliver/create-octo-arms/compare/v1.7.1%2Bmc1.21.1...v1.8.0%2Bmc1.21.1
 [1.7.1]: https://github.com/SenDeliver/create-octo-arms/compare/v1.7.0%2Bmc1.21.1...v1.7.1%2Bmc1.21.1
 [1.7.0]: https://github.com/SenDeliver/create-octo-arms/compare/v1.6.0%2Bmc1.21.1...v1.7.0%2Bmc1.21.1
 [1.6.0]: https://github.com/SenDeliver/create-octo-arms/compare/v1.5.1%2Bmc1.21.1...v1.6.0%2Bmc1.21.1
