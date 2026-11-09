@@ -7,9 +7,11 @@ import dev.tentaworks.compat.ShipBody;
 import dev.tentaworks.compat.ShipFrames;
 import dev.tentaworks.config.TentaworksConfig;
 import dev.tentaworks.mixin.CreeperAccessor;
+import dev.tentaworks.network.ActuatorFxPacket;
 import dev.tentaworks.network.ActuatorStatePacket;
 import dev.tentaworks.network.RigGrabPacket;
 import dev.tentaworks.registry.TentaworksAttachments;
+import dev.tentaworks.registry.TentaworksLang;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
@@ -77,7 +79,8 @@ import java.util.function.Consumer;
  * body plus the offset it had at the start, rotation kept ({@value #SHIP_GAIN}/s of the error plus the wearer's move, which also
  * cancels gravity). Grips on it do not hold the wearer up while held.
  * Every hold ends in {@link #release}: set down where it is (calm for {@value #CALM_TICKS} ticks, onto a seat, boat or minecart
- * when one is under the crosshair or the target) or thrown (awake at once, its Impact armed). The automatic ends are
+ * when one is under the crosshair or the target) or thrown (awake at once, its Impact armed, {@link ActuatorFxPacket} THROW to
+ * the clients). The automatic ends are
  * {@link Hold#ends}, plus logout and the target or wearer changing dimension; Stow, Setting Down, Rides, glides and Falling
  * keep the hold.
  */
@@ -87,7 +90,6 @@ public final class Grab {
     public static final TagKey<EntityType<?>> BOSSES = TagKey.create(Registries.ENTITY_TYPE, TentaworksIds.id(TentaworksIds.BOSSES));
     static final double SHIP_GAIN = 10.0;
     static final double SHIP_MAX_SPEED = 30.0;
-    public static final String REFUSAL = "tentaworks.refusal.grab.";
     private static final ResourceLocation HEAVY_ID = TentaworksIds.id(TentaworksIds.ACTUATOR_HEAVY);
     private static final Map<UUID, Held> HOLDS = new HashMap<>();
     private static final Map<UUID, Integer> STARTED = new HashMap<>();
@@ -429,7 +431,7 @@ public final class Grab {
 
     private static void refuse(ServerPlayer wearer, @Nullable Entity target, String why, double mass) {
         listener.accept(new Event(wearer, "refuse", target, why, 0, 0, mass));
-        reply(wearer, why.isEmpty() ? "" : REFUSAL + why);
+        reply(wearer, why.isEmpty() ? "" : TentaworksLang.refusalKey(TentaworksLang.GRAB, why));
     }
 
     private static void throwAlong(ServerPlayer wearer, Vec3 look) {
@@ -439,8 +441,10 @@ public final class Grab {
         }
         if (!Double.isFinite(look.x) || !Double.isFinite(look.y) || !Double.isFinite(look.z) || look.lengthSqr() < 1.0E-6) look = wearer.getViewVector(1.0F);
         double speed = Actuators.throwSpeed(RigAir.worn(wearer));
+        Vec3 velocity = look.normalize().scale(speed);
         RigAir.pay(wearer, Actuators.throwCost(wearer));
-        release(wearer, "throw", look.normalize().scale(speed));
+        PacketDistributor.sendToPlayersTrackingEntityAndSelf(wearer, ActuatorFxPacket.thrown(wearer.getId(), velocity));
+        release(wearer, "throw", velocity);
         RigEvents.fire(wearer, RigEvents.THROW, speed);
     }
 

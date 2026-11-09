@@ -5,6 +5,7 @@ import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.compat.ShipFrames;
 import dev.tentaworks.config.TentaworksConfig;
 import dev.tentaworks.network.FarUsePacket;
+import dev.tentaworks.registry.TentaworksLang;
 import dev.tentaworks.rig.RigSettings.FarUseMode;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -59,8 +60,8 @@ import java.util.UUID;
 public final class FarUse {
     public static final ResourceLocation REACH_ID = TentaworksIds.id(TentaworksIds.FAR_USE_REACH);
     public static final ResourceLocation STRIKE_ID = TentaworksIds.id(TentaworksIds.FAR_USE_STRIKE);
-    public static final String NO_SIGHT = "tentaworks.refusal.far_use.no_sight";
-    public static final String PLAYERS = "tentaworks.refusal.far_use.players";
+    public static final String NO_SIGHT = TentaworksLang.refusalKey(TentaworksLang.FAR_USE, "no_sight");
+    public static final String PLAYERS = TentaworksLang.refusalKey(TentaworksLang.FAR_USE, "players");
     /** Ticks a {@link FarUsePacket} keeps the Right Actuator at its target. */
     public static final int TTL = 10;
     static final int CHARGE_GAP = 1;
@@ -80,12 +81,16 @@ public final class FarUse {
         OUT
     }
 
-    /** Server ticks of the wearer's last charge, packet and refusal (one click fires several events: both hands, interact-at and interact). */
+    /**
+     * Server ticks of the wearer's last charge, packet and refusal (one click fires several events: both hands, interact-at and
+     * interact), and the block being mined past arm's length (null none).
+     */
     private static final class Track {
         int charged = Integer.MIN_VALUE / 2;
         int sent = Integer.MIN_VALUE / 2;
         int refused = Integer.MIN_VALUE / 2;
         String refusal = "";
+        @Nullable BlockPos mining;
     }
 
     private FarUse() {
@@ -155,6 +160,21 @@ public final class FarUse {
         boolean on = lifting(player);
         lift(player.getAttribute(Attributes.BLOCK_INTERACTION_RANGE), REACH_ID, on ? TentacleRigItem.reach(player) : 0);
         lift(player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE), STRIKE_ID, on ? Actuators.strikeReach(player) : 0);
+        keepMining(player, on);
+    }
+
+    /** While a far block is mined the Right Actuator stays at it: the {@link FarUsePacket} is told again before its ttl runs out. */
+    private static void keepMining(ServerPlayer player, boolean on) {
+        Track t = TRACKS.get(player.getUUID());
+        if (t == null || t.mining == null) return;
+        if (!on || player.level().getBlockState(t.mining).isAir()) {
+            t.mining = null;
+            return;
+        }
+        int now = player.server.getTickCount();
+        if (!due(t.sent, now, TTL - PACKET_GAP)) return;
+        t.sent = now;
+        PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new FarUsePacket(player.getId(), Vec3.atCenterOf(t.mining), FarUsePacket.Kind.BLOCK, TTL));
     }
 
     private static void lift(@Nullable AttributeInstance inst, ResourceLocation id, double target) {
@@ -184,9 +204,12 @@ public final class FarUse {
         return far(player, Attributes.ENTITY_INTERACTION_RANGE, STRIKE_ID, target.getBoundingBox().distanceToSqr(player.getEyePosition()));
     }
 
-    /** A block action at {@code pos} ({@code point} the clicked spot, or null): false when Far Use refuses it; an accepted one {@code acts}. */
+    /**
+     * A block action at {@code pos} ({@code point} the clicked spot, or null): false when Far Use refuses it; an accepted one
+     * {@code acts}. A Grab's claim question ({@link Grab#asking}) is no action: it passes untouched.
+     */
     private static boolean block(ServerPlayer player, BlockPos pos, @Nullable Vec3 point, boolean acts) {
-        if (blockFar(player, pos) != Far.FAR) return true;
+        if (Grab.asking() || blockFar(player, pos) != Far.FAR) return true;
         if (!WorkSight.seesBlock(player.level(), pos, point, player.getEyePosition(), Grips.body(player))) {
             refuse(player, NO_SIGHT);
             return false;
@@ -195,9 +218,9 @@ public final class FarUse {
         return true;
     }
 
-    /** A hit or use on {@code target}: false when Far Use refuses it; an accepted one acts. */
+    /** A hit or use on {@code target}: false when Far Use refuses it; an accepted one acts. A Grab's claim question passes. */
     private static boolean entity(ServerPlayer player, Entity target) {
-        if (entityFar(player, target) != Far.FAR) return true;
+        if (Grab.asking() || entityFar(player, target) != Far.FAR) return true;
         if (target instanceof Player && !TentaworksConfig.value(TentaworksConfig.FAR_USE_PLAYERS)) {
             refuse(player, PLAYERS);
             return false;
@@ -235,14 +258,34 @@ public final class FarUse {
     }
 
     private static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock e) {
-        if (e.getAction() != PlayerInteractEvent.LeftClickBlock.Action.START || !(e.getEntity() instanceof ServerPlayer p)) return;
-        if (block(p, e.getPos(), null, true)) return;
+        if (!(e.getEntity() instanceof ServerPlayer p)) return;
+        if (e.getAction() != PlayerInteractEvent.LeftClickBlock.Action.START) {
+            if (e.getAction() != PlayerInteractEvent.LeftClickBlock.Action.CLIENT_HOLD) mine(p, null);
+            return;
+        }
+        if (block(p, e.getPos(), null, true)) {
+            mine(p, blockFar(p, e.getPos()) == Far.FAR ? e.getPos().immutable() : null);
+            return;
+        }
+        mine(p, null);
         e.setCanceled(true);
         p.connection.send(new ClientboundBlockUpdatePacket(p.level(), e.getPos()));
     }
 
     private static void onBreak(BlockEvent.BreakEvent e) {
-        if (e.getPlayer() instanceof ServerPlayer p && !block(p, e.getPos(), null, false)) e.setCanceled(true);
+        if (!(e.getPlayer() instanceof ServerPlayer p)) return;
+        if (e.getPos().equals(mining(p))) mine(p, null);
+        if (!block(p, e.getPos(), null, false)) e.setCanceled(true);
+    }
+
+    private static @Nullable BlockPos mining(ServerPlayer player) {
+        Track t = TRACKS.get(player.getUUID());
+        return t == null ? null : t.mining;
+    }
+
+    private static void mine(ServerPlayer player, @Nullable BlockPos pos) {
+        Track t = pos == null ? TRACKS.get(player.getUUID()) : TRACKS.computeIfAbsent(player.getUUID(), u -> new Track());
+        if (t != null) t.mining = pos;
     }
 
     private static void onRightClickBlock(PlayerInteractEvent.RightClickBlock e) {

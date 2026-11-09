@@ -80,6 +80,7 @@ Phase 7 adds no keys: a placed Rig Block only syncs this NBT to clients more oft
 | `tentaworks:rig_grab` | client → server | kind enum ordinal (`START, SHIP, RELEASE, THROW`), entity id + 1 var-int, block pos, face byte (3D data value), look `Vec3`. START names the mob, SHIP the plot block and face, THROW the look. 2.0 |
 | `tentaworks:actuator_state` | server → client | entity id var-int, held entity id + 1 var-int (0 = none), heavy bool, Ship present bool [+ block pos], Ship face byte, refusal lang key UTF-8 (≤ 256, empty = none). 2.0 |
 | `tentaworks:far_use` | server → client | entity id var-int, target `Vec3`, kind byte (`0` block, `1` entity), ttl ticks var-int. 2.0 |
+| `tentaworks:actuator_fx` | server → client | kind byte (`0` THROW, `1` IMPACT), entity id var-int, at `Vec3`, speed float. THROW: the wearer, at = throw velocity (blocks per tick); IMPACT: the Thrown entity, at = its box centre, speed blocks per tick. 2.0 |
 
 `RigState` order is part of the wire format: `STOWED, ACTIVE, SETTING_DOWN, FALLING, CRAWL`. A change needs a registrar version bump.
 Phase 2 appended `CRAWL` and bumped the registrar from `1` to `2`: a phase-1 client cannot join a phase-2 server (NeoForge refuses the channel), and the other way round.
@@ -90,7 +91,7 @@ Phase 6 changed both Rig payloads to the fixed 4-slot Tentacles with a Step phas
 Phase 8 kept every payload as is but bumped the registrar to `7` (server packet handling changed); 1.0.0 shipped with `7`.
 1.1.0 keeps every payload byte-identical but bumps the registrar to `8`: a Grip point and block may now be in a Ship's plot coords, and the `rig_motion` motion is the Rig's own move without the carry Ship's. 1.0 clients cannot join a 1.1 server, and the other way round.
 1.8.0 bumps the registrar to `9`: `rig_settings` can name the Back Slot (`3`).
-2.0.0 bumps the registrar to `10`: `rig_settings` carries `far_use` at the end, and `rig_grab`, `actuator_state` and `far_use` are new.
+2.0.0 bumps the registrar to `10`: `rig_settings` carries `far_use` at the end, and `rig_grab`, `actuator_state`, `far_use` and `actuator_fx` are new.
 
 ## Server Config (`tentaworks-server.toml`, per world in `serverconfig/`)
 

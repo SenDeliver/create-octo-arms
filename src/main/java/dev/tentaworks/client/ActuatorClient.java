@@ -3,6 +3,7 @@ package dev.tentaworks.client;
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.compat.Frame;
 import dev.tentaworks.compat.ShipFrames;
+import dev.tentaworks.network.ActuatorFxPacket;
 import dev.tentaworks.network.ActuatorStatePacket;
 import dev.tentaworks.network.FarUsePacket;
 import dev.tentaworks.network.RigGrabPacket;
@@ -39,11 +40,18 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Client side of the Actuators: what each player's Actuators hold and where a Far Use reaches (from the server), and the
  * wearer's Grab key. The Grab key with an empty main hand asks for a Grab of the mob or Ship block under the crosshair within
- * Reach; again while holding sets it down; attack while holding Throws.
+ * Reach; again while holding sets it down; attack while holding Throws. The wearer's own Far Use reach comes from the server's
+ * {@link FarUsePacket} like everyone else's, so it shows only for actions the server took.
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public final class ActuatorClient {
     private static final Int2ObjectMap<State> STATES = new Int2ObjectOpenHashMap<>();
+    /**
+     * Ticks after the wearer's own Throw request (or until the server's answer ends the hold) in which attacks stay with it and
+     * the server's THROW is not played again.
+     */
+    static final int THROW_WAIT = 20;
+    private static int throwSent = Integer.MIN_VALUE / 2;
 
     /**
      * One player's Actuators. {@code heldId} the held mob (-1 none), {@code ship} the held Ship block (null none),
@@ -98,6 +106,7 @@ public final class ActuatorClient {
     public static void onState(ActuatorStatePacket packet) {
         put(packet.entityId(), STATES.getOrDefault(packet.entityId(), State.NONE).held(packet));
         LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null && packet.entityId() == player.getId() && !get(player).holding()) throwSent = Integer.MIN_VALUE / 2;
         if (player != null && packet.entityId() == player.getId() && !packet.refusal().isEmpty())
             player.displayClientMessage(Component.translatable(packet.refusal()).withStyle(ChatFormatting.RED), true);
     }
@@ -106,26 +115,34 @@ public final class ActuatorClient {
         put(packet.entityId(), STATES.getOrDefault(packet.entityId(), State.NONE).far(packet.target(), packet.ttl()));
     }
 
-    /** The wearer's own Far Use, predicted (the server sends {@link FarUsePacket} only to the others): reach {@code target} for {@code ttl} ticks. */
-    public static void predictFarUse(Vec3 target, int ttl) {
-        LocalPlayer player = Minecraft.getInstance().player;
-        if (player != null) put(player.getId(), get(player).far(target, Math.max(ttl, get(player).farTtl)));
-    }
-
     /**
-     * A Throw by the wearer {@code wearerId}: camera kick (own wearer), follow-through, and a watch on the thrown mob for its Impact.
-     * The wearer's own attack calls it; observers infer it from a fast release until a server signal calls it for them.
+     * The server's Throw and Impact signals. The wearer's own Throw already played when the attack sent it, so its THROW (sent
+     * just before the state that ends the hold) comes back silent.
      */
-    public static void onThrow(int wearerId) {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null || !(mc.level.getEntity(wearerId) instanceof Player wearer)) return;
-        ActuatorFx.thrown(wearer, get(wearer).heldId, wearer.getViewVector(1.0F));
+    public static void onFx(ActuatorFxPacket packet) {
+        switch (packet.kind()) {
+            case THROW -> {
+                LocalPlayer player = Minecraft.getInstance().player;
+                if (player == null || packet.entityId() != player.getId() || !throwWaiting(player)) onThrow(packet.entityId(), packet.at());
+            }
+            case IMPACT -> onImpact(packet.at(), packet.speed());
+        }
     }
 
-    /** An Impact of the Thrown {@code thrownId} at {@code at}, {@code speed} blocks per tick: sparks and a clank, once per Throw. */
-    public static void onImpact(int thrownId, Vec3 at, double speed) {
-        ActuatorFx.impacted(thrownId);
+    /** A Throw by the wearer {@code wearerId} along {@code dir}: camera kick (own wearer) and follow-through. */
+    public static void onThrow(int wearerId, Vec3 dir) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level != null && mc.level.getEntity(wearerId) instanceof Player wearer) ActuatorFx.thrown(wearer, dir);
+    }
+
+    /** An Impact at {@code at}, {@code speed} blocks per tick: sparks and a clank. */
+    public static void onImpact(Vec3 at, double speed) {
         ActuatorFx.impact(at, speed);
+    }
+
+    private static boolean throwWaiting(LocalPlayer player) {
+        int age = player.tickCount - throwSent;
+        return age >= 0 && age <= THROW_WAIT;
     }
 
     private static void put(int id, State s) {
@@ -174,22 +191,32 @@ public final class ActuatorClient {
         return !e.isSpectator() && e.isPickable();
     }
 
+    /**
+     * Attack while holding Throws, never hits: one THROW per hold (holding attack fires this every tick until the server's
+     * answer lands), the kick and follow-through at once, no vanilla swing.
+     */
     @SubscribeEvent
     static void onInteraction(InputEvent.InteractionKeyMappingTriggered event) {
         Minecraft mc = Minecraft.getInstance();
         if (!event.isAttack() || mc.player == null || !local().holding()) return;
         event.setCanceled(true);
-        PacketDistributor.sendToServer(RigGrabPacket.throwAlong(mc.player.getViewVector(1.0F)));
-        onThrow(mc.player.getId());
+        event.setSwingHand(false);
+        if (throwWaiting(mc.player)) return;
+        Vec3 look = mc.player.getViewVector(1.0F);
+        throwSent = mc.player.tickCount;
+        PacketDistributor.sendToServer(RigGrabPacket.throwAlong(look));
+        onThrow(mc.player.getId(), look);
     }
 
     @SubscribeEvent
     static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         STATES.clear();
+        throwSent = Integer.MIN_VALUE / 2;
     }
 
     @SubscribeEvent
     static void onClone(ClientPlayerNetworkEvent.Clone event) {
         STATES.clear();
+        throwSent = Integer.MIN_VALUE / 2;
     }
 }

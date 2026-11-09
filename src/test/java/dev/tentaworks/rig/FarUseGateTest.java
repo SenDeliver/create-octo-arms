@@ -2,6 +2,7 @@ package dev.tentaworks.rig;
 
 import dev.tentaworks.registry.TentaworksDataComponents;
 import dev.tentaworks.registry.TentaworksItems;
+import dev.tentaworks.registry.TentaworksLang;
 import dev.tentaworks.rig.FarUse.Far;
 import dev.tentaworks.rig.RigSettings.FarUseMode;
 import net.minecraft.world.item.ItemStack;
@@ -108,5 +109,12 @@ class FarUseGateTest {
     void airPerFarUse() {
         assertEquals(0.5, RigAir.farUseCost(TentaworksItems.COPPER_TENTACLE_RIG.asStack()), 1.0E-9);
         assertEquals(0.25, RigAir.farUseCost(TentaworksItems.NETHERITE_TENTACLE_RIG.asStack()), 1.0E-9);
+    }
+
+    @Test
+    void refusalKeysKeepTheirStrings() {
+        assertEquals("tentaworks.refusal.far_use.no_sight", FarUse.NO_SIGHT);
+        assertEquals("tentaworks.refusal.far_use.players", FarUse.PLAYERS);
+        assertEquals("tentaworks.refusal.grab.claimed", TentaworksLang.refusalKey(TentaworksLang.GRAB, "claimed"));
     }
 }

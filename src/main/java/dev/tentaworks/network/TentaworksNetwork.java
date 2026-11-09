@@ -26,5 +26,7 @@ public final class TentaworksNetwork {
                 (p, ctx) -> ActuatorClient.onState(p));
         registrar.playToClient(FarUsePacket.TYPE, FarUsePacket.STREAM_CODEC,
                 (p, ctx) -> ActuatorClient.onFarUse(p));
+        registrar.playToClient(ActuatorFxPacket.TYPE, ActuatorFxPacket.STREAM_CODEC,
+                (p, ctx) -> ActuatorClient.onFx(p));
     }
 }

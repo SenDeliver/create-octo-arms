@@ -3,16 +3,12 @@ package dev.tentaworks.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import com.simibubi.create.AllItems;
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.compat.Frame;
 import dev.tentaworks.compat.ShipFrames;
 import dev.tentaworks.rig.Actuators;
-import dev.tentaworks.rig.RigSettings;
-import dev.tentaworks.rig.RigState;
 import dev.tentaworks.rig.RigTier;
 import dev.tentaworks.rig.TentacleRigItem;
-import dev.tentaworks.rig.WornRig;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.client.Camera;
@@ -33,14 +29,12 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -72,8 +66,6 @@ public final class ActuatorRenderer {
     /** How far the Left Actuator uncurls toward a grabbable mob, and how far a reaching claw stops short of the target, blocks. */
     private static final double POINT_DISTANCE = 1.1, STANDOFF = 0.1, THROW_DISTANCE = 2.2;
     private static final float POINT_TICKS = 5, LIMP_TICKS = 10;
-    /** Ticks a predicted local Far Use keeps the Right Actuator out after the last click. */
-    private static final int PREDICT_TTL = 3;
     /** Tube radius at the shoulder and at the wrist, hub half size, px. */
     private static final float ROOT_RADIUS = 1.3F, WRIST_RADIUS = 0.85F, HUB = 1.8F;
     private static final float FINGER = 5.5F, FINGER_SPREAD = 64F, KNUCKLE_TOP = 1.15F, KNUCKLE = 1.35F, HINGE = 1.1F, LENS = 1.3F, FINGER_HW = 0.45F;
@@ -89,7 +81,7 @@ public final class ActuatorRenderer {
         float far, farO, hold, holdO, both, bothO, point, pointO, limp, limpO;
         Vec3 farAt, pointAt, throwDir = Vec3.ZERO;
         boolean heavy, throwBoth;
-        int heldId = -1, releasedId = -1, releasedTick;
+        int heldId = -1;
         BlockPos ship;
         Direction shipFace = Direction.UP;
         final Vec3[] lastHold = new Vec3[2];
@@ -184,7 +176,6 @@ public final class ActuatorRenderer {
         }
         if (mc.isPaused()) return;
         ANIMS.int2ObjectEntrySet().removeIf(e -> !(mc.level.getEntity(e.getIntKey()) instanceof Player));
-        if (mc.player != null) predictFarUse(mc, mc.player);
         for (AbstractClientPlayer p : mc.level.players()) tick(mc, p, ANIMS.computeIfAbsent(p.getId(), id -> new Anim(Actuators.fitted(p))));
     }
 
@@ -207,10 +198,6 @@ public final class ActuatorRenderer {
         boolean limp = Actuators.limp(p);
         boolean holding = s.holding();
         if (holding && !a.holding()) a.grabStart = p.tickCount;
-        if (!holding && a.heldId >= 0) {
-            a.releasedId = a.heldId;
-            a.releasedTick = p.tickCount;
-        }
         if (holding) {
             a.heldId = s.heldId();
             a.ship = s.ship();
@@ -220,7 +207,6 @@ public final class ActuatorRenderer {
             a.heldId = -1;
             a.ship = null;
         }
-        watchRelease(p, a);
         Vec3 far = s.farTarget();
         if (far != null) a.farAt = far;
         a.far = ActuatorPose.approach(a.far, far != null && !(holding && a.heavy) && !limp, ActuatorPose.REACH_TICKS);
@@ -230,40 +216,6 @@ public final class ActuatorRenderer {
         if (point != null) a.pointAt = point;
         a.point = ActuatorPose.approach(a.point, point != null, POINT_TICKS);
         a.limp = ActuatorPose.approach(a.limp, limp, LIMP_TICKS);
-    }
-
-    /** An observed wearer let go and the target flies off fast: that was a Throw (the wearer's own client already knows). */
-    private static void watchRelease(Player p, Anim a) {
-        if (a.releasedId < 0) return;
-        if (p == Minecraft.getInstance().player || p.tickCount - a.releasedTick > 4 || a.throwStart >= a.releasedTick - 2) {
-            a.releasedId = -1;
-            return;
-        }
-        Entity e = p.level().getEntity(a.releasedId);
-        if (e == null) return;
-        Vec3 v = e.position().subtract(e.xo, e.yo, e.zo);
-        if (v.length() > 0.35) {
-            ActuatorFx.thrown(p, a.releasedId, v);
-            a.releasedId = -1;
-        }
-    }
-
-    /**
-     * The wearer's own Far Use: the server sends Far Use only to the others, so the wearer predicts it from its own clicks on a
-     * target past arm's length, as the Rig Settings and the Extendo Grip rule allow.
-     */
-    private static void predictFarUse(Minecraft mc, LocalPlayer p) {
-        HitResult hit = mc.hitResult;
-        if (hit == null || hit.getType() == HitResult.Type.MISS || mc.screen != null) return;
-        if (!mc.options.keyAttack.isDown() && !mc.options.keyUse.isDown()) return;
-        if (!Actuators.ready(p) || AllItems.EXTENDO_GRIP.isIn(p.getMainHandItem()) || AllItems.EXTENDO_GRIP.isIn(p.getOffhandItem())) return;
-        ActuatorClient.State s = ActuatorClient.get(p);
-        if (s.holding() && s.heavy()) return;
-        RigSettings.FarUseMode mode = RigSettings.of(WornRig.of(p).stack()).farUse();
-        if (mode == RigSettings.FarUseMode.OFF || mode == RigSettings.FarUseMode.RIG_OUT && RigClient.state() == RigState.STOWED) return;
-        var range = p.getAttribute(hit instanceof EntityHitResult ? Attributes.ENTITY_INTERACTION_RANGE : Attributes.BLOCK_INTERACTION_RANGE);
-        if (range == null || p.getEyePosition().distanceTo(hit.getLocation()) <= range.getBaseValue()) return;
-        ActuatorClient.predictFarUse(hit.getLocation(), PREDICT_TTL);
     }
 
     /** Telegraph: a grabbable-looking mob under the crosshair within Reach while the main hand is empty (no packet). */

@@ -1,6 +1,7 @@
 package dev.tentaworks.rig;
 
 import dev.tentaworks.config.TentaworksConfig;
+import dev.tentaworks.network.ActuatorFxPacket;
 import dev.tentaworks.registry.TentaworksAttachments;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -12,6 +13,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -23,7 +25,8 @@ import java.util.Map;
  * The Impact of a Thrown entity (CONTEXT: Impact), server side. Each tick after the Throw: the first time it slams into a block
  * (a collision, at the speed it had into that surface the tick before) or touches a living entity (at its full speed), Impact
  * damage ({@link #damage}) goes once to it and to every living entity its box touches, as the thrower's own damage; a player
- * only where the thrower may harm them (PvP). It stays Thrown until it comes to rest (on the ground or in a liquid and nearly
+ * only where the thrower may harm them (PvP), and its trackers hear of it ({@link ActuatorFxPacket} IMPACT) when it was at least
+ * {@code impact.minSpeed} fast. It stays Thrown until it comes to rest (on the ground or in a liquid and nearly
  * still, or after {@value #MAX_TICKS} ticks), then {@value RigEvents#THROW_DISTANCE} fires with the horizontal distance from
  * where it was thrown.
  */
@@ -95,6 +98,8 @@ public final class Impact {
                 double speed = !touched.isEmpty() ? f.last.length() : intoSurface(f.last, e.horizontalCollision, e.verticalCollision);
                 if (!touched.isEmpty() || e.horizontalCollision || e.verticalCollision) {
                     hit(e, thrower, touched, damage(speed));
+                    if (speed >= TentaworksConfig.value(TentaworksConfig.IMPACT_MIN_SPEED))
+                        PacketDistributor.sendToPlayersTrackingEntity(e, ActuatorFxPacket.impact(e.getId(), e.getBoundingBox().getCenter(), speed));
                     t = t.disarmed();
                 }
             }

@@ -8,7 +8,8 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * Server → the wearer and trackers: player {@code entityId} did a Far Use at {@code target}, so its Right Actuator reaches there
- * for {@code ttl} ticks. Sent on each accepted far action, at most one per 2 ticks per wearer.
+ * for {@code ttl} ticks. Sent on each accepted far action, at most one per 2 ticks per wearer, and again before {@code ttl}
+ * runs out while a far block is mined.
  */
 public record FarUsePacket(int entityId, Vec3 target, Kind kind, int ttl) implements CustomPacketPayload {
     public static final Type<FarUsePacket> TYPE = new Type<>(TentaworksIds.id("far_use"));
