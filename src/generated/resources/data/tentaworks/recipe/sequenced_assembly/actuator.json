@@ -1,0 +1,62 @@
+{
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "item": "create:piston_extension_pole"
+  },
+  "loops": 2,
+  "results": [
+    {
+      "id": "tentaworks:actuator"
+    }
+  ],
+  "sequence": [
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "tentaworks:incomplete_actuator"
+        },
+        {
+          "item": "create:brass_casing"
+        }
+      ],
+      "results": [
+        {
+          "id": "tentaworks:incomplete_actuator"
+        }
+      ]
+    },
+    {
+      "type": "create:pressing",
+      "ingredients": [
+        {
+          "item": "tentaworks:incomplete_actuator"
+        }
+      ],
+      "results": [
+        {
+          "id": "tentaworks:incomplete_actuator"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "tentaworks:incomplete_actuator"
+        },
+        {
+          "item": "create:sticker"
+        }
+      ],
+      "results": [
+        {
+          "id": "tentaworks:incomplete_actuator"
+        }
+      ]
+    }
+  ],
+  "transitional_item": {
+    "id": "tentaworks:incomplete_actuator"
+  }
+}

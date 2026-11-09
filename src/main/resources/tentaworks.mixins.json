@@ -7,6 +7,7 @@
   "mixins": [
     "BacktankBlockEntityAccessor",
     "BacktankBlockEntityMixin",
+    "BacktankUtilMixin",
     "EntityVibrationMixin",
     "LivingEntitySneakMixin",
     "PlayerBackWearMixin",

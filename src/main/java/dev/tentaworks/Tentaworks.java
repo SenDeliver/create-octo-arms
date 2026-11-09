@@ -11,12 +11,16 @@ import dev.tentaworks.compat.ShipFrames;
 import dev.tentaworks.config.TentaworksConfig;
 import dev.tentaworks.data.TentaworksDatagen;
 import dev.tentaworks.network.TentaworksNetwork;
+import dev.tentaworks.registry.TentaworksAttachments;
 import dev.tentaworks.registry.TentaworksBlocks;
 import dev.tentaworks.registry.TentaworksCreativeTabs;
 import dev.tentaworks.registry.TentaworksDataComponents;
 import dev.tentaworks.registry.TentaworksDisplaySources;
 import dev.tentaworks.registry.TentaworksItems;
 import dev.tentaworks.registry.TentaworksLang;
+import dev.tentaworks.registry.TentaworksRecipes;
+import dev.tentaworks.registry.TentaworksTriggers;
+import dev.tentaworks.rig.Grab;
 import dev.tentaworks.rig.RigServer;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
@@ -37,6 +41,9 @@ public class Tentaworks {
         REGISTRATE.setTooltipModifierFactory(item -> new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
                 .andThen(TooltipModifier.mapNull(KineticStats.create(item))));
         TentaworksDataComponents.register(modBus);
+        TentaworksAttachments.register(modBus);
+        TentaworksRecipes.register(modBus);
+        TentaworksTriggers.register(modBus);
         TentaworksDisplaySources.init();
         TentaworksBlocks.init();
         TentaworksItems.init();
@@ -48,6 +55,7 @@ public class Tentaworks {
                 TentaworksBlocks.COPPER_TENTACLE_RIG.get(), TentaworksBlocks.NETHERITE_TENTACLE_RIG.get()));
         container.registerConfig(ModConfig.Type.SERVER, TentaworksConfig.SPEC);
         RigServer.init();
+        Grab.init();
         ShipFrames.init();
         BackSlot.init();
     }

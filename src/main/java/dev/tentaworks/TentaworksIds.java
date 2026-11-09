@@ -17,6 +17,20 @@ public final class TentaworksIds {
     public static final String SILENT_STEP = "silent_step";
     public static final String RIG_ENCHANTABLE = "enchantable/tentacle_rig";
     public static final String RIG_AIR_SOURCE = "rig_air";
+    public static final String ACTUATOR = "actuator";
+    public static final String INCOMPLETE_ACTUATOR = "incomplete_actuator";
+    public static final String ACTUATORS = "actuators";
+    public static final String DEFT = "deft";
+    public static final String BOSSES = "bosses";
+    public static final String PINNED = "pinned";
+    public static final String THROWN = "thrown";
+    public static final String FITTING = "fitting";
+    public static final String RIG_EVENT = "rig_event";
+    public static final String IMPACT = "impact";
+    public static final String FITTED = "fitted";
+    public static final String ACTUATOR_REACH = "actuator_reach";
+    public static final String ACTUATOR_STRIKE = "actuator_strike";
+    public static final String ACTUATOR_HEAVY = "actuator_heavy";
 
     private TentaworksIds() {
     }

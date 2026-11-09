@@ -3,6 +3,8 @@ package dev.tentaworks.registry;
 import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.content.equipment.armor.BacktankUtil;
 import dev.tentaworks.TentaworksIds;
+import dev.tentaworks.rig.Actuators;
+import dev.tentaworks.rig.RigAir;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
@@ -20,11 +22,13 @@ public final class TentaworksCreativeTabs {
             .icon(TentaworksItems.COPPER_TENTACLE_RIG::asStack)
             .displayItems((params, out) -> {
                 out.accept(TentaworksItems.TENTACLE.get());
+                out.accept(TentaworksItems.ACTUATOR.get());
+                int air = fullAir();
                 for (Item rig : new Item[]{TentaworksItems.COPPER_TENTACLE_RIG.get(), TentaworksItems.NETHERITE_TENTACLE_RIG.get()}) {
-                    out.accept(rig);
-                    int air = fullAir();
-                    if (air > 0) {
-                        ItemStack filled = new ItemStack(rig);
+                    for (ItemStack stack : new ItemStack[]{new ItemStack(rig), Actuators.fit(new ItemStack(rig))}) {
+                        out.accept(stack);
+                        if (air <= 0) continue;
+                        ItemStack filled = stack.copy();
                         filled.set(AllDataComponents.BACKTANK_AIR, air);
                         out.accept(filled);
                     }
@@ -41,7 +45,7 @@ public final class TentaworksCreativeTabs {
 
     private static int fullAir() {
         try {
-            return BacktankUtil.maxAirWithoutEnchants();
+            return RigAir.capacity(BacktankUtil.maxAirWithoutEnchants());
         } catch (RuntimeException e) {
             return 0;
         }

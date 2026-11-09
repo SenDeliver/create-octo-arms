@@ -409,7 +409,7 @@ public final class Grips {
      * solid in the world and as empty in plot space. The line stops a hair short so a point on an edge does not touch the block beside it.
      * Only the Grip's own frame is traced: a Ship hull between the body and a world Grip, or world blocks before a Ship Grip, are not seen.
      */
-    static boolean visible(BlockGetter level, Vec3 centre, Vec3 point, Direction face, boolean plot) {
+    public static boolean visible(BlockGetter level, Vec3 centre, Vec3 point, Direction face, boolean plot) {
         Vec3 off = point.add(face.getStepX() * CLEARANCE, face.getStepY() * CLEARANCE, face.getStepZ() * CLEARANCE);
         Vec3 from = centre, to = centre.add(off.subtract(centre).scale(1 - 1.0E-4));
         Boolean hit = BlockGetter.traverseBlocks(from, to, (Void) null, (c, pos) -> {

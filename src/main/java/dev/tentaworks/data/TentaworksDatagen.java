@@ -5,11 +5,14 @@ import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateRecipeProvider;
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.registry.TentaworksItems;
+import dev.tentaworks.rig.FittingRecipe;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.SmithingTransformRecipeBuilder;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.Tags;
@@ -17,13 +20,17 @@ import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 import static dev.tentaworks.Tentaworks.REGISTRATE;
 
-/** Recipes (design §6): Tentacle by Sequenced Assembly, Rigs by Mechanical Crafting, Netherite Rig also by smithing like Create's backtank. */
+/**
+ * Recipes (design §6): Tentacle and Actuator by Sequenced Assembly, Rigs (plain or fitted) by Mechanical Crafting, Netherite
+ * Rig also by smithing like Create's backtank, Fitting of a finished Rig at a crafting table.
+ */
 public final class TentaworksDatagen {
     private TentaworksDatagen() {
     }
 
     public static void register(IEventBus modBus) {
         REGISTRATE.addDataGenerator(ProviderType.RECIPE, TentaworksDatagen::smithing);
+        REGISTRATE.addDataGenerator(ProviderType.RECIPE, TentaworksDatagen::fitting);
         REGISTRATE.addDataGenerator(ProviderType.LANG, prov -> TentaworksPonderPlugin.provideLang(prov::add));
         modBus.addListener(TentaworksDatagen::gather);
     }
@@ -34,6 +41,12 @@ public final class TentaworksDatagen {
                         RecipeCategory.COMBAT, TentaworksItems.NETHERITE_TENTACLE_RIG.get())
                 .unlocks("has_copper_tentacle_rig", RegistrateRecipeProvider.has(TentaworksItems.COPPER_TENTACLE_RIG.get()))
                 .save(prov, TentaworksIds.id("smithing/" + TentaworksIds.NETHERITE_TENTACLE_RIG));
+    }
+
+    private static void fitting(RegistrateRecipeProvider prov) {
+        for (Item rig : new Item[]{TentaworksItems.COPPER_TENTACLE_RIG.get(), TentaworksItems.NETHERITE_TENTACLE_RIG.get()})
+            prov.accept(TentaworksIds.id(TentaworksIds.FITTING + "/" + rig.builtInRegistryHolder().key().location().getPath()),
+                    new FittingRecipe(CraftingBookCategory.EQUIPMENT, rig), null);
     }
 
     private static void gather(GatherDataEvent event) {

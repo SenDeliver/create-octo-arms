@@ -35,14 +35,25 @@ public final class TentaworksLang {
         tooltip(TentaworksIds.TENTACLE, "One pneumatic arm of a _Tentacle Rig_. Four of them, a _Backtank_ and a _Precision Mechanism_ make a Rig on _Mechanical Crafters_.");
         rigTooltip(TentaworksIds.COPPER_TENTACLE_RIG, "Copper: _shorter Reach_.");
         rigTooltip(TentaworksIds.NETHERITE_TENTACLE_RIG, "Netherite: _longer Reach_, uses _half the Air_.");
+        tooltip(TentaworksIds.ACTUATOR, "A pneumatic arm that _acts_ instead of walking. Fit _two_ to a finished _Tentacle Rig_ and it gains hands.",
+                "When Fitted", "Put a Rig between two Actuators in one row of a _crafting table_. The Rig keeps its _Air_, _enchantments_, _settings_ and _damage_.",
+                "Right Actuator", "Whatever your hand does, _farther_: mining, placing, hitting and using out to the Rig's _Reach_.",
+                "Left Actuator", "_Grab_ key with an empty hand takes a mob or a Ship. _Attack_ Throws it, _Grab_ again sets it down.");
 
         enchantment(TentaworksIds.FAR_REACH, "Far Reach", "Longer Tentacles: more Reach per level, so the Rig grips, hangs and climbs from farther away.");
         enchantment(TentaworksIds.THRIFT, "Thrift", "The Rig uses less Air per level while holding, moving and climbing.");
         enchantment(TentaworksIds.SWIFT, "Swift", "The Rig carries you faster: more Speed and a higher top Speed per level.");
+        enchantment(TentaworksIds.DEFT, "Deft", "The Actuators use no Air.");
         enchantment(TentaworksIds.SILENT_STEP, "Silent Step", "The Rig carries you in silence: no Rig sounds, and Sculk Sensors, Shriekers and Wardens do not notice you while it is out.");
 
         REGISTRATE.addRawLang("advancement.tentaworks.doc_rig", "Doc's Rig");
         REGISTRATE.addRawLang("advancement.tentaworks.doc_rig.desc", "Get a Tentacle Rig: four Tentacles on a Backtank");
+        REGISTRATE.addRawLang("advancement.tentaworks.fitted", "Fitted");
+        REGISTRATE.addRawLang("advancement.tentaworks.fitted.desc", "Fit two Actuators to a Rig: now it has hands");
+        REGISTRATE.addRawLang("tentaworks.rig.deft_idle", "Deft does nothing until Actuators are fitted");
+        REGISTRATE.addRawLang("death.attack.tentaworks.impact", "%1$s was hit by an Impact from %2$s");
+        REGISTRATE.addRawLang("death.attack.tentaworks.impact.player", "%1$s was hit by an Impact while fighting %2$s");
+        REGISTRATE.addRawLang("death.attack.tentaworks.impact.item", "%1$s was hit by an Impact from %2$s using %3$s");
         REGISTRATE.addRawLang("tentaworks.rig.worn_out", "Worn out: repair it with %s at an anvil, or by Mending");
         REGISTRATE.addRawLang("tentaworks.rig.worn_out.warning", "Tentacle Rig worn out: repair it");
         REGISTRATE.addRawLang("tentaworks.rig.one_at_a_time", "One Rig at a time: take off the Rig you wear first");
@@ -56,6 +67,7 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang("key.categories.tentaworks", "Octo Arms");
         REGISTRATE.addRawLang("key.tentaworks.settings", "Rig Settings (worn Rig)");
         REGISTRATE.addRawLang("key.tentaworks.toggle", "Toggle Tentacle Rig (key-only mode)");
+        REGISTRATE.addRawLang("key.tentaworks.grab", "Grab (Actuators)");
 
         REGISTRATE.addRawLang("tentaworks.stats.air", "Air:");
         REGISTRATE.addRawLang("tentaworks.stats.air.value", "%s / %s");
@@ -65,6 +77,9 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang("tentaworks.stats.top_speed.value", "%s b/s");
         REGISTRATE.addRawLang("tentaworks.stats.air_use", "Air use:");
         REGISTRATE.addRawLang("tentaworks.stats.air_use.value", "%s%%");
+        REGISTRATE.addRawLang("tentaworks.stats.strike_reach", "Strike Reach:");
+        REGISTRATE.addRawLang("tentaworks.stats.strike_reach.value", "%s blocks");
+        REGISTRATE.addRawLang("tentaworks.stats.actuators", "Actuators fitted");
         REGISTRATE.addRawLang("tentaworks.goggles.rig_block", "Tentacle Rig");
         REGISTRATE.addRawLang("tentaworks.goggles.percent", "(%s%%)");
         REGISTRATE.addRawLang("tentaworks.goggles.full", "Full");
@@ -102,6 +117,8 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(cfg + "movement.forward", "W and S follow");
         REGISTRATE.addRawLang(cfg + "movement.forward.look", "Look");
         REGISTRATE.addRawLang(cfg + "movement.forward.flat", "Flat");
+        REGISTRATE.addRawLang(cfg + "firstPerson", "First person");
+        REGISTRATE.addRawLang(cfg + "firstPerson.limbOpacity", "Limb opacity");
         REGISTRATE.addRawLang(cfg + "reach", "Reach");
         REGISTRATE.addRawLang(cfg + "reach.copper", "Copper Reach");
         REGISTRATE.addRawLang(cfg + "reach.netherite", "Netherite Reach");
@@ -112,6 +129,29 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(cfg + "air.move", "Moving: ticks per Air");
         REGISTRATE.addRawLang(cfg + "air.climb", "Climbing: ticks per Air");
         REGISTRATE.addRawLang(cfg + "air.netheriteFactor", "Netherite Air factor");
+        REGISTRATE.addRawLang(cfg + "air.capacityFactor", "Rig Air capacity");
+        REGISTRATE.addRawLang(cfg + "air.farUse", "Far Use: Air per action");
+        REGISTRATE.addRawLang(cfg + "air.grab", "Grab: ticks per Air");
+        REGISTRATE.addRawLang(cfg + "air.throw", "Throw: Air per Throw");
+        REGISTRATE.addRawLang(cfg + "strikeReach", "Strike Reach");
+        REGISTRATE.addRawLang(cfg + "strikeReach.copper", "Copper Strike Reach");
+        REGISTRATE.addRawLang(cfg + "strikeReach.netherite", "Netherite Strike Reach");
+        REGISTRATE.addRawLang(cfg + "farUse", "Far Use");
+        REGISTRATE.addRawLang(cfg + "farUse.players", "Far Use on players");
+        REGISTRATE.addRawLang(cfg + "grab", "Grab");
+        REGISTRATE.addRawLang(cfg + "grab.tamedOthers", "Grab others' animals");
+        REGISTRATE.addRawLang(cfg + "grab.ships", "Grab Ships");
+        REGISTRATE.addRawLang(cfg + "grab.massCap", "Ship mass cap");
+        REGISTRATE.addRawLang(cfg + "grab.massCap.copper", "Copper mass cap");
+        REGISTRATE.addRawLang(cfg + "grab.massCap.netherite", "Netherite mass cap");
+        REGISTRATE.addRawLang(cfg + "grab.throwSpeed", "Throw speed");
+        REGISTRATE.addRawLang(cfg + "grab.throwSpeed.copper", "Copper Throw speed");
+        REGISTRATE.addRawLang(cfg + "grab.throwSpeed.netherite", "Netherite Throw speed");
+        REGISTRATE.addRawLang(cfg + "grab.heavySpeedFactor", "Speed while holding heavy");
+        REGISTRATE.addRawLang(cfg + "impact", "Impact");
+        REGISTRATE.addRawLang(cfg + "impact.damagePerSpeed", "Damage per speed");
+        REGISTRATE.addRawLang(cfg + "impact.minSpeed", "Minimum speed");
+        REGISTRATE.addRawLang(cfg + "impact.cap", "Damage cap");
         REGISTRATE.addRawLang(cfg + "crawl", "Crawl");
         REGISTRATE.addRawLang(cfg + "crawl.speed", "Crawl speed");
         REGISTRATE.addRawLang(cfg + "enchant", "Enchantments");
@@ -131,6 +171,24 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(cfg + "air.move.tooltip", "Copper Rig moving level or down: ticks per 1 Air");
         REGISTRATE.addRawLang(cfg + "air.climb.tooltip", "Copper Rig climbing (net upward): ticks per 1 Air");
         REGISTRATE.addRawLang(cfg + "air.netheriteFactor.tooltip", "Air use of a Netherite Rig relative to Copper");
+        REGISTRATE.addRawLang(cfg + "air.capacityFactor.tooltip", "Max Air of a Rig relative to a Backtank of the same Capacity");
+        REGISTRATE.addRawLang(cfg + "air.farUse.tooltip", "Copper Rig: Air per Far Use (one block or mob action past arm's length)");
+        REGISTRATE.addRawLang(cfg + "air.grab.tooltip", "Copper Rig holding a Grab: ticks per 1 Air");
+        REGISTRATE.addRawLang(cfg + "air.throw.tooltip", "Copper Rig: Air per Throw");
+        REGISTRATE.addRawLang(cfg + "strikeReach.copper.tooltip", "Strike Reach of a Copper Rig: how far its Actuator hits or uses on mobs and players, blocks. Far Reach does not add to it");
+        REGISTRATE.addRawLang(cfg + "strikeReach.netherite.tooltip", "Strike Reach of a Netherite Rig: how far its Actuator hits or uses on mobs and players, blocks. Far Reach does not add to it");
+        REGISTRATE.addRawLang(cfg + "farUse.players.tooltip", "Far Use may hit and use on players (the PvP rule still applies)");
+        REGISTRATE.addRawLang(cfg + "grab.tamedOthers.tooltip", "Grab may take another player's tamed, owned or leashed animal");
+        REGISTRATE.addRawLang(cfg + "grab.ships.tooltip", "Grab may take Sable Ships (also needs Rigs grip Ships). Ignored without Sable");
+        REGISTRATE.addRawLang(cfg + "grab.massCap.copper.tooltip", "Heaviest Ship a Copper Rig can Grab, Sable mass");
+        REGISTRATE.addRawLang(cfg + "grab.massCap.netherite.tooltip", "Heaviest Ship a Netherite Rig can Grab, Sable mass");
+        REGISTRATE.addRawLang(cfg + "grab.throwSpeed.copper.tooltip", "Throw speed of a Copper Rig, blocks per tick");
+        REGISTRATE.addRawLang(cfg + "grab.throwSpeed.netherite.tooltip", "Throw speed of a Netherite Rig, blocks per tick");
+        REGISTRATE.addRawLang(cfg + "grab.heavySpeedFactor.tooltip", "Walking and Rig Speed while both Actuators hold a heavy target, relative to normal");
+        REGISTRATE.addRawLang(cfg + "impact.damagePerSpeed.tooltip", "Impact damage per block per tick of speed above the minimum, dealt once per Throw");
+        REGISTRATE.addRawLang(cfg + "impact.minSpeed.tooltip", "Slowest Thrown speed that deals Impact damage, blocks per tick");
+        REGISTRATE.addRawLang(cfg + "impact.cap.tooltip", "Most Impact damage one Throw can deal");
+        REGISTRATE.addRawLang(cfg + "firstPerson.limbOpacity.tooltip", "Opacity of every Limb (Tentacles and Actuators) in first person: 1.0 solid, 0.1 faint");
         REGISTRATE.addRawLang(cfg + "crawl.speed.tooltip", "Descent speed with no Air left (Crawl), blocks per second");
         REGISTRATE.addRawLang(cfg + "enchant.farReachPerLevel.tooltip", "Far Reach: extra Reach per level, blocks");
         REGISTRATE.addRawLang(cfg + "enchant.thriftPerLevel.tooltip", "Thrift: Air use cut per level (0.15 = -15 %). Level III stays above zero");

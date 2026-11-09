@@ -1,0 +1,39 @@
+{
+  "parent": "tentaworks:doc_rig",
+  "criteria": {
+    "has_fitted_rig": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "tentaworks:copper_tentacle_rig",
+              "tentaworks:netherite_tentacle_rig"
+            ],
+            "components": {
+              "tentaworks:actuators": {}
+            }
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "tentaworks:actuator"
+    },
+    "title": {
+      "translate": "advancement.tentaworks.fitted"
+    },
+    "description": {
+      "translate": "advancement.tentaworks.fitted.desc"
+    },
+    "frame": "task",
+    "announce_to_chat": true
+  },
+  "requirements": [
+    [
+      "has_fitted_rig"
+    ]
+  ]
+}

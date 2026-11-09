@@ -9,7 +9,10 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 
-/** Both keys are unbound by default (design §7): Rig Settings while worn, and the toggle for the key-only Activation Mode. */
+/**
+ * Rig Settings while worn and the toggle for the key-only Activation Mode are unbound by default (design §7). Grab is V (G is
+ * Curios' own key).
+ */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public final class TentaworksKeys {
     public static final String CATEGORY = "key.categories." + TentaworksIds.MOD_ID;
@@ -17,6 +20,8 @@ public final class TentaworksKeys {
             KeyConflictContext.IN_GAME, InputConstants.UNKNOWN, CATEGORY);
     public static final KeyMapping TOGGLE = new KeyMapping("key." + TentaworksIds.MOD_ID + ".toggle",
             KeyConflictContext.IN_GAME, InputConstants.UNKNOWN, CATEGORY);
+    public static final KeyMapping GRAB = new KeyMapping("key." + TentaworksIds.MOD_ID + ".grab",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, InputConstants.KEY_V, CATEGORY);
 
     private TentaworksKeys() {
     }
@@ -25,5 +30,6 @@ public final class TentaworksKeys {
     static void register(RegisterKeyMappingsEvent event) {
         event.register(SETTINGS);
         event.register(TOGGLE);
+        event.register(GRAB);
     }
 }

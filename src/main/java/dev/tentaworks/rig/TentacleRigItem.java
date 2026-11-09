@@ -108,6 +108,8 @@ public class TentacleRigItem extends BacktankItem {
         tooltip.add(Component.translatable("tentaworks.stats.air").withStyle(ChatFormatting.GRAY).append(" ")
                 .append(Component.translatable("tentaworks.stats.air.value", BacktankUtil.getAir(stack), BacktankUtil.maxAir(stack)).withStyle(ChatFormatting.GOLD)));
         RigStats.addRigLines(stack, tooltip, "");
+        if (RigEnchants.deft(stack) && !Actuators.fitted(stack))
+            tooltip.add(Component.translatable("tentaworks.rig.deft_idle").withStyle(ChatFormatting.DARK_GRAY));
         if (stack.isDamaged() && !flag.isAdvanced())
             tooltip.add(Component.translatable("item.durability", stack.getMaxDamage() - stack.getDamageValue(), stack.getMaxDamage()).withStyle(ChatFormatting.GRAY));
         if (wornOut(stack))

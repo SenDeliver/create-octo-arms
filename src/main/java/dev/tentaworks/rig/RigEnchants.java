@@ -20,6 +20,7 @@ public final class RigEnchants {
     public static final ResourceKey<Enchantment> THRIFT = key(TentaworksIds.THRIFT);
     public static final ResourceKey<Enchantment> SWIFT = key(TentaworksIds.SWIFT);
     public static final ResourceKey<Enchantment> SILENT_STEP = key(TentaworksIds.SILENT_STEP);
+    public static final ResourceKey<Enchantment> DEFT = key(TentaworksIds.DEFT);
     /** Thrift can never cut Air use by more than this, whatever the config and level. */
     private static final double MAX_THRIFT = 0.9;
 
@@ -32,7 +33,7 @@ public final class RigEnchants {
 
     /** One of the Rig's own enchantments (they work in every slot the Rig is worn in). */
     public static boolean isRigEnchant(Holder<Enchantment> holder) {
-        return holder.is(FAR_REACH) || holder.is(THRIFT) || holder.is(SWIFT) || holder.is(SILENT_STEP);
+        return holder.is(FAR_REACH) || holder.is(THRIFT) || holder.is(SWIFT) || holder.is(SILENT_STEP) || holder.is(DEFT);
     }
 
     /** Side-safe: the holder comes from the stack itself, so client and server stacks resolve alike. */
@@ -62,6 +63,11 @@ public final class RigEnchants {
 
     public static boolean silentStep(ItemStack rig) {
         return level(rig, SILENT_STEP) > 0;
+    }
+
+    /** The Actuators use no Air. Idle on a Rig without Actuators. */
+    public static boolean deft(ItemStack rig) {
+        return level(rig, DEFT) > 0;
     }
 
     /** Silent Step in force: the Rig is out and makes no sound, and the wearer's vibrations reach no Sculk Sensor, Shrieker or Warden. */

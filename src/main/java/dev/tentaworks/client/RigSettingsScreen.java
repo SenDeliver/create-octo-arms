@@ -44,6 +44,7 @@ public class RigSettingsScreen extends AbstractSimiScreen {
     private int height;
     private int speed;
     private ActivationMode mode;
+    private final RigSettings.FarUseMode farUse;
 
     public RigSettingsScreen(RigSlot slot, ItemStack rig) {
         super(Component.translatable(key("title"), rig.getHoverName()));
@@ -54,6 +55,7 @@ public class RigSettingsScreen extends AbstractSimiScreen {
         height = Math.round(s.standingHeight() * 10);
         speed = Math.round(s.speed() * 10);
         mode = s.activation();
+        farUse = s.farUse();
     }
 
     public static void openInHand(InteractionHand hand) {
@@ -76,7 +78,7 @@ public class RigSettingsScreen extends AbstractSimiScreen {
     }
 
     public RigSettings settings() {
-        return new RigSettings(height / 10.0F, speed / 10.0F, mode).clamped(reach);
+        return new RigSettings(height / 10.0F, speed / 10.0F, mode, farUse).clamped(reach);
     }
 
     @Override

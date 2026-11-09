@@ -15,6 +15,7 @@ public final class TentaworksClientConfig {
     public static final ModConfigSpec SPEC;
     public static final ModConfigSpec.BooleanValue WALK_WHILE_HELD;
     public static final ModConfigSpec.EnumValue<ForwardMode> FORWARD;
+    public static final ModConfigSpec.DoubleValue LIMB_OPACITY;
 
     /** What {@code W}/{@code S} follow while the Rig carries you. */
     public enum ForwardMode implements TranslatableEnum {
@@ -40,6 +41,10 @@ public final class TentaworksClientConfig {
         FORWARD = b.comment("What W and S follow while the Rig carries you. LOOK: the camera, look down and W takes you down. FLAT: level only, like walking or creative flight; jump and sneak change the height")
                 .translation(t + "movement.forward").defineEnum("forward", ForwardMode.LOOK);
         b.pop();
+        b.translation(t + "firstPerson").push("firstPerson");
+        LIMB_OPACITY = b.comment("Opacity of every Limb (Tentacles and Actuators) in first person: 1.0 solid, 0.1 faint")
+                .translation(t + "firstPerson.limbOpacity").defineInRange("limbOpacity", 1.0, 0.1, 1.0);
+        b.pop();
         SPEC = b.build();
     }
 
@@ -52,5 +57,9 @@ public final class TentaworksClientConfig {
 
     public static ForwardMode forward() {
         return TentaworksConfig.value(FORWARD);
+    }
+
+    public static double limbOpacity() {
+        return TentaworksConfig.value(LIMB_OPACITY);
     }
 }

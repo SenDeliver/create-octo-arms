@@ -6,15 +6,24 @@ import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 public enum RigTier {
-    COPPER(TentaworksConfig.REACH_COPPER, null),
-    NETHERITE(TentaworksConfig.REACH_NETHERITE, TentaworksConfig.AIR_NETHERITE_FACTOR);
+    COPPER(TentaworksConfig.REACH_COPPER, null, TentaworksConfig.STRIKE_REACH_COPPER, TentaworksConfig.GRAB_THROW_SPEED_COPPER,
+            TentaworksConfig.GRAB_MASS_CAP_COPPER),
+    NETHERITE(TentaworksConfig.REACH_NETHERITE, TentaworksConfig.AIR_NETHERITE_FACTOR, TentaworksConfig.STRIKE_REACH_NETHERITE,
+            TentaworksConfig.GRAB_THROW_SPEED_NETHERITE, TentaworksConfig.GRAB_MASS_CAP_NETHERITE);
 
     private final ModConfigSpec.DoubleValue reach;
     private final ModConfigSpec.DoubleValue airFactor;
+    private final ModConfigSpec.DoubleValue strikeReach;
+    private final ModConfigSpec.DoubleValue throwSpeed;
+    private final ModConfigSpec.DoubleValue massCap;
 
-    RigTier(ModConfigSpec.DoubleValue reach, ModConfigSpec.DoubleValue airFactor) {
+    RigTier(ModConfigSpec.DoubleValue reach, ModConfigSpec.DoubleValue airFactor, ModConfigSpec.DoubleValue strikeReach,
+            ModConfigSpec.DoubleValue throwSpeed, ModConfigSpec.DoubleValue massCap) {
         this.reach = reach;
         this.airFactor = airFactor;
+        this.strikeReach = strikeReach;
+        this.throwSpeed = throwSpeed;
+        this.massCap = massCap;
     }
 
     public double reach() {
@@ -28,5 +37,20 @@ public enum RigTier {
 
     public double airFactor() {
         return airFactor == null ? 1.0 : TentaworksConfig.value(airFactor);
+    }
+
+    /** How far the Right Actuator hits or uses on mobs and players, blocks. Far Reach does not add to it. */
+    public double strikeReach() {
+        return TentaworksConfig.value(strikeReach);
+    }
+
+    /** Throw speed, blocks per tick. */
+    public double throwSpeed() {
+        return TentaworksConfig.value(throwSpeed);
+    }
+
+    /** Heaviest Ship this tier can Grab, Sable mass. */
+    public double massCap() {
+        return TentaworksConfig.value(massCap);
     }
 }

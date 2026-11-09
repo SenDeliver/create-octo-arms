@@ -32,7 +32,7 @@ public final class RigStats {
     }
 
     public static int maxAir(BacktankBlockEntity be) {
-        return BacktankUtil.maxAir(((BacktankBlockEntityAccessor) be).tentaworks$capacityLevel());
+        return RigAir.capacity(BacktankUtil.maxAir(((BacktankBlockEntityAccessor) be).tentaworks$capacityLevel()));
     }
 
     /** Air per second a placed backtank gains (Create's refill: +clamp((rpm-100)/20,1,5) every clamp(20-rpm/5,0,20)+1 ticks); 0 when it cannot fill. */
@@ -56,13 +56,16 @@ public final class RigStats {
         return String.format(Locale.ROOT, "%.1f", v);
     }
 
-    /** Reach, top Speed and (when not 100 %) Air use of a Rig stack. */
+    /** Reach, top Speed, (when not 100 %) Air use, and Strike Reach when the Actuators are fitted, of a Rig stack. */
     public static void addRigLines(ItemStack rig, List<Component> out, String indent) {
         if (!(rig.getItem() instanceof TentacleRigItem item)) return;
         out.add(line(indent, "reach", num(item.reach(rig))));
         out.add(line(indent, "top_speed", num(TentacleRigItem.topSpeed(rig))));
         int use = (int) Math.round(airUse(rig) * 100);
         if (use != 100) out.add(line(indent, "air_use", use));
+        if (!Actuators.fitted(rig)) return;
+        out.add(line(indent, "strike_reach", num(Actuators.strikeReach(rig))));
+        out.add(Component.literal(indent).append(Component.translatable("tentaworks.stats.actuators").withStyle(ChatFormatting.GOLD)));
     }
 
     private static MutableComponent line(String indent, String key, Object value) {

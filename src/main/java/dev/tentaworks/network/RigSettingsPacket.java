@@ -17,7 +17,7 @@ import net.minecraft.world.item.ItemStack;
  */
 public record RigSettingsPacket(RigSlot slot, RigSettings settings) implements CustomPacketPayload {
     public static final Type<RigSettingsPacket> TYPE = new Type<>(TentaworksIds.id(TentaworksIds.RIG_SETTINGS));
-    /** 0 main hand, 1 off hand, 2 chest slot, 3 Back Slot (registrar 9); unknown ids read as the main hand. */
+    /** 0 main hand, 1 off hand, 2 chest slot, 3 Back Slot (registrar 10); unknown ids read as the main hand. */
     private static final StreamCodec<ByteBuf, RigSlot> SLOT_CODEC = ByteBufCodecs.idMapper(RigSlot::byId, RigSlot::ordinal);
     public static final StreamCodec<ByteBuf, RigSettingsPacket> STREAM_CODEC = StreamCodec.composite(
             SLOT_CODEC, RigSettingsPacket::slot,
