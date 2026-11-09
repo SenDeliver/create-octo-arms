@@ -1,0 +1,6 @@
+# Dev2 (observer, no Rig): RWALK gship= is the Ship block Dev's Actuators hold as another client sees it; later crew on sc
+trace on
+hud off
+await end
+wait 20
+quit

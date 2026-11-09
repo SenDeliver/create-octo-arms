@@ -1,0 +1,29 @@
+# Ship Grab timeline. Netherite Rig with Actuators (Reach 7, mass cap 6000), Stowed. Dev2 (no Rig) watches sg, then rides sc (crewed).
+gamemode survival Dev
+gamemode survival Dev2
+tp Dev2 11404.5 -60 8.5 180 0
+tp Dev 11403.5 -60 0.5 -90 0
+clear Dev
+item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900,tentaworks:actuators={}]
+#sleep 1.5
+#signal k
+#await kdone
+sable info @e[name=sg]
+# M over the mass cap
+tentaworks config grab.massCap.netherite 100
+tp Dev 11423.5 -60 0.5 -90 0
+#sleep 1
+#signal m
+#await mdone
+tentaworks config grab.massCap.netherite 6000
+# C crewed: Dev2 on top of sc, then gone (control)
+tp Dev2 11447.5 -57 0.5 90 0
+tp Dev 11443.5 -60 0.5 -90 0
+#sleep 1.5
+#signal c
+#await cref
+tp Dev2 11444.5 -60 8.5 180 0
+#sleep 1.5
+#signal c2
+#await cdone
+#signal end

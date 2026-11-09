@@ -1,0 +1,23 @@
+# Ship Grab scenes (x 11400..11450). Needs GRADLE_ARGS=-PwithSable TW_PREBOOT=0. Flat world: ground top at y=-60.
+# sg: solid 3x3x3 stone cube (Sable mass 54: stone weighs 2); sh: hollow 5x5x5 (mass 196), refused once grab.massCap.netherite is 100; sc: solid 3x3x3 with Dev2 on board.
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+gamerule doImmediateRespawn true
+gamerule doMobSpawning false
+time set noon
+forceload add 11390 -20 11460 20
+fill 11406 -60 -1 11408 -58 1 minecraft:stone
+sable assemble area 11406 -60 -1 11408 -58 1
+execute positioned 11407.5 -58.5 0.5 run sable name set @n sg
+sable forceload add @e[name=sg]
+fill 11426 -60 -2 11430 -56 2 minecraft:stone hollow
+sable assemble area 11426 -60 -2 11430 -56 2
+execute positioned 11428.5 -57.5 0.5 run sable name set @n sh
+sable forceload add @e[name=sh]
+fill 11446 -60 -1 11448 -58 1 minecraft:stone
+sable assemble area 11446 -60 -1 11448 -58 1
+execute positioned 11447.5 -58.5 0.5 run sable name set @n sc
+sable forceload add @e[name=sc]
+op Dev
+op Dev2
+tentaworks trace on

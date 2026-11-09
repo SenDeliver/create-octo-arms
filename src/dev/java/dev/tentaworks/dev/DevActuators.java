@@ -3,6 +3,7 @@ package dev.tentaworks.dev;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import dev.tentaworks.TentaworksIds;
+import dev.tentaworks.compat.ShipFrames;
 import dev.tentaworks.config.TentaworksConfig;
 import dev.tentaworks.registry.TentaworksAttachments;
 import dev.tentaworks.registry.TentaworksDataComponents;
@@ -71,7 +72,7 @@ import java.util.Map;
  * farmode always|rig_out|off (Rig Settings Far Use of the worn Rig, SFARMODE), config PATH VALUE (a server config value until
  * restart, SCONFIG), tame TARGETS OWNER (TAME). Lines: SGRAB (every Grab start, refusal, release, throw), SRIGEVENT (every
  * Rig event), MHURT (damage to any living entity but a player), SFAR (every block click, break, entity use and attack after
- * Far Use decided: lift, where it lies, sight, cancelled), SDROPS (where the drops of a player's block break end up), and with
+ * Far Use decided: lift, where it lies (PLOT: a Ship block, left to Sable), sight, cancelled), SDROPS (where the drops of a player's block break end up), and with
  * trace on SMOB (every entity tagged {@code tw}) plus the STRACE fields of {@link #fields}.
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID)
@@ -194,7 +195,7 @@ public final class DevActuators {
         double lift = lift(range, FarUse.REACH_ID);
         LOG.info("SFAR gt={} {} kind={} at={} type={} dist={} range={} lift={} far={} sight={} asking={} canceled={}", p.level().getGameTime(), p.getName().getString(), kind,
                 pos.toShortString().replace(" ", ""), BuiltInRegistries.BLOCK.getKey(p.level().getBlockState(pos).getBlock()), f3(Math.sqrt(d2)), f3(range == null ? 0 : range.getValue()),
-                f3(lift), lift > 0 ? FarUse.far(d2, range.getValue() - lift, range.getValue()) : FarUse.Far.NEAR,
+                f3(lift), ShipFrames.get().isPlot(p.level(), pos) ? "PLOT" : lift > 0 ? FarUse.far(d2, range.getValue() - lift, range.getValue()) : FarUse.Far.NEAR,
                 WorkSight.seesBlock(p.level(), pos, point, eye, Grips.body(p)), Grab.asking(), canceled);
     }
 

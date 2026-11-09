@@ -1,0 +1,76 @@
+# Ship Grab (Sable): both Actuators hold a small Ship, it follows, stays on release, flies on a Throw; mass cap and crew refuse. TIMELINE shipgrab-timeline.txt, SCRIPT2 shipgrab-watch.txt, GRADLE_ARGS=-PwithSable TW_PREBOOT=0
+trace on
+hud on
+view first
+# K grab sg by its west face, walk west 40 ticks, release (it stays), grab again and Throw it north along a raised look (clear of sh and Dev2)
+await k
+wait 10
+lookship
+wait 3
+hit k0
+mark k0
+key key.keyboard.v
+awaitheld on 20
+wait 5
+mark k1
+actuators k1
+view third
+wait 4
+shot shipgrab_hold
+view first
+look 90 0
+wait 5
+mark kw0
+hold up on
+wait 40
+hold up off
+wait 10
+mark kw1
+key key.keyboard.v
+awaitheld off 20
+mark kr0
+wait 40
+mark kr1
+lookship
+wait 3
+key key.keyboard.v
+awaitheld on 20
+look 180 -25
+wait 10
+mark kt0
+key key.mouse.left
+awaitheld off 20
+wait 60
+mark kt1
+signal kdone
+# M over the mass cap
+await m
+lookship
+wait 3
+hit m0
+key key.keyboard.v
+wait 10
+actuators m
+signal mdone
+# C crewed: refused while Dev2 stands on it, taken once Dev2 is off
+await c
+lookship
+wait 3
+key key.keyboard.v
+wait 10
+actuators c
+signal cref
+await c2
+lookship
+wait 3
+key key.keyboard.v
+awaitheld on 20
+wait 10
+mark c2
+key key.keyboard.v
+awaitheld off 20
+wait 10
+signal cdone
+await end
+wait 10
+quit
