@@ -1,0 +1,15 @@
+# Actuator look scenes (x 11590..11615). Flat world: ground top at y=-60. Needs ANIMALS=true (the pig). Optional GRADLE_ARGS=-PwithCurios (Back Slot shots). Mobs have no AI (held mobs stay still for the shots).
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+gamerule doImmediateRespawn true
+gamerule keepInventory true
+gamerule doMobSpawning false
+time set noon
+difficulty easy
+forceload add 11590 -10 11615 30
+summon pig 11603.5 -60 0.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","lp"]}
+summon iron_golem 11603.5 -60 10.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","lg"]}
+summon husk 11605.3 -60 20.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","lh"],Rotation:[90f,0f]}
+op Dev
+tentaworks trace on
+gamemode survival Dev
