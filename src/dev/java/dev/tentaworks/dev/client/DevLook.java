@@ -1,10 +1,15 @@
 package dev.tentaworks.dev.client;
 
 import dev.tentaworks.TentaworksIds;
+import dev.tentaworks.client.ActuatorHud;
 import dev.tentaworks.client.ActuatorRenderer;
+import dev.tentaworks.client.ActuatorSight;
+import dev.tentaworks.client.ActuatorView;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -15,9 +20,13 @@ import net.neoforged.neoforge.client.event.RenderHandEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Locale;
+
 /**
- * Dev-only tools of the look suite, DevScript lines: burst NAME N (a shot per tick, NAME_00..), guiscale N, looktrace on|off
- * (CLOOK line per tick: what vanilla and the Actuators drew of each hand in first person, and the frames with a hand drawn twice).
+ * Dev-only tools of the look suite, DevScript lines: burst NAME N (a shot per tick, NAME_00..), guiscale N, spot X Y Z ok|bad and
+ * spot off (a set-down spot to show), mainarm left|right, hudstate TAG (CHUD line: what the crosshair HUD shows), looktrace on|off
+ * (CLOOK line per tick: what vanilla and the Actuators drew of each hand in first person, the frames with a hand drawn twice,
+ * the crosshair mark, the Grab cue and how far the acting Actuator is from its target).
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public final class DevLook {
@@ -45,6 +54,23 @@ public final class DevLook {
             case "guiscale" -> {
                 mc.options.guiScale().set(Integer.parseInt(a[1]));
                 mc.resizeDisplay();
+                return 2;
+            }
+            case "spot" -> {
+                ActuatorView.preview(a[1].equals("off") ? null
+                        : new ActuatorView.Spot(new Vec3(Double.parseDouble(a[1]), Double.parseDouble(a[2]), Double.parseDouble(a[3])), a[4].equals("ok")));
+                return 0;
+            }
+            case "hudstate" -> {
+                ActuatorView.Spot spot = ActuatorView.setDownSpot(mc.player);
+                LOG.info("CHUD {} gt={} shown={} mark={} cue={} hold={} spot={} throwkey={}", a[1], mc.level.getGameTime(), ActuatorHud.marksShown(),
+                        ActuatorSight.mark(), ActuatorSight.cue(), ActuatorView.holdArm(mc.player), spot == null ? "-" : spot.valid() ? "ok" : "bad",
+                        ActuatorView.throwNeedsGrabKey(mc.player));
+                return 0;
+            }
+            case "mainarm" -> {
+                mc.options.mainHand().set(a[1].equals("left") ? HumanoidArm.LEFT : HumanoidArm.RIGHT);
+                mc.options.broadcastOptions();
                 return 2;
             }
             case "looktrace" -> {
@@ -94,8 +120,9 @@ public final class DevLook {
             Screenshot.grab(mc.gameDirectory, name, mc.getMainRenderTarget(), msg -> LOG.info("screenshot {}: {}", name, msg.getString()));
             burstLeft--;
         }
-        if (trace) LOG.info("CLOOK gt={} first={} frames={} vhand={},{} ahand={},{} dbl={},{}", mc.level.getGameTime(), mc.options.getCameraType().isFirstPerson(),
-                frames, vanillaFrames[0], vanillaFrames[1], actuatorFrames[0], actuatorFrames[1], doubled[0], doubled[1]);
+        if (trace) LOG.info("CLOOK gt={} first={} frames={} vhand={},{} ahand={},{} dbl={},{} mark={} cue={} lag={}", mc.level.getGameTime(),
+                mc.options.getCameraType().isFirstPerson(), frames, vanillaFrames[0], vanillaFrames[1], actuatorFrames[0], actuatorFrames[1], doubled[0],
+                doubled[1], ActuatorSight.mark(), ActuatorSight.cue(), String.format(Locale.ROOT, "%.2f", ActuatorRenderer.lag(mc.player)));
         frames = 0;
         for (int h = 0; h < 2; h++) vanillaFrames[h] = actuatorFrames[h] = doubled[h] = 0;
     }
