@@ -1,7 +1,11 @@
 package dev.tentaworks.dev.client;
 
 import dev.tentaworks.TentaworksIds;
+import dev.tentaworks.client.ActuatorClient;
+import dev.tentaworks.client.ActuatorHud;
 import dev.tentaworks.client.RigClient;
+import dev.tentaworks.rig.Actuators;
+import dev.tentaworks.rig.Hold;
 import dev.tentaworks.client.RigVisuals;
 import dev.tentaworks.rig.RigSlot;
 import dev.tentaworks.rig.WornRig;
@@ -123,7 +127,12 @@ import java.util.Set;
  * | hit tag (CHIT: the crosshair target, the Simulated hold interaction, steering wheel raw/effective angle)
  * | gait on|off (GAIT line per tick: own gait slots) | key key.keyboard.e (one click; key.mouse.right = use) | tab ns:id (select a creative tab, any page) | backtanks (BACKTANK lines: cogs/shaft partial and default name per backtank block) | rejoin ticks (disconnect, reconnect to the same server after ticks) | view first|third|front
  * | forward look|flat (client config movement.forward, in memory only)
- * | dig x y z tag (mines that block like a held attack button: start, then continue + swing every tick until it is air or 600 ticks; CDIG tag gt0 gt1 ticks).
+ * | dig x y z tag [max] (mines that block like a held attack button: start, then continue + swing every tick until it is air or max ticks, default 600; CDIG tag gt0 gt1 ticks).
+ * | lookate TYPE (lookat the box centre of the nearest other entity of that type) | lookship (lookat the pose position of the nearest Ship, Sable only)
+ * | attack TYPE (attacks the nearest other entity of that type with no crosshair, as a cheating client would: the server decides)
+ * | awaitheld on|off N (waits until the own Actuators hold something, or nothing, at most N ticks; CAWAIT line)
+ * | opacity X (client config firstPerson.limbOpacity, in memory only) | actuators tag (CACT: own Actuator state, HUD line, ranges)
+ * | ifmod modid ... endif (the lines between run only with that mod loaded). rawsettings takes the Far Use mode always|rig_out|off as a 5th value.
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public final class DevScript {
@@ -133,6 +142,7 @@ public final class DevScript {
     private static BlockPos digPos;
     private static String digTag;
     private static long digStart;
+    private static int digMax = 600;
     private static Deque<String> lines;
     private static int waitTicks;
     private static boolean trace;
@@ -159,6 +169,8 @@ public final class DevScript {
     private static boolean connectStarted;
     private static int connectTries;
     private static int disconnectedTicks;
+    private static int awaitTicks;
+    private static Method hudLine;
 
     private DevScript() {
     }
@@ -182,7 +194,7 @@ public final class DevScript {
         }
         mc.player.swing(InteractionHand.MAIN_HAND);
         boolean done = mc.level.getBlockState(digPos).isAir();
-        if (done || gt - digStart > 600) {
+        if (done || gt - digStart > digMax) {
             LOG.info("CDIG {} gt0={} gt1={} ticks={} broken={} ground={} state={}", digTag, digStart, gt, gt - digStart, done, mc.player.onGround(), RigClient.state());
             mc.gameMode.stopDestroyBlock();
             digPos = null;
@@ -352,7 +364,8 @@ public final class DevScript {
                 case "rawsettings" -> {
                     RigSlot slot = RigSlot.byName(a[1]);
                     RigSettings raw = new RigSettings(Float.parseFloat(a[2]), Float.parseFloat(a[3]),
-                            a[4].equals("key") ? RigSettings.ActivationMode.KEY : RigSettings.ActivationMode.DOUBLE_JUMP);
+                            a[4].equals("key") ? RigSettings.ActivationMode.KEY : RigSettings.ActivationMode.DOUBLE_JUMP,
+                            a.length > 5 ? RigSettings.FarUseMode.valueOf(a[5].toUpperCase(Locale.ROOT)) : RigSettings.FarUseMode.ALWAYS);
                     PacketDistributor.sendToServer(new RigSettingsPacket(slot, raw));
                     LOG.info("script: raw settings {} {}", slot.getName(), raw);
                 }
@@ -398,6 +411,7 @@ public final class DevScript {
                 case "dig" -> {
                     digPos = new BlockPos(Integer.parseInt(a[1]), Integer.parseInt(a[2]), Integer.parseInt(a[3]));
                     digTag = a[4];
+                    digMax = a.length > 5 ? Integer.parseInt(a[5]) : 600;
                     digStart = 0;
                     lines.addFirst("await _dig");
                 }
@@ -447,9 +461,58 @@ public final class DevScript {
                         LOG.error("script: mousebtn", e);
                     }
                 }
-                case "hit" -> LOG.info("CHIT {} type={} block={} at={} hold={} wheel={}", a[1], mc.hitResult == null ? "-" : mc.hitResult.getType(),
+                case "hit" -> LOG.info("CHIT {} type={} block={} at={} hold={} wheel={} entity={} plot={}", a[1], mc.hitResult == null ? "-" : mc.hitResult.getType(),
                         mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult b ? b.getBlockPos().toShortString().replace(" ", "") : "-",
-                        mc.hitResult == null ? "-" : fmt(mc.hitResult.getLocation()), hold(), wheel());
+                        mc.hitResult == null ? "-" : fmt(mc.hitResult.getLocation()), hold(), wheel(), crosshair(mc),
+                        mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult b && dev.tentaworks.compat.ShipFrames.get().isPlot(mc.level, b.getBlockPos()));
+                case "lookate" -> {
+                    Entity e = nearest(mc, a[1]);
+                    if (e == null) {
+                        LOG.warn("script: lookate no {}", a[1]);
+                    } else {
+                        Vec3 c = e.getBoundingBox().getCenter();
+                        lines.addFirst("lookat " + c.x + " " + c.y + " " + c.z);
+                        LOG.info("script: lookate {} id={} at {}", a[1], e.getId(), fmt(c));
+                    }
+                }
+                case "lookship" -> {
+                    Vec3 eye = mc.player.getEyePosition();
+                    var f = dev.tentaworks.compat.ShipFrames.get().near(mc.level, new net.minecraft.world.phys.AABB(eye, eye).inflate(16)).stream()
+                            .min(java.util.Comparator.comparingDouble(x -> new Vec3(x.pose().position().x(), x.pose().position().y(), x.pose().position().z()).distanceToSqr(eye))).orElse(null);
+                    if (f == null) LOG.warn("script: lookship none");
+                    else lines.addFirst("lookat " + f.pose().position().x() + " " + f.pose().position().y() + " " + f.pose().position().z());
+                }
+                case "attack" -> {
+                    Entity e = nearest(mc, a[1]);
+                    if (e == null) {
+                        LOG.warn("script: attack no {}", a[1]);
+                    } else {
+                        mc.gameMode.attack(mc.player, e);
+                        mc.player.swing(InteractionHand.MAIN_HAND);
+                        LOG.info("script: attack {} id={} dist={}", a[1], e.getId(), String.format(Locale.ROOT, "%.3f", Math.sqrt(e.getBoundingBox().distanceToSqr(mc.player.getEyePosition()))));
+                    }
+                }
+                case "awaitheld" -> {
+                    boolean want = a[1].equals("on");
+                    if (ActuatorClient.local().holding() != want && awaitTicks < Integer.parseInt(a[2])) {
+                        awaitTicks++;
+                        lines.addFirst(line);
+                        waitTicks = 1;
+                        return;
+                    }
+                    LOG.info("CAWAIT gt={} want={} held={} ticks={}", mc.level.getGameTime(), want, ActuatorClient.local().holding(), awaitTicks);
+                    awaitTicks = 0;
+                }
+                case "opacity" -> TentaworksClientConfig.LIMB_OPACITY.set(Double.parseDouble(a[1]));
+                case "actuators" -> LOG.info("CACT {} gt={} {}", a[1], mc.level.getGameTime(), actuators(mc, mc.player));
+                case "ifmod" -> {
+                    if (!ModList.get().isLoaded(a[1])) {
+                        while (!lines.isEmpty() && !lines.peek().trim().equals("endif")) lines.poll();
+                        LOG.info("script: ifmod {} not loaded, skipped", a[1]);
+                    }
+                }
+                case "endif" -> {
+                }
                 case "look" -> {
                     float yaw = Float.parseFloat(a[1]), pitch = Float.parseFloat(a[2]);
                     mc.player.setYRot(yaw);
@@ -765,7 +828,7 @@ public final class DevScript {
         Vec3 d = lastPos == null ? Vec3.ZERO : pos.subtract(lastPos);
         lastPos = pos;
         Entity vehicle = p.getVehicle();
-        LOG.info("TRACE t={} gt={} pos={} d={} cmd={} held={} state={} fly={} mayfly={} press={} jumpkey={} ground={} hp={} air={} ff={} sheld={} carry={} wa={} sneak={} crouch={} pose={} eye={} veh={} ride={} hold={} vrot={} sprint={} fovmod={} bob={} dm={} wd={} armor={} rigslot={}",
+        LOG.info("TRACE t={} gt={} pos={} d={} cmd={} held={} state={} fly={} mayfly={} press={} jumpkey={} ground={} hp={} air={} ff={} sheld={} carry={} wa={} sneak={} crouch={} pose={} eye={} veh={} ride={} hold={} vrot={} sprint={} fovmod={} bob={} dm={} wd={} armor={} rigslot={}{}",
                 clientTicks, mc.level.getGameTime(), fmt(pos), fmt(d), fmt(RigClient.motion()), RigClient.heldCount(), RigClient.state(),
                 p.getAbilities().flying, p.mayFly(), RigClient.jumpPressed(), mc.options.keyJump.isDown(), p.onGround(), p.getHealth(), RigAir.air(p), p.isFallFlying(),
                 RigClient.shipGrips(), RigClient.carryShip() == null ? "-" : RigClient.carryShip().id(), String.format(Locale.ROOT, "%.4f", p.walkAnimation.speed()),
@@ -773,18 +836,81 @@ public final class DevScript {
                 vehicle == null ? "-" : BuiltInRegistries.ENTITY_TYPE.getKey(vehicle.getType()), ChainConveyorRidingHandler.ridingChainConveyor != null ? "chain" : "-",
                 hold(), vehicle == null ? "-" : String.format(Locale.ROOT, "%.1f", vehicle.getYRot()),
                 p.isSprinting(), String.format(Locale.ROOT, "%.3f", p.getFieldOfViewModifier()), String.format(Locale.ROOT, "%.3f", p.bob), fmt(p.getDeltaMovement()), String.format(Locale.ROOT, "%.3f", p.walkDist - p.walkDistO),
-                p.getArmorValue(), WornRig.of(p).worn() ? WornRig.of(p).slot().getName() : "-");
+                p.getArmorValue(), WornRig.of(p).worn() ? WornRig.of(p).slot().getName() : "-", actuatorFields(mc, p));
         for (var other : mc.level.players()) {
             if (other == p) continue;
             RigVisuals.Visual v = RigVisuals.get(other);
-            LOG.info("RWALK gt={} name={} state={} wa={} sneak={} crouch={} pose={}", mc.level.getGameTime(), other.getGameProfile().getName(),
+            ActuatorClient.State s = ActuatorClient.get(other);
+            LOG.info("RWALK gt={} name={} state={} wa={} sneak={} crouch={} pose={} gheld={} gship={} hmob={} far={}", mc.level.getGameTime(), other.getGameProfile().getName(),
                     v == null ? "-" : v.state(), String.format(Locale.ROOT, "%.4f", other.walkAnimation.speed()),
-                    other.isShiftKeyDown(), other.isCrouching(), other.getPose());
+                    other.isShiftKeyDown(), other.isCrouching(), other.getPose(), s.heldId(), s.ship() == null ? "-" : s.ship().toShortString().replace(" ", ""),
+                    heldCentre(mc, s), s.farTtl());
         }
         if (!SABLE) return;
         List<String> poses = shipPoses != null ? shipPoses : DevShipsClient.poses(mc.level);
         shipPoses = null;
         for (String pose : poses) LOG.info("CSHIP gt={} {}", mc.level.getGameTime(), pose);
+    }
+
+    /** The nearest other entity of type {@code id} the client knows, or null. */
+    private static Entity nearest(Minecraft mc, String id) {
+        LocalPlayer self = mc.player;
+        return java.util.stream.StreamSupport.stream(mc.level.entitiesForRendering().spliterator(), false)
+                .filter(x -> x != self && BuiltInRegistries.ENTITY_TYPE.getKey(x.getType()).toString().equals(id))
+                .min(java.util.Comparator.comparingDouble(x -> x.distanceToSqr(self))).orElse(null);
+    }
+
+    private static String crosshair(Minecraft mc) {
+        return mc.hitResult instanceof net.minecraft.world.phys.EntityHitResult e ? String.valueOf(e.getEntity().getId()) : "-";
+    }
+
+    private static String heldCentre(Minecraft mc, ActuatorClient.State s) {
+        Entity e = s.heldId() < 0 ? null : mc.level.getEntity(s.heldId());
+        return e == null ? "-" : fmt(e.getBoundingBox().getCenter());
+    }
+
+    /**
+     * TRACE fields (end of line): own Actuator state (held id, heavy, Ship block, Far Use ttl), the crosshair entity, the held
+     * mob's box centre, the hold point for it from this camera ({@link Hold#point}), the closest the crosshair ray passes to the
+     * held box within 6 blocks, limp, the first-person Limb opacity.
+     */
+    private static String actuatorFields(Minecraft mc, LocalPlayer p) {
+        ActuatorClient.State s = ActuatorClient.get(p);
+        Entity held = s.heldId() < 0 ? null : mc.level.getEntity(s.heldId());
+        String point = held == null ? "-" : fmt(Hold.point(p.getEyePosition(), p.getViewVector(1.0F), p.getYRot(), held.getBbWidth(), held.getBbHeight()));
+        return String.format(Locale.ROOT, " gheld=%d gheavy=%b gship=%s far=%d xh=%s hmob=%s hpt=%s xd=%s limp=%b opa=%.2f", s.heldId(), s.heavy(),
+                s.ship() == null ? "-" : s.ship().toShortString().replace(" ", ""), s.farTtl(), crosshair(mc), heldCentre(mc, s), point,
+                held == null ? "-" : String.format(Locale.ROOT, "%.3f", rayGap(p.getEyePosition(), p.getViewVector(1.0F), held.getBoundingBox())),
+                Actuators.limp(p), TentaworksClientConfig.limbOpacity());
+    }
+
+    private static double rayGap(Vec3 eye, Vec3 look, net.minecraft.world.phys.AABB box) {
+        double best = Double.MAX_VALUE;
+        for (int i = 0; i <= 120; i++) {
+            Vec3 q = eye.add(look.scale(i * 0.05));
+            double dx = Math.max(0, Math.max(box.minX - q.x, q.x - box.maxX)), dy = Math.max(0, Math.max(box.minY - q.y, q.y - box.maxY)),
+                    dz = Math.max(0, Math.max(box.minZ - q.z, q.z - box.maxZ));
+            best = Math.min(best, Math.sqrt(dx * dx + dy * dy + dz * dz));
+        }
+        return best;
+    }
+
+    private static String actuators(Minecraft mc, LocalPlayer p) {
+        ActuatorClient.State s = ActuatorClient.get(p);
+        String hud;
+        try {
+            if (hudLine == null) {
+                hudLine = ActuatorHud.class.getDeclaredMethod("line", Minecraft.class, LocalPlayer.class);
+                hudLine.setAccessible(true);
+            }
+            Component c = (Component) hudLine.invoke(null, mc, p);
+            hud = c == null ? "-" : c.getString();
+        } catch (ReflectiveOperationException e) {
+            hud = "?";
+        }
+        return String.format(Locale.ROOT, "held=%d heavy=%b ship=%s far=%d refusal=%s hud=\"%s\" fitted=%b limp=%b brange=%.2f erange=%.2f speed=%.2f opa=%.2f",
+                s.heldId(), s.heavy(), s.ship() == null ? "-" : s.ship().toShortString().replace(" ", ""), s.farTtl(), s.refusal().isEmpty() ? "-" : s.refusal(), hud,
+                Actuators.fitted(p), Actuators.limp(p), p.blockInteractionRange(), p.entityInteractionRange(), ActuatorClient.speedFactor(), TentaworksClientConfig.limbOpacity());
     }
 
     /** Simulated's active hold interaction (steering wheel, handle, throttle lever...) by class name, or "-"; reflection: Simulated is runtime only. */

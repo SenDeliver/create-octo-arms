@@ -62,7 +62,7 @@ import java.util.Locale;
  * (east) face of the wall column at x=X; Grips on a block at x=20047 whose outer neighbour is in unloaded chunk 1253 when only 20000 0 is forceloaded), burst N (each fake packet
  * sent N times per tick), netstats TAG (NETSTATS: motion packets handled, relays, server tick time), probe X Y Z (reads a block:
  * CHUNKLOAD control), fake slideN (real Grips, zero claimed motion, the server moves the player N blocks per second: speed check),
- * ghost FROM TO (air on the server only: a client ghost block), nbt X Y Z TAG (SNBT: a block entity's NBT), chain FROM TO (connects two Create chain conveyors). With Sable: ship NAME drive|stop and SSHIP lines ({@link DevShips}). Logs CHUNKLOAD for chunks at x ≥ 1250. Logs FALL (LivingFallEvent distance) and HURT (damage taken) lines for fall-damage checks, SBREAK (a player broke a block) and, with trace on, SGEVENT (game events with a player source: what Sculk Sensors hear).
+ * ghost FROM TO (air on the server only: a client ghost block), nbt X Y Z TAG (SNBT: a block entity's NBT), chain FROM TO (connects two Create chain conveyors). With Sable: ship NAME drive|stop and SSHIP lines ({@link DevShips}). Logs CHUNKLOAD for chunks at x ≥ 1250. Logs FALL (LivingFallEvent distance) and HURT (damage taken) lines for fall-damage checks, SBREAK (a player broke a block, logged before Far Use may cancel it) and, with trace on, SGEVENT (game events with a player source: what Sculk Sensors hear). Actuator commands and lines: {@link DevActuators}.
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID)
 public final class DevTools {
@@ -91,6 +91,7 @@ public final class DevTools {
         LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("tentaworks").requires(s -> s.hasPermission(2));
         if (ModList.get().isLoaded("sable")) DevShips.attach(root);
         if (ModList.get().isLoaded("curios")) DevCurios.attach(root);
+        DevActuators.attach(root);
         event.getDispatcher().register(root
                 .then(Commands.literal("trace").then(Commands.argument("on", StringArgumentType.word()).executes(c -> {
                     trace = StringArgumentType.getString(c, "on").equals("on");
@@ -308,6 +309,7 @@ public final class DevTools {
         DevRecipes.tick();
         if (!trace) return;
         for (ServerPlayer p : event.getServer().getPlayerList().getPlayers()) LOG.info("STRACE {}", line(p));
+        DevActuators.traceMobs(event.getServer());
     }
 
     static boolean tracing() {
@@ -318,7 +320,7 @@ public final class DevTools {
         WornRig worn = WornRig.of(p);
         var flight = p.getAttribute(NeoForgeMod.CREATIVE_FLIGHT);
         Entity vehicle = p.getVehicle();
-        return String.format("gt=%d %s pos=%.3f,%.3f,%.3f v=%.3f,%.3f,%.3f state=%s grips=%d cf=%.0f flying=%b fall=%.2f hp=%.1f ground=%b air=%d mv=%.3f,%.3f,%.3f%s sneak=%b pose=%s veh=%s ride=%s vrot=%s armor=%d rigslot=%s rigdmg=%d ff=%b",
+        return String.format("gt=%d %s pos=%.3f,%.3f,%.3f v=%.3f,%.3f,%.3f state=%s grips=%d cf=%.0f flying=%b fall=%.2f hp=%.1f ground=%b air=%d mv=%.3f,%.3f,%.3f%s sneak=%b pose=%s veh=%s ride=%s vrot=%s armor=%d rigslot=%s rigdmg=%d ff=%b%s",
                 p.level().getGameTime(), p.getName().getString(), p.getX(), p.getY(), p.getZ(),
                 p.getDeltaMovement().x, p.getDeltaMovement().y, p.getDeltaMovement().z,
                 RigServer.state(p), RigServer.grips(p).size(), flight == null ? -1 : flight.getValue(),
@@ -327,7 +329,7 @@ public final class DevTools {
                 vehicle == null ? "-" : BuiltInRegistries.ENTITY_TYPE.getKey(vehicle.getType()),
                 ServerChainConveyorHandler.hangingPlayers.containsKey(p.getUUID()) ? "chain" : "-",
                 vehicle == null ? "-" : String.format(Locale.ROOT, "%.1f", vehicle.getYRot()),
-                p.getArmorValue(), worn.worn() ? worn.slot().getName() : "-", worn.stack().getDamageValue(), p.isFallFlying());
+                p.getArmorValue(), worn.worn() ? worn.slot().getName() : "-", worn.stack().getDamageValue(), p.isFallFlying(), DevActuators.fields(p));
     }
 
     /** {@code sgrips}: valid Grips on a Ship; {@code carry}: the Ship holding most of them (at least {@link Grips#HELD}), as RigServer picks it. */
