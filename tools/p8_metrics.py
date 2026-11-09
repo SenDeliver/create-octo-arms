@@ -97,7 +97,7 @@ check('C lenient settings codec', cod is not None and '2.5' in cod[1] and 'DOUBL
 
 # L goggles at 16 RPM
 gog = {}
-for m in re.finditer(r'CGOGGLE (l\d) +(\d+) / 900', c):
+for m in re.finditer(r'CGOGGLE (l\d) +(\d+) / 1800', c):
     gog[m[1]] = int(m[2])
 srv = [int(x) for x in re.findall(r'data get block 4600 -60 0 Air => .*?has the following block data: (\d+)', r)]
 ok = len(gog) == 3 and len(srv) == 3 and gog['l1'] < gog['l2'] < gog['l3'] and all(abs(gog[f'l{i + 1}'] - srv[i]) <= 3 for i in range(3))
