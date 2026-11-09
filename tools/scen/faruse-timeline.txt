@@ -128,3 +128,40 @@ tp Dev 11100.5 -60 82.5 -90 0
 #signal n11b
 #await n11done
 tentaworks probe 11105 -60 82
+# N12 the floor at the edge of Reach 6 from the body (body 5.97 from the hit, eye 6.02 from the box): Far Use by the body distance
+clear Dev grass_block
+clear Dev dirt
+item replace entity Dev weapon.mainhand with air
+tp Dev 11100.2 -60 86.5 -90 0
+#sleep 0.5
+#signal n12
+#await n12done
+tentaworks probe 11106 -61 86
+# N13 Dual Wield: the off-hand stone pickaxe alone mines stone and passes the harvest check
+tp Dev 11100.5 -60 90.5 -90 0
+item replace entity Dev weapon.offhand with stone_pickaxe
+#sleep 0.5
+#signal n13
+#await n13done
+tentaworks probe 11106 -59 90
+# N14 a main-hand stone pickaxe alone, then with a second in the off hand: twice the speed
+clear Dev cobblestone
+item replace entity Dev weapon.offhand with air
+item replace entity Dev weapon.mainhand with stone_pickaxe
+tp Dev 11100.5 -60 94.5 -90 0
+#sleep 0.5
+#signal n14a
+#await n14adone
+item replace entity Dev weapon.offhand with stone_pickaxe
+tp Dev 11100.5 -60 98.5 -90 0
+#sleep 0.5
+#signal n14b
+#await n14done
+# N15 an iron sword in the off hand adds its damage to an empty-hand hit
+clear Dev cobblestone
+item replace entity Dev weapon.mainhand with air
+item replace entity Dev weapon.offhand with iron_sword
+tp Dev 11100.5 -60 102.5 -90 0
+#sleep 0.5
+#signal n15
+#await n15done

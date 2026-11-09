@@ -158,7 +158,7 @@ hit c5
 key key.mouse.right
 wait 10
 signal c5done
-# C6 at 7.5, past Reach 6 + 1: the crosshair misses, a cheat attack is vanilla-refused
+# C6 at 7.5, past Reach 6 from the body: the crosshair misses, a cheat attack is refused (far=OUT)
 await c6
 lookate minecraft:husk
 wait 3
@@ -214,5 +214,49 @@ key key.mouse.right
 wait 12
 mark n11b1
 signal n11done
+# N12 the floor at the edge of Reach from the body, real crosshair, held attack
+await n12
+lookat 11106.1 -60 86.5
+wait 3
+hit n12
+holdkey key.attack on
+wait 60
+holdkey key.attack off
+wait 5
+signal n12done
+# N13 off-hand stone pickaxe only on stone; N14 main-hand stone pickaxe, then two: held attack on the west face
+await n13
+lookat 11106.0 -58.5 90.5
+wait 3
+hit n13
+holdkey key.attack on
+wait 40
+holdkey key.attack off
+wait 5
+signal n13done
+await n14a
+lookat 11106.0 -58.5 94.5
+wait 3
+holdkey key.attack on
+wait 40
+holdkey key.attack off
+wait 5
+signal n14adone
+await n14b
+lookat 11106.0 -58.5 98.5
+wait 3
+holdkey key.attack on
+wait 40
+holdkey key.attack off
+wait 5
+signal n14done
+# N15 a hit with an iron sword in the off hand, empty main hand, full swing
+await n15
+lookate minecraft:husk
+wait 25
+hit n15
+key key.mouse.left
+wait 10
+signal n15done
 wait 10
 quit
