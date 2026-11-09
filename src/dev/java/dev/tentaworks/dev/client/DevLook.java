@@ -68,7 +68,7 @@ public final class DevLook {
     static void onFrameStart(RenderFrameEvent.Pre event) {
         for (int h = 0; h < 2; h++) {
             vanilla[h] = false;
-            before[h] = ActuatorRenderer.ITEM_DRAWS[h];
+            before[h] = ActuatorRenderer.HAND_DRAWS[h];
         }
     }
 
@@ -78,7 +78,7 @@ public final class DevLook {
         if (mc.player == null) return;
         frames++;
         for (int h = 0; h < 2; h++) {
-            boolean actuator = ActuatorRenderer.ITEM_DRAWS[h] != before[h];
+            boolean actuator = ActuatorRenderer.HAND_DRAWS[h] != before[h];
             if (vanilla[h]) vanillaFrames[h]++;
             if (actuator) actuatorFrames[h]++;
             if (vanilla[h] && actuator) doubled[h]++;
