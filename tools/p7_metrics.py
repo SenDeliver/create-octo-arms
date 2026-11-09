@@ -35,12 +35,13 @@ def has(tag, text):
 
 
 a1, a2 = air('g1'), air('g2')
-check('G1 goggles show Air rising under the shaft', a1 and a2 and a2[0] > a1[0] and a1[1] == 900 and has('g1', 'Tentacle Rig'),
-      f'g1 {a1}, g2 {a2} (60 ticks apart at 20 Air/s)')
+MAX_AIR = 1800
+check('G1 goggles show Air rising under the shaft', a1 and a2 and a2[0] > a1[0] and a1[1] == MAX_AIR and has('g1', 'Tentacle Rig'),
+      f'g1 {a1}, g2 {a2} (60 ticks apart at 20 Air/s; max {MAX_AIR}: air.capacityFactor 2.0 x Backtank 900)')
 check('G2 fill rate and enchant-derived stats (Copper, Far Reach II, Swift I, 128 RPM)',
       has('g2', 'Filling: +20.0 Air/s') and has('g2', 'Reach: 6.0 blocks') and has('g2', 'Top Speed: 9.2 b/s') and has('g2', 'Kinetic Stats'),
       f'{gog.get("g2", [])[3:6]}')
-check('G3 Netherite Rig Block without a shaft', has('g3', 'Not filling') and has('g3', 'Reach: 7.0 blocks') and has('g3', 'Air use: 50%') and air('g3') == (300, 900),
+check('G3 Netherite Rig Block without a shaft', has('g3', 'Not filling') and has('g3', 'Reach: 7.0 blocks') and has('g3', 'Air use: 50%') and air('g3') == (300, MAX_AIR),
       f'{gog.get("g3", [])[2:7]}')
 
 reads = re.findall(r'data get block 3510 -60 0 Air => .*?data: (\d+)\s.*?data get block 3512 -59 0 => .*?Sections: \[\{Text: \'"([^"]*)"\'.*?\{Text: \'"([^"]*)"\'', r, re.S)
@@ -49,7 +50,9 @@ nums = [(a, int(t)) for a, lab, t in vals if t.isdigit()]
 pct = [(a, t) for a, lab, t in vals if t.endswith('%')]
 check('D1 display board shows the Rig Air and follows it', len(nums) >= 2 and nums[1][1] > nums[0][1] and all(0 <= a - n <= 40 for a, n in nums) and vals[0][1].strip() == 'Air',
       f'(rig Air, board) {nums}, label {vals[0][1] if vals else None!r}')
-check('D2 percent mode', bool(pct) and abs(int(pct[0][1][:-1]) - 100 * pct[0][0] / 900) <= 5, f'{pct}')
+# the board refreshes every 20 ticks while the Rig fills at 20 Air/s, so it shows the Air of up to 40 Air ago (as D1)
+check('D2 percent mode', bool(pct) and int(100 * (pct[0][0] - 40) / MAX_AIR) <= int(pct[0][1][:-1]) <= round(100 * pct[0][0] / MAX_AIR),
+      f'(rig Air, board) {pct}, want {int(100 * (pct[0][0] - 40) / MAX_AIR) if pct else "?"}..{round(100 * pct[0][0] / MAX_AIR) if pct else "?"}% of {MAX_AIR}')
 src = re.findall(r'Source: \{[^}]*Id: "([^"]+)"', r)
 check('D3 link keeps the tentaworks:rig_air source (validated against the Rig Block)', src and all(x == 'tentaworks:rig_air' for x in src), f'{src}')
 scr = re.search(r'SCREEN (\S+)', c)
