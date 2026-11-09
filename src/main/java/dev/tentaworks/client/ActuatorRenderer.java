@@ -85,7 +85,7 @@ public final class ActuatorRenderer {
     /** Third person: the carried item follows the head's pitch up to this far up or down, degrees (an arm does not reach behind the head). */
     private static final float CARRY_PITCH = 50;
     /** First person: the carried item's spot in the hand pass (camera space, 70 degree view), blocks. */
-    private static final double HAND_AHEAD = 0.9, HAND_RIGHT = 0.5, HAND_UP = -0.46;
+    private static final double HAND_AHEAD = 0.9, HAND_RIGHT = 0.62, HAND_UP = -0.38;
     /** First person: the carried item's size against the third-person one (the hand pass draws it close to the eye). */
     private static final float HAND_ITEM_SCALE = 0.6F;
     /** Vertical field of view of the hand pass, degrees. */
