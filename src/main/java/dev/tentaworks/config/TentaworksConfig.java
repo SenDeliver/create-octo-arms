@@ -16,6 +16,8 @@ public final class TentaworksConfig {
     public static final ModConfigSpec.DoubleValue AIR_FAR_USE;
     public static final ModConfigSpec.DoubleValue AIR_GRAB;
     public static final ModConfigSpec.DoubleValue AIR_THROW;
+    public static final ModConfigSpec.DoubleValue AIR_DUAL_WIELD;
+    public static final ModConfigSpec.BooleanValue DUAL_WIELD;
     public static final ModConfigSpec.BooleanValue FAR_USE_PLAYERS;
     public static final ModConfigSpec.BooleanValue GRAB_TAMED_OTHERS;
     public static final ModConfigSpec.BooleanValue GRAB_SHIPS;
@@ -53,9 +55,13 @@ public final class TentaworksConfig {
         AIR_FAR_USE = b.comment("Copper Rig: Air per Far Use (one block or mob action past arm's length)").translation(t + "air.farUse").defineInRange("farUse", 0.5, 0.0, 50.0);
         AIR_GRAB = b.comment("Copper Rig holding a Grab: ticks per 1 Air").translation(t + "air.grab").defineInRange("grab", 40.0, 1.0, 72000.0);
         AIR_THROW = b.comment("Copper Rig: Air per Throw").translation(t + "air.throw").defineInRange("throw", 10.0, 0.0, 500.0);
+        AIR_DUAL_WIELD = b.comment("Copper Rig: Air per Dual Wield action (a block broken or a hit the off-hand item helped with)").translation(t + "air.dualWield").defineInRange("dualWield", 0.5, 0.0, 50.0);
         b.pop();
         b.translation(t + "farUse").push("farUse");
         FAR_USE_PLAYERS = b.comment("Far Use may hit and use on players (the PvP rule still applies)").translation(t + "farUse.players").define("players", true);
+        b.pop();
+        b.translation(t + "actuators").push("actuators");
+        DUAL_WIELD = b.comment("Dual Wield: with both Actuators free, the off-hand item works along with the main-hand one (mining speed, melee damage)").translation(t + "actuators.dualWield").define("dualWield", true);
         b.pop();
         b.translation(t + "grab").push("grab");
         GRAB_TAMED_OTHERS = b.comment("Grab may take another player's tamed, owned or leashed animal").translation(t + "grab.tamedOthers").define("tamedOthers", false);

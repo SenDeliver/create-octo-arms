@@ -2,6 +2,7 @@ package dev.tentaworks.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import dev.tentaworks.rig.DualWield;
 import dev.tentaworks.rig.FarUse;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -17,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /**
  * A use on an entity, and a hit, are Far Uses only once they did something (see {@link FarUse#usedOn}). {@code attack} hurts
  * its main target through {@code Entity.hurt} once; the sweep hurts the others through {@code LivingEntity.hurt}, left alone.
+ * That one hurt also carries the Dual Wield bonus of the off-hand item ({@link DualWield#hitBonus}).
  */
 @Mixin(Player.class)
 public class PlayerFarUseMixin {
@@ -27,8 +29,12 @@ public class PlayerFarUseMixin {
 
     @WrapOperation(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
     private boolean tentaworks$farHit(Entity target, DamageSource source, float amount, Operation<Boolean> original) {
-        boolean hurt = original.call(target, source, amount);
-        if (hurt && (Object) this instanceof ServerPlayer p) FarUse.hit(p, target);
+        float bonus = (Object) this instanceof ServerPlayer p ? DualWield.hitBonus(p, target, source) : 0;
+        boolean hurt = original.call(target, source, amount + bonus);
+        if (hurt && (Object) this instanceof ServerPlayer p) {
+            FarUse.hit(p, target);
+            if (bonus > 0) DualWield.hit(p);
+        }
         return hurt;
     }
 }
