@@ -92,6 +92,8 @@ after = track(s1, rl[0]['gt'] + 1, rl[0]['gt'] + 40) if rl else []
 calm = [d for d in after if d['pinned'] == 'calm']
 check('G1 set down: why=release, then calm, then free on the ground', rl and rl[0]['why'] == 'release' and 15 <= len(calm) <= 25
       and after and after[-1]['pinned'] == '-' and after[-1]['ground'], f"{rl[:1]} calm {len(calm)} ticks, end {after[-1]['pinned'] if after else '-'}")
+hs = re.search(rf'SGRAB gt=\d+ Dev kind=release target={s1} .*? ticks=(\d+) air=(\S+)', s)
+check('G1 hold summary on the release line: ticks held, Air paid', hs and rl and st and int(hs[1]) == rl[0]['gt'] - st[0]['gt'] and float(hs[2]) > 0, f'{hs and hs.groups()}')
 pr = far[0] if far else None
 p0 = strace.get(st[0]['gt'] - 1) if st else None
 p1 = strace.get(st[0]['gt'] + 1) if st else None

@@ -62,15 +62,17 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Dev source set only: Actuator tooling for the faruse, grab, shipgrab and look suites. Commands: fit|unfit (the source
  * player's worn Rig, or every player's, gains or loses its Actuators, SFIT), deft on|off (Deft on the worn Rig, SDEFT),
  * farmode always|rig_out|off (Rig Settings Far Use of the worn Rig, SFARMODE), config PATH VALUE (a server config value until
- * restart, SCONFIG), tame TARGETS OWNER (TAME). Lines: SGRAB (every Grab start, refusal, release, throw), SRIGEVENT (every
+ * restart, SCONFIG), tame TARGETS OWNER (TAME). Lines: SGRAB (every Grab start, refusal, release, throw; a release or throw ends with the hold summary: ticks held and Air paid), SRIGEVENT (every
  * Rig event), MHURT (damage to any living entity but a player), SFAR (every block click, break, entity use and attack after
  * Far Use decided: lift, where it lies (PLOT: a Ship block, left to Sable), sight, cancelled), SDROPS (where the drops of a player's block break end up), and with
  * trace on SMOB (every entity tagged {@code tw}) plus the STRACE fields of {@link #fields}.
@@ -78,6 +80,7 @@ import java.util.Map;
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID)
 public final class DevActuators {
     private static final Logger LOG = LoggerFactory.getLogger("tentaworks-dev");
+    private static final Map<UUID, double[]> HOLDS = new HashMap<>();
     private static Field debtField;
 
     private DevActuators() {
@@ -211,9 +214,21 @@ public final class DevActuators {
     }
 
     static void grabEvent(Grab.Event e) {
-        LOG.info("SGRAB gt={} {} kind={} target={} type={} why={} actuators={} speed={} mass={}", e.wearer().level().getGameTime(), e.wearer().getName().getString(), e.kind(),
+        ServerPlayer p = e.wearer();
+        long gt = p.level().getGameTime();
+        double air = RigAir.air(p) - debt(p);
+        String ticks = "-", paid = "-";
+        if (e.kind().equals("start")) HOLDS.put(p.getUUID(), new double[] {gt, air});
+        else if (e.kind().equals("release") || e.kind().equals("throw")) {
+            double[] hold = HOLDS.remove(p.getUUID());
+            if (hold != null) {
+                ticks = Long.toString(gt - (long) hold[0]);
+                paid = f3(hold[1] - air);
+            }
+        }
+        LOG.info("SGRAB gt={} {} kind={} target={} type={} why={} actuators={} speed={} mass={} ticks={} air={}", gt, p.getName().getString(), e.kind(),
                 e.target() == null ? -1 : e.target().getId(), e.target() == null ? (e.mass() >= 0 ? "ship" : "-") : type(e.target()),
-                e.why().isEmpty() ? "-" : e.why(), e.actuators(), f3(e.speed()), String.format(Locale.ROOT, "%.1f", e.mass()));
+                e.why().isEmpty() ? "-" : e.why(), e.actuators(), f3(e.speed()), String.format(Locale.ROOT, "%.1f", e.mass()), ticks, paid);
     }
 
     @SubscribeEvent
