@@ -132,7 +132,8 @@ actuators g5w
 signal g5wdone
 # G6 set down onto a Create seat
 await g6
-lookate minecraft:sheep
+# the G6 sheep is 3 blocks away; under load the client may still only track the G1 sheep 72 blocks off after the tp
+lookate minecraft:sheep 6
 wait 3
 key key.keyboard.v
 awaitheld on 20

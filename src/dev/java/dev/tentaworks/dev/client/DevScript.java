@@ -128,7 +128,7 @@ import java.util.Set;
  * | gait on|off (GAIT line per tick: own gait slots) | key key.keyboard.e (one click; key.mouse.right = use) | tab ns:id (select a creative tab, any page) | backtanks (BACKTANK lines: cogs/shaft partial and default name per backtank block) | rejoin ticks (disconnect, reconnect to the same server after ticks) | view first|third|front
  * | forward look|flat (client config movement.forward, in memory only)
  * | dig x y z tag [max] (mines that block like a held attack button: start, then continue + swing every tick until it is air or max ticks, default 600; CDIG tag gt0 gt1 ticks).
- * | lookate TYPE (lookat the box centre of the nearest other entity of that type) | lookship (lookat the pose position of the nearest Ship, Sable only)
+ * | lookate TYPE [RANGE] (lookat the box centre of the nearest other entity of that type; with RANGE waits up to 100 ticks for one that close, as the client may not track it yet after a tp) | lookship (lookat the pose position of the nearest Ship, Sable only)
  * | attack TYPE (attacks the nearest other entity of that type with no crosshair, as a cheating client would: the server decides)
  * | awaitheld on|off N (waits until the own Actuators hold something, or nothing, at most N ticks; CAWAIT line)
  * | opacity X (client config firstPerson.limbOpacity, in memory only) | actuators tag (CACT: own Actuator state, HUD line, ranges)
@@ -467,7 +467,15 @@ public final class DevScript {
                         mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult b && dev.tentaworks.compat.ShipFrames.get().isPlot(mc.level, b.getBlockPos()));
                 case "lookate" -> {
                     Entity e = nearest(mc, a[1]);
-                    if (e == null) {
+                    double range = a.length > 2 ? Double.parseDouble(a[2]) : Double.POSITIVE_INFINITY;
+                    if ((e == null || e.distanceTo(mc.player) > range) && a.length > 2 && awaitTicks < 100) {
+                        awaitTicks++;
+                        lines.addFirst(line);
+                        waitTicks = 1;
+                        return;
+                    }
+                    awaitTicks = 0;
+                    if (e == null || e.distanceTo(mc.player) > range) {
                         LOG.warn("script: lookate no {}", a[1]);
                     } else {
                         Vec3 c = e.getBoundingBox().getCenter();
