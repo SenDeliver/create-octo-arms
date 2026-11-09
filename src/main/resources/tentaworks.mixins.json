@@ -25,7 +25,8 @@
     "LivingEntityBodyYawMixin",
     "LivingEntityWalkMixin",
     "LocalPlayerBobMixin",
-    "LocalPlayerSneakMixin"
+    "LocalPlayerSneakMixin",
+    "PlayerRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
