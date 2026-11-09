@@ -61,7 +61,12 @@ want = ['copper_rig', 'netherite_rig', 'copper_rig_flipped_none', 'rig_missing_t
 got = dict((n, ok) for ok, n in re.findall(r'RECIPE (PASS|FAIL) (\S+)', s))
 check('R lookups resolve (7 cases)', all(got.get(n) == 'PASS' for n in want), f"{got}")
 cnt = re.search(r'RECIPE count tentaworks=(\d+) (.*)', s)
-check('R exactly 4 Tentaworks recipes', cnt and cnt[1] == '4', cnt[2] if cnt else 'none')
+RECIPES = sorted(f'tentaworks:{r}' for r in ('fitting/copper_tentacle_rig', 'fitting/netherite_tentacle_rig', 'mechanical_crafting/copper_tentacle_rig',
+                 'mechanical_crafting/netherite_tentacle_rig', 'mechanical_crafting/fitted_copper_tentacle_rig', 'mechanical_crafting/fitted_netherite_tentacle_rig',
+                 'sequenced_assembly/tentacle', 'sequenced_assembly/actuator', 'smithing/netherite_tentacle_rig'))
+got_ids = sorted(re.findall(r'tentaworks:[\w/]+', cnt[2])) if cnt else []
+check('R exactly 9 Tentaworks recipes (2.0: fitting x2, mechanical crafting x4, sequenced assembly x2, smithing)', cnt and cnt[1] == '9' and got_ids == RECIPES,
+      f"{cnt[2] if cnt else 'none'}; missing {sorted(set(RECIPES) - set(got_ids))}, extra {sorted(set(got_ids) - set(RECIPES))}")
 for line in re.findall(r'RECIPE \w+ (?:copper_rig|netherite_rig|tentacle_sequence|smithing) .*', s): print('   ', line[:220])
 adv = re.search(r'RECIPE advancement doc_rig present=(\w+) parent=(\S+)', s)
 check('R advancement tentaworks:doc_rig loaded under create:backtank', adv and adv[1] == 'true' and adv[2] == 'create:backtank', adv.group(0) if adv else 'none')
