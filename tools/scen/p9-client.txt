@@ -122,7 +122,10 @@ wait 3
 shot p9_rotated
 signal cdone
 # D world <-> ship (Speed 5.6 b/s): climb the world wall, move sideways (+z, 40 ticks: z -6.5 -> ~4.7) onto the ship hull and back, then straddle the seam (z ~ -0.3) while the ship leaves
+# the moves are timed for 0.28 b/t: pin Speed 5.6 (2.0: an unset Speed runs at 8, the straddle lands at z 2.7, all on the hull), back to 8 after D
 await d
+rawsettings chest 1.5 5.6 double_jump
+wait 5
 look -90 0
 doublejump
 wait 20
@@ -156,6 +159,8 @@ wait 80
 mark dend
 signal dstop
 await dstopped
+rawsettings chest 1.5 8 double_jump
+wait 5
 signal ddone
 # E ship removed mid-grip: hang on p9e (floor out of Reach), the timeline removes the ship, the wearer must fall to the floor
 await e
