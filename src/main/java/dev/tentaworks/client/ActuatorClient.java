@@ -125,7 +125,7 @@ public final class ActuatorClient {
                 LocalPlayer player = Minecraft.getInstance().player;
                 if (player == null || packet.entityId() != player.getId() || !throwWaiting(player)) onThrow(packet.entityId(), packet.at());
             }
-            case IMPACT -> onImpact(packet.at(), packet.speed());
+            case IMPACT -> onImpact(packet.entityId(), packet.at(), packet.speed());
         }
     }
 
@@ -135,9 +135,9 @@ public final class ActuatorClient {
         if (mc.level != null && mc.level.getEntity(wearerId) instanceof Player wearer) ActuatorFx.thrown(wearer, dir);
     }
 
-    /** An Impact at {@code at}, {@code speed} blocks per tick: sparks and a clank. */
-    public static void onImpact(Vec3 at, double speed) {
-        ActuatorFx.impact(at, speed);
+    /** An Impact of entity {@code thrown} at {@code at}, {@code speed} blocks per tick: sparks and a sound that fits it. */
+    public static void onImpact(int thrown, Vec3 at, double speed) {
+        ActuatorFx.impact(thrown, at, speed);
     }
 
     private static boolean throwWaiting(LocalPlayer player) {
