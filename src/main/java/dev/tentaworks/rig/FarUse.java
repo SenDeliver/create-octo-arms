@@ -133,7 +133,7 @@ public final class FarUse {
             if (e.getEntity() instanceof ServerPlayer p) tick(p);
         });
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, FarUse::onLeftClickBlock);
-        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, FarUse::onBreak);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, true, FarUse::onBreak);
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, FarUse::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, FarUse::onInteract);
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, FarUse::onInteractAt);
@@ -275,7 +275,7 @@ public final class FarUse {
     private static void onBreak(BlockEvent.BreakEvent e) {
         if (!(e.getPlayer() instanceof ServerPlayer p)) return;
         if (e.getPos().equals(mining(p))) mine(p, null);
-        if (!block(p, e.getPos(), null, false)) e.setCanceled(true);
+        if (!e.isCanceled() && !block(p, e.getPos(), null, false)) e.setCanceled(true);
     }
 
     private static @Nullable BlockPos mining(ServerPlayer player) {
