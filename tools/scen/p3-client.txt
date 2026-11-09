@@ -2,7 +2,7 @@
 # Crawl let-go / re-grab, creative, tooltips, long fall. TIMELINE p3-timeline.txt
 trace on
 hud off
-# B1 sneak + use in the air with the Rig in hand opens Rig Settings; Height 1.5 -> 1.0, Speed 5.6 -> 6.6, mode stays
+# B1 sneak + use in the air with the Rig in hand opens Rig Settings; Height 1.5 -> 1.0, Speed 8.0 (never set: speed.max) -> 6.6, mode stays
 await b1
 view first
 look -90 -90
@@ -15,7 +15,7 @@ screen
 rigs b1open
 shot p3_settings_hand_default
 scroll 0 -5
-scroll 1 10
+scroll 1 -14
 wait 2
 rigs b1edit
 shot p3_settings_hand_edited

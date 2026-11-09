@@ -14,7 +14,7 @@ for m in re.finditer(r'STRACE gt=(\d+) Dev pos=' + num + r' v=\S+ state=(\w+) gr
 mk = {m[0]: int(m[1]) for m in re.findall(r'CPOS (\S+) gt=(\d+)', c)}
 hurts = [(int(m[0]), float(m[1])) for m in re.findall(r'HURT gt=(\d+) Dev source=fall amount=(\S+)', s)]
 falls = [(int(m[0]), float(m[1])) for m in re.findall(r'FALL gt=(\d+) Dev distance=(\S+)', s)]
-SET = r'RigSettings\[standingHeight=(\S+), speed=(\S+), activation=(\w+)\]'
+SET = r'RigSettings\[standingHeight=(\S+), speed=(\S+), activation=(\w+)(?:, farUse=\w+)?\]'
 crig = {}
 for m in re.finditer(r'CRIG (\S+) (?:screen settings=' + SET + r'|slot=(\w+) item=(\S+) settings=(?:' + SET + r'|null))', c):
     key = (m[1], 'screen' if m[2] else m[5])
@@ -44,8 +44,10 @@ def first(d, a, b, pred):
 SCREEN = 'dev.tentaworks.client.RigSettingsScreen'
 edited = (1.0, 6.6, 'DOUBLE_JUMP')
 print('== Rig Settings screen and the component')
-check('B1 sneak + use in the air opens Rig Settings (defaults shown)', len(screens) >= 1 and screens[0] == SCREEN and crig.get(('b1open', 'screen')) == (1.5, 5.6, 'DOUBLE_JUMP'),
-      f"screen {screens[:1]}, values {crig.get(('b1open', 'screen'))}")
+# 2.0: a Rig with no saved Speed shows and runs at speed.max (8); the fresh Rig carries no settings component
+check('B1 sneak + use in the air opens Rig Settings (defaults shown)', len(screens) >= 1 and screens[0] == SCREEN and crig.get(('b1open', 'screen')) == (1.5, 8.0, 'DOUBLE_JUMP')
+      and ('b1open', 'mainhand') in crig and crig[('b1open', 'mainhand')] is None,
+      f"screen {screens[:1]}, values {crig.get(('b1open', 'screen'))} (unset Speed reads speed.max 8), item settings {crig.get(('b1open', 'mainhand'), 'no line')}")
 check('B1 scrolled values written to the Rig in hand (server)', crig.get(('b1edit', 'screen')) == edited and srig.get(('b1', 'mainhand'), (None,))[0] == edited
       and ('b1', 'chest') not in srig and len(screens) >= 2 and screens[1] == 'none',
       f"screen {crig.get(('b1edit', 'screen'))}, server mainhand {srig.get(('b1', 'mainhand'))}, chest {srig.get(('b1', 'chest'), 'empty (not equipped)')}, after close {screens[1:2]}")
@@ -117,8 +119,9 @@ print('== Creative (part A 3)')
 w = span(tr, mk['cr1a'], mk['cr1c']); sw = span(st, mk['cr1a'], mk['cr1c'])
 act = first(st, mk['cr1a'], mk['cr1c'], lambda x: x['state'] == 'ACTIVE')
 check('CR1 creative with 0 Air activates, moves, never Crawls', 'CRAWL' not in states(w) + states(sw) and act is not None and max(x['air'] for _, x in sw) == 0
-      and sw[-1][1]['state'] == 'ACTIVE' and min(x['cf'] for g, x in sw if g > act + 2) == 1,
-      f"client {states(w)}, server {states(sw)}, Air {max(x['air'] for _, x in sw)}, climbed {max(x['p'][1] for _, x in w) + 60:.2f}")
+      and sw[-1][1]['state'] == 'ACTIVE' and min(x['cf'] for g, x in sw if g > act + 2 and x['grips'] >= 2) == 1,
+      f"client {states(w)}, server {states(sw)}, Air {max(x['air'] for _, x in sw)}, climbed {max(x['p'][1] for _, x in w) + 60:.2f}, "
+      f"flight off on {sum(1 for g, x in sw if g > act + 2 and x['grips'] >= 2 and x['cf'] != 1)} Held ticks (want 0; ticks under 2 Grips, as at the Reach top at 8 b/s: {sum(1 for g, x in sw if g > act + 2 and x['grips'] < 2)})")
 sw = span(st, mk['cr2a'], mk['cr2c'])
 check('CR2 creative uses no Air', min(x['air'] for _, x in sw) == 900 and max(x['air'] for _, x in sw) == 900 and 'ACTIVE' in states(sw),
       f"Air {min(x['air'] for _, x in sw)}..{max(x['air'] for _, x in sw)} over {mk['cr2c'] - mk['cr2a']} ticks (moved, climbed, Set Down), server {states(sw)}")
