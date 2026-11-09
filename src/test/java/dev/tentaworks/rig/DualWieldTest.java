@@ -34,6 +34,15 @@ class DualWieldTest {
     }
 
     @Test
+    void anOffHandToolWorkingAloneSparesTheMainHandItem() {
+        assertTrue(DualWield.offAlone(1, 4), "a shovel on stone with a pickaxe in the off hand");
+        assertTrue(DualWield.offAlone(1, 6), "a bare hand");
+        assertFalse(DualWield.offAlone(4, 4), "both work: both wear");
+        assertFalse(DualWield.offAlone(4, 1), "the main tool alone");
+        assertFalse(DualWield.offAlone(1, 1), "neither is a tool here: vanilla wear");
+    }
+
+    @Test
     void realItems() {
         assertEquals(0, DualWield.efficiency(new ItemStack(Items.IRON_PICKAXE)), 1.0E-9);
         assertEquals(5.0, DualWield.attackBonus(new ItemStack(Items.IRON_SWORD)), 1.0E-9, "iron sword: 6 = 1 + 5");

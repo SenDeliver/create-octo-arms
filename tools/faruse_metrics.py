@@ -18,7 +18,8 @@ far = [dict(gt=int(m[1]), kind=m[2], at=m[3], type=m[4], dist=float(m[5]), range
        for m in re.finditer(r'SFAR gt=(\d+) Dev kind=(\w+) at=(\S+) type=(\S+) dist=(\S+) range=(\S+) lift=(\S+) far=(\w+) sight=(\w+) asking=(\w+) canceled=(\w+)', s)]
 for f, m in zip(far, re.finditer(r'SFAR gt=\d+ Dev kind=\w+ .*? canceled=\w+(?: bdist=(\S+))?', s)):
     f['bdist'] = float(m[1]) if m[1] else None
-dual = [dict(gt=int(m[0]), kind=m[1], off=m[2], offdmg=int(m[3]), air=float(m[4])) for m in re.findall(r'SDUAL gt=(\d+) Dev kind=(\w+) off=(\S+) offdmg=(\d+) air=(\S+)', s)]
+dual = [dict(gt=int(m[0]), kind=m[1], off=m[2], offdmg=int(m[3]), air=float(m[4]), maindmg=int(m[5]))
+        for m in re.findall(r'SDUAL gt=(\d+) Dev kind=(\w+) off=(\S+) offdmg=(\d+) air=(\S+) maindmg=(\d+)', s)]
 drops = {m[1]: dict(gt=int(m[0]), items=m[2], far=float(m[3]), xp=int(m[4])) for m in re.findall(r'SDROPS gt=(\d+) Dev pos=(\S+) n=\d+ items=(\S+) far=(\S+) xp=(\d+)', s)}
 probe = {}
 for m in re.finditer(r'PROBE (-?\d+), (-?\d+), (-?\d+) Block\{([^}]+)\}', s):
@@ -170,15 +171,16 @@ def dig(at):
 g13, t13 = dig('11106,-59,90')
 d13 = drops.get('11106,-59,90')
 u13 = [e for e in dual if e['kind'] == 'mine' and g13 is not None and g13 <= e['gt'] <= g13 + 40]
-check('N13 off-hand stone pickaxe alone mines stone fast, cobblestone drops, off-hand pickaxe wears, Air paid',
+check('N13 off-hand stone pickaxe alone mines stone fast, cobblestone drops, off-hand pickaxe wears, main-hand shovel does not, Air paid',
       t13 is not None and t13 <= 20 and d13 and 'minecraft:cobblestone' in d13['items'] and len(u13) == 1
-      and u13[0]['off'] == 'minecraft:stone_pickaxe' and u13[0]['offdmg'] == 1,
+      and u13[0]['off'] == 'minecraft:stone_pickaxe' and u13[0]['offdmg'] == 1 and u13[0]['maindmg'] == 0,
       f"ticks {t13} drops {d13} SDUAL {u13}")
 g14a, t14a = dig('11106,-59,94')
 g14b, t14b = dig('11106,-59,98')
 u14a = [e for e in dual if g14a is not None and g14a <= e['gt'] <= g14a + 40]
 u14b = [e for e in dual if e['kind'] == 'mine' and g14b is not None and g14b <= e['gt'] <= g14b + 40]
-check('N14 two stone pickaxes dig faster than one (about twice)', t14a is not None and t14b is not None and t14b * 1.5 <= t14a and not u14a and len(u14b) == 1,
+check('N14 two stone pickaxes dig faster than one (about twice), both wear', t14a is not None and t14b is not None and t14b * 1.5 <= t14a and not u14a
+      and len(u14b) == 1 and u14b[0]['offdmg'] == 1 and u14b[0]['maindmg'] == 2,
       f"one {t14a} ticks, two {t14b} ticks, SDUAL one {u14a} two {u14b}")
 h3 = [e for e in hurt if e['id'] == ids['z4'] and e['by'] == 'Dev']
 h15 = [e for e in hurt if e['id'] == ids['z7'] and e['by'] == 'Dev']

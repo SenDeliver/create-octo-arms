@@ -24,7 +24,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /**
  * A use on a block (the block's own use, the item's use on it, a placement) is a Far Use only once it did something (see
  * {@link FarUse#usedOn}). A survival block break wears the main-hand tool through its one {@code mineBlock} call; the off-hand
- * tool that helped break it ({@link DualWield#mined}) wears there too.
+ * tool that helped break it ({@link DualWield#mined}) wears there too, and when it did the work alone ({@link DualWield#offAlone})
+ * the main-hand item is not worn for it.
  */
 @Mixin(ServerPlayerGameMode.class)
 public class ServerPlayerGameModeFarUseMixin {
@@ -40,7 +41,7 @@ public class ServerPlayerGameModeFarUseMixin {
 
     @WrapOperation(method = "destroyBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;mineBlock(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;)V"))
     private void tentaworks$dualMined(ItemStack stack, Level level, BlockState state, BlockPos pos, Player who, Operation<Void> original) {
-        original.call(stack, level, state, pos, who);
+        if (!DualWield.offAlone(player, state)) original.call(stack, level, state, pos, who);
         DualWield.mined(player, level, state, pos);
     }
 }

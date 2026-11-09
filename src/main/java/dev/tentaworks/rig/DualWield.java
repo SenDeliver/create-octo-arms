@@ -33,7 +33,8 @@ import java.util.function.Function;
  * Dual Wield (CONTEXT: Actuators): with a fitted Rig whose Actuators may act, no heavy hold and the off-hand Actuator not
  * holding, the off-hand item works along with the main-hand one ({@code actuators.dualWield}). Mining: the break speed is the
  * sum of both tools that are effective on the block ({@link #speedFactor}, each with its own Efficiency); an off-hand tool alone
- * does the work and passes the harvest check, the loot still comes from the main hand. Melee: the off-hand item's damage is
+ * does the work, passes the harvest check and takes the wear (the main-hand item none, {@link #offAlone}); the loot still comes
+ * from the main hand. Melee: the off-hand item's damage is
  * added to the hit ({@link #bonus}), scaled by the attack strength as vanilla scales the main hand's. Each bonus action wears the
  * off-hand item and pays {@code air.dualWield}. Use gets no speed-up. The same rule on client and server: the break speed must
  * agree on both, so the client reads the hold from {@link #clientSide}.
@@ -117,6 +118,16 @@ public final class DualWield {
         ItemStack off = player.getOffhandItem();
         return speedFactor(player.getMainHandItem().getDestroySpeed(state), player.getAttributeValue(Attributes.MINING_EFFICIENCY),
                 off.getDestroySpeed(state), efficiency(off));
+    }
+
+    /** Only the off-hand tool worked on a block: it is effective there ({@code offBase}) and the main-hand item ({@code mainBase}) is not. */
+    public static boolean offAlone(double mainBase, double offBase) {
+        return effective(offBase) && !effective(mainBase);
+    }
+
+    /** The off-hand tool alone breaks {@code state} for this player: the main-hand item did no work, so it takes no wear for it. */
+    public static boolean offAlone(Player player, BlockState state) {
+        return on(player) && offAlone(player.getMainHandItem().getDestroySpeed(state), player.getOffhandItem().getDestroySpeed(state));
     }
 
     /** The off-hand tool is what makes this block harvestable. */

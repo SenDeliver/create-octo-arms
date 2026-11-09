@@ -162,8 +162,9 @@ public final class DevActuators {
     @SubscribeEvent
     static void onStarted(ServerStartedEvent event) {
         Grab.listen(DevActuators::grabEvent);
-        DualWield.listen((p, kind) -> LOG.info("SDUAL gt={} {} kind={} off={} offdmg={} air={}", p.level().getGameTime(), p.getName().getString(), kind,
-                BuiltInRegistries.ITEM.getKey(p.getOffhandItem().getItem()), p.getOffhandItem().getDamageValue(), f3(RigAir.air(p) - debt(p))));
+        DualWield.listen((p, kind) -> LOG.info("SDUAL gt={} {} kind={} off={} offdmg={} air={} maindmg={}", p.level().getGameTime(), p.getName().getString(), kind,
+                BuiltInRegistries.ITEM.getKey(p.getOffhandItem().getItem()), p.getOffhandItem().getDamageValue(), f3(RigAir.air(p) - debt(p)),
+                p.getMainHandItem().getDamageValue()));
         RigEvents.listen(e -> LOG.info("SRIGEVENT gt={} {} event={} number={}", e.player().level().getGameTime(), e.player().getName().getString(), e.event(),
                 String.format(Locale.ROOT, "%.3f", e.number())));
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, true, PlayerInteractEvent.LeftClickBlock.class, e -> {

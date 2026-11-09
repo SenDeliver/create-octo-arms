@@ -137,8 +137,9 @@ tp Dev 11100.2 -60 86.5 -90 0
 #signal n12
 #await n12done
 tentaworks probe 11106 -61 86
-# N13 Dual Wield: the off-hand stone pickaxe alone mines stone and passes the harvest check
+# N13 Dual Wield: the off-hand stone pickaxe alone mines stone and passes the harvest check, the main-hand shovel takes no wear
 tp Dev 11100.5 -60 90.5 -90 0
+item replace entity Dev weapon.mainhand with iron_shovel
 item replace entity Dev weapon.offhand with stone_pickaxe
 #sleep 0.5
 #signal n13
