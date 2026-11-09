@@ -2,7 +2,12 @@ package dev.tentaworks.client;
 
 import dev.tentaworks.TentaworksIds;
 import net.minecraft.client.Minecraft;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -13,15 +18,18 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 
 /**
  * Throw and Impact feedback: the thrower's camera kicks a little and the arms follow through; an Impact (told by the server)
- * sparks and thuds like a body landing (a mob's hurt sound comes with its damage); only an Iron Golem clanks.
+ * sparks and thuds like a body landing (a mob's hurt sound comes with its damage); only an Iron Golem clanks. While holding, the
+ * spot a Set Down would put the target on is outlined in the world: its footprint, and its box faintly, red where it may not go.
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public final class ActuatorFx {
@@ -72,5 +80,24 @@ public final class ActuatorFx {
         if (age < 0 || age >= KICK_TICKS) return;
         float k = 1 - age / KICK_TICKS;
         event.setPitch(event.getPitch() - KICK_DEGREES * k * k);
+    }
+
+    @SubscribeEvent
+    static void onLevelStage(RenderLevelStageEvent event) {
+        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_ENTITIES) return;
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        if (player == null || mc.options.hideGui || player.isSpectator()) return;
+        ActuatorView.Spot spot = ActuatorView.setDownSpot(player);
+        if (spot == null) return;
+        Entity held = ActuatorView.held(player);
+        double half = (held == null ? 0.6 : held.getBbWidth()) / 2 + 0.01, height = held == null ? 0.6 : held.getBbHeight();
+        Vec3 at = spot.pos().subtract(event.getCamera().getPosition());
+        float r = 1, g = spot.valid() ? 1 : 0.25F, b = spot.valid() ? 1 : 0.25F;
+        MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
+        VertexConsumer lines = buffers.getBuffer(RenderType.lines());
+        LevelRenderer.renderLineBox(event.getPoseStack(), lines, new AABB(at.x - half, at.y + 0.005, at.z - half, at.x + half, at.y + 0.07, at.z + half), r, g, b, 0.95F);
+        LevelRenderer.renderLineBox(event.getPoseStack(), lines, new AABB(at.x - half, at.y + 0.07, at.z - half, at.x + half, at.y + height, at.z + half), r, g, b, 0.3F);
+        buffers.endBatch(RenderType.lines());
     }
 }
