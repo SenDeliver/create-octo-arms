@@ -1,0 +1,38 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "sable"
+    }
+  ],
+  "parent": "tentaworks:fitted",
+  "criteria": {
+    "ship_grab": {
+      "trigger": "tentaworks:rig_event",
+      "conditions": {
+        "event": "ship_grab",
+        "number": {
+          "min": 50
+        }
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "create:item_vault"
+    },
+    "title": {
+      "translate": "advancement.tentaworks.fridge_mover"
+    },
+    "description": {
+      "translate": "advancement.tentaworks.fridge_mover.desc"
+    },
+    "frame": "goal",
+    "announce_to_chat": true
+  },
+  "requirements": [
+    [
+      "ship_grab"
+    ]
+  ]
+}

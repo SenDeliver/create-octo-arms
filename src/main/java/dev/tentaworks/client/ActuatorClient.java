@@ -1,11 +1,13 @@
 package dev.tentaworks.client;
 
 import dev.tentaworks.TentaworksIds;
+import dev.tentaworks.compat.Frame;
 import dev.tentaworks.compat.ShipFrames;
 import dev.tentaworks.network.ActuatorStatePacket;
 import dev.tentaworks.network.FarUsePacket;
 import dev.tentaworks.network.RigGrabPacket;
 import dev.tentaworks.rig.Actuators;
+import dev.tentaworks.rig.Grab;
 import dev.tentaworks.rig.TentacleRigItem;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -19,6 +21,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -78,6 +81,18 @@ public final class ActuatorClient {
     public static State local() {
         LocalPlayer player = Minecraft.getInstance().player;
         return player == null ? State.NONE : get(player);
+    }
+
+    /** The wearer's Rig Speed factor: {@code grab.heavySpeedFactor} while both Actuators hold a heavy target (the server checks the same). */
+    public static double speedFactor() {
+        return local().heavy() ? Grab.heavyFactor() : 1.0;
+    }
+
+    /** The id of the Ship the wearer's Actuators hold (its Grips do not hold the wearer up), or null. */
+    public static @Nullable Object heldShip(Level level) {
+        BlockPos ship = local().ship();
+        Frame frame = ship == null ? null : ShipFrames.get().containing(level, ship);
+        return frame == null ? null : frame.id();
     }
 
     public static void onState(ActuatorStatePacket packet) {

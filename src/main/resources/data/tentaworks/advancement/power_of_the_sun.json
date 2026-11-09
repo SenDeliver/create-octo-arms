@@ -1,0 +1,30 @@
+{
+  "parent": "tentaworks:fitted",
+  "criteria": {
+    "grab_blaze": {
+      "trigger": "tentaworks:rig_event",
+      "conditions": {
+        "event": "grab_blaze"
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:blaze_rod"
+    },
+    "title": {
+      "translate": "advancement.tentaworks.power_of_the_sun"
+    },
+    "description": {
+      "translate": "advancement.tentaworks.power_of_the_sun.desc"
+    },
+    "frame": "task",
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "requirements": [
+    [
+      "grab_blaze"
+    ]
+  ]
+}

@@ -62,6 +62,7 @@ public final class RigServer {
     private static final double FALL_STEP = 0.1;
     private static final int RESEND_TICKS = 10;
     private static final int SPEED_WINDOW = 10;
+    private static final int SPEED_GRACE = 2 * SPEED_WINDOW;
     private static final double REAL_STILL = 0.01;
     private static final double SPEED_SLACK = 1.25;
     private static final double SPEED_EXTRA = 1.0;
@@ -104,6 +105,7 @@ public final class RigServer {
         Anchor posAnchor;
         final Vec3[] carryWindow = new Vec3[SPEED_WINDOW];
         int carryAt;
+        int speedGrace;
 
         Wearer() {
             Arrays.fill(carryWindow, Vec3.ZERO);
@@ -221,6 +223,25 @@ public final class RigServer {
         return TentacleRigItem.reach(player);
     }
 
+    /** The id of the wearer's Carry Ship (the Ship holding most of their valid Grips, at least two), or null. */
+    public static Object carryShip(ServerPlayer player) {
+        Wearer w = WEARERS.get(player.getUUID());
+        Anchor a = w == null ? null : anchor(player.level(), w.grips);
+        return a == null ? null : a.id();
+    }
+
+    /**
+     * The wearer's top Speed just changed (a heavy Grab started or ended): the speed window starts over and the speed check
+     * waits {@value #SPEED_GRACE} ticks, while moves made before the client heard of it still arrive.
+     */
+    public static void resetSpeedWindow(ServerPlayer player) {
+        Wearer w = WEARERS.get(player.getUUID());
+        if (w == null) return;
+        Arrays.fill(w.window, 0);
+        w.overSpeed = 0;
+        w.speedGrace = SPEED_GRACE;
+    }
+
     /**
      * Network side: keeps only the latest packet per player; {@link #processPending} handles it once per server tick.
      * A Stowed packet is handled at once, so a later packet in the same tick cannot hide the stow.
@@ -288,7 +309,7 @@ public final class RigServer {
         for (int i = 0; i < Tentacles.SLOTS; i++) {
             Grip g = packet.tentacles().grips()[i];
             if (g == null) continue;
-            if (Grips.valid(player.level(), g, body, reach)) kept[i] = g;
+            if (Grips.valid(player.level(), g, body, reach) && !Grab.onHeldShip(player, g)) kept[i] = g;
             else ghost = true;
         }
         Tentacles tentacles = packet.tentacles().only(kept);
@@ -416,8 +437,10 @@ public final class RigServer {
         }
     }
 
+    /** Top Speed per tick with slack; while both Actuators hold a heavy target, at {@code grab.heavySpeedFactor}. */
     private static double maxStep(ServerPlayer player) {
-        return TentacleRigItem.topSpeed(RigAir.worn(player)) / 20.0 * 1.05;
+        double heavy = Grab.heavy(player) ? Grab.heavyFactor() : 1.0;
+        return TentacleRigItem.topSpeed(RigAir.worn(player)) * heavy / 20.0 * 1.05;
     }
 
     /**
@@ -516,13 +539,21 @@ public final class RigServer {
             w.motion = Vec3.ZERO;
             setFloat(player, false);
             relay(player, w);
-        } else if (w.grips.stream().filter(g -> Grips.valid(player.level(), g, body, reach)).count() < Grips.HELD) {
+        } else if (w.grips.stream().filter(g -> Grips.valid(player.level(), g, body, reach) && !Grab.onHeldShip(player, g)).count() < Grips.HELD) {
             setFloat(player, false);
         } else if (w.state == RigState.CRAWL && player.onGround()) {
             stow(player, true);
         } else if (w.state.drains() && !RigAir.free(player)) {
             drain(player, w);
         }
+        RigEvents.hangTick(player, w.state.carries() && RigEvents.hanging(body.y, worldGrips(player.level(), w.grips)));
+    }
+
+    /** Grips with their points in world coords (a Ship Grip is kept in its Ship's plot coords). */
+    private static List<Grip> worldGrips(Level level, List<Grip> grips) {
+        List<Grip> out = new ArrayList<>(grips.size());
+        for (Grip g : grips) out.add(new Grip(ShipFrames.get().toWorld(level, g.block(), g.point()), g.block(), g.face()));
+        return out;
     }
 
     /**
@@ -541,7 +572,8 @@ public final class RigServer {
         if (!carried) Arrays.fill(w.carryWindow, Vec3.ZERO);
         w.window[w.windowAt] = d.length();
         w.windowAt = (w.windowAt + 1) % SPEED_WINDOW;
-        if (!w.state.carries()) {
+        if (!w.state.carries() || w.speedGrace > 0) {
+            if (w.speedGrace > 0) w.speedGrace--;
             w.overSpeed = 0;
             return;
         }

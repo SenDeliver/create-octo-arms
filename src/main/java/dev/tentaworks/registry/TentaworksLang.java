@@ -30,6 +30,16 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(key + ".desc", description);
     }
 
+    private static void advancement(String id, String title, String description) {
+        String key = "advancement." + TentaworksIds.MOD_ID + "." + id;
+        REGISTRATE.addRawLang(key, title);
+        REGISTRATE.addRawLang(key + ".desc", description);
+    }
+
+    private static void refusal(String why, String text) {
+        REGISTRATE.addRawLang(TentaworksIds.MOD_ID + ".refusal.grab." + why, text);
+    }
+
     public static void init() {
         REGISTRATE.addRawLang("itemGroup.tentaworks", "Octo Arms");
         tooltip(TentaworksIds.TENTACLE, "One pneumatic arm of a _Tentacle Rig_. Four of them, a _Backtank_ and a _Precision Mechanism_ make a Rig on _Mechanical Crafters_.");
@@ -52,6 +62,28 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang("advancement.tentaworks.fitted.desc", "Fit two Actuators to a Rig: now it has hands");
         REGISTRATE.addRawLang("tentaworks.refusal.far_use.no_sight", "Out of sight: the Actuator does not reach through blocks");
         REGISTRATE.addRawLang("tentaworks.refusal.far_use.players", "Far Use does not reach players on this server");
+        advancement("hang_in_there", "Hang In There", "Hang under a ceiling for a whole minute without letting go");
+        advancement("spider_man", "Spider, Man", "Kill a spider with the Rig out: eight legs lose to four Tentacles");
+        advancement("power_of_the_sun", "The Power of the Sun", "Grab a Blaze and keep the sun at an Actuator's length");
+        advancement("fridge_mover", "Fridge Mover", "Grab a Ship and set it down 50 blocks from where you took it");
+        advancement("intelligence_is_a_privilege", "Intelligence Is a Privilege", "Put Far Reach, Thrift, Swift, Silent Step and Deft on one Rig");
+        advancement("special_delivery", "Special Delivery", "Throw a mob so it lands 20 blocks or more from where you threw it");
+        refusal("no_air", "No Air: the Actuators hang limp");
+        refusal("hand", "Empty your main hand to Grab");
+        refusal("not_living", "Only living mobs can be Grabbed");
+        refusal("player", "Players can't be Grabbed");
+        refusal("boss", "Too mighty to Grab: a boss");
+        refusal("riding", "Can't Grab something riding or ridden");
+        refusal("held", "Someone else already holds it");
+        refusal("owned", "That's someone else's animal");
+        refusal("too_far", "Out of Reach");
+        refusal("no_sight", "Out of sight");
+        refusal("claimed", "Protected: you can't Grab that here");
+        refusal("ships_off", "Ship Grab is off on this server");
+        refusal("scale", "Can't Grab a scaled Ship");
+        refusal("own", "That Ship is holding you up");
+        refusal("mass", "Too heavy for this Rig");
+        refusal("crewed", "Someone is on board");
         REGISTRATE.addRawLang("tentaworks.rig.deft_idle", "Deft does nothing until Actuators are fitted");
         REGISTRATE.addRawLang("death.attack.tentaworks.impact", "%1$s was hit by an Impact from %2$s");
         REGISTRATE.addRawLang("death.attack.tentaworks.impact.player", "%1$s was hit by an Impact while fighting %2$s");

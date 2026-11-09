@@ -1,0 +1,32 @@
+{
+  "parent": "tentaworks:fitted",
+  "criteria": {
+    "throw_distance": {
+      "trigger": "tentaworks:rig_event",
+      "conditions": {
+        "event": "throw_distance",
+        "number": {
+          "min": 20
+        }
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "tentaworks:actuator"
+    },
+    "title": {
+      "translate": "advancement.tentaworks.special_delivery"
+    },
+    "description": {
+      "translate": "advancement.tentaworks.special_delivery.desc"
+    },
+    "frame": "task",
+    "announce_to_chat": true
+  },
+  "requirements": [
+    [
+      "throw_distance"
+    ]
+  ]
+}
