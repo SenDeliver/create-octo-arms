@@ -142,7 +142,7 @@ public final class ActuatorRenderer {
         float used;
         double lean;
         int swingStart = Integer.MIN_VALUE / 2, lastSwing = Integer.MIN_VALUE / 2, equipTick = Integer.MIN_VALUE / 2;
-        Vec3 goal, at, pointAt, lastHold;
+        Vec3 goal, to, at, pointAt, lastHold;
         double carry, bare, act, use, point, hold, glance, tipDistance;
 
         Arm(int side) {
@@ -152,7 +152,7 @@ public final class ActuatorRenderer {
         void clear() {
             hand = carries = empty = acting = strike = dual = loop = using = pointing = holding = world = false;
             lean = carry = bare = act = use = point = hold = glance = 0;
-            goal = at = pointAt = lastHold = null;
+            goal = to = at = pointAt = lastHold = null;
         }
     }
 
@@ -234,6 +234,13 @@ public final class ActuatorRenderer {
     /** The swing of the player's swinging hand is its Actuator's: the body's arm does not swing. */
     public static boolean swings(LivingEntity entity) {
         return entity instanceof Player && standsIn(entity, entity.swingingArm == null ? InteractionHand.MAIN_HAND : entity.swingingArm);
+    }
+
+    /** How far the player's acting main-hand Actuator still is from the spot it works on, blocks; -1 while it does not act (the harness reads it). */
+    public static double lag(Player player) {
+        Anim a = ANIMS.get(player.getId());
+        Arm arm = a == null ? null : a.arm(true);
+        return arm == null || !arm.acting || arm.at == null || arm.to == null ? -1 : arm.at.distanceTo(arm.to);
     }
 
     private static boolean excluded(ItemStack stack) {
@@ -468,6 +475,7 @@ public final class ActuatorRenderer {
             Vec3 to = arm.goal;
             if (own && arm.acting) to = contact(mc, a, arm, b);
             else if (to != null) to = offset(to, a, arm, b);
+            arm.to = to;
             if (to != null && (arm.acting || arm.lean > 0))
                 arm.at = arm.at == null || snap || arm.act < 0.02 ? to : arm.at.lerp(to, ActuatorPose.chase(dt, ActuatorPose.AIM_TAU));
             if (b.first) arm.world = arm.tipDistance > (arm.world ? WORLD_PASS_IN : WORLD_PASS_OUT);
