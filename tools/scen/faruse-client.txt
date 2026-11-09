@@ -168,5 +168,32 @@ wait 5
 attack minecraft:husk
 wait 10
 signal c6done
+# N10 the floor 5 ahead with the real crosshair (held attack): Stowed, then Active
+await n10
+lookat 11105.5 -60 70.5
+wait 3
+mark n10a
+hit n10a
+holdkey key.attack on
+wait 80
+holdkey key.attack off
+wait 5
+mark n10a1
+signal n10a
+await n10b
+doublejump
+wait 30
+lookat 11105.5 -60 74.5
+wait 3
+mark n10b
+hit n10b
+holdkey key.attack on
+wait 140
+holdkey key.attack off
+wait 5
+mark n10b1
+doublejump
+wait 60
+signal n10done
 wait 10
 quit

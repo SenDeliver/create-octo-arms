@@ -7,7 +7,7 @@ gamerule keepInventory true
 gamerule doMobLoot false
 time set noon
 difficulty easy
-forceload add 10990 -10 11130 70
+forceload add 10990 -10 11130 85
 # N1 dirt at 6.5 (eye to box); N2 dirt at 6.5 behind a stone wall; N3 three dirt at 6.5 + diamond ore (Air paid, drops, XP)
 setblock 11007 -59 0 dirt
 fill 11004 -60 2 11004 -55 6 stone
@@ -33,6 +33,9 @@ summon husk 11104.05 -60 10.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["t
 summon husk 11105.4 -60 20.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","z5"],Rotation:[90f,0f]}
 setblock 11106 -59 30 stone
 summon husk 11108.3 -60 40.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","z6"],Rotation:[90f,0f]}
+# N10 the floor 5 ahead (Copper): grass at z 70 (Stowed) and z 74 (Active), bedrock under each so a held attack stops there
+setblock 11105 -62 70 bedrock
+setblock 11105 -62 74 bedrock
 op Dev
 tentaworks trace on
 gamemode survival Dev

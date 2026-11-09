@@ -26,6 +26,7 @@ for m in re.finditer(r'SMOB gt=\d+ id=(\d+) type=(\S+) pos=(-?[\d.]+),(-?[\d.]+)
     mobs.setdefault(m[1], (m[2], float(m[3]), float(m[5])))
 overlay = [(int(g), t) for g, t in re.findall(r'OVERLAY gt=(\d+) text="([^"]*)"', c)]
 chit = {m[0]: m[1] for m in re.findall(r'CHIT (\S+) type=\w+ .*? entity=(\S+)', c)}
+chitb = {m[0]: (m[1], m[2]) for m in re.findall(r'CHIT (\S+) type=(\w+) block=(\S+)', c)}
 cact = {m[0]: dict(brange=float(m[1]), erange=float(m[2])) for m in re.findall(r'CACT (\S+) gt=\d+ .*? brange=(\S+) erange=(\S+)', c)}
 ctr = {int(g): int(f) for g, f in re.findall(r'TRACE t=\d+ gt=(\d+) .*? far=(\d+) xh=', c)}
 NO_SIGHT = 'Out of sight: the Actuator does not reach through blocks'
@@ -122,6 +123,17 @@ check('C6 mob at 7.5 (past Reach + 1): crosshair misses, cheat attack vanilla-re
 x = sfar('rclick', '11106,-59,30')
 check('C5 place at distance', x and x[0]['far'] == 'FAR' and not x[0]['canceled'] and last_probe('11105,-59,30') == 'minecraft:dirt',
       f"{x[:1]} probe {last_probe('11105,-59,30')}")
+
+print('== The floor ahead (Copper, real crosshair, held attack)')
+for tag, z, st in (('n10a', 70, 'STOWED'), ('n10b', 74, 'ACTIVE')):
+    pos = f'11105,-61,{z}'
+    x = sfar('lclick', pos)
+    br = sfar('break', pos)
+    a0, a1 = spos.get(tag), spos.get(tag + '1')
+    notes = [g for g, t in overlay if t == NO_SIGHT and a0 and a1 and a0['gt'] <= g <= a1['gt']]
+    check(f'{tag.upper()} floor 5 ahead {st}: crosshair on it, FAR, in sight, mined, no refusal', a0 and a0['state'] == st and chitb.get(tag) == ('BLOCK', pos)
+          and x and x[0]['far'] == 'FAR' and x[0]['sight'] and not x[0]['canceled'] and br and not br[0]['canceled'] and last_probe(pos) == 'minecraft:air' and not notes,
+          f"state {a0 and a0['state']} crosshair {chitb.get(tag)} {x[:1]} break {br[:1]} probe {last_probe(pos)} refusals {notes}")
 
 exc = [l for l in (c + s).splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'authlib' not in l and 'neoforge-client.new.tmp.toml' not in l
        and 'Error loading class: net/irisshaders/' not in l and 'org.gradle.' not in l and 'MessageIOException' not in l]

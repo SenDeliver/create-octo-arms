@@ -9,6 +9,7 @@ import dev.tentaworks.registry.TentaworksLang;
 import dev.tentaworks.rig.RigSettings.FarUseMode;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
@@ -82,7 +83,7 @@ public final class FarUse {
 
     /**
      * Server ticks of the wearer's last charge, packet and refusal (one click fires several events: both hands, interact-at and
-     * interact), and the block being mined past arm's length (null none).
+     * interact), the block being mined past arm's length (null none) and the last far block whose mining start was in sight.
      */
     private static final class Track {
         int charged = Integer.MIN_VALUE / 2;
@@ -90,6 +91,7 @@ public final class FarUse {
         int refused = Integer.MIN_VALUE / 2;
         String refusal = "";
         @Nullable BlockPos mining;
+        @Nullable BlockPos seen;
     }
 
     private FarUse() {
@@ -205,12 +207,13 @@ public final class FarUse {
     }
 
     /**
-     * A block action at {@code pos} ({@code point} the clicked spot, or null): false when Far Use refuses it; an accepted one
-     * {@code acts}. A Grab's claim question ({@link Grab#asking}) is no action: it passes untouched.
+     * A block action at {@code pos} ({@code face} the clicked face and {@code point} the clicked spot, each null when unknown):
+     * false when Far Use refuses it; an accepted one {@code acts}. A Grab's claim question ({@link Grab#asking}) is no action:
+     * it passes untouched.
      */
-    private static boolean block(ServerPlayer player, BlockPos pos, @Nullable Vec3 point, boolean acts) {
+    private static boolean block(ServerPlayer player, BlockPos pos, @Nullable Direction face, @Nullable Vec3 point, boolean acts) {
         if (Grab.asking() || blockFar(player, pos) != Far.FAR) return true;
-        if (!WorkSight.seesBlock(player.level(), pos, point, player.getEyePosition(), Grips.body(player))) {
+        if (!WorkSight.seesBlock(player, pos, face, point)) {
             refuse(player, NO_SIGHT);
             return false;
         }
@@ -225,12 +228,11 @@ public final class FarUse {
             refuse(player, PLAYERS);
             return false;
         }
-        AABB box = target.getBoundingBox();
-        if (!WorkSight.seesBox(player.level(), player, box, player.getEyePosition(), Grips.body(player))) {
+        if (!WorkSight.seesEntity(player, target)) {
             refuse(player, NO_SIGHT);
             return false;
         }
-        act(player, box.getCenter(), FarUsePacket.Kind.ENTITY);
+        act(player, target.getBoundingBox().getCenter(), FarUsePacket.Kind.ENTITY);
         return true;
     }
 
@@ -263,8 +265,10 @@ public final class FarUse {
             if (e.getAction() != PlayerInteractEvent.LeftClickBlock.Action.CLIENT_HOLD) mine(p, null);
             return;
         }
-        if (block(p, e.getPos(), null, true)) {
-            mine(p, blockFar(p, e.getPos()) == Far.FAR ? e.getPos().immutable() : null);
+        if (block(p, e.getPos(), e.getFace(), null, true)) {
+            BlockPos far = blockFar(p, e.getPos()) == Far.FAR ? e.getPos().immutable() : null;
+            mine(p, far);
+            if (far != null) TRACKS.computeIfAbsent(p.getUUID(), u -> new Track()).seen = far;
             return;
         }
         mine(p, null);
@@ -272,10 +276,16 @@ public final class FarUse {
         p.connection.send(new ClientboundBlockUpdatePacket(p.level(), e.getPos()));
     }
 
+    /** A break whose mining start was in sight passes: the look may have moved off the block while it was mined. */
     private static void onBreak(BlockEvent.BreakEvent e) {
         if (!(e.getPlayer() instanceof ServerPlayer p)) return;
         if (e.getPos().equals(mining(p))) mine(p, null);
-        if (!e.isCanceled() && !block(p, e.getPos(), null, false)) e.setCanceled(true);
+        Track t = TRACKS.get(p.getUUID());
+        if (t != null && e.getPos().equals(t.seen)) {
+            t.seen = null;
+            return;
+        }
+        if (!e.isCanceled() && !block(p, e.getPos(), null, null, false)) e.setCanceled(true);
     }
 
     private static @Nullable BlockPos mining(ServerPlayer player) {
@@ -289,7 +299,7 @@ public final class FarUse {
     }
 
     private static void onRightClickBlock(PlayerInteractEvent.RightClickBlock e) {
-        if (!(e.getEntity() instanceof ServerPlayer p) || block(p, e.getPos(), e.getHitVec().getLocation(), true)) return;
+        if (!(e.getEntity() instanceof ServerPlayer p) || block(p, e.getPos(), e.getHitVec().getDirection(), e.getHitVec().getLocation(), true)) return;
         e.setCanceled(true);
         e.setCancellationResult(InteractionResult.FAIL);
     }

@@ -104,3 +104,15 @@ tp Dev 11100.5 -60 40.5 -90 0
 #sleep 0.5
 #signal c6
 #await c6done
+# N10 the floor 5 ahead, mined with the real crosshair: Stowed (about 18 degrees down), then Active (about 30 degrees down)
+item replace entity Dev weapon.mainhand with air
+tp Dev 11100.5 -60 70.5 -90 0
+#sleep 0.5
+#signal n10
+#await n10a
+tentaworks probe 11105 -61 70
+tp Dev 11100.5 -60 74.5 -90 0
+#sleep 0.5
+#signal n10b
+#await n10done
+tentaworks probe 11105 -61 74

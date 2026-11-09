@@ -98,7 +98,7 @@ Where the Actuators sit when they have nothing to do, Stowed or Active: rising f
 _Avoid_: idle pose, folded, parked
 
 **Far Use**:
-Any action of either hand (mining, placing, hitting, item use) on a target beyond the wearer's own arm's length but within Reach. The Right Actuator performs it at its tip with that hand's item; with an Extendo Grip in hand it idles and the Rig adds no reach; within arm's length the wearer's hand does it and the Actuator idles. Blocks, mobs and players are all reached at the full Reach, with any item, weapon or tool. Drops and XP from a block mined by Far Use fly to the wearer. Beyond arm's length the server also checks sight from the wearer's eye to the target (the Grip sight rule) before it accepts the action, and refuses the rest.
+Any action of either hand (mining, placing, hitting, item use) on a target beyond the wearer's own arm's length but within Reach. The Right Actuator performs it at its tip with that hand's item; with an Extendo Grip in hand it idles and the Rig adds no reach; within arm's length the wearer's hand does it and the Actuator idles. Blocks, mobs and players are all reached at the full Reach, with any item, weapon or tool. Drops and XP from a block mined by Far Use fly to the wearer. Beyond arm's length the server also checks sight before it accepts the action: it picks again from the wearer's eye along the look, as the crosshair does, and the target is in sight when that pick finds it, or when a straight line from the eye to a visible point of it crosses no other block (the server's look is one tick behind the client's). It refuses the rest.
 _Avoid_: extended reach, long arm, reach mode
 
 **Grab**:

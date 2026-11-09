@@ -5,7 +5,14 @@ import dev.tentaworks.registry.TentaworksItems;
 import dev.tentaworks.registry.TentaworksLang;
 import dev.tentaworks.rig.FarUse.Far;
 import dev.tentaworks.rig.RigSettings.FarUseMode;
+import dev.tentaworks.rig.GripFaceTest.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -105,6 +112,24 @@ class FarUseGateTest {
         assertFalse(FarUse.due(100, 101, FarUse.PACKET_GAP));
         assertTrue(FarUse.due(100, 102, FarUse.PACKET_GAP));
         assertFalse(FarUse.due(100, 119, FarUse.REFUSAL_GAP));
+    }
+
+    @Test
+    void theFloorAheadAtCopperReachIsAFarUseInSight() {
+        double reach = VANILLA_BLOCK + FarUse.amount(5.0, VANILLA_BLOCK);
+        World w = new World();
+        for (int x = -2; x <= 8; x++)
+            for (int z = -2; z <= 2; z++) w.put(x, 0, z, Blocks.STONE.defaultBlockState());
+        Vec3 eye = new Vec3(0.5, 2.62, 0.5);
+        for (int x = 5; x <= 6; x++) {
+            BlockPos pos = new BlockPos(x, 0, 0);
+            assertEquals(Far.FAR, FarUse.far(new AABB(pos).distanceToSqr(eye), VANILLA_BLOCK, reach), "x=" + x);
+            for (double dx = -0.75; dx <= 0.75; dx += 0.25) {
+                Vec3 look = new Vec3(x + 0.5 + dx, 1.0, 0.5).subtract(eye).normalize();
+                assertTrue(WorkSight.seesBlock(w, pos, Direction.UP, null, eye, look, reach + 1.0, CollisionContext.empty()), "x=" + x + " dx=" + dx);
+                assertTrue(WorkSight.seesBlock(w, pos, null, null, eye, look, reach + 1.0, CollisionContext.empty()), "x=" + x + " dx=" + dx);
+            }
+        }
     }
 
     @Test
