@@ -109,11 +109,15 @@ public final class Grab {
     public record Event(ServerPlayer wearer, String kind, @Nullable Entity target, String why, int actuators, double speed, double mass) {
     }
 
+    /** The clients are told the hold distance again once it has drifted this far (the default one changes as the wearer turns), blocks. */
+    private static final double DISTANCE_TOLD = 0.05;
+
     private static final class Held {
         final Entity target;
         final boolean heavy;
         final HoldArm arm;
         double distance = Double.NaN;
+        float told;
         @Nullable Vec3 placeFrom;
         @Nullable Vec3 placeTo;
         int placeTicks;
@@ -625,8 +629,9 @@ public final class Grab {
     private static ActuatorStatePacket state(ServerPlayer wearer, String refusal) {
         Held h = HOLDS.get(wearer.getUUID());
         if (h == null) return ActuatorStatePacket.empty(wearer.getId(), refusal);
+        h.told = (float) distance(wearer);
         return new ActuatorStatePacket(wearer.getId(), h.target == null ? -1 : h.target.getId(), h.heavy, h.ship == null ? null : h.block,
-                h.ship == null ? Direction.UP : h.face, refusal, h.arm, (float) distance(wearer));
+                h.ship == null ? Direction.UP : h.face, refusal, h.arm, h.told);
     }
 
     /** To the wearer only: the current hold and a refusal key ("" none). */
@@ -657,6 +662,7 @@ public final class Grab {
             }
             if (h.ship != null) holdShip(wearer, h);
             else holdMob(wearer, h);
+            if (HOLDS.get(e.getKey()) == h && Math.abs(distance(wearer) - h.told) >= DISTANCE_TOLD) changed(wearer);
             RigAir.pay(wearer, Actuators.grabPerTick(wearer));
         }
     }
