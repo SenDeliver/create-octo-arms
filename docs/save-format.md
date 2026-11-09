@@ -1,4 +1,4 @@
-# Octo Arms save format (frozen in phase 1, extended in phases 2, 3, 4, 5, 6 and 7)
+# Octo Arms save format (frozen in phase 1, extended in phases 2, 3, 4, 5, 6 and 7, 1.8 and 2.0)
 
 These strings are stored in worlds or sent between client and server. Renaming any of them breaks existing saves or client/server compatibility.
 Code constants: `src/main/java/dev/tentaworks/TentaworksIds.java`.
@@ -18,15 +18,26 @@ Code constants: `src/main/java/dev/tentaworks/TentaworksIds.java`.
 | Recipe | `tentaworks:sequenced_assembly/tentacle`, `tentaworks:mechanical_crafting/copper_tentacle_rig`, `tentaworks:mechanical_crafting/netherite_tentacle_rig`, `tentaworks:smithing/netherite_tentacle_rig` | phase 5 (datagen). Recipe ids sit in each player's known-recipe list; a renamed id is dropped silently (only the recipe book forgets it). |
 | Advancement | `tentaworks:doc_rig` ("Doc's Rig", parent `create:backtank`), `tentaworks:recipes/combat/smithing/netherite_tentacle_rig` (recipe unlock) | phase 5. Saved per player in `world/advancements/<uuid>.json`: renaming loses the progress. |
 | Display Source | `tentaworks:rig_air` | phase 7. Create Display Link source on both Rig Blocks; saved in every linked Display Link's NBT (`Source.Id`, plus its `Mode` 0 Air / 1 percent / 2 progress bar and `Label`). Renaming it unlinks the source (the link shows nothing until re-set). |
-| Item tag | `tentaworks:enchantable/tentacle_rig` | phase 4. Both Rigs; `supported_items` and `primary_items` of the four enchantments. Datapacks may add to it. |
+| Item (Actuator) | `tentaworks:actuator` | 2.0. Plain item, stacks to 64. Two fitted to a Rig give it the `tentaworks:actuators` component. |
+| Item (Sequenced Assembly transitional) | `tentaworks:incomplete_actuator` | 2.0. Create `SequencedAssemblyItem`, like `incomplete_tentacle`. Never in the creative tab. |
+| Enchantment | `tentaworks:deft` | 2.0. Max level 1, same tags as the other four. The Actuators use no Air; idle on a Rig without them. |
+| Recipe | `tentaworks:sequenced_assembly/actuator`, `tentaworks:mechanical_crafting/fitted_copper_tentacle_rig`, `tentaworks:mechanical_crafting/fitted_netherite_tentacle_rig`, `tentaworks:fitting/copper_tentacle_rig`, `tentaworks:fitting/netherite_tentacle_rig` | 2.0 (datagen). The `fitting/*` recipes use the recipe serializer `tentaworks:fitting` (fields `category`, `rig`): Actuator, Rig, Actuator in one row of a crafting grid, result = that Rig with every component kept plus `tentaworks:actuators`. |
+| Recipe serializer | `tentaworks:fitting` | 2.0. Datapacks name it in `type`. |
+| Advancement | `tentaworks:fitted` ("Fitted", parent `tentaworks:doc_rig`) | 2.0. Any Rig with `tentaworks:actuators` in the inventory. |
+| Criterion trigger | `tentaworks:rig_event` | 2.0. Conditions `event` (string) and optional `number` range; used by the 2.0 advancements. |
+| Damage type | `tentaworks:impact` | 2.0. `data/tentaworks/damage_type/impact.json` (`message_id` `tentaworks.impact`, scaling never). Saved only in death messages and stats by id. |
+| Entity type tag | `tentaworks:bosses` | 2.0. `#c:bosses` (optional) plus the Ender Dragon, the Wither and the Warden. Never Grabbed. Datapacks may add to it. |
+| Item tag | `tentaworks:enchantable/tentacle_rig` | phase 4. Both Rigs; `supported_items` and `primary_items` of the five enchantments. Datapacks may add to it. |
 
 The spike item `tentaworks:tentacle_rig` never shipped and is gone.
 
 Phase 4 also adds the enchantments (Silent Step with 1.6) to the vanilla enchantment tags `minecraft:non_treasure` and `minecraft:in_enchanting_table` (so also tradeable and random loot through `#minecraft:non_treasure`), and gives both Rigs durability: Copper 112, Netherite 592 (`ArmorItem.Type.CHESTPLATE.getDurability(7 / 37)`, as Create's diving helmet and boots). Damage is the vanilla `minecraft:damage` component; a placed Rig Block keeps it in Create's `Components` patch.
 Phase 5: a Rig never breaks. Wear stops at max − 1 (damage 111 / 591); a stored damage above that (old item, `/give`) reads as max − 1. At that point the Rig is worn out: it cannot be Activated until repaired (anvil with a copper / netherite ingot, or Mending). No new component: "worn out" is derived from `minecraft:damage`.
 
-Not saved in worlds (safe to change): Ponder scene `tentaworks:tentacle_rig` and its schematic `assets/tentaworks/ponder/tentacle_rig.nbt`, Ponder tag `tentaworks:tentacle_rigs`, creative tab `tentaworks:main`, lang keys, models, textures, the transient attribute modifier `tentaworks:rig_float` (never saved: added with `addTransientModifier`).
-Key mappings `key.tentaworks.settings` and `key.tentaworks.toggle` (category `key.categories.tentaworks`, both unbound by default) are saved in each player's `options.txt`: renaming one only loses that player's binding.
+Not saved in worlds (safe to change): Ponder scene `tentaworks:tentacle_rig` and its schematic `assets/tentaworks/ponder/tentacle_rig.nbt`, Ponder tag `tentaworks:tentacle_rigs`, creative tab `tentaworks:main`, lang keys, models, textures, the transient attribute modifier `tentaworks:rig_float` (never saved: added with `addTransientModifier`), and from 2.0 the transient modifiers `tentaworks:actuator_reach`, `tentaworks:actuator_strike` and `tentaworks:actuator_heavy` (same rule).
+
+Entity attachments (2.0): `tentaworks:pinned` on a held or just set-down mob (holder UUID, calm-until game time) and `tentaworks:thrown` on a Thrown entity (thrower UUID, start, last speed, armed). Both are registered without a serializer, so they never reach NBT: a mob saved while held or Thrown loads as itself.
+Key mappings `key.tentaworks.settings` and `key.tentaworks.toggle` (both unbound by default) and `key.tentaworks.grab` (2.0, default V), category `key.categories.tentaworks`, are saved in each player's `options.txt`: renaming one only loses that player's binding.
 
 ## Block states
 
@@ -40,10 +51,12 @@ A Rig item stores its Air in Create's `create:banktank_air` (int, Create's own t
 
 | Component | Codec (saved) | Added |
 |---|---|---|
-| `tentaworks:rig_settings` | compound: `standing_height` float (blocks, default 1.5), `speed` float (blocks/s, default 5.6), `activation` string `double_jump` \| `key` (default `double_jump`) | phase 3 |
+| `tentaworks:rig_settings` | compound: `standing_height` float (blocks, default 1.5), `speed` float (blocks/s, default: the server's `speed.max`; 5.6 before 2.0), `activation` string `double_jump` \| `key` (default `double_jump`), `far_use` string `always` \| `rig_out` \| `off` (2.0, default `always`) | phase 3 |
+| `tentaworks:actuators` | unit (empty compound `{}`) | 2.0 |
 
-Every field is optional (missing = default), so a Rig without the component behaves exactly like phase 2. Values are clamped on write and on read: `standing_height` 0 … the Rig's Reach, `speed` min(4.3, `speed.max`) … `speed.max`, both rounded to 0.1. The field names and the two `activation` strings are frozen.
-The component is network-synced (stream codec: float, float, UTF-8 string). A placed Rig Block keeps it in Create's `Components` patch, so place/pick up keeps the settings.
+Every `rig_settings` field is optional (missing = default), so a Rig without the component behaves exactly like phase 2. A missing `speed` is never written back: it reads as the current `speed.max` (so a Rig whose Speed was never set gets the new default in 2.0; a saved Speed stays). Values are clamped on write and on read: `standing_height` 0 … the Rig's Reach, `speed` min(4.3, `speed.max`) … `speed.max`, both rounded to 0.1. The field names and the two `activation` strings are frozen.
+The component is network-synced (stream codec: float, float, UTF-8 string, then from 2.0 the `far_use` UTF-8 string; an unset Speed is sent as NaN). A placed Rig Block keeps it in Create's `Components` patch, so place/pick up keeps the settings.
+`tentaworks:actuators` present = the Rig is fitted (Fitting is permanent). Persistent and network-synced. It rides every copy of the Rig stack: Create's `Components` patch on a placed Rig Block, smithing to Netherite, anvil repair, the Fitting result.
 
 ## Block entity NBT (Create `BacktankBlockEntity`, keys owned by Create)
 
@@ -57,13 +70,16 @@ The component is network-synced (stream codec: float, float, UTF-8 string). A pl
 
 Phase 7 adds no keys: a placed Rig Block only syncs this NBT to clients more often (every 10 ticks while its Air changes) so goggles show Air rising. The network protocol is unchanged (registrar stays `6`).
 
-## Network (play phase, registrar version `8`)
+## Network (play phase, registrar version `10`)
 
 | Payload | Direction | Fields |
 |---|---|---|
 | `tentaworks:rig_motion` | client → server | `RigState` enum ordinal, motion `Vec3`, Tentacles: 4 fixed slots (front left, front right, back left, back right), each a present flag, then Grip (point `Vec3`, block pos, face) + Step phase byte (255 = planted). A Grip on a Sable Ship has point and block in the Ship's plot coords; the block names the Ship |
 | `tentaworks:rig_state` | server → client | entity id, `RigState` enum ordinal, Tentacles (same 4 slots; slots whose Grip the server rejected are empty) |
-| `tentaworks:rig_settings` | client → server | slot var-int (`0` main hand, `1` off hand, `2` chest), Rig Settings (stream codec above). The server clamps and writes the component to the Rig in that slot; anything else in the slot is ignored. |
+| `tentaworks:rig_settings` | client → server | slot var-int (`0` main hand, `1` off hand, `2` chest, `3` Back Slot), Rig Settings (stream codec above). The server clamps and writes the component to the Rig in that slot; anything else in the slot is ignored. |
+| `tentaworks:rig_grab` | client → server | kind enum ordinal (`START, SHIP, RELEASE, THROW`), entity id + 1 var-int, block pos, face byte (3D data value), look `Vec3`. START names the mob, SHIP the plot block and face, THROW the look. 2.0 |
+| `tentaworks:actuator_state` | server → client | entity id var-int, held entity id + 1 var-int (0 = none), heavy bool, Ship present bool [+ block pos], Ship face byte, refusal lang key UTF-8 (≤ 256, empty = none). 2.0 |
+| `tentaworks:far_use` | server → client | entity id var-int, target `Vec3`, kind byte (`0` block, `1` entity), ttl ticks var-int. 2.0 |
 
 `RigState` order is part of the wire format: `STOWED, ACTIVE, SETTING_DOWN, FALLING, CRAWL`. A change needs a registrar version bump.
 Phase 2 appended `CRAWL` and bumped the registrar from `1` to `2`: a phase-1 client cannot join a phase-2 server (NeoForge refuses the channel), and the other way round.
@@ -73,6 +89,8 @@ Phase 5 kept every payload as is but bumped the registrar to `5`: the worn-out r
 Phase 6 changed both Rig payloads to the fixed 4-slot Tentacles with a Step phase per slot (other clients animate each Tentacle by slot) and bumped the registrar to `6`: phase-5 and phase-6 clients and servers cannot mix.
 Phase 8 kept every payload as is but bumped the registrar to `7` (server packet handling changed); 1.0.0 shipped with `7`.
 1.1.0 keeps every payload byte-identical but bumps the registrar to `8`: a Grip point and block may now be in a Ship's plot coords, and the `rig_motion` motion is the Rig's own move without the carry Ship's. 1.0 clients cannot join a 1.1 server, and the other way round.
+1.8.0 bumps the registrar to `9`: `rig_settings` can name the Back Slot (`3`).
+2.0.0 bumps the registrar to `10`: `rig_settings` carries `far_use` at the end, and `rig_grab`, `actuator_state` and `far_use` are new.
 
 ## Server Config (`tentaworks-server.toml`, per world in `serverconfig/`)
 
@@ -90,9 +108,37 @@ Phase 8 kept every payload as is but bumped the registrar to `7` (server packet 
 | `enchant.thriftPerLevel` | 0.15 | 0–0.3 (Air use cut per Thrift level; the total cut never exceeds 0.9) |
 | `enchant.swiftPerLevel` | 0.15 | 0–1 (Speed and top Speed gain per Swift level) |
 | `ships.grip` | true | true/false (1.1.0: Rigs grip Sable Ships; off = Ship blocks are never Grips. No effect without Sable) |
+| `curios.backSlot` | true | true/false (1.8.0: a Rig in the Curios back slot works; off = the back slot refuses Rigs. No effect without Curios) |
+| `air.capacityFactor` | 2.0 | 1–8 (2.0: Rig max Air = Backtank max Air of the same Capacity × this) |
+| `air.farUse` | 0.5 | 0–50 (2.0: Air per accepted Far Use action, Copper) |
+| `air.grab` | 40.0 | 1–72000 (2.0: ticks per 1 Air while holding a Grab, Copper) |
+| `air.throw` | 10.0 | 0–500 (2.0: Air per Throw, Copper) |
+| `strikeReach.copper` | 3.5 | 1–16 (2.0: Strike Reach, blocks; Far Reach does not add) |
+| `strikeReach.netherite` | 5.0 | 1–16 |
+| `farUse.players` | true | true/false (2.0: Far Use may hit and use on players) |
+| `grab.tamedOthers` | false | true/false (2.0: Grab another player's tamed, owned or leashed animal) |
+| `grab.ships` | true | true/false (2.0: Ship Grab; also needs `ships.grip` and Sable) |
+| `grab.massCap.copper` | 2000.0 | 0–1000000 (2.0: Sable mass) |
+| `grab.massCap.netherite` | 6000.0 | 0–1000000 |
+| `grab.throwSpeed.copper` | 0.8 | 0.1–5 (2.0: blocks per tick) |
+| `grab.throwSpeed.netherite` | 1.2 | 0.1–5 |
+| `grab.heavySpeedFactor` | 0.6 | 0.1–1 (2.0: walking and Rig Speed while a heavy target is held) |
+| `impact.damagePerSpeed` | 12.0 | 0–100 (2.0: Impact = (speed − `impact.minSpeed`) × this, once per Throw) |
+| `impact.minSpeed` | 0.3 | 0–5 (2.0: blocks per tick) |
+| `impact.cap` | 20.0 | 0–1000 (2.0: most Impact damage per Throw) |
+
+The Netherite factor and Thrift scale the Actuator Air costs as they scale moves; Deft makes them 0.
 
 Enchantment levels above an enchantment's `max_level` (e.g. from `/give`) count as the max level.
 
-`speed.max` also caps the Speed in every player's Rig Settings, and the Reach caps Standing Height. No client config: the design lists no client-only options.
+`speed.max` also caps the Speed in every player's Rig Settings, and the Reach caps Standing Height.
+
+## Client Config (`tentaworks-client.toml`, per computer in `config/`)
+
+| Key | Default | Range |
+|---|---|---|
+| `animation.walkWhileHeld` | false | true/false |
+| `movement.forward` | `LOOK` | `LOOK` \| `FLAT` |
+| `firstPerson.limbOpacity` | 1.0 | 0.1–1.0 (2.0: opacity of every Limb in first person) |
 
 Renaming a key only resets its value to the default.
