@@ -46,7 +46,7 @@ awaitheld off 20
 wait 80
 mark g2rest
 signal g2done
-# G3 creeper swelling at Dev, then held: the swell stops and drops, no blast; set down, calm 20 ticks, then it swells again
+# G3 creeper swelling at Dev, then held: the swell stops and drops, no blast; set down on the floor 1.5 ahead, calm 20 ticks, then it swells again
 await g3
 wait 30
 lookate minecraft:creeper
@@ -55,6 +55,8 @@ awaitheld on 20
 mark g3held
 wait 60
 mark g3hold
+lookat 11202.0 -60.0 24.5
+wait 3
 key key.keyboard.v
 awaitheld off 20
 mark g3down
@@ -197,6 +199,90 @@ wait 60
 mark g7lback
 actuators g7lback
 signal g7ldone
+# G8a item in the main hand: the off-hand Actuator Grabs; a plain attack is the item's, the Grab key held + attack Throws
+await g8a
+lookate minecraft:pig
+wait 3
+key key.keyboard.v
+awaitheld on 20
+mark g8aheld
+actuators g8aheld
+look -90 0
+wait 5
+key key.mouse.left
+wait 10
+mark g8aswing
+holdkey key.tentaworks.grab on
+wait 3
+key key.mouse.left
+awaitheld off 20
+wait 2
+holdkey key.tentaworks.grab off
+wait 10
+mark g8athrown
+signal g8adone
+# G8b both hands full: a light cow is refused (hands_full)
+await g8b
+lookate minecraft:cow
+wait 3
+key key.keyboard.v
+wait 10
+actuators g8b
+signal g8bdone
+# G8c an item in one hand: a heavy horse is refused (two_hands)
+await g8c
+lookate minecraft:horse
+wait 3
+key key.keyboard.v
+wait 10
+actuators g8c
+signal g8cdone
+# G8d off hand full: the main-hand Actuator Grabs; an item in its hand sets the pig down (why=hand)
+await g8d
+lookate minecraft:pig
+wait 3
+key key.keyboard.v
+awaitheld on 20
+mark g8dheld
+signal g8dheld
+awaitheld off 40
+signal g8ddone
+# G8e set down at the looked spot: the floor 3 ahead, a tap carries the pig there
+await g8e
+lookate minecraft:pig
+wait 3
+key key.keyboard.v
+awaitheld on 20
+lookat 11204.0 -60.0 113.5
+wait 10
+mark g8espot
+key key.keyboard.v
+awaitheld off 20
+wait 40
+mark g8edown
+signal g8edone
+# G8f the Grab key held + wheel: 2 notches farther, no Set Down on release; the wheel without the key scrolls the hotbar
+await g8f
+lookate minecraft:pig
+wait 3
+key key.keyboard.v
+awaitheld on 20
+look -90 0
+wait 10
+mark g8f0
+holdkey key.tentaworks.grab on
+wait 3
+wheel 2
+wait 10
+mark g8f1
+holdkey key.tentaworks.grab off
+wait 10
+mark g8f2
+wheel 1
+wait 3
+key key.keyboard.v
+awaitheld off 20
+signal g8fdone
 await end
 wait 10
 quit

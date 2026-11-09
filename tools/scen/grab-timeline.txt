@@ -93,4 +93,39 @@ tp Dev 11200.5 -60 84.5 -90 0
 #sleep 0.5
 #signal g7l
 #await g7ldone
+# G8 hands: item in the main hand (off-hand Actuator), both hands full, one hand full + heavy, the main-hand Actuator, item lands; set-down spot; wheel
+tp Dev 11200.5 -60 96.5 -90 0
+item replace entity Dev weapon.mainhand with stone_pickaxe
+#sleep 0.5
+#signal g8a
+#await g8adone
+tp Dev 11200.5 -60 100.5 -90 0
+item replace entity Dev weapon.offhand with stick
+#sleep 0.5
+#signal g8b
+#await g8bdone
+item replace entity Dev weapon.offhand with air
+tp Dev 11200.5 -60 104.5 -90 0
+#sleep 0.5
+#signal g8c
+#await g8cdone
+item replace entity Dev weapon.mainhand with air
+item replace entity Dev weapon.offhand with stick
+tp Dev 11200.5 -60 108.5 -90 0
+#sleep 0.5
+#signal g8d
+#await g8dheld
+#sleep 0.5
+item replace entity Dev weapon.mainhand with stick
+#await g8ddone
+item replace entity Dev weapon.mainhand with air
+item replace entity Dev weapon.offhand with air
+tp Dev 11200.5 -60 112.5 -90 0
+#sleep 0.5
+#signal g8e
+#await g8edone
+tp Dev 11200.5 -60 116.5 -90 0
+#sleep 0.5
+#signal g8f
+#await g8fdone
 #signal end
