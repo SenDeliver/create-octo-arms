@@ -42,4 +42,9 @@ public final class NoShips implements ShipFrames {
     @Override
     public void dropInherited(Entity entity) {
     }
+
+    @Override
+    public ShipBody body(Level level, BlockPos pos) {
+        return null;
+    }
 }

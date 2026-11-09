@@ -65,10 +65,15 @@ public final class Grips {
     }
 
     public static List<Face> faces(Level level, Vec3 centre, double radius) {
+        return faces(level, centre, radius, null);
+    }
+
+    /** As {@link #faces(Level, Vec3, double)}, without the Ship whose id is {@code skipShip} (the one the Actuators hold). */
+    public static List<Face> faces(Level level, Vec3 centre, double radius, Object skipShip) {
         List<Face> faces = new ArrayList<>();
         scan(level, centre, radius, null, faces);
         for (Frame frame : ShipFrames.get().near(level, new AABB(centre, centre).inflate(radius + 1)))
-            if (frame.unitScale()) scan(level, frame.toLocal(centre), radius, frame, faces);
+            if (frame.unitScale() && !frame.id().equals(skipShip)) scan(level, frame.toLocal(centre), radius, frame, faces);
         return faces;
     }
 

@@ -46,6 +46,9 @@ public interface ShipFrames {
     /** Drops the Ship velocity Sable keeps on an entity that left a deck: the Rig, not that momentum, moves a Held wearer. */
     void dropInherited(Entity entity);
 
+    /** The server body of the Ship owning a plot block, or null (world block, Ship gone, Ships off, a client, or a Sable without the internals Ship Grab needs). */
+    ShipBody body(Level level, BlockPos pos);
+
     /** World point of a point given in the frame of {@code block}: unchanged for world blocks or when the Ship is gone. */
     default Vec3 toWorld(Level level, BlockPos block, Vec3 point) {
         if (!isPlot(level, block)) return point;

@@ -1,12 +1,16 @@
 package dev.tentaworks.compat.sable;
 
+import com.mojang.logging.LogUtils;
+import dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle;
 import dev.ryanhcode.sable.companion.SableCompanion;
 import dev.ryanhcode.sable.companion.SubLevelAccess;
 import dev.ryanhcode.sable.companion.math.BoundingBox3d;
 import dev.ryanhcode.sable.companion.math.Pose3dc;
 import dev.ryanhcode.sable.mixinterface.entity.entity_sublevel_collision.LivingEntityMovementExtension;
+import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import dev.tentaworks.compat.Frame;
 import dev.tentaworks.compat.Pose;
+import dev.tentaworks.compat.ShipBody;
 import dev.tentaworks.compat.ShipFrames;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -15,10 +19,13 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import org.joml.Vector3d;
 import org.joml.Vector3dc;
+import org.slf4j.Logger;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -30,17 +37,19 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Sable 2.0 Ships through sable-companion (plus one Sable internal, {@link #dropInherited}): the only class that touches
- * Sable. Loaded only when Sable is.
+ * Sable 2.0 Ships through sable-companion (plus Sable internals: {@link #dropInherited}, and for Ship Grab {@link #body}:
+ * ServerSubLevel, its mass tracker and RigidBodyHandle): the only class that touches Sable. Loaded only when Sable is.
  * Keeps, on the server thread, the poses of the last {@value #HISTORY} server ticks of every Ship near a player.
  */
 public final class SableShips implements ShipFrames {
+    private static final Logger LOG = LogUtils.getLogger();
     private static final int HISTORY = 10;
     private static final int FORGET_TICKS = 40;
     private static final double TRACK_RADIUS = 24;
     private static final double UNIT = 1.0E-6;
 
     private final Map<UUID, History> history = new HashMap<>();
+    private boolean noBodies;
 
     private static final class History {
         final ArrayDeque<Pose> poses = new ArrayDeque<>(HISTORY);
@@ -99,6 +108,64 @@ public final class SableShips implements ShipFrames {
     @Override
     public void dropInherited(Entity entity) {
         if (entity instanceof LivingEntityMovementExtension m) m.sable$getInheritedVelocity().zero();
+    }
+
+    /** Sable internals, same signatures in 2.0.0 to 2.0.6; a Sable without them refuses Ship Grab silently (logged once). */
+    @Override
+    public ShipBody body(Level level, BlockPos pos) {
+        if (noBodies || level.isClientSide() || !ShipFrames.enabled()) return null;
+        try {
+            return SableCompanion.INSTANCE.getContaining(level, (Vec3i) pos) instanceof ServerSubLevel s && !s.isRemoved() ? new Body(level, s) : null;
+        } catch (LinkageError e) {
+            noBodies = true;
+            LOG.warn("This Sable has no Ship bodies Octo Arms can use: Ship Grab is off", e);
+            return null;
+        }
+    }
+
+    /** Every call guarded: a Sable whose internals moved gives a dead body (released, never thrown) instead of a crash. */
+    private record Body(Level level, ServerSubLevel ship) implements ShipBody {
+        @Override
+        public Object id() {
+            return ship.getUniqueId();
+        }
+
+        @Override
+        public Frame frame() {
+            return SableShips.frame(level, ship);
+        }
+
+        @Override
+        public double mass() {
+            try {
+                return ship.getMassTracker() == null ? -1 : ship.getMassTracker().getMass();
+            } catch (LinkageError e) {
+                return -1;
+            }
+        }
+
+        @Override
+        public boolean alive() {
+            try {
+                if (ship.isRemoved()) return false;
+                RigidBodyHandle h = RigidBodyHandle.of(ship);
+                return h != null && h.isValid();
+            } catch (LinkageError e) {
+                return false;
+            }
+        }
+
+        @Override
+        public void velocity(Vec3 linear, Vec3 angular) {
+            try {
+                RigidBodyHandle h = RigidBodyHandle.of(ship);
+                if (h == null || !h.isValid()) return;
+                Vector3d dv = new Vector3d(linear.x, linear.y, linear.z).sub(h.getLinearVelocity(new Vector3d()));
+                Vector3d dw = new Vector3d(angular.x, angular.y, angular.z).sub(h.getAngularVelocity(new Vector3d()));
+                h.addLinearAndAngularVelocity(dv, dw);
+            } catch (LinkageError ignored) {
+            }
+        }
     }
 
     private void record(ServerTickEvent.Post e) {

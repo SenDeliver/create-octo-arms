@@ -182,14 +182,14 @@ public final class RigClient {
         if (control) liftTo = Double.NaN;
 
         double reach = TentacleRigItem.reach(player);
-        double step = settings.speed() * RigEnchants.swift(RigAir.worn(player)) / 20.0;
+        double step = settings.speed() * RigEnchants.swift(RigAir.worn(player)) * ActuatorClient.speedFactor() / 20.0;
         Level level = player.level();
         ShipFrames ships = ShipFrames.get();
         Vec3 body = Grips.body(player);
         carryShip = carryShip(level, GAIT.grips());
         Vec3 shipMove = carryShip == null ? Vec3.ZERO : carryShip.carry(player.position());
         boolean tracked = carryShip != null && ships.tracking(player, carryShip);
-        List<Grips.Face> faces = Grips.faces(level, body, reach + Math.max(1.0, step + 0.5) + shipMove.length());
+        List<Grips.Face> faces = Grips.faces(level, body, reach + Math.max(1.0, step + 0.5) + shipMove.length(), ActuatorClient.heldShip(level));
         heldCount = Grips.count(faces, state.carries() ? body.add(shipMove) : body, reach);
         boolean held = heldCount >= Grips.HELD;
         boolean air = RigAir.has(player);
@@ -263,7 +263,7 @@ public final class RigClient {
             }
             default -> motion = player.getDeltaMovement();
         }
-        double overshoot = TentacleGait.overshoot(TentacleRigItem.topSpeed(RigAir.worn(player)) * 1.05 / 20.0);
+        double overshoot = TentacleGait.overshoot(TentacleRigItem.topSpeed(RigAir.worn(player)) * ActuatorClient.speedFactor() * 1.05 / 20.0);
         Vec3 moved = Grips.collide(level, player, motion);
         Floor floor = floorBelow(player, 0.35 * reach);
         GAIT.tick(level, faces, body.add(shift).add(moved), player.yBodyRot, moved, reach, overshoot, floor == null ? Double.NaN : floor.y());

@@ -1,0 +1,55 @@
+{
+  "parent": "tentaworks:doc_rig",
+  "criteria": {
+    "all_rig_enchantments": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "tentaworks:copper_tentacle_rig",
+              "tentaworks:netherite_tentacle_rig"
+            ],
+            "predicates": {
+              "minecraft:enchantments": [
+                {
+                  "enchantments": "tentaworks:far_reach"
+                },
+                {
+                  "enchantments": "tentaworks:thrift"
+                },
+                {
+                  "enchantments": "tentaworks:swift"
+                },
+                {
+                  "enchantments": "tentaworks:silent_step"
+                },
+                {
+                  "enchantments": "tentaworks:deft"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:enchanted_book"
+    },
+    "title": {
+      "translate": "advancement.tentaworks.intelligence_is_a_privilege"
+    },
+    "description": {
+      "translate": "advancement.tentaworks.intelligence_is_a_privilege.desc"
+    },
+    "frame": "goal",
+    "announce_to_chat": true
+  },
+  "requirements": [
+    [
+      "all_rig_enchantments"
+    ]
+  ]
+}

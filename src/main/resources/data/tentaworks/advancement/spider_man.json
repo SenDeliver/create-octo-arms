@@ -1,0 +1,29 @@
+{
+  "parent": "tentaworks:doc_rig",
+  "criteria": {
+    "spider_kill": {
+      "trigger": "tentaworks:rig_event",
+      "conditions": {
+        "event": "spider_kill"
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:cobweb"
+    },
+    "title": {
+      "translate": "advancement.tentaworks.spider_man"
+    },
+    "description": {
+      "translate": "advancement.tentaworks.spider_man.desc"
+    },
+    "frame": "challenge",
+    "announce_to_chat": true
+  },
+  "requirements": [
+    [
+      "spider_kill"
+    ]
+  ]
+}

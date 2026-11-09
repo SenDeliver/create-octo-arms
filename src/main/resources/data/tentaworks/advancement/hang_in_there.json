@@ -1,0 +1,32 @@
+{
+  "parent": "tentaworks:doc_rig",
+  "criteria": {
+    "hang": {
+      "trigger": "tentaworks:rig_event",
+      "conditions": {
+        "event": "hang",
+        "number": {
+          "min": 60
+        }
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:chain"
+    },
+    "title": {
+      "translate": "advancement.tentaworks.hang_in_there"
+    },
+    "description": {
+      "translate": "advancement.tentaworks.hang_in_there.desc"
+    },
+    "frame": "task",
+    "announce_to_chat": false
+  },
+  "requirements": [
+    [
+      "hang"
+    ]
+  ]
+}
