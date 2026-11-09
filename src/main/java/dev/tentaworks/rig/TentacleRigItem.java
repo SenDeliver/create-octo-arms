@@ -3,6 +3,7 @@ package dev.tentaworks.rig;
 import com.simibubi.create.content.equipment.armor.BacktankItem;
 import com.simibubi.create.content.equipment.armor.BacktankUtil;
 import com.simibubi.create.foundation.item.LayeredArmorItem;
+import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.client.RigSettingsScreen;
 import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.ChatFormatting;
@@ -47,6 +48,17 @@ public class TentacleRigItem extends BacktankItem {
 
     public RigTier tier() {
         return tier;
+    }
+
+    /** A Rig with Actuators fitted is an Octo Rig: "Copper Octo Rig", "Netherite Octo Rig". */
+    @Override
+    public Component getName(ItemStack stack) {
+        return Actuators.fitted(stack) ? Component.translatable(octoKey(tier)) : super.getName(stack);
+    }
+
+    /** The name key of a fitted Rig of {@code tier}. */
+    public static String octoKey(RigTier tier) {
+        return "item." + TentaworksIds.MOD_ID + "." + tier.name().toLowerCase(Locale.ROOT) + "_octo_rig";
     }
 
     @Nullable

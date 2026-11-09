@@ -38,7 +38,7 @@ The only required dependency is Create. With Sable (optional) the Rig also grips
 - **Actuators** (2.0): two extra arms above the Tentacles, fitted at a crafting table. **Far Use** mines, places, hits and uses out to the Rig's Reach; **Grab** (`V`) takes a mob, **Throw** flings it with Impact damage. With Sable, **Ship Grab** lifts a whole Ship. See [Actuators](#actuators).
 - **Still a Backtank**: it holds Air (twice as much as the Backtank it was made from), feeds a Diving Helmet, takes Capacity and refills under a shaft.
 - **Keep your chestplate**: with [Curios](https://www.curseforge.com/minecraft/mc-mods/curios-continuation) installed the Rig also fits the back slot. There it is a Rig and not armor: everything works, it gives no armor value and armor enchantments on it are idle. See [Curios](#curios-back-slot).
-- **Two tiers**: Copper (Reach 4) and Netherite (Reach 7, half the Air use, fire resistant).
+- **Two tiers**: Copper (Reach 5) and Netherite (Reach 7, half the Air use, fire resistant).
 - **Five own enchantments**: Far Reach, Thrift, Swift, Silent Step and Deft, plus vanilla chest armor enchantments and Create's Capacity.
 - **Never breaks**: like an Elytra, a worn-out Rig stops working at 1 durability until you repair it. Air, enchantments and settings are kept.
 - **Rig Settings** screen: Standing Height, Speed, Activation Mode (Double Jump or a key) and, on a fitted Rig, Far Use.
@@ -55,7 +55,7 @@ The only required dependency is Create. With Sable (optional) the Rig also grips
 |---|---|---|
 | **Tentacle** | One pneumatic arm. Four go into every Rig. Tier-less. | Sequenced Assembly on a Piston Extension Pole: deploy Sticker, press, deploy Andesite Casing, 2 loops |
 | **Incomplete Tentacle** | Transitional item of the Tentacle sequence | — |
-| **Copper Tentacle Rig** | Worn Rig, Reach 4 blocks, normal Air use, 112 durability | Mechanical Crafting (see below) with a Copper Backtank |
+| **Copper Tentacle Rig** | Worn Rig, Reach 5 blocks, normal Air use, 112 durability | Mechanical Crafting (see below) with a Copper Backtank |
 | **Netherite Tentacle Rig** | Worn Rig, Reach 7 blocks, half the Air use, 592 durability, fire resistant | Mechanical Crafting with a Netherite Backtank, or Smithing: Copper Tentacle Rig + Netherite Upgrade + Netherite Ingot (keeps Air) |
 | **Actuator** | One pneumatic arm that acts instead of walking. Two fit on a Rig. Tier-less. | Sequenced Assembly on a Piston Extension Pole: deploy Brass Casing, press, deploy Sticker, 2 loops |
 | **Incomplete Actuator** | Transitional item of the Actuator sequence | — |
@@ -116,14 +116,14 @@ New in 2.0. Two Actuators sit on the Rig above the Tentacles, the Right one and 
 
 1. **Craft Actuators** on a Sequenced Assembly line: Piston Extension Pole, deploy Brass Casing, press, deploy Sticker, 2 loops. One kind for both tiers.
 2. **Fit two** to a finished Rig: Actuator, Rig, Actuator in one row of a crafting table. The Rig keeps its Air, enchantments, Rig Settings and damage. Or build a fitted Rig in one go on Mechanical Crafters (the Rig recipe with an Actuator added on each side).
-3. Smithing a fitted Copper Rig to Netherite keeps the Actuators. The first time you wear a freshly fitted Rig, both Actuators unfold and flex.
+3. A fitted Rig is named **Copper Octo Rig** or **Netherite Octo Rig**. Smithing a fitted Copper Rig to Netherite keeps the Actuators. The first time you wear a freshly fitted Rig, both Actuators unfold and flex.
 
 **Far Use (Right Actuator)**
 
 - Whatever either hand does, farther: mining, placing, hitting and using items. Within your own arm's length your hand does it as usual; past it the Right Actuator reaches out and does it at its tip, with the item in that hand.
-- Blocks: out to the Rig's Reach (Copper 4, Netherite 7, Far Reach adds). The Copper Rig's Reach of 4 is about your own arm's length, so on blocks a Copper Rig reaches farther only with Far Reach.
-- Mobs and players: out to the shorter **Strike Reach** (Copper 3.5, Netherite 5 blocks, Far Reach does not add), with any weapon or tool.
+- Blocks, mobs and players: out to the Rig's Reach (Copper 5, Netherite 7, Far Reach adds), with any item, weapon or tool. A Copper Rig reaches half a block past your bare hand on blocks and 2 blocks past it on mobs.
 - Past arm's length the server checks the target is in sight of your eye: nothing is reached through a wall, a pane or the floor.
+- Only an action that does something reaches out and costs Air: a lever flipped, a block placed, a mob hurt, a block that starts to break. An empty hand on stone does nothing, as it would by hand.
 - Drops and XP of a block mined by Far Use fly to you.
 - With an Extendo Grip in hand the Actuator idles and the Rig adds no reach.
 - Rig Settings row **Far Use**: Always (default), Rig out only, or Off.
@@ -139,7 +139,7 @@ New in 2.0. Two Actuators sit on the Rig above the Tentacles, the Right one and 
 - The hold lasts through Stowing, Setting Down, Rides, gliding and Falling. It ends on Crawl, death, logout, taking the Rig off, a dimension change, the target gone or out of Reach, or no Air left: the target is set down where it is.
 - A small HUD line shows what you hold (and "heavy") and when the Actuators are out of Air.
 
-**Ship Grab** (1.21.1 with Sable only): `V` on a block of a Ship takes the whole Ship in both Actuators. It follows you at the offset it had, rotation kept; `V` sets it down, attack throws it. Needs a Ship of scale 1 within the tier's mass cap (Copper 2000, Netherite 6000 Sable mass), nobody else on board, and not the Ship you stand on or hang from. Server config `grab.ships` (and `ships.grip`) turn it off.
+**Ship Grab** (1.21.1 with Sable only): `V` on a block of a Ship takes the whole Ship in both Actuators. It stays where it was in your view: look around and it swings round you, turn and it turns with you (its tilt stays); `V` sets it down, attack throws it. Needs a Ship of scale 1 within the tier's mass cap (Copper 2000, Netherite 6000 Sable mass), nobody else on board, and not the Ship you stand on or hang from. Server config `grab.ships` (and `ships.grip`) turn it off.
 
 **Air and Deft**
 
@@ -241,7 +241,7 @@ Server config: `serverconfig/tentaworks-server.toml` inside the world folder (pu
 
 | Section | Key | Default | What it does |
 |---|---|---|---|
-| `reach` | `copper` | 4.0 | Reach of a Copper Rig, blocks (1–16). Far Reach adds to it, up to 16 in total |
+| `reach` | `copper` | 5.0 | Reach of a Copper Rig, blocks (1–16). Far Reach adds to it, up to 16 in total |
 | `reach` | `netherite` | 7.0 | Reach of a Netherite Rig, blocks (1–16) |
 | `speed` | `max` | 8.0 | Top Rig speed, blocks per second (1–20). Caps every player's Speed setting; Swift raises both |
 | `air` | `idle` | 80.0 | Copper Rig holding still (Idle, Hang): ticks per 1 Air |
@@ -257,8 +257,6 @@ Server config: `serverconfig/tentaworks-server.toml` inside the world folder (pu
 | `air` | `farUse` | 0.5 | Copper Rig: Air per Far Use action (0–50) |
 | `air` | `grab` | 40.0 | Copper Rig holding a Grab: ticks per 1 Air |
 | `air` | `throw` | 10.0 | Copper Rig: Air per Throw (0–500) |
-| `strikeReach` | `copper` | 3.5 | Strike Reach of a Copper Rig: how far its Actuator hits or uses on mobs and players, blocks (1–16). Far Reach does not add to it |
-| `strikeReach` | `netherite` | 5.0 | Strike Reach of a Netherite Rig, blocks (1–16) |
 | `farUse` | `players` | true | Far Use may hit and use on players (the PvP rule still applies) |
 | `grab` | `tamedOthers` | false | Grab may take another player's tamed, owned or leashed animal |
 | `grab` | `ships` | true | Ship Grab (1.21.1). Also needs `ships.grip`. No effect without Sable |

@@ -2,7 +2,8 @@
 trace on
 hud on
 view first
-# K grab sg by its west face, walk west 40 ticks, release (it stays), grab again and Throw it north along a raised look (clear of sh and Dev2)
+# K grab sg by its west face, turn a quarter north in 15 degree steps (it swings round, its yaw turns too), walk north 40 ticks,
+# release (it stays), grab again and Throw it north along a raised look (clear of sh and Dev2)
 await k
 wait 10
 lookship
@@ -19,8 +20,22 @@ wait 4
 clearchat
 shot shipgrab_hold
 view first
-look 90 0
 wait 5
+mark kq0
+look -105 0
+wait 2
+look -120 0
+wait 2
+look -135 0
+wait 2
+look -150 0
+wait 2
+look -165 0
+wait 2
+look -180 0
+wait 2
+wait 20
+mark kq1
 mark kw0
 hold up on
 wait 40

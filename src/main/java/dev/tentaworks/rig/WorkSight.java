@@ -1,8 +1,10 @@
 package dev.tentaworks.rig;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -11,53 +13,104 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
- * Far Use past the vanilla interaction range must not pass through walls. Vanilla checks only the distance, and Far Use lifts it
- * to the Reach, so a target farther than the player's own range (plus vanilla's 1 block of slack) must also be in sight: no
- * collision shape on the line from the eye or the body to it. Within the player's own range vanilla rules alone apply.
+ * Far Use past arm's length must not pass through walls. The server picks again as the client did: from the eye along the
+ * look, as far as the lifted range. The target is in sight when that pick finds it first. The client acts with this tick's
+ * look and the server still has the last tick's, so a pick that finds another block (or nothing) falls back to a line from
+ * the eye to a visible point of the target (the clicked spot, the clicked face, the nearest point): in sight when no
+ * collision shape of another block crosses it.
  */
 public final class WorkSight {
     private static final double INSET = 0.01;
+    private static final double SLACK = 1.0;
+    private static final double EPS = 1.0E-3;
 
     private WorkSight() {
     }
 
-    /** A target {@code distSqr} away (squared, from the eye to its box) is past {@code base}, the range without the Far Use lift. */
-    public static boolean needsSight(double distSqr, double base) {
-        double r = base + 1.0;
-        return distSqr > r * r;
+    /** The block at {@code pos} ({@code face} the clicked face and {@code point} the clicked spot, each null when unknown) is in sight of {@code player}. */
+    public static boolean seesBlock(Player player, BlockPos pos, @Nullable Direction face, @Nullable Vec3 point) {
+        return seesBlock(player.level(), pos, face, point, player.getEyePosition(), player.getViewVector(1.0F), player.blockInteractionRange() + SLACK,
+                CollisionContext.of(player));
+    }
+
+    /** {@code target} is in sight of {@code player}. */
+    public static boolean seesEntity(Player player, Entity target) {
+        AABB box = target.getBoundingBox().inflate(target.getPickRadius());
+        return seesBox(player.level(), box, player.getEyePosition(), player.getViewVector(1.0F), player.entityInteractionRange() + SLACK,
+                CollisionContext.of(player));
+    }
+
+    /** {@link #seesBlock(Player, BlockPos, Direction, Vec3)} from {@code eye} looking along {@code look} as far as {@code range}. */
+    public static boolean seesBlock(BlockGetter level, BlockPos pos, @Nullable Direction face, @Nullable Vec3 point, Vec3 eye, Vec3 look, double range,
+                                    CollisionContext ctx) {
+        BlockHitResult pick = level.clip(new ClipContext(eye, eye.add(look.scale(range)), ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, ctx));
+        if (picked(level, pos, pick, point)) return true;
+        for (Vec3 to : spots(level, pos, face, point, eye)) {
+            if (clear(level, pos, eye, to)) return true;
+        }
+        return false;
     }
 
     /**
-     * The block at {@code pos} is in sight of one of {@code origins}: the line to {@code point} (the clicked spot, or null), to the
-     * nearest point of the block, or to its centre crosses no collision shape of another block.
+     * The pick found {@code pos}, or the block in front of the face it hit while the clicked spot lies on {@code pos}'s own
+     * shape (a thin block on top of the hit one, seen one tick later).
      */
-    public static boolean seesBlock(BlockGetter level, BlockPos pos, Vec3 point, Vec3... origins) {
-        AABB in = new AABB(pos).deflate(INSET);
-        Vec3 centre = in.getCenter();
-        for (Vec3 o : origins) {
-            if (point != null && clear(level, pos, o, inside(in, point))) return true;
-            Vec3 near = new Vec3(Mth.clamp(o.x, in.minX, in.maxX), Mth.clamp(o.y, in.minY, in.maxY), Mth.clamp(o.z, in.minZ, in.maxZ));
-            if (clear(level, pos, o, near) || clear(level, pos, o, centre)) return true;
+    static boolean picked(BlockGetter level, BlockPos pos, BlockHitResult pick, @Nullable Vec3 point) {
+        if (pick.getType() != HitResult.Type.BLOCK) return false;
+        if (pick.getBlockPos().equals(pos)) return true;
+        if (point == null || !pick.getBlockPos().relative(pick.getDirection()).equals(pos)) return false;
+        VoxelShape shape = level.getBlockState(pos).getShape(level, pos);
+        for (AABB b : shape.toAabbs()) {
+            if (b.move(pos).inflate(EPS).contains(point)) return true;
         }
         return false;
     }
 
-    /** {@code box} (an entity's) is in sight of one of {@code origins}: no block on the line to its centre before the line enters it. */
-    public static boolean seesBox(Level level, Entity source, AABB box, Vec3... origins) {
+    /** {@code box} (an entity's, pick radius included) is in sight: the look ray meets it before any block, or a line to its centre crosses no block. */
+    public static boolean seesBox(BlockGetter level, AABB box, Vec3 eye, Vec3 look, double range, CollisionContext ctx) {
+        if (box.contains(eye)) return true;
+        Vec3 end = eye.add(look.scale(range));
+        Optional<Vec3> on = box.clip(eye, end);
+        if (on.isPresent()) {
+            BlockHitResult hit = level.clip(new ClipContext(eye, end, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, ctx));
+            if (hit.getType() == HitResult.Type.MISS || hit.getLocation().distanceToSqr(eye) >= on.get().distanceToSqr(eye)) return true;
+        }
         Vec3 centre = box.getCenter();
-        for (Vec3 o : origins) {
-            Vec3 entry = box.clip(o, centre).orElse(o);
-            BlockHitResult hit = level.clip(new ClipContext(o, centre, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, source));
-            if (hit.getType() != HitResult.Type.BLOCK || hit.getLocation().distanceToSqr(o) >= entry.distanceToSqr(o) - 1.0E-4) return true;
-        }
-        return false;
+        Vec3 entry = box.clip(eye, centre).orElse(eye);
+        BlockHitResult hit = level.clip(new ClipContext(eye, centre, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, ctx));
+        return hit.getType() == HitResult.Type.MISS || hit.getLocation().distanceToSqr(eye) >= entry.distanceToSqr(eye) - 1.0E-4;
     }
 
-    private static Vec3 inside(AABB in, Vec3 p) {
-        return new Vec3(Mth.clamp(p.x, in.minX, in.maxX), Mth.clamp(p.y, in.minY, in.maxY), Mth.clamp(p.z, in.minZ, in.maxZ));
+    /** Visible points of the block to draw a line to, each stopped just short of the block so the line never dips into a neighbour. */
+    private static List<Vec3> spots(BlockGetter level, BlockPos pos, @Nullable Direction face, @Nullable Vec3 point, Vec3 eye) {
+        List<Vec3> out = new ArrayList<>();
+        if (point != null) out.add(point);
+        Vec3 centre = Vec3.atCenterOf(pos);
+        if (face != null) out.add(centre.add(Vec3.atLowerCornerOf(face.getNormal()).scale(0.5)));
+        for (Direction d : Direction.values()) {
+            if (d == face) continue;
+            Vec3 n = Vec3.atLowerCornerOf(d.getNormal());
+            Vec3 c = centre.add(n.scale(0.5));
+            if (eye.subtract(c).dot(n) > 0) out.add(c);
+        }
+        AABB box = new AABB(pos);
+        out.add(new Vec3(Mth.clamp(eye.x, box.minX, box.maxX), Mth.clamp(eye.y, box.minY, box.maxY), Mth.clamp(eye.z, box.minZ, box.maxZ)));
+        List<Vec3> spots = new ArrayList<>(out.size());
+        for (Vec3 p : out) {
+            Vec3 back = eye.subtract(p);
+            double len = back.length();
+            spots.add(len <= INSET ? eye : p.add(back.scale(INSET / len)));
+        }
+        return spots;
     }
 
     private static boolean clear(BlockGetter level, BlockPos target, Vec3 from, Vec3 to) {

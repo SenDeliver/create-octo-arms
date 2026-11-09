@@ -18,7 +18,7 @@ A Create Backtank with four pneumatic Tentacles and two Actuators. Climb walls, 
 
 Craft a **Tentacle Rig**: a Backtank with four **Tentacles** and a Precision Mechanism. Wear it in the chest slot and **Double Jump**. The Tentacles grab nearby block faces and carry you where you look: across the floor, up a wall, under a ledge or a ceiling. Your hands stay free, so you can mine, build and fight while you hang. The Rig runs on the Backtank's **Air** and refills like any Backtank.
 
-**New in 2.0: Actuators.** Fit two Actuators to the Rig and it gains hands. The Right Actuator does whatever your hand does, farther: mining, placing, hitting and using out to the Rig's Reach (**Far Use**). The Left Actuator **Grabs** a mob with the `V` key, holds it out of your way, sets it down or **Throws** it, with Impact damage when it lands. With Sable it lifts a whole Ship.
+**New in 2.0: Actuators.** Fit two Actuators to the Rig and it gains hands: a Copper or Netherite **Octo Rig**. The Right Actuator does whatever your hand does, farther: mining, placing, hitting and using out to the Rig's Reach (**Far Use**). The Left Actuator **Grabs** a mob with the `V` key, holds it out of your way, sets it down or **Throws** it, with Impact damage when it lands. With Sable it lifts a whole Ship.
 
 ## Features
 
@@ -28,12 +28,12 @@ Craft a **Tentacle Rig**: a Backtank with four **Tentacles** and a Precision Mec
 - **Crawl**: out of Air, the Rig does not drop you. It slowly lowers you to the floor.
 - **Hands free**: mining, placing, fighting and using items all work while the Rig carries you.
 - **Actuators**: two extra arms above the Tentacles, fitted at a crafting table. They work Stowed or Active, on a Ride, gliding or Falling.
-  - **Far Use**: blocks out to the Rig's Reach, mobs and players out to the shorter Strike Reach (Copper 3.5, Netherite 5). Never through a wall. Drops and XP fly to you. A Rig Setting turns it to Always, Rig out only or Off.
+  - **Far Use**: blocks, mobs and players out to the Rig's Reach. Never through a wall. Drops and XP fly to you. A Rig Setting turns it to Always, Rig out only or Off.
   - **Grab** (`V`, empty hand): the mob is Pinned (no attacks, no Creeper fuse), hangs low on your left and out of the crosshair. Shear, milk, name or leash it while you hold it. `V` again sets it down, also into a seat, boat or minecart.
   - **Throw**: attack while holding. The mob flies along your view and takes Impact damage when it hits a block or another mob.
   - Heavy mobs (Iron Golem, Ravager, Horse, Enderman) take both Actuators and slow you down. Players and bosses can't be Grabbed; claim mods are asked first.
 - **Still a Backtank**: it holds twice the Air of the Backtank it was made from, feeds a Diving Helmet, takes Capacity and refills under a spinning shaft.
-- **Two tiers**: Copper (Reach 4) and Netherite (Reach 7, half the Air use, faster Throws, fire resistant).
+- **Two tiers**: Copper (Reach 5) and Netherite (Reach 7, half the Air use, faster Throws, fire resistant).
 - **Five enchantments**: Far Reach, Thrift, Swift, Silent Step (quiet for Sculk Sensors and Wardens) and Deft (the Actuators use no Air), plus vanilla chest armor enchantments.
 - **Never breaks**: like an Elytra, a worn-out Rig stops at 1 durability until you repair it.
 - **Rig Settings** screen: Standing Height, Speed, Activation Mode (Double Jump or a key) and Far Use.
@@ -57,7 +57,7 @@ Ponder (hold `W` over a Rig or Tentacle) shows the Tentacles step by step.
 
 Octo Arms works fully with Sable Ships, and Create Aeronautics Ships are Sable Ships, so they are supported the same way. With Sable installed, the blocks of a Ship are Grips like world blocks. Grip a Ship's floor, walls, hull or underside, parked or moving, and move between the world and a Ship both ways. Air use counts only your own move.
 
-With Actuators fitted, **Ship Grab** takes a whole Ship in both arms: it follows you, keeps its rotation, and can be set down or thrown. The tier sets the heaviest Ship you can lift. Server admins can turn Ship Grips off with `ships.grip = false` and Ship Grab with `grab.ships = false`.
+With Actuators fitted, **Ship Grab** takes a whole Ship in both arms: it stays in front of you wherever you look, turns as you turn, and can be set down or thrown. The tier sets the heaviest Ship you can lift. Server admins can turn Ship Grips off with `ships.grip = false` and Ship Grab with `grab.ships = false`.
 
 ![A player gripping the side of a Ship moving at 4 blocks per second](https://raw.githubusercontent.com/SenDeliver/create-octo-arms/1.21.1/docs/images/ship-moving.png)
 
@@ -95,7 +95,6 @@ Updating from 1.x: your Rigs keep working and can be fitted later. The Air cap d
 
 - Nothing narrower than half a block (fence posts, chains) is a Grip.
 - Mechanical Crafting does not copy the Backtank's Air, so a new Rig starts empty.
-- The Copper Rig's Reach of 4 is about your own arm's length: on blocks, Copper Far Use reaches farther only with Far Reach.
 - A placed Rig Block does not show the Actuators, and the Ponder scene does not cover them yet.
 - Ships with a scale other than 1 are ignored (1.21.1).
 - Movement is client-driven and checked by the server. Not tested with server anti-cheat plugins or real network latency yet.

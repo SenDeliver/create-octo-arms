@@ -10,7 +10,6 @@ import dev.tentaworks.registry.TentaworksDataComponents;
 import dev.tentaworks.rig.Actuators;
 import dev.tentaworks.rig.FarUse;
 import dev.tentaworks.rig.Grab;
-import dev.tentaworks.rig.Grips;
 import dev.tentaworks.rig.Pinned;
 import dev.tentaworks.rig.RigAir;
 import dev.tentaworks.rig.RigEnchants;
@@ -22,6 +21,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -164,13 +164,13 @@ public final class DevActuators {
                 String.format(Locale.ROOT, "%.3f", e.number())));
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, true, PlayerInteractEvent.LeftClickBlock.class, e -> {
             if (e.getAction() == PlayerInteractEvent.LeftClickBlock.Action.START && e.getEntity() instanceof ServerPlayer p)
-                farBlock(p, "lclick", e.getPos(), null, e.isCanceled());
+                farBlock(p, "lclick", e.getPos(), e.getFace(), null, e.isCanceled());
         });
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, true, PlayerInteractEvent.RightClickBlock.class, e -> {
-            if (e.getEntity() instanceof ServerPlayer p) farBlock(p, "rclick", e.getPos(), e.getHitVec().getLocation(), e.isCanceled());
+            if (e.getEntity() instanceof ServerPlayer p) farBlock(p, "rclick", e.getPos(), e.getHitVec().getDirection(), e.getHitVec().getLocation(), e.isCanceled());
         });
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, true, BlockEvent.BreakEvent.class, e -> {
-            if (e.getPlayer() instanceof ServerPlayer p) farBlock(p, "break", e.getPos(), null, e.isCanceled());
+            if (e.getPlayer() instanceof ServerPlayer p) farBlock(p, "break", e.getPos(), null, null, e.isCanceled());
         });
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, true, PlayerInteractEvent.EntityInteract.class, e -> {
             if (e.getEntity() instanceof ServerPlayer p) farEntity(p, "interact", e.getTarget(), e.isCanceled());
@@ -191,7 +191,7 @@ public final class DevActuators {
         });
     }
 
-    private static void farBlock(ServerPlayer p, String kind, BlockPos pos, @Nullable Vec3 point, boolean canceled) {
+    private static void farBlock(ServerPlayer p, String kind, BlockPos pos, @Nullable Direction face, @Nullable Vec3 point, boolean canceled) {
         Vec3 eye = p.getEyePosition();
         double d2 = new AABB(pos).distanceToSqr(eye);
         AttributeInstance range = p.getAttribute(Attributes.BLOCK_INTERACTION_RANGE);
@@ -199,18 +199,18 @@ public final class DevActuators {
         LOG.info("SFAR gt={} {} kind={} at={} type={} dist={} range={} lift={} far={} sight={} asking={} canceled={}", p.level().getGameTime(), p.getName().getString(), kind,
                 pos.toShortString().replace(" ", ""), BuiltInRegistries.BLOCK.getKey(p.level().getBlockState(pos).getBlock()), f3(Math.sqrt(d2)), f3(range == null ? 0 : range.getValue()),
                 f3(lift), ShipFrames.get().isPlot(p.level(), pos) ? "PLOT" : lift > 0 ? FarUse.far(d2, range.getValue() - lift, range.getValue()) : FarUse.Far.NEAR,
-                WorkSight.seesBlock(p.level(), pos, point, eye, Grips.body(p)), Grab.asking(), canceled);
+                WorkSight.seesBlock(p, pos, face, point), Grab.asking(), canceled);
     }
 
     private static void farEntity(ServerPlayer p, String kind, Entity target, boolean canceled) {
         Vec3 eye = p.getEyePosition();
         double d2 = target.getBoundingBox().distanceToSqr(eye);
         AttributeInstance range = p.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
-        double lift = lift(range, FarUse.STRIKE_ID);
+        double lift = lift(range, FarUse.ENTITY_ID);
         LOG.info("SFAR gt={} {} kind={} at={} type={} dist={} range={} lift={} far={} sight={} asking={} canceled={}", p.level().getGameTime(), p.getName().getString(), kind,
                 target.getId(), type(target), f3(Math.sqrt(d2)), f3(range == null ? 0 : range.getValue()), f3(lift),
                 lift > 0 ? FarUse.far(d2, range.getValue() - lift, range.getValue()) : FarUse.Far.NEAR,
-                WorkSight.seesBox(p.level(), p, target.getBoundingBox(), eye, Grips.body(p)), Grab.asking(), canceled);
+                WorkSight.seesEntity(p, target), Grab.asking(), canceled);
     }
 
     static void grabEvent(Grab.Event e) {
@@ -267,7 +267,7 @@ public final class DevActuators {
         BlockPos ship = Grab.ship(p);
         AttributeInstance speed = p.getAttribute(Attributes.MOVEMENT_SPEED);
         return String.format(Locale.ROOT, " lift=%.3f,%.3f gheld=%d gheavy=%b gship=%s gcentre=%s gmass=%.1f adebt=%.4f mspd=%.4f xp=%d fitted=%b deft=%b farmode=%s",
-                lift(p.getAttribute(Attributes.BLOCK_INTERACTION_RANGE), FarUse.REACH_ID), lift(p.getAttribute(Attributes.ENTITY_INTERACTION_RANGE), FarUse.STRIKE_ID),
+                lift(p.getAttribute(Attributes.BLOCK_INTERACTION_RANGE), FarUse.REACH_ID), lift(p.getAttribute(Attributes.ENTITY_INTERACTION_RANGE), FarUse.ENTITY_ID),
                 held == null ? -1 : held.getId(), Grab.heavy(p), ship == null ? "-" : ship.toShortString().replace(" ", ""), vec(Grab.centre(p)), Grab.shipMass(p),
                 debt(p), speed == null ? 0 : speed.getValue(), p.totalExperience, Actuators.fitted(rig), RigEnchants.deft(rig),
                 rig.isEmpty() ? "-" : RigSettings.of(rig).farUse().getSerializedName());

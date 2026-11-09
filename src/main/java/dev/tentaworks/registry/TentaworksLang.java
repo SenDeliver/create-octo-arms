@@ -1,6 +1,8 @@
 package dev.tentaworks.registry;
 
 import dev.tentaworks.TentaworksIds;
+import dev.tentaworks.rig.RigTier;
+import dev.tentaworks.rig.TentacleRigItem;
 
 import static dev.tentaworks.Tentaworks.REGISTRATE;
 
@@ -66,6 +68,8 @@ public final class TentaworksLang {
 
         REGISTRATE.addRawLang("advancement.tentaworks.doc_rig", "Doc's Rig");
         REGISTRATE.addRawLang("advancement.tentaworks.doc_rig.desc", "Get a Tentacle Rig: four Tentacles on a Backtank");
+        REGISTRATE.addRawLang(TentacleRigItem.octoKey(RigTier.COPPER), "Copper Octo Rig");
+        REGISTRATE.addRawLang(TentacleRigItem.octoKey(RigTier.NETHERITE), "Netherite Octo Rig");
         REGISTRATE.addRawLang("advancement.tentaworks.fitted", "Fitted");
         REGISTRATE.addRawLang("advancement.tentaworks.fitted.desc", "Fit two Actuators to a Rig: now it has hands");
         refusal(FAR_USE, "no_sight", "Out of sight: the Actuator does not reach through blocks");
@@ -119,8 +123,6 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang("tentaworks.stats.top_speed.value", "%s b/s");
         REGISTRATE.addRawLang("tentaworks.stats.air_use", "Air use:");
         REGISTRATE.addRawLang("tentaworks.stats.air_use.value", "%s%%");
-        REGISTRATE.addRawLang("tentaworks.stats.strike_reach", "Strike Reach:");
-        REGISTRATE.addRawLang("tentaworks.stats.strike_reach.value", "%s blocks");
         REGISTRATE.addRawLang("tentaworks.stats.actuators", "Actuators fitted");
         REGISTRATE.addRawLang("tentaworks.goggles.rig_block", "Tentacle Rig");
         REGISTRATE.addRawLang("tentaworks.goggles.percent", "(%s%%)");
@@ -184,9 +186,6 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(cfg + "air.farUse", "Far Use: Air per action");
         REGISTRATE.addRawLang(cfg + "air.grab", "Grab: ticks per Air");
         REGISTRATE.addRawLang(cfg + "air.throw", "Throw: Air per Throw");
-        REGISTRATE.addRawLang(cfg + "strikeReach", "Strike Reach");
-        REGISTRATE.addRawLang(cfg + "strikeReach.copper", "Copper Strike Reach");
-        REGISTRATE.addRawLang(cfg + "strikeReach.netherite", "Netherite Strike Reach");
         REGISTRATE.addRawLang(cfg + "farUse", "Far Use");
         REGISTRATE.addRawLang(cfg + "farUse.players", "Far Use on players");
         REGISTRATE.addRawLang(cfg + "grab", "Grab");
@@ -226,8 +225,6 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(cfg + "air.farUse.tooltip", "Copper Rig: Air per Far Use (one block or mob action past arm's length)");
         REGISTRATE.addRawLang(cfg + "air.grab.tooltip", "Copper Rig holding a Grab: ticks per 1 Air");
         REGISTRATE.addRawLang(cfg + "air.throw.tooltip", "Copper Rig: Air per Throw");
-        REGISTRATE.addRawLang(cfg + "strikeReach.copper.tooltip", "Strike Reach of a Copper Rig: how far its Actuator hits or uses on mobs and players, blocks. Far Reach does not add to it");
-        REGISTRATE.addRawLang(cfg + "strikeReach.netherite.tooltip", "Strike Reach of a Netherite Rig: how far its Actuator hits or uses on mobs and players, blocks. Far Reach does not add to it");
         REGISTRATE.addRawLang(cfg + "farUse.players.tooltip", "Far Use may hit and use on players (the PvP rule still applies)");
         REGISTRATE.addRawLang(cfg + "grab.tamedOthers.tooltip", "Grab may take another player's tamed, owned or leashed animal");
         REGISTRATE.addRawLang(cfg + "grab.ships.tooltip", "Grab may take Sable Ships (also needs Rigs grip Ships). Ignored without Sable");

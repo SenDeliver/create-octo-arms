@@ -3,6 +3,8 @@ package dev.tentaworks.rig;
 import dev.tentaworks.rig.Hold.Status;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaterniond;
+import org.joml.Vector3d;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -100,5 +102,46 @@ class HoldTest {
         assertNull(Hold.ends(new Status(true, true, true, false, false, true, Hold.FAR_TICKS - 1)));
         assertEquals("far", Hold.ends(new Status(true, true, true, false, false, true, Hold.FAR_TICKS)));
         assertEquals("death", Hold.ends(new Status(false, false, false, true, true, false, 9)), "the first reason wins");
+    }
+    @Test
+    void aHeldShipPointStaysWhereItWasInTheView() {
+        Vec3 look = Vec3.directionFromRotation(10, -90);
+        Vec3 held = new Vec3(4.0, 64.2, 0.6);
+        Vec3 rel = Hold.shipRel(EYE, look, -90, held, 4.5);
+        assertTrue(Hold.shipPoint(EYE, look, -90, rel).distanceTo(held) < 1.0E-3, "unchanged view, unchanged point");
+        for (float turn = -180; turn <= 180; turn += 15) {
+            Vec3 l = Vec3.directionFromRotation(10, -90 + turn);
+            Vec3 p = Hold.shipPoint(EYE, l, -90 + turn, rel);
+            assertEquals(held.distanceTo(EYE), p.distanceTo(EYE), 1.0E-3, "turn " + turn + ": same distance");
+            assertEquals(held.y, p.y, 1.0E-3, "turn " + turn + ": same height");
+        }
+        Vec3 turned = Hold.shipPoint(EYE, Vec3.directionFromRotation(10, -180), -180, rel);
+        assertEquals(0.6, turned.x, 1.0E-3, "a quarter turn north swings it round the eye, still 0.6 to the right");
+        assertEquals(-4.0, turned.z, 1.0E-3);
+        Vec3 up = Hold.shipPoint(EYE, Vec3.directionFromRotation(-30, -90), -90, rel);
+        assertTrue(up.y > held.y + 1.5, "looking up lifts it");
+    }
+
+    @Test
+    void aHeldShipPointIsNoFartherThanTheLimit() {
+        Vec3 look = new Vec3(1, 0, 0);
+        Vec3 rel = Hold.shipRel(EYE, look, -90, EYE.add(9, 0, 0), 4.5);
+        assertEquals(4.5, rel.length(), 1.0E-9);
+        assertEquals(4.5, rel.x, 1.0E-9);
+        assertEquals(2.0, Hold.shipRel(EYE, look, -90, EYE.add(2, 0, 0), 4.5).length(), 1.0E-9);
+    }
+
+    @Test
+    void aHeldShipTurnsItsYawWithTheWearerOnly() {
+        Quaterniond start = new Quaterniond().rotateX(0.3).rotateZ(0.2);
+        Vector3d facing = start.transform(new Vector3d(0, 0, -1));
+        Quaterniond q = Hold.shipTurn(start, 90);
+        Vector3d now = q.transform(new Vector3d(0, 0, -1));
+        Vector3d want = new Quaterniond().rotateY(-Math.PI / 2).transform(new Vector3d(facing));
+        assertEquals(0, now.distance(want), 1.0E-9, "the face that pointed at the wearer still does");
+        assertEquals(facing.y, now.y, 1.0E-9, "pitch and roll stay");
+        Vector3d n = Hold.shipTurn(new Quaterniond(), 90).transform(new Vector3d(0, 0, -1));
+        assertEquals(1, n.x, 1.0E-9, "facing south, a wearer at -z turned to look west (-x) still sees the face: it now points east at them");
+        assertEquals(0, Hold.shipTurn(start, 360).transform(new Vector3d(0, 0, -1)).distance(facing), 1.0E-9);
     }
 }

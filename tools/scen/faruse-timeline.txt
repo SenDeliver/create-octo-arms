@@ -71,7 +71,7 @@ tp Dev 11000.5 -60 60.5 -90 0
 #sleep 0.5
 #signal n9l
 #await n9done
-# C Copper Rig, Reach 6, Strike Reach 3.5
+# C Copper Rig, Reach 6 (blocks and mobs)
 tp Dev 11100.5 -60 0.5 -90 0
 item replace entity Dev armor.chest with air
 #sleep 0.3
@@ -100,3 +100,31 @@ item replace entity Dev weapon.mainhand with dirt 4
 #await c5done
 tentaworks probe 11105 -59 30
 tentaworks probe 11106 -59 30
+tp Dev 11100.5 -60 40.5 -90 0
+#sleep 0.5
+#signal c6
+#await c6done
+# N10 the floor 5 ahead, mined with the real crosshair: Stowed (about 18 degrees down), then Active (about 30 degrees down)
+item replace entity Dev weapon.mainhand with air
+tp Dev 11100.5 -60 70.5 -90 0
+#sleep 0.5
+#signal n10
+#await n10a
+tentaworks probe 11105 -61 70
+tp Dev 11100.5 -60 74.5 -90 0
+#sleep 0.5
+#signal n10b
+#await n10done
+tentaworks probe 11105 -61 74
+# N11 a far use that does nothing (empty hand on stone) is no Far Use; a far lever flip is one. N10's drops went to the hand: clear it
+clear Dev dirt
+item replace entity Dev weapon.mainhand with air
+tp Dev 11100.5 -60 78.5 -90 0
+#sleep 0.5
+#signal n11
+#await n11a
+tp Dev 11100.5 -60 82.5 -90 0
+#sleep 0.5
+#signal n11b
+#await n11done
+tentaworks probe 11105 -60 82

@@ -30,15 +30,6 @@ public final class Actuators {
         return out;
     }
 
-    /** Strike Reach of this Rig's tier, 0 for anything else. */
-    public static double strikeReach(ItemStack rig) {
-        return rig.getItem() instanceof TentacleRigItem item ? item.tier().strikeReach() : 0;
-    }
-
-    public static double strikeReach(Player player) {
-        return strikeReach(WornRig.of(player).stack());
-    }
-
     /** Throw speed of this Rig's tier, blocks per tick, 0 for anything else. */
     public static double throwSpeed(ItemStack rig) {
         return rig.getItem() instanceof TentacleRigItem item ? item.tier().throwSpeed() : 0;

@@ -5,7 +5,14 @@ import dev.tentaworks.registry.TentaworksItems;
 import dev.tentaworks.registry.TentaworksLang;
 import dev.tentaworks.rig.FarUse.Far;
 import dev.tentaworks.rig.RigSettings.FarUseMode;
+import dev.tentaworks.rig.GripFaceTest.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -65,9 +72,10 @@ class FarUseGateTest {
     @Test
     void theLiftRaisesToTheTargetAndNeverLowers() {
         assertEquals(2.5, FarUse.amount(7.0, VANILLA_BLOCK), 1.0E-9);
-        assertEquals(0.5, FarUse.amount(3.5, VANILLA_ENTITY), 1.0E-9);
-        assertEquals(2.0, FarUse.amount(5.0, VANILLA_ENTITY), 1.0E-9);
-        assertEquals(0.0, FarUse.amount(4.0, VANILLA_BLOCK), "Copper Reach 4 is under vanilla's 4.5: no block lift");
+        assertEquals(4.0, FarUse.amount(7.0, VANILLA_ENTITY), 1.0E-9, "mobs and players at the full Reach too");
+        assertEquals(0.5, FarUse.amount(5.0, VANILLA_BLOCK), 1.0E-9, "Copper Reach 5: half a block past a bare hand on blocks");
+        assertEquals(2.0, FarUse.amount(5.0, VANILLA_ENTITY), 1.0E-9, "and 2 blocks on mobs");
+        assertEquals(0.0, FarUse.amount(4.0, VANILLA_BLOCK), "a Reach under vanilla's 4.5 lifts nothing");
         assertEquals(0.0, FarUse.amount(3.5, 5.0), "a range already longer (creative, other mods) stays as it is");
         assertEquals(0.0, FarUse.amount(0, VANILLA_BLOCK));
     }
@@ -88,8 +96,9 @@ class FarUseGateTest {
         assertEquals(Far.FAR, FarUse.far(5.0 * 5.0, VANILLA_BLOCK, reach));
         assertEquals(Far.FAR, FarUse.far(7.9 * 7.9, VANILLA_BLOCK, reach), "vanilla's 1 block of slack past the lifted range");
         assertEquals(Far.OUT, FarUse.far(8.1 * 8.1, VANILLA_BLOCK, reach));
-        double strike = VANILLA_ENTITY + FarUse.amount(3.5, VANILLA_ENTITY);
-        assertEquals(Far.FAR, FarUse.far(3.2 * 3.2, VANILLA_ENTITY, strike), "Copper Strike Reach past arm's length is a Far Use");
+        double mobs = VANILLA_ENTITY + FarUse.amount(5.0, VANILLA_ENTITY);
+        assertEquals(Far.FAR, FarUse.far(4.6 * 4.6, VANILLA_ENTITY, mobs), "a mob within Copper Reach past arm's length is a Far Use");
+        assertEquals(Far.OUT, FarUse.far(6.1 * 6.1, VANILLA_ENTITY, mobs));
         assertEquals(Far.NEAR, FarUse.far(5.0 * 5.0, VANILLA_BLOCK, VANILLA_BLOCK), "no lift: vanilla rules alone");
         double extendo = VANILLA_BLOCK + 2.0;
         assertEquals(Far.NEAR, FarUse.far(5.0 * 5.0, extendo, extendo), "an Extendo Grip's range is the wearer's own");
@@ -103,6 +112,24 @@ class FarUseGateTest {
         assertFalse(FarUse.due(100, 101, FarUse.PACKET_GAP));
         assertTrue(FarUse.due(100, 102, FarUse.PACKET_GAP));
         assertFalse(FarUse.due(100, 119, FarUse.REFUSAL_GAP));
+    }
+
+    @Test
+    void theFloorAheadAtCopperReachIsAFarUseInSight() {
+        double reach = VANILLA_BLOCK + FarUse.amount(5.0, VANILLA_BLOCK);
+        World w = new World();
+        for (int x = -2; x <= 8; x++)
+            for (int z = -2; z <= 2; z++) w.put(x, 0, z, Blocks.STONE.defaultBlockState());
+        Vec3 eye = new Vec3(0.5, 2.62, 0.5);
+        for (int x = 5; x <= 6; x++) {
+            BlockPos pos = new BlockPos(x, 0, 0);
+            assertEquals(Far.FAR, FarUse.far(new AABB(pos).distanceToSqr(eye), VANILLA_BLOCK, reach), "x=" + x);
+            for (double dx = -0.75; dx <= 0.75; dx += 0.25) {
+                Vec3 look = new Vec3(x + 0.5 + dx, 1.0, 0.5).subtract(eye).normalize();
+                assertTrue(WorkSight.seesBlock(w, pos, Direction.UP, null, eye, look, reach + 1.0, CollisionContext.empty()), "x=" + x + " dx=" + dx);
+                assertTrue(WorkSight.seesBlock(w, pos, null, null, eye, look, reach + 1.0, CollisionContext.empty()), "x=" + x + " dx=" + dx);
+            }
+        }
     }
 
     @Test

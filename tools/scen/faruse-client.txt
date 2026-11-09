@@ -1,4 +1,4 @@
-# Far Use: Right Actuator lends its Reach (blocks) and Strike Reach (mobs). TIMELINE faruse-timeline.txt, TW_REACH_COPPER=6
+# Far Use: Right Actuator lends its Reach (blocks, mobs and players). TIMELINE faruse-timeline.txt, TW_REACH_COPPER=6
 trace on
 hud on
 view first
@@ -135,7 +135,7 @@ wait 3
 dig 11106 -59 4 c2 40
 wait 10
 signal c2done
-# C3 hit at 3.25 (Strike Reach 3.5); C4 at 4.6: the crosshair misses, a cheat attack is vanilla-refused
+# C3 hit at 3.25, C4 at 4.6: both within Reach 6
 await c3
 lookate minecraft:husk
 wait 3
@@ -148,8 +148,6 @@ lookate minecraft:husk
 wait 3
 hit c4
 key key.mouse.left
-wait 5
-attack minecraft:husk
 wait 10
 signal c4done
 # C5 place dirt against the west face of a stone at 5.5
@@ -160,5 +158,61 @@ hit c5
 key key.mouse.right
 wait 10
 signal c5done
+# C6 at 7.5, past Reach 6 + 1: the crosshair misses, a cheat attack is vanilla-refused
+await c6
+lookate minecraft:husk
+wait 3
+hit c6
+key key.mouse.left
+wait 5
+attack minecraft:husk
+wait 10
+signal c6done
+# N10 the floor 5 ahead with the real crosshair (held attack): Stowed, then Active
+await n10
+lookat 11105.5 -60 70.5
+wait 3
+mark n10a
+hit n10a
+holdkey key.attack on
+wait 80
+holdkey key.attack off
+wait 5
+mark n10a1
+signal n10a
+await n10b
+doublejump
+wait 30
+lookat 11105.5 -60 74.5
+wait 3
+mark n10b
+hit n10b
+holdkey key.attack on
+wait 140
+holdkey key.attack off
+wait 5
+mark n10b1
+doublejump
+wait 60
+signal n10done
+# N11 empty hand on a far stone: nothing happens, so no Air and no reach shown; then a far lever flips: Air and reach
+await n11
+lookat 11106.0 -58.5 78.5
+wait 3
+mark n11a
+hit n11a
+key key.mouse.right
+wait 12
+mark n11a1
+signal n11a
+await n11b
+lookat 11105.5 -59.8 82.5
+wait 3
+mark n11b
+hit n11b
+key key.mouse.right
+wait 12
+mark n11b1
+signal n11done
 wait 10
 quit
