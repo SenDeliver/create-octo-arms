@@ -16,6 +16,7 @@ public final class TentaworksClientConfig {
     public static final ModConfigSpec.BooleanValue WALK_WHILE_HELD;
     public static final ModConfigSpec.EnumValue<ForwardMode> FORWARD;
     public static final ModConfigSpec.DoubleValue LIMB_OPACITY;
+    public static final ModConfigSpec.BooleanValue CROSSHAIR;
 
     /** What {@code W}/{@code S} follow while the Rig carries you. */
     public enum ForwardMode implements TranslatableEnum {
@@ -45,6 +46,10 @@ public final class TentaworksClientConfig {
         LIMB_OPACITY = b.comment("Opacity of every Limb (Tentacles and Actuators) in first person: 1.0 solid, 0.1 faint")
                 .translation(t + "firstPerson.limbOpacity").defineInRange("limbOpacity", 1.0, 0.1, 1.0);
         b.pop();
+        b.translation(t + "hud").push("hud");
+        CROSSHAIR = b.comment("Actuator marks around the crosshair: what an Actuator can reach, the Grab cue and the hints while holding")
+                .translation(t + "hud.crosshair").define("crosshair", true);
+        b.pop();
         SPEC = b.build();
     }
 
@@ -61,5 +66,9 @@ public final class TentaworksClientConfig {
 
     public static double limbOpacity() {
         return TentaworksConfig.value(LIMB_OPACITY);
+    }
+
+    public static boolean crosshair() {
+        return TentaworksConfig.value(CROSSHAIR);
     }
 }
