@@ -9,6 +9,37 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-11-09
+
+### Added
+
+- Actuators: two pneumatic arms that sit on a finished Rig above its Tentacles and act on the world while the Tentacles keep walking as before. One item for both tiers (Reach and Air use come from the Rig), made by Sequenced Assembly on a Piston Extension Pole: deploy Brass Casing, press, deploy Sticker, 2 loops. Fitting is optional and permanent: put a Rig between two Actuators in one row of a crafting table (the Rig keeps its Air, enchantments, Rig Settings and damage), or add an Actuator on each side of the Rig's Mechanical Crafting recipe to build a fitted Rig in one go. The plain Rig recipe is unchanged, and a fitted Copper Rig smithed to Netherite stays fitted. The Actuators work wherever your hands work: Stowed or Active, on a Ride, gliding, Falling.
+- Far Use (Right Actuator): whatever either hand does, farther. Mining, placing, hitting and using reach blocks out to the Rig's Reach and mobs and players out to the shorter Strike Reach (Copper 3.5, Netherite 5 blocks; Far Reach does not add to it). Past arm's length the server checks the target is in sight, so nothing is reached through a wall. Drops and XP of a block mined this way fly to you. With an Extendo Grip in hand the Actuator idles and adds nothing. The Copper Rig's Reach of 4 is about your own arm's length, so on blocks a Copper Rig reaches farther only with Far Reach.
+- Rig Settings row Far Use on a fitted Rig: Always (default), Rig out only, or Off.
+- Grab (Left Actuator), key `V` (rebindable, Curios keeps `G`): with an empty main hand, take a living mob under the crosshair within Reach. The held mob is Pinned (no attacks, no Creeper fuse, no spells or shots) and hangs low on your left, out of the crosshair; your own clicks pass it by. `V` again sets it down where it is, calm for one second, or into a seat, boat or minecart under it. A held mob can still be sheared, milked, named, saddled or leashed. Light mobs (zombie, villager, cow, spider) take one Actuator; heavy ones (Iron Golem, Ravager, Horse, Enderman, Ghast) take both, pause Far Use and slow you to 60%. Never players, bosses (Ender Dragon, Wither, Warden, the `tentaworks:bosses` tag, anything over 100 max health), anything riding or ridden, or another player's pet unless the server allows it. Claim and protection mods are asked first. A refused Grab says why in the action bar.
+- Throw: attack while holding flings the target along your view (Netherite faster). A thrown mob takes fall damage and Impact damage when it slams into a block or another mob, which is hurt too. Impact counts as your damage, so loot and protection rules see you, and it hurts players only where PvP allows.
+- A hold lasts through Stowing, Setting Down, Rides, gliding and Falling. It ends on Crawl, death, logout, taking the Rig off, a dimension change, the target gone or out of Reach, or no Air left; the target is set down where it is.
+- **1.21.1 only:** Ship Grab: with Sable, `V` on a Ship block takes the whole Ship in both Actuators; it follows you at the offset it had, keeps its rotation, and can be set down or thrown. Needs a Ship of scale 1 within the tier's mass cap, nobody else on board, and not the Ship you stand on or hang from. Without Sable nothing changes.
+- Deft, a fifth Rig enchantment (one level, enchanting table and anvil like the others): the Actuators use no Air. On a Rig without Actuators it does nothing, and the tooltip says so.
+- Look: at rest the Actuators curl above your head, wider than your body, breathing with small idle gestures, and point at a grabbable mob under the crosshair. In first person they enter from the edge of the view. A fresh fit unfolds and flexes both arms on first wear; a Throw kicks the camera and an Impact clanks.
+- Client config `firstPerson.limbOpacity` (default 1.0, down to 0.1): how solid every Limb (Tentacles and Actuators) is drawn in first person.
+- A small HUD line while holding (with "heavy" for a two-Actuator hold) and when the Actuators are out of Air. Rig tooltip and stats show Actuators fitted and Strike Reach.
+- Advancements: "Fitted" (fit a Rig), "Special Delivery" (throw a mob 20 blocks), "Hang In There" (hang under a ceiling for a minute), "Spider, Man" (kill a spider with the Rig out), "The Power of the Sun" (Grab a Blaze), "Intelligence Is a Privilege" (Far Reach, Thrift, Swift, Silent Step and Deft on one Rig).
+- **1.21.1 only:** Advancement "Fridge Mover" (Grab a Ship and set it down 50 blocks away), shown only with Sable.
+
+### Changed
+
+- A Rig holds twice the Air of the Backtank it was made from (Capacity doubles too). The Actuators drink lightly: a sip per Far Use, a trickle while holding, a gulp per Throw. With no Air left they hang limp and a held target is set down.
+- A Rig whose Speed was never set in the Rig Settings now runs at the server's top Speed (`speed.max`, default 8 blocks/s) instead of 5.6. A Speed you saved stays.
+
+### Compatibility
+
+- Network changed (registrar "10"): new Grab, Actuator and Far Use packets and a Far Use field in the Rig Settings packet. 1.8.0 and 2.0.0 clients and servers cannot join each other; update both.
+- Existing Rigs keep working as before and stay unfitted; fit Actuators later at a crafting table, nothing on the Rig is lost.
+- Existing Rigs keep their Air while the cap doubles, so the Air bar shows half until the Rig is refilled once.
+- New server config keys (defaults): `air.capacityFactor` 2.0, `air.farUse` 0.5, `air.grab` 40 ticks per Air, `air.throw` 10, `strikeReach.copper` 3.5, `strikeReach.netherite` 5.0, `farUse.players` true, `grab.tamedOthers` false, `grab.throwSpeed.copper` 0.8, `grab.throwSpeed.netherite` 1.2 (blocks per tick), `grab.heavySpeedFactor` 0.6, `impact.damagePerSpeed` 12, `impact.minSpeed` 0.3, `impact.cap` 20. New client config key: `firstPerson.limbOpacity` 1.0.
+- **1.21.1 only:** New server config keys for Ship Grab: `grab.ships` true (also needs `ships.grip`), `grab.massCap.copper` 2000, `grab.massCap.netherite` 6000 (Sable mass). Ship Grab uses Sable internals checked on Sable 2.0.0 to 2.0.6; if they are missing, Ship Grab refuses silently and the rest of the mod works.
+
 ## [1.8.0] - 2026-11-08
 
 ### Added
@@ -263,7 +294,8 @@ First release as **Create: Octo Arms** (mod id `tentaworks`), server-internal, n
 
 - Earlier builds were internal test versions and were not published.
 
-[Unreleased]: https://github.com/SenDeliver/create-octo-arms/compare/v1.8.0%2Bmc1.21.1...HEAD
+[Unreleased]: https://github.com/SenDeliver/create-octo-arms/compare/v2.0.0%2Bmc1.21.1...HEAD
+[2.0.0]: https://github.com/SenDeliver/create-octo-arms/compare/v1.8.0%2Bmc1.21.1...v2.0.0%2Bmc1.21.1
 [1.8.0]: https://github.com/SenDeliver/create-octo-arms/compare/v1.7.1%2Bmc1.21.1...v1.8.0%2Bmc1.21.1
 [1.7.1]: https://github.com/SenDeliver/create-octo-arms/compare/v1.7.0%2Bmc1.21.1...v1.7.1%2Bmc1.21.1
 [1.7.0]: https://github.com/SenDeliver/create-octo-arms/compare/v1.6.0%2Bmc1.21.1...v1.7.0%2Bmc1.21.1
