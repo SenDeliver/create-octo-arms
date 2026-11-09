@@ -50,6 +50,8 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang("advancement.tentaworks.doc_rig.desc", "Get a Tentacle Rig: four Tentacles on a Backtank");
         REGISTRATE.addRawLang("advancement.tentaworks.fitted", "Fitted");
         REGISTRATE.addRawLang("advancement.tentaworks.fitted.desc", "Fit two Actuators to a Rig: now it has hands");
+        REGISTRATE.addRawLang("tentaworks.refusal.far_use.no_sight", "Out of sight: the Actuator does not reach through blocks");
+        REGISTRATE.addRawLang("tentaworks.refusal.far_use.players", "Far Use does not reach players on this server");
         REGISTRATE.addRawLang("tentaworks.rig.deft_idle", "Deft does nothing until Actuators are fitted");
         REGISTRATE.addRawLang("death.attack.tentaworks.impact", "%1$s was hit by an Impact from %2$s");
         REGISTRATE.addRawLang("death.attack.tentaworks.impact.player", "%1$s was hit by an Impact while fighting %2$s");

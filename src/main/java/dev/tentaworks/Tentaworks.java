@@ -20,6 +20,7 @@ import dev.tentaworks.registry.TentaworksItems;
 import dev.tentaworks.registry.TentaworksLang;
 import dev.tentaworks.registry.TentaworksRecipes;
 import dev.tentaworks.registry.TentaworksTriggers;
+import dev.tentaworks.rig.FarUse;
 import dev.tentaworks.rig.Grab;
 import dev.tentaworks.rig.RigServer;
 import net.minecraft.resources.ResourceKey;
@@ -56,6 +57,7 @@ public class Tentaworks {
         container.registerConfig(ModConfig.Type.SERVER, TentaworksConfig.SPEC);
         RigServer.init();
         Grab.init();
+        FarUse.init();
         ShipFrames.init();
         BackSlot.init();
     }

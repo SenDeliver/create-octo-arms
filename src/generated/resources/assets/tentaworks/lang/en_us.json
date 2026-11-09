@@ -178,6 +178,8 @@
   "tentaworks.ponder.tentacle_rig.text_7": "Tentacles grip floors, walls and ceilings. You move where you look, Space goes up, Sneak goes down",
   "tentaworks.ponder.tentacle_rig.text_8": "Look up at a wall to climb it. The hands stay free the whole time",
   "tentaworks.ponder.tentacle_rig.text_9": "Under a ledge the Rig simply hangs on. Holding still, moving and climbing all use the Backtank's Air",
+  "tentaworks.refusal.far_use.no_sight": "Out of sight: the Actuator does not reach through blocks",
+  "tentaworks.refusal.far_use.players": "Far Use does not reach players on this server",
   "tentaworks.rig.back.idle_enchants": "Protection, Thorns and other armor enchantments do nothing in the back slot",
   "tentaworks.rig.back.inert": "In the back slot: does nothing while a Rig is in the chest slot",
   "tentaworks.rig.back.not_armor": "In the back slot: no armor, armor enchantments idle",
