@@ -146,11 +146,6 @@
   "tentaworks.configuration.speed": "Velocità",
   "tentaworks.configuration.speed.max": "Velocità max",
   "tentaworks.configuration.speed.max.tooltip": "Velocità massima dell'apparato, blocchi al secondo. Limita la velocità nelle impostazioni dell'apparato di ogni giocatore; Rapidità le alza entrambe sul suo apparato",
-  "tentaworks.configuration.strikeReach": "Portata dei colpi",
-  "tentaworks.configuration.strikeReach.copper": "Portata dei colpi rame",
-  "tentaworks.configuration.strikeReach.copper.tooltip": "Portata dei colpi di un apparato di rame: fin dove il suo attuatore colpisce o usa oggetti su creature e giocatori, in blocchi. Portata estesa non si somma",
-  "tentaworks.configuration.strikeReach.netherite": "Portata dei colpi netherite",
-  "tentaworks.configuration.strikeReach.netherite.tooltip": "Portata dei colpi di un apparato di netherite: fin dove il suo attuatore colpisce o usa oggetti su creature e giocatori, in blocchi. Portata estesa non si somma",
   "tentaworks.configuration.title": "Octo Arms: Configurazione",
   "tentaworks.display_source.rig_air": "Aria dell'apparato",
   "tentaworks.display_source.rig_air.air": "Aria",
@@ -233,8 +228,6 @@
   "tentaworks.stats.air_use.value": "%s%%",
   "tentaworks.stats.reach": "Portata:",
   "tentaworks.stats.reach.value": "%s blocchi",
-  "tentaworks.stats.strike_reach": "Portata dei colpi:",
-  "tentaworks.stats.strike_reach.value": "%s blocchi",
   "tentaworks.stats.top_speed": "Velocità max:",
   "tentaworks.stats.top_speed.value": "%s bl/s"
 }

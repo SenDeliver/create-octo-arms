@@ -146,11 +146,6 @@
   "tentaworks.configuration.speed": "速度",
   "tentaworks.configuration.speed.max": "最高速度",
   "tentaworks.configuration.speed.max.tooltip": "リグの最高速度、ブロック/秒。全プレイヤーのリグ設定の速度の上限になります。高速移動はそのリグで両方を上げます",
-  "tentaworks.configuration.strikeReach": "攻撃リーチ",
-  "tentaworks.configuration.strikeReach.copper": "銅の攻撃リーチ",
-  "tentaworks.configuration.strikeReach.copper.tooltip": "銅のリグの攻撃リーチ：アクチュエーターがモブやプレイヤーを攻撃・使用できる距離、ブロック。リーチ延長では伸びません",
-  "tentaworks.configuration.strikeReach.netherite": "ネザライトの攻撃リーチ",
-  "tentaworks.configuration.strikeReach.netherite.tooltip": "ネザライトのリグの攻撃リーチ：アクチュエーターがモブやプレイヤーを攻撃・使用できる距離、ブロック。リーチ延長では伸びません",
   "tentaworks.configuration.title": "Octo Arms：設定",
   "tentaworks.display_source.rig_air": "リグの圧縮空気",
   "tentaworks.display_source.rig_air.air": "圧縮空気",
@@ -233,8 +228,6 @@
   "tentaworks.stats.air_use.value": "%s%%",
   "tentaworks.stats.reach": "リーチ：",
   "tentaworks.stats.reach.value": "%sブロック",
-  "tentaworks.stats.strike_reach": "攻撃リーチ：",
-  "tentaworks.stats.strike_reach.value": "%sブロック",
   "tentaworks.stats.top_speed": "最高速度：",
   "tentaworks.stats.top_speed.value": "%sブロック/秒"
 }

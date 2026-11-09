@@ -146,11 +146,6 @@
   "tentaworks.configuration.speed": "Tốc độ",
   "tentaworks.configuration.speed.max": "Tốc độ tối đa",
   "tentaworks.configuration.speed.max.tooltip": "Tốc độ tối đa của Giàn, khối/giây. Giới hạn Tốc độ trong Cài đặt Giàn của mọi người chơi; Thần tốc nâng cả hai trên Giàn mang phù phép đó",
-  "tentaworks.configuration.strikeReach": "Tầm với đòn đánh",
-  "tentaworks.configuration.strikeReach.copper": "Tầm với đòn đánh Đồng",
-  "tentaworks.configuration.strikeReach.copper.tooltip": "Tầm với đòn đánh của Giàn Đồng: khoảng cách Tay máy có thể đánh hoặc dùng lên sinh vật và người chơi, khối. Vươn xa không cộng thêm vào",
-  "tentaworks.configuration.strikeReach.netherite": "Tầm với đòn đánh Netherite",
-  "tentaworks.configuration.strikeReach.netherite.tooltip": "Tầm với đòn đánh của Giàn Netherite: khoảng cách Tay máy có thể đánh hoặc dùng lên sinh vật và người chơi, khối. Vươn xa không cộng thêm vào",
   "tentaworks.configuration.title": "Octo Arms: Cấu hình",
   "tentaworks.display_source.rig_air": "Khí nén của Giàn",
   "tentaworks.display_source.rig_air.air": "Khí nén",
@@ -233,8 +228,6 @@
   "tentaworks.stats.air_use.value": "%s%%",
   "tentaworks.stats.reach": "Tầm với:",
   "tentaworks.stats.reach.value": "%s khối",
-  "tentaworks.stats.strike_reach": "Tầm với đòn đánh:",
-  "tentaworks.stats.strike_reach.value": "%s khối",
   "tentaworks.stats.top_speed": "Tốc độ tối đa:",
   "tentaworks.stats.top_speed.value": "%s khối/giây"
 }

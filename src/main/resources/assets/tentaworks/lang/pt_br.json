@@ -146,11 +146,6 @@
   "tentaworks.configuration.speed": "Velocidade",
   "tentaworks.configuration.speed.max": "Velocidade máxima",
   "tentaworks.configuration.speed.max.tooltip": "Velocidade máxima do Aparato, blocos por segundo. Limita a Velocidade nos Ajustes do Aparato de cada jogador; Rapidez aumenta as duas no seu Aparato",
-  "tentaworks.configuration.strikeReach": "Alcance de Golpe",
-  "tentaworks.configuration.strikeReach.copper": "Alcance de Golpe do Cobre",
-  "tentaworks.configuration.strikeReach.copper.tooltip": "Alcance de Golpe de um Aparato de Cobre: até onde o Atuador bate ou usa em criaturas e jogadores, em blocos. Longo Alcance não soma a ele",
-  "tentaworks.configuration.strikeReach.netherite": "Alcance de Golpe da Netherita",
-  "tentaworks.configuration.strikeReach.netherite.tooltip": "Alcance de Golpe de um Aparato de Netherita: até onde o Atuador bate ou usa em criaturas e jogadores, em blocos. Longo Alcance não soma a ele",
   "tentaworks.configuration.title": "Octo Arms: Configuração",
   "tentaworks.display_source.rig_air": "Ar do Aparato",
   "tentaworks.display_source.rig_air.air": "Ar",
@@ -233,8 +228,6 @@
   "tentaworks.stats.air_use.value": "%s%%",
   "tentaworks.stats.reach": "Alcance:",
   "tentaworks.stats.reach.value": "%s blocos",
-  "tentaworks.stats.strike_reach": "Alcance de Golpe:",
-  "tentaworks.stats.strike_reach.value": "%s blocos",
   "tentaworks.stats.top_speed": "Velocidade máx.:",
   "tentaworks.stats.top_speed.value": "%s bl/s"
 }

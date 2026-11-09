@@ -48,8 +48,7 @@ import java.util.UUID;
 
 /**
  * The Right Actuator's Far Use, server side (adr/0007). While it may act ({@link #lifts}), transient modifiers lift the
- * wearer's block interaction range to the Reach and the entity interaction range to the Strike Reach, so vanilla's own click
- * paths reach that far; vanilla syncs both attributes to every client, so the wearer's crosshair matches. A target past arm's
+ * wearer's block and entity interaction ranges to the Rig's Reach, so vanilla's own click paths reach that far; vanilla syncs both attributes to every client, so the wearer's crosshair matches. A target past arm's
  * length ({@link #beyond}, the range without the lift) must also be in sight ({@link WorkSight}), may be a player only with
  * {@code farUse.players}, costs Air and is told to the clients ({@link FarUsePacket}).
  * <p>
@@ -59,7 +58,7 @@ import java.util.UUID;
  */
 public final class FarUse {
     public static final ResourceLocation REACH_ID = TentaworksIds.id(TentaworksIds.FAR_USE_REACH);
-    public static final ResourceLocation STRIKE_ID = TentaworksIds.id(TentaworksIds.FAR_USE_STRIKE);
+    public static final ResourceLocation ENTITY_ID = TentaworksIds.id(TentaworksIds.FAR_USE_ENTITY);
     public static final String NO_SIGHT = TentaworksLang.refusalKey(TentaworksLang.FAR_USE, "no_sight");
     public static final String PLAYERS = TentaworksLang.refusalKey(TentaworksLang.FAR_USE, "players");
     /** Ticks a {@link FarUsePacket} keeps the Right Actuator at its target. */
@@ -158,8 +157,9 @@ public final class FarUse {
 
     static void tick(ServerPlayer player) {
         boolean on = lifting(player);
-        lift(player.getAttribute(Attributes.BLOCK_INTERACTION_RANGE), REACH_ID, on ? TentacleRigItem.reach(player) : 0);
-        lift(player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE), STRIKE_ID, on ? Actuators.strikeReach(player) : 0);
+        double reach = on ? TentacleRigItem.reach(player) : 0;
+        lift(player.getAttribute(Attributes.BLOCK_INTERACTION_RANGE), REACH_ID, reach);
+        lift(player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE), ENTITY_ID, reach);
         keepMining(player, on);
     }
 
@@ -201,7 +201,7 @@ public final class FarUse {
     }
 
     private static Far entityFar(ServerPlayer player, Entity target) {
-        return far(player, Attributes.ENTITY_INTERACTION_RANGE, STRIKE_ID, target.getBoundingBox().distanceToSqr(player.getEyePosition()));
+        return far(player, Attributes.ENTITY_INTERACTION_RANGE, ENTITY_ID, target.getBoundingBox().distanceToSqr(player.getEyePosition()));
     }
 
     /**

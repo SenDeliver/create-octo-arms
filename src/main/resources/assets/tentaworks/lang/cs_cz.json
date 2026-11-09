@@ -146,11 +146,6 @@
   "tentaworks.configuration.speed": "Rychlost",
   "tentaworks.configuration.speed.max": "Max. rychlost",
   "tentaworks.configuration.speed.max.tooltip": "Maximální rychlost soupravy, bloky za sekundu. Omezuje rychlost v nastavení soupravy každého hráče; Hbitost na své soupravě zvyšuje obojí",
-  "tentaworks.configuration.strikeReach": "Dosah úderu",
-  "tentaworks.configuration.strikeReach.copper": "Dosah úderu měděné soupravy",
-  "tentaworks.configuration.strikeReach.copper.tooltip": "Dosah úderu měděné soupravy: jak daleko její aktuátor zasahuje stvoření a hráče nebo na ně používá předměty, bloky. Dlouhý dosah se k němu nepřičítá",
-  "tentaworks.configuration.strikeReach.netherite": "Dosah úderu netheritové soupravy",
-  "tentaworks.configuration.strikeReach.netherite.tooltip": "Dosah úderu netheritové soupravy: jak daleko její aktuátor zasahuje stvoření a hráče nebo na ně používá předměty, bloky. Dlouhý dosah se k němu nepřičítá",
   "tentaworks.configuration.title": "Octo Arms: Konfigurace",
   "tentaworks.display_source.rig_air": "Vzduch soupravy",
   "tentaworks.display_source.rig_air.air": "Vzduch",
@@ -233,8 +228,6 @@
   "tentaworks.stats.air_use.value": "%s %%",
   "tentaworks.stats.reach": "Dosah:",
   "tentaworks.stats.reach.value": "%s bl.",
-  "tentaworks.stats.strike_reach": "Dosah úderu:",
-  "tentaworks.stats.strike_reach.value": "%s bl.",
   "tentaworks.stats.top_speed": "Max. rychlost:",
   "tentaworks.stats.top_speed.value": "%s bl./s"
 }

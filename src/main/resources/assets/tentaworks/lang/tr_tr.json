@@ -146,11 +146,6 @@
   "tentaworks.configuration.speed": "Hız",
   "tentaworks.configuration.speed.max": "Azami Hız",
   "tentaworks.configuration.speed.max.tooltip": "Teçhizatın azami hızı, blok/sn. Her oyuncunun Teçhizat Ayarlarındaki Hızı sınırlar; Çeviklik kendi Teçhizatında ikisini de artırır",
-  "tentaworks.configuration.strikeReach": "Vuruş Erişimi",
-  "tentaworks.configuration.strikeReach.copper": "Bakır Vuruş Erişimi",
-  "tentaworks.configuration.strikeReach.copper.tooltip": "Bakır Teçhizatın Vuruş Erişimi: Aktüatörünün yaratıklara ve oyunculara vurabildiği veya onlar üzerinde kullanabildiği mesafe, blok. Uzun Erişim buna eklenmez",
-  "tentaworks.configuration.strikeReach.netherite": "Netherit Vuruş Erişimi",
-  "tentaworks.configuration.strikeReach.netherite.tooltip": "Netherit Teçhizatın Vuruş Erişimi: Aktüatörünün yaratıklara ve oyunculara vurabildiği veya onlar üzerinde kullanabildiği mesafe, blok. Uzun Erişim buna eklenmez",
   "tentaworks.configuration.title": "Octo Arms: Yapılandırma",
   "tentaworks.display_source.rig_air": "Teçhizat Havası",
   "tentaworks.display_source.rig_air.air": "Hava",
@@ -233,8 +228,6 @@
   "tentaworks.stats.air_use.value": "%%%s",
   "tentaworks.stats.reach": "Erişim:",
   "tentaworks.stats.reach.value": "%s blok",
-  "tentaworks.stats.strike_reach": "Vuruş Erişimi:",
-  "tentaworks.stats.strike_reach.value": "%s blok",
   "tentaworks.stats.top_speed": "Azami Hız:",
   "tentaworks.stats.top_speed.value": "%s blok/sn"
 }

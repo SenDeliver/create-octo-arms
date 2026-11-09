@@ -29,8 +29,8 @@ The wearer's state while at least two Tentacles have a Grip. Only Held positions
 _Avoid_: supported, anchored, stable
 
 **Reach**:
-How far from the wearer a Tentacle can place a Grip, and how far an Actuator can act. Fixed per tier (Copper shorter, Netherite longer).
-_Avoid_: range, length
+How far from the wearer a Tentacle can place a Grip, and how far an Actuator can act: Far Use on blocks, mobs and players alike, and Grab. Fixed per tier (Copper 5, Netherite 7 blocks, set in the Server Config), raised by Far Reach.
+_Avoid_: range, length, Strike Reach (removed before 2.0 shipped: mobs and blocks share one Reach)
 
 **Active**:
 The Rig is carrying the wearer: Tentacles are gripping and the wearer's own walking, jumping, gravity and fall damage are replaced by Tentacle movement. Toggled by a Double Jump.
@@ -98,12 +98,8 @@ Where the Actuators sit when they have nothing to do, Stowed or Active: rising f
 _Avoid_: idle pose, folded, parked
 
 **Far Use**:
-Any action of either hand (mining, placing, hitting, item use) on a target beyond the wearer's own arm's length but within Reach. The Right Actuator performs it at its tip with that hand's item; with an Extendo Grip in hand it idles and the Rig adds no reach; within arm's length the wearer's hand does it and the Actuator idles. Blocks are reached at full Reach. Mobs and players are reached at the shorter Strike Reach, with any weapon or tool. Drops and XP from a block mined by Far Use fly to the wearer. Beyond arm's length the server also checks sight from the wearer's eye to the target (the Grip sight rule) before it accepts the action, and refuses the rest.
+Any action of either hand (mining, placing, hitting, item use) on a target beyond the wearer's own arm's length but within Reach. The Right Actuator performs it at its tip with that hand's item; with an Extendo Grip in hand it idles and the Rig adds no reach; within arm's length the wearer's hand does it and the Actuator idles. Blocks, mobs and players are all reached at the full Reach, with any item, weapon or tool. Drops and XP from a block mined by Far Use fly to the wearer. Beyond arm's length the server also checks sight from the wearer's eye to the target (the Grip sight rule) before it accepts the action, and refuses the rest.
 _Avoid_: extended reach, long arm, reach mode
-
-**Strike Reach**:
-How far the Right Actuator hits or uses on a mob or player: per tier (Copper 3.5, Netherite 5 blocks), set in the Server Config, not raised by Far Reach. Shorter than the Reach for blocks, so a wearer still outranges a zombie but not by a whole room.
-_Avoid_: entity reach, melee range, attack range
 
 **Grab**:
 The Grab key (default V, rebindable) with an empty main hand on a mob or Ship block under the crosshair within Reach, in sight of the wearer's body as a Grip must be: the Left Actuator takes hold and keeps the target at its tip, low on the wearer's left and out of the crosshair. The wearer's own clicks pass through a held target: attack always Throws, use always reaches the world. Use and sneak keep their vanilla meanings, and Shift and Space keep moving the wearer down and up while Active. Any living mob but never a player and never a boss (the Ender Dragon, the Wither, the Warden, the loader's bosses tag collected in `tentaworks:bosses`, anything over 100 max health), nothing riding or ridden, nothing already held by another wearer or leashed to anyone else, and another player's tamed, owned or leashed animal only if the Server Config allows it. A Grab asks the loader's entity-interaction event first, so claim and protection mods can refuse it. A refused Grab says why in one action-bar line (boss, owned, too heavy, no Air, out of sight). Blocks are never Grabbed; a Ship is (see Ship Grab). The held target is swept to the tip with block collision, so it never passes a wall, a pane or a door; a target that cannot follow for a moment is set down at its last free spot. While holding, the Grab key again sets the target down where it is and attack Throws it from the tip along the camera; use stays free, so doors and chests still work with a mob in the other Actuator. Stowing, Setting Down, a Ride, a glide or Falling do not end a hold. The hold ends, from one place, only when the wearer stops being there or the Actuators go limp: Crawl, death, logout, taking the Rig off, the wearer or the target changing dimension, the target gone or out of Reach, or no Air left; the target is set down where it is, awake again. A held mob is Pinned: no attacks, no fuse, no spells or shots, it only squirms. Set down, it stays calm for one second (a Creeper's fuse reset) and is then itself again; Thrown, it wakes at once. A held mob can be sheared, milked, named, saddled or leashed like any mob, and set down over a seat, boat or minecart it takes the seat. While the crosshair rests on something grabbable in Reach, the Left Actuator uncurls and points at it. A light target (up to 1.5 blocks wide and 2 tall: zombie, villager, cow, spider) takes the Left Actuator alone; a heavy one (anything bigger: Iron Golem, Ravager, Horse, Enderman, Ghast, every Ship) takes both, Far Use pauses, and walking and Rig Speed drop to 60% while it is held (Rides and glides unaffected).
@@ -166,5 +162,5 @@ A Rig wears like armor but never breaks (elytra-style): at 1 durability it can't
 _Avoid_: upgrades, modifiers
 
 **Server Config**:
-Admin-set caps per tier: Reach, Strike Reach, top Speed, Air costs, throw speed, Ship mass cap and enchantment strengths; also whether Ships are Grips (`ships.grip`), whether Ships can be Grabbed, whether Far Use may hit players and whether others' pets can be Grabbed. Rig Settings are clamped to them.
+Admin-set caps per tier: Reach, top Speed, Air costs, throw speed, Ship mass cap and enchantment strengths; also whether Ships are Grips (`ships.grip`), whether Ships can be Grabbed, whether Far Use may hit players and whether others' pets can be Grabbed. Rig Settings are clamped to them.
 _Avoid_: balance file, limits

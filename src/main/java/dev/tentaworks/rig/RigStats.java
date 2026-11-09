@@ -56,7 +56,7 @@ public final class RigStats {
         return String.format(Locale.ROOT, "%.1f", v);
     }
 
-    /** Reach, top Speed, (when not 100 %) Air use, and Strike Reach when the Actuators are fitted, of a Rig stack. */
+    /** Reach, top Speed, (when not 100 %) Air use, and a line when the Actuators are fitted, of a Rig stack. */
     public static void addRigLines(ItemStack rig, List<Component> out, String indent) {
         if (!(rig.getItem() instanceof TentacleRigItem item)) return;
         out.add(line(indent, "reach", num(item.reach(rig))));
@@ -64,7 +64,6 @@ public final class RigStats {
         int use = (int) Math.round(airUse(rig) * 100);
         if (use != 100) out.add(line(indent, "air_use", use));
         if (!Actuators.fitted(rig)) return;
-        out.add(line(indent, "strike_reach", num(Actuators.strikeReach(rig))));
         out.add(Component.literal(indent).append(Component.translatable("tentaworks.stats.actuators").withStyle(ChatFormatting.GOLD)));
     }
 

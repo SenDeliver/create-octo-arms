@@ -46,7 +46,7 @@ def refused_note(gt):
     return any(t == NO_SIGHT and 0 <= g - gt <= 5 for g, t in overlay)
 
 print('== Setup')
-want = {'z1': (11005.3, 30.5), 'z2': (11005.3, 40.5), 'z3': (11003.5, 60.5), 'z4': (11104.05, 10.5), 'z5': (11105.4, 20.5), 'g1': (11003.5, 50.5)}
+want = {'z1': (11005.3, 30.5), 'z2': (11005.3, 40.5), 'z3': (11003.5, 60.5), 'z4': (11104.05, 10.5), 'z5': (11105.4, 20.5), 'z6': (11108.3, 40.5), 'g1': (11003.5, 50.5)}
 ids = {k: mob(*v) for k, v in want.items()}
 for k, i in ids.items():
     check(f'[setup] {k} spawned', i is not None, f'id {i} {mobs.get(i, ("-",))[0]}')
@@ -55,8 +55,8 @@ check('[setup] Netherite Rig worn and fitted', n1a.get('fitted') and n1a.get('mo
 if not all(ids.values()) or not n1a:
     print('RESULT FAIL setup'); sys.exit(0)
 
-print('== Netherite (Reach 7, Strike Reach 5)')
-check('N lift 2.5 blocks, 2.0 mobs Stowed', n1a['lift'] == (2.5, 2.0) and n1a['state'] == 'STOWED', f"lift {n1a['lift']} state {n1a['state']}")
+print('== Netherite (Reach 7)')
+check('N lift 2.5 blocks, 4.0 mobs Stowed', n1a['lift'] == (2.5, 4.0) and n1a['state'] == 'STOWED', f"lift {n1a['lift']} state {n1a['state']}")
 x = sfar('lclick', '11007,-59,0')
 check('N1 far mine at 6.5 accepted', x and x[0]['far'] == 'FAR' and not x[0]['canceled'] and sfar('break', '11007,-59,0') and last_probe('11007,-59,0') == 'minecraft:air',
       f"{x[:1]} probe {last_probe('11007,-59,0')}")
@@ -81,7 +81,7 @@ check('N4 Active far mine', spos['n4a']['state'] == 'ACTIVE' and x and x[0]['far
 check('N5 Setting off: no lift, the far dig stays vanilla-refused', spos['n5off']['lift'] == (0, 0) and spos['n5off']['mode'] == 'off'
       and not sfar('break', '11007,-59,22') and last_probe('11007,-59,22') == 'minecraft:dirt', f"lift {spos['n5off']['lift']} probe {last_probe('11007,-59,22')}")
 check('N5 Rig out: no lift Stowed, lift Active', spos['n5rs']['lift'] == (0, 0) and spos['n5rs']['state'] == 'STOWED'
-      and spos['n5ra']['lift'] == (2.5, 2.0) and spos['n5ra']['state'] == 'ACTIVE', f"Stowed {spos['n5rs']['lift']}, Active {spos['n5ra']['lift']}")
+      and spos['n5ra']['lift'] == (2.5, 4.0) and spos['n5ra']['state'] == 'ACTIVE', f"Stowed {spos['n5rs']['lift']}, Active {spos['n5ra']['lift']}")
 check('N6 Extendo Grip: no lift (Create lifts the range itself)', spos['n6']['lift'] == (0, 0) and cact.get('n6', {}).get('brange', 0) > 4.5,
       f"lift {spos['n6']['lift']}, client block range {cact.get('n6', {}).get('brange')}")
 x = sfar('attack', ids['z1'])
@@ -91,14 +91,14 @@ x = sfar('attack', ids['z2'])
 h = [e for e in hurt if e['id'] == ids['z2'] and e['by'] == 'Dev']
 check('N8 far hit out of sight refused (cheat path)', x and not x[0]['sight'] and x[0]['canceled'] and not h and refused_note(x[0]['gt']), f"{x[:1]} hurt {h}")
 check('N9 heavy hold pauses the lift', spos['n9h']['heavy'] and spos['n9h']['lift'] == (0, 0) and abs(spos['n9h']['mspd'] - 0.06) < 1e-4
-      and spos['n9hoff']['lift'] == (2.5, 2.0), f"held {spos['n9h']['held']} heavy {spos['n9h']['heavy']} lift {spos['n9h']['lift']} mspd {spos['n9h']['mspd']}, after {spos['n9hoff']['lift']}")
-check('N9 light hold keeps the lift', spos['n9l']['held'] >= 0 and not spos['n9l']['heavy'] and spos['n9l']['lift'] == (2.5, 2.0), f"{spos['n9l']}")
+      and spos['n9hoff']['lift'] == (2.5, 4.0), f"held {spos['n9h']['held']} heavy {spos['n9h']['heavy']} lift {spos['n9h']['lift']} mspd {spos['n9h']['mspd']}, after {spos['n9hoff']['lift']}")
+check('N9 light hold keeps the lift', spos['n9l']['held'] >= 0 and not spos['n9l']['heavy'] and spos['n9l']['lift'] == (2.5, 4.0), f"{spos['n9l']}")
 x = [f for f in far if f['kind'] == 'interact' and f['type'] in ('minecraft:iron_golem', 'minecraft:husk')]
 check('N9 Grab claim probe is no Far Use', x and all(f['asking'] for f in x), f'{len(x)} probe interacts, asking {[f["asking"] for f in x]}')
 
-print('== Copper (Reach 6, Strike Reach 3.5)')
+print('== Copper (Reach 6, blocks and mobs)')
 c1 = spos['c1a']
-check('C lift 1.5 blocks, 0.5 mobs', c1['lift'] == (1.5, 0.5) and c1['fitted'], f"lift {c1['lift']}")
+check('C lift 1.5 blocks, 3.0 mobs', c1['lift'] == (1.5, 3.0) and c1['fitted'], f"lift {c1['lift']}")
 x = sfar('lclick', '11106,-59,0')
 d = drops.get('11106,-59,0')
 check('C1 far mine at 5.5', x and x[0]['far'] == 'FAR' and not x[0]['canceled'] and last_probe('11106,-59,0') == 'minecraft:air' and d and d['far'] <= 0.6,
@@ -110,11 +110,15 @@ check('C2 behind glass panes refused', x and not x[0]['sight'] and x[0]['cancele
       f"{x[:1]} probe {last_probe('11106,-59,4')}")
 x = sfar('attack', ids['z4'])
 h = [e for e in hurt if e['id'] == ids['z4'] and e['by'] == 'Dev']
-check('C3 hit at 3.25 lands (past the 3.0 arm, within 3.5)', x and x[0]['far'] == 'FAR' and 3.0 < x[0]['dist'] <= 3.5 and not x[0]['canceled'] and len(h) == 1,
+check('C3 hit at 3.25 lands (past the 3.0 arm)', x and x[0]['far'] == 'FAR' and 3.0 < x[0]['dist'] <= 3.5 and not x[0]['canceled'] and len(h) == 1,
       f"{x[:1]} hurt {h}")
+x = sfar('attack', ids['z5'])
 h = [e for e in hurt if e['id'] == ids['z5'] and e['by'] == 'Dev']
-check('C4 mob at 4.6: crosshair misses, cheat attack refused, no damage', chit.get('c4') == '-' and not h and not sfar('attack', ids['z5']),
-      f"crosshair entity {chit.get('c4')}, hurt {h}, SFAR {sfar('attack', ids['z5'])}")
+check('C4 mob at 4.6 lands (mobs at the full Reach)', chit.get('c4') == ids['z5'] and x and x[0]['far'] == 'FAR' and not x[0]['canceled'] and len(h) == 1,
+      f"crosshair entity {chit.get('c4')}, {x[:1]} hurt {h}")
+h = [e for e in hurt if e['id'] == ids['z6'] and e['by'] == 'Dev']
+check('C6 mob at 7.5 (past Reach + 1): crosshair misses, cheat attack vanilla-refused, no damage', chit.get('c6') == '-' and not h and not sfar('attack', ids['z6']),
+      f"crosshair entity {chit.get('c6')}, hurt {h}, SFAR {sfar('attack', ids['z6'])}")
 x = sfar('rclick', '11106,-59,30')
 check('C5 place at distance', x and x[0]['far'] == 'FAR' and not x[0]['canceled'] and last_probe('11105,-59,30') == 'minecraft:dirt',
       f"{x[:1]} probe {last_probe('11105,-59,30')}")

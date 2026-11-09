@@ -206,7 +206,7 @@ public final class DevActuators {
         Vec3 eye = p.getEyePosition();
         double d2 = target.getBoundingBox().distanceToSqr(eye);
         AttributeInstance range = p.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
-        double lift = lift(range, FarUse.STRIKE_ID);
+        double lift = lift(range, FarUse.ENTITY_ID);
         LOG.info("SFAR gt={} {} kind={} at={} type={} dist={} range={} lift={} far={} sight={} asking={} canceled={}", p.level().getGameTime(), p.getName().getString(), kind,
                 target.getId(), type(target), f3(Math.sqrt(d2)), f3(range == null ? 0 : range.getValue()), f3(lift),
                 lift > 0 ? FarUse.far(d2, range.getValue() - lift, range.getValue()) : FarUse.Far.NEAR,
@@ -267,7 +267,7 @@ public final class DevActuators {
         BlockPos ship = Grab.ship(p);
         AttributeInstance speed = p.getAttribute(Attributes.MOVEMENT_SPEED);
         return String.format(Locale.ROOT, " lift=%.3f,%.3f gheld=%d gheavy=%b gship=%s gcentre=%s gmass=%.1f adebt=%.4f mspd=%.4f xp=%d fitted=%b deft=%b farmode=%s",
-                lift(p.getAttribute(Attributes.BLOCK_INTERACTION_RANGE), FarUse.REACH_ID), lift(p.getAttribute(Attributes.ENTITY_INTERACTION_RANGE), FarUse.STRIKE_ID),
+                lift(p.getAttribute(Attributes.BLOCK_INTERACTION_RANGE), FarUse.REACH_ID), lift(p.getAttribute(Attributes.ENTITY_INTERACTION_RANGE), FarUse.ENTITY_ID),
                 held == null ? -1 : held.getId(), Grab.heavy(p), ship == null ? "-" : ship.toShortString().replace(" ", ""), vec(Grab.centre(p)), Grab.shipMass(p),
                 debt(p), speed == null ? 0 : speed.getValue(), p.totalExperience, Actuators.fitted(rig), RigEnchants.deft(rig),
                 rig.isEmpty() ? "-" : RigSettings.of(rig).farUse().getSerializedName());

@@ -146,11 +146,6 @@
   "tentaworks.configuration.speed": "pǝǝdS",
   "tentaworks.configuration.speed.max": "pǝǝdS do⟘",
   "tentaworks.configuration.speed.max.tooltip": "bıᴚ sʇı uo ɥʇoq sǝsıɐɹ ʇɟıʍS ؛sbuıʇʇǝS bıᴚ s,ɹǝʎɐןd ʎɹǝʌǝ uı pǝǝdS ǝɥʇ sdɐƆ ˙puoɔǝs ɹǝd sʞɔoןq 'pǝǝds bıᴚ do⟘",
-  "tentaworks.configuration.strikeReach": "ɥɔɐǝᴚ ǝʞıɹʇS",
-  "tentaworks.configuration.strikeReach.copper": "ɥɔɐǝᴚ ǝʞıɹʇS ɹǝddoƆ",
-  "tentaworks.configuration.strikeReach.copper.tooltip": "ʇı oʇ ppɐ ʇou sǝop ɥɔɐǝᴚ ɹɐℲ ˙sʞɔoןq 'sɹǝʎɐןd puɐ sqoɯ uo sǝsn ɹo sʇıɥ ɹoʇɐnʇɔⱯ sʇı ɹɐɟ ʍoɥ :bıᴚ ɹǝddoƆ ɐ ɟo ɥɔɐǝᴚ ǝʞıɹʇS",
-  "tentaworks.configuration.strikeReach.netherite": "ɥɔɐǝᴚ ǝʞıɹʇS ǝʇıɹǝɥʇǝN",
-  "tentaworks.configuration.strikeReach.netherite.tooltip": "ʇı oʇ ppɐ ʇou sǝop ɥɔɐǝᴚ ɹɐℲ ˙sʞɔoןq 'sɹǝʎɐןd puɐ sqoɯ uo sǝsn ɹo sʇıɥ ɹoʇɐnʇɔⱯ sʇı ɹɐɟ ʍoɥ :bıᴚ ǝʇıɹǝɥʇǝN ɐ ɟo ɥɔɐǝᴚ ǝʞıɹʇS",
   "tentaworks.configuration.title": "bıɟuoƆ :sɯɹⱯ oʇɔO",
   "tentaworks.display_source.rig_air": "ɹıⱯ bıᴚ",
   "tentaworks.display_source.rig_air.air": "ɹıⱯ",
@@ -233,8 +228,6 @@
   "tentaworks.stats.air_use.value": "%s%%",
   "tentaworks.stats.reach": ":ɥɔɐǝᴚ",
   "tentaworks.stats.reach.value": "sʞɔoןq %s",
-  "tentaworks.stats.strike_reach": ":ɥɔɐǝᴚ ǝʞıɹʇS",
-  "tentaworks.stats.strike_reach.value": "sʞɔoןq %s",
   "tentaworks.stats.top_speed": ":pǝǝdS do⟘",
   "tentaworks.stats.top_speed.value": "s/q %s"
 }

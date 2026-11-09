@@ -5,12 +5,13 @@
 # usage: [TW_SPEED_MAX=20] [TW_REACH_COPPER=N] [TW_REACH_NETHERITE=N] [TW_BACK_SLOT=false] [TW_CLIENT_WALK=true] [TW_CLIENT_FORWARD=flat] [TIMELINE=<rcon file run after Dev joins>] [SCRIPT2=<client script for Dev2>] [GAMEMODE=creative] [ANIMALS=true] tools/run_split.sh <rcon scene> <client script> <log prefix>
 cd "$(dirname "$0")/.."
 SCENE=$1; SCRIPT=$2; OUT=$3
+TW_REACH_COPPER=${TW_REACH_COPPER:-4}
 mkdir -p "$(dirname "$OUT")"
 for i in $(seq 1 480); do pgrep -f "bootstraplauncher.*$PWD/build/moddev" > /dev/null || break; sleep 0.25; done
 if pgrep -f "bootstraplauncher.*$PWD/build/moddev" > /dev/null; then echo "a dev Minecraft of this repo is already running; not starting"; exit 1; fi
 tools/setup_run.sh > /dev/null
 rm -rf run/server/world run/signal run2/signal
-# TW_SPEED_MAX (e.g. 20), TW_REACH_COPPER / TW_REACH_NETHERITE, TW_BACK_SLOT (true|false): this run's world overrides those keys (world/serverconfig beats config/).
+# TW_SPEED_MAX (e.g. 20), TW_REACH_COPPER (default 4, the 1.x Reach the movement suites are built on) / TW_REACH_NETHERITE, TW_BACK_SLOT (true|false): this run's world overrides those keys (world/serverconfig beats config/).
 # A [curios] section missing from an older config/ copy is appended (NeoForge fills the other keys with defaults).
 if [ -n "$TW_SPEED_MAX$TW_REACH_COPPER$TW_REACH_NETHERITE$TW_BACK_SLOT" ] && [ -f run/server/config/tentaworks-server.toml ]; then
   mkdir -p run/server/world/serverconfig

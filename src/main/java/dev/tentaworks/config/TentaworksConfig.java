@@ -16,8 +16,6 @@ public final class TentaworksConfig {
     public static final ModConfigSpec.DoubleValue AIR_FAR_USE;
     public static final ModConfigSpec.DoubleValue AIR_GRAB;
     public static final ModConfigSpec.DoubleValue AIR_THROW;
-    public static final ModConfigSpec.DoubleValue STRIKE_REACH_COPPER;
-    public static final ModConfigSpec.DoubleValue STRIKE_REACH_NETHERITE;
     public static final ModConfigSpec.BooleanValue FAR_USE_PLAYERS;
     public static final ModConfigSpec.BooleanValue GRAB_TAMED_OTHERS;
     public static final ModConfigSpec.BooleanValue GRAB_SHIPS;
@@ -40,7 +38,7 @@ public final class TentaworksConfig {
         String t = TentaworksIds.MOD_ID + ".configuration.";
         ModConfigSpec.Builder b = new ModConfigSpec.Builder();
         b.translation(t + "reach").push("reach");
-        REACH_COPPER = b.comment("Grip Reach of a Copper Rig, blocks. Far Reach adds to it, up to 16 in total").translation(t + "reach.copper").defineInRange("copper", 4.0, 1.0, 16.0);
+        REACH_COPPER = b.comment("Grip Reach of a Copper Rig, blocks. Far Reach adds to it, up to 16 in total").translation(t + "reach.copper").defineInRange("copper", 5.0, 1.0, 16.0);
         REACH_NETHERITE = b.comment("Grip Reach of a Netherite Rig, blocks. Far Reach adds to it, up to 16 in total").translation(t + "reach.netherite").defineInRange("netherite", 7.0, 1.0, 16.0);
         b.pop();
         b.translation(t + "speed").push("speed");
@@ -55,10 +53,6 @@ public final class TentaworksConfig {
         AIR_FAR_USE = b.comment("Copper Rig: Air per Far Use (one block or mob action past arm's length)").translation(t + "air.farUse").defineInRange("farUse", 0.5, 0.0, 50.0);
         AIR_GRAB = b.comment("Copper Rig holding a Grab: ticks per 1 Air").translation(t + "air.grab").defineInRange("grab", 40.0, 1.0, 72000.0);
         AIR_THROW = b.comment("Copper Rig: Air per Throw").translation(t + "air.throw").defineInRange("throw", 10.0, 0.0, 500.0);
-        b.pop();
-        b.translation(t + "strikeReach").push("strikeReach");
-        STRIKE_REACH_COPPER = b.comment("Strike Reach of a Copper Rig: how far its Actuator hits or uses on mobs and players, blocks. Far Reach does not add to it").translation(t + "strikeReach.copper").defineInRange("copper", 3.5, 1.0, 16.0);
-        STRIKE_REACH_NETHERITE = b.comment("Strike Reach of a Netherite Rig: how far its Actuator hits or uses on mobs and players, blocks. Far Reach does not add to it").translation(t + "strikeReach.netherite").defineInRange("netherite", 5.0, 1.0, 16.0);
         b.pop();
         b.translation(t + "farUse").push("farUse");
         FAR_USE_PLAYERS = b.comment("Far Use may hit and use on players (the PvP rule still applies)").translation(t + "farUse.players").define("players", true);

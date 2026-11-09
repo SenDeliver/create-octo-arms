@@ -146,11 +146,6 @@
   "tentaworks.configuration.speed": "속도",
   "tentaworks.configuration.speed.max": "최고 속도",
   "tentaworks.configuration.speed.max.tooltip": "장비의 최고 속도, 블록/초. 모든 플레이어의 장비 설정에 있는 속도의 상한입니다. 신속은 해당 장비에서 둘 다 올립니다",
-  "tentaworks.configuration.strikeReach": "타격 도달 거리",
-  "tentaworks.configuration.strikeReach.copper": "구리 타격 도달 거리",
-  "tentaworks.configuration.strikeReach.copper.tooltip": "구리 장비의 타격 도달 거리: 액추에이터가 몹과 플레이어를 때리거나 사용할 수 있는 거리, 블록. 멀리 뻗기는 더해지지 않습니다",
-  "tentaworks.configuration.strikeReach.netherite": "네더라이트 타격 도달 거리",
-  "tentaworks.configuration.strikeReach.netherite.tooltip": "네더라이트 장비의 타격 도달 거리: 액추에이터가 몹과 플레이어를 때리거나 사용할 수 있는 거리, 블록. 멀리 뻗기는 더해지지 않습니다",
   "tentaworks.configuration.title": "Octo Arms: 설정",
   "tentaworks.display_source.rig_air": "장비 공기량",
   "tentaworks.display_source.rig_air.air": "공기",
@@ -233,8 +228,6 @@
   "tentaworks.stats.air_use.value": "%s%%",
   "tentaworks.stats.reach": "도달 거리:",
   "tentaworks.stats.reach.value": "%s블록",
-  "tentaworks.stats.strike_reach": "타격 도달 거리:",
-  "tentaworks.stats.strike_reach.value": "%s블록",
   "tentaworks.stats.top_speed": "최고 속도:",
   "tentaworks.stats.top_speed.value": "%s블록/초"
 }

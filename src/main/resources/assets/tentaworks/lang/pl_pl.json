@@ -146,11 +146,6 @@
   "tentaworks.configuration.speed": "Prędkość",
   "tentaworks.configuration.speed.max": "Maks. prędkość",
   "tentaworks.configuration.speed.max.tooltip": "Maksymalna prędkość zestawu w blokach na sekundę. Ogranicza prędkość w ustawieniach zestawu każdego gracza; Zwinność podnosi obie wartości na swoim zestawie",
-  "tentaworks.configuration.strikeReach": "Zasięg ciosu",
-  "tentaworks.configuration.strikeReach.copper": "Zasięg ciosu miedzianego zestawu",
-  "tentaworks.configuration.strikeReach.copper.tooltip": "Zasięg ciosu miedzianego zestawu: jak daleko jego siłownik atakuje stworzenia i graczy lub używa na nich przedmiotów, w blokach. Daleki zasięg go nie zwiększa",
-  "tentaworks.configuration.strikeReach.netherite": "Zasięg ciosu netherytowego zestawu",
-  "tentaworks.configuration.strikeReach.netherite.tooltip": "Zasięg ciosu netherytowego zestawu: jak daleko jego siłownik atakuje stworzenia i graczy lub używa na nich przedmiotów, w blokach. Daleki zasięg go nie zwiększa",
   "tentaworks.configuration.title": "Octo Arms: konfiguracja",
   "tentaworks.display_source.rig_air": "Powietrze zestawu",
   "tentaworks.display_source.rig_air.air": "Powietrze",
@@ -233,8 +228,6 @@
   "tentaworks.stats.air_use.value": "%s%%",
   "tentaworks.stats.reach": "Zasięg:",
   "tentaworks.stats.reach.value": "%s bl.",
-  "tentaworks.stats.strike_reach": "Zasięg ciosu:",
-  "tentaworks.stats.strike_reach.value": "%s bl.",
   "tentaworks.stats.top_speed": "Maks. prędkość:",
   "tentaworks.stats.top_speed.value": "%s bl./s"
 }

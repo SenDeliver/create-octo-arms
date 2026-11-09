@@ -146,11 +146,6 @@
   "tentaworks.configuration.speed": "Velocidad",
   "tentaworks.configuration.speed.max": "Velocidad máxima",
   "tentaworks.configuration.speed.max.tooltip": "Velocidad máxima del equipo, en bloques por segundo. Limita la velocidad en los ajustes del equipo de cada jugador; Rapidez sube ambas en su equipo",
-  "tentaworks.configuration.strikeReach": "Alcance de golpe",
-  "tentaworks.configuration.strikeReach.copper": "Alcance de golpe de cobre",
-  "tentaworks.configuration.strikeReach.copper.tooltip": "Alcance de golpe de un equipo de cobre: hasta dónde su actuador golpea o interactúa con criaturas y jugadores, en bloques. Largo alcance no lo aumenta",
-  "tentaworks.configuration.strikeReach.netherite": "Alcance de golpe de netherita",
-  "tentaworks.configuration.strikeReach.netherite.tooltip": "Alcance de golpe de un equipo de netherita: hasta dónde su actuador golpea o interactúa con criaturas y jugadores, en bloques. Largo alcance no lo aumenta",
   "tentaworks.configuration.title": "Octo Arms: configuración",
   "tentaworks.display_source.rig_air": "Aire del equipo",
   "tentaworks.display_source.rig_air.air": "Aire",
@@ -233,8 +228,6 @@
   "tentaworks.stats.air_use.value": "%s%%",
   "tentaworks.stats.reach": "Alcance:",
   "tentaworks.stats.reach.value": "%s bloques",
-  "tentaworks.stats.strike_reach": "Alcance de golpe:",
-  "tentaworks.stats.strike_reach.value": "%s bloques",
   "tentaworks.stats.top_speed": "Vel. máxima:",
   "tentaworks.stats.top_speed.value": "%s bl/s"
 }

@@ -146,11 +146,6 @@
   "tentaworks.configuration.speed": "Швидкість",
   "tentaworks.configuration.speed.max": "Максимальна швидкість",
   "tentaworks.configuration.speed.max.tooltip": "Максимальна швидкість апарата, блоків за секунду. Обмежує швидкість у параметрах апарата кожного гравця; Прудкість підвищує обидві на своєму апараті",
-  "tentaworks.configuration.strikeReach": "Дальність удару",
-  "tentaworks.configuration.strikeReach.copper": "Дальність удару мідного апарата",
-  "tentaworks.configuration.strikeReach.copper.tooltip": "Дальність удару мідного апарата: як далеко його маніпулятор б’є мобів і гравців або використовує на них предмети, блоків. Далекосяжність її не збільшує",
-  "tentaworks.configuration.strikeReach.netherite": "Дальність удару незеритового апарата",
-  "tentaworks.configuration.strikeReach.netherite.tooltip": "Дальність удару незеритового апарата: як далеко його маніпулятор б’є мобів і гравців або використовує на них предмети, блоків. Далекосяжність її не збільшує",
   "tentaworks.configuration.title": "Octo Arms: Налаштування",
   "tentaworks.display_source.rig_air": "Повітря апарата",
   "tentaworks.display_source.rig_air.air": "Повітря",
@@ -233,8 +228,6 @@
   "tentaworks.stats.air_use.value": "%s%%",
   "tentaworks.stats.reach": "Дальність:",
   "tentaworks.stats.reach.value": "%s бл.",
-  "tentaworks.stats.strike_reach": "Дальність удару:",
-  "tentaworks.stats.strike_reach.value": "%s бл.",
   "tentaworks.stats.top_speed": "Макс. швидкість:",
   "tentaworks.stats.top_speed.value": "%s бл/с"
 }

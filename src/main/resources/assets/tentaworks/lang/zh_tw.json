@@ -146,11 +146,6 @@
   "tentaworks.configuration.speed": "速度",
   "tentaworks.configuration.speed.max": "最高速度",
   "tentaworks.configuration.speed.max.tooltip": "背架的最高速度，單位為格/秒。限制每位玩家背架設定中的速度；迅捷會同時提高該背架的這兩項數值",
-  "tentaworks.configuration.strikeReach": "攻擊臂展",
-  "tentaworks.configuration.strikeReach.copper": "銅製背架攻擊臂展",
-  "tentaworks.configuration.strikeReach.copper.tooltip": "銅製背架的攻擊臂展：其致動臂能對生物與玩家攻擊或使用的距離，單位為格。長臂不會增加此值",
-  "tentaworks.configuration.strikeReach.netherite": "獄髓背架攻擊臂展",
-  "tentaworks.configuration.strikeReach.netherite.tooltip": "獄髓背架的攻擊臂展：其致動臂能對生物與玩家攻擊或使用的距離，單位為格。長臂不會增加此值",
   "tentaworks.configuration.title": "Octo Arms：設定",
   "tentaworks.display_source.rig_air": "背架空氣",
   "tentaworks.display_source.rig_air.air": "空氣",
@@ -233,8 +228,6 @@
   "tentaworks.stats.air_use.value": "%s%%",
   "tentaworks.stats.reach": "臂展：",
   "tentaworks.stats.reach.value": "%s 格",
-  "tentaworks.stats.strike_reach": "攻擊臂展：",
-  "tentaworks.stats.strike_reach.value": "%s 格",
   "tentaworks.stats.top_speed": "最高速度：",
   "tentaworks.stats.top_speed.value": "%s 格/秒"
 }

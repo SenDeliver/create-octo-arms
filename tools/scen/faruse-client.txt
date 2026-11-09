@@ -1,4 +1,4 @@
-# Far Use: Right Actuator lends its Reach (blocks) and Strike Reach (mobs). TIMELINE faruse-timeline.txt, TW_REACH_COPPER=6
+# Far Use: Right Actuator lends its Reach (blocks, mobs and players). TIMELINE faruse-timeline.txt, TW_REACH_COPPER=6
 trace on
 hud on
 view first
@@ -135,7 +135,7 @@ wait 3
 dig 11106 -59 4 c2 40
 wait 10
 signal c2done
-# C3 hit at 3.25 (Strike Reach 3.5); C4 at 4.6: the crosshair misses, a cheat attack is vanilla-refused
+# C3 hit at 3.25, C4 at 4.6: both within Reach 6
 await c3
 lookate minecraft:husk
 wait 3
@@ -148,8 +148,6 @@ lookate minecraft:husk
 wait 3
 hit c4
 key key.mouse.left
-wait 5
-attack minecraft:husk
 wait 10
 signal c4done
 # C5 place dirt against the west face of a stone at 5.5
@@ -160,5 +158,15 @@ hit c5
 key key.mouse.right
 wait 10
 signal c5done
+# C6 at 7.5, past Reach 6 + 1: the crosshair misses, a cheat attack is vanilla-refused
+await c6
+lookate minecraft:husk
+wait 3
+hit c6
+key key.mouse.left
+wait 5
+attack minecraft:husk
+wait 10
+signal c6done
 wait 10
 quit

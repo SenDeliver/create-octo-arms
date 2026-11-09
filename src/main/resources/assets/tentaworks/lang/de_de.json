@@ -146,11 +146,6 @@
   "tentaworks.configuration.speed": "Tempo",
   "tentaworks.configuration.speed.max": "Höchsttempo",
   "tentaworks.configuration.speed.max.tooltip": "Höchsttempo des Rigs, Blöcke pro Sekunde. Begrenzt das Tempo in den Rig-Einstellungen jedes Spielers; Flinkheit erhöht beides bei ihrem Rig",
-  "tentaworks.configuration.strikeReach": "Schlagreichweite",
-  "tentaworks.configuration.strikeReach.copper": "Kupfer-Schlagreichweite",
-  "tentaworks.configuration.strikeReach.copper.tooltip": "Schlagreichweite eines Kupfer-Rigs: wie weit sein Aktuator Kreaturen und Spieler schlägt oder auf ihnen benutzt, Blöcke. Weitgriff kommt nicht hinzu",
-  "tentaworks.configuration.strikeReach.netherite": "Netherit-Schlagreichweite",
-  "tentaworks.configuration.strikeReach.netherite.tooltip": "Schlagreichweite eines Netherit-Rigs: wie weit sein Aktuator Kreaturen und Spieler schlägt oder auf ihnen benutzt, Blöcke. Weitgriff kommt nicht hinzu",
   "tentaworks.configuration.title": "Octo Arms: Konfiguration",
   "tentaworks.display_source.rig_air": "Rig-Luft",
   "tentaworks.display_source.rig_air.air": "Luft",
@@ -233,8 +228,6 @@
   "tentaworks.stats.air_use.value": "%s %%",
   "tentaworks.stats.reach": "Reichweite:",
   "tentaworks.stats.reach.value": "%s Blöcke",
-  "tentaworks.stats.strike_reach": "Schlagreichweite:",
-  "tentaworks.stats.strike_reach.value": "%s Blöcke",
   "tentaworks.stats.top_speed": "Höchsttempo:",
   "tentaworks.stats.top_speed.value": "%s Bl./s"
 }

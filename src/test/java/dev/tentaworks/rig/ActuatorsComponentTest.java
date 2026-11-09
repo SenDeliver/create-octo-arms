@@ -52,10 +52,11 @@ class ActuatorsComponentTest {
     }
 
     @Test
-    void strikeReachPerTier() {
-        assertEquals(3.5, Actuators.strikeReach(TentaworksItems.COPPER_TENTACLE_RIG.asStack()), 1.0E-9);
-        assertEquals(5.0, Actuators.strikeReach(TentaworksItems.NETHERITE_TENTACLE_RIG.asStack()), 1.0E-9);
-        assertEquals(0, Actuators.strikeReach(ItemStack.EMPTY));
+    void farUseReachIsTheRigReach() {
+        ItemStack copper = Actuators.fit(TentaworksItems.COPPER_TENTACLE_RIG.asStack());
+        ItemStack netherite = Actuators.fit(TentaworksItems.NETHERITE_TENTACLE_RIG.asStack());
+        assertEquals(5.0, TentaworksItems.COPPER_TENTACLE_RIG.get().reach(copper), 1.0E-9, "a Copper Rig reaches half a block past a bare hand");
+        assertEquals(7.0, TentaworksItems.NETHERITE_TENTACLE_RIG.get().reach(netherite), 1.0E-9);
     }
 
     @Test

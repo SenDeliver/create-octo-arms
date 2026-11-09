@@ -19,19 +19,20 @@ setblock 11007 -59 14 diamond_ore
 # N4 dirt on the ground at 6.5 (mined Active); N5 dirt at 6.5 (Setting off: vanilla range only)
 setblock 11007 -60 18 dirt
 setblock 11007 -59 22 dirt
-# N7 husk (no burning at noon), box 4.5 from the eye (Strike Reach 5); N8 husk at 4.5 behind a wall; N9 iron golem (heavy) and husk (light) to Grab
+# N7 husk (no burning at noon), box 4.5 from the eye; N8 husk at 4.5 behind a wall; N9 iron golem (heavy) and husk (light) to Grab
 summon husk 11005.3 -60 30.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","z1"],Rotation:[90f,0f]}
 fill 11003 -60 38 11003 -55 43 stone
 summon husk 11005.3 -60 40.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","z2"],Rotation:[90f,0f]}
 summon iron_golem 11003.5 -60 50.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","g1"]}
 summon husk 11003.5 -60 60.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","z3"]}
-# C1 dirt at 5.5; C2 dirt at 5.5 behind a connected glass pane wall; C3 husk at 3.25 (Strike Reach 3.5); C4 husk at 4.6; C5 stone to place against at 5.5
+# C1 dirt at 5.5; C2 dirt at 5.5 behind a connected glass pane wall; C3 husk at 3.25; C4 husk at 4.6; C5 stone to place against at 5.5; C6 husk at 7.5 (past Reach 6 + 1)
 setblock 11106 -59 0 dirt
 fill 11103 -60 2 11103 -55 6 glass_pane[north=true,south=true]
 setblock 11106 -59 4 dirt
 summon husk 11104.05 -60 10.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","z4"],Rotation:[90f,0f]}
 summon husk 11105.4 -60 20.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","z5"],Rotation:[90f,0f]}
 setblock 11106 -59 30 stone
+summon husk 11108.3 -60 40.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","z6"],Rotation:[90f,0f]}
 op Dev
 tentaworks trace on
 gamemode survival Dev

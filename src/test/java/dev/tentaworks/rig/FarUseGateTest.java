@@ -65,9 +65,10 @@ class FarUseGateTest {
     @Test
     void theLiftRaisesToTheTargetAndNeverLowers() {
         assertEquals(2.5, FarUse.amount(7.0, VANILLA_BLOCK), 1.0E-9);
-        assertEquals(0.5, FarUse.amount(3.5, VANILLA_ENTITY), 1.0E-9);
-        assertEquals(2.0, FarUse.amount(5.0, VANILLA_ENTITY), 1.0E-9);
-        assertEquals(0.0, FarUse.amount(4.0, VANILLA_BLOCK), "Copper Reach 4 is under vanilla's 4.5: no block lift");
+        assertEquals(4.0, FarUse.amount(7.0, VANILLA_ENTITY), 1.0E-9, "mobs and players at the full Reach too");
+        assertEquals(0.5, FarUse.amount(5.0, VANILLA_BLOCK), 1.0E-9, "Copper Reach 5: half a block past a bare hand on blocks");
+        assertEquals(2.0, FarUse.amount(5.0, VANILLA_ENTITY), 1.0E-9, "and 2 blocks on mobs");
+        assertEquals(0.0, FarUse.amount(4.0, VANILLA_BLOCK), "a Reach under vanilla's 4.5 lifts nothing");
         assertEquals(0.0, FarUse.amount(3.5, 5.0), "a range already longer (creative, other mods) stays as it is");
         assertEquals(0.0, FarUse.amount(0, VANILLA_BLOCK));
     }
@@ -88,8 +89,9 @@ class FarUseGateTest {
         assertEquals(Far.FAR, FarUse.far(5.0 * 5.0, VANILLA_BLOCK, reach));
         assertEquals(Far.FAR, FarUse.far(7.9 * 7.9, VANILLA_BLOCK, reach), "vanilla's 1 block of slack past the lifted range");
         assertEquals(Far.OUT, FarUse.far(8.1 * 8.1, VANILLA_BLOCK, reach));
-        double strike = VANILLA_ENTITY + FarUse.amount(3.5, VANILLA_ENTITY);
-        assertEquals(Far.FAR, FarUse.far(3.2 * 3.2, VANILLA_ENTITY, strike), "Copper Strike Reach past arm's length is a Far Use");
+        double mobs = VANILLA_ENTITY + FarUse.amount(5.0, VANILLA_ENTITY);
+        assertEquals(Far.FAR, FarUse.far(4.6 * 4.6, VANILLA_ENTITY, mobs), "a mob within Copper Reach past arm's length is a Far Use");
+        assertEquals(Far.OUT, FarUse.far(6.1 * 6.1, VANILLA_ENTITY, mobs));
         assertEquals(Far.NEAR, FarUse.far(5.0 * 5.0, VANILLA_BLOCK, VANILLA_BLOCK), "no lift: vanilla rules alone");
         double extendo = VANILLA_BLOCK + 2.0;
         assertEquals(Far.NEAR, FarUse.far(5.0 * 5.0, extendo, extendo), "an Extendo Grip's range is the wearer's own");

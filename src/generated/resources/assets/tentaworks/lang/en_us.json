@@ -146,11 +146,6 @@
   "tentaworks.configuration.speed": "Speed",
   "tentaworks.configuration.speed.max": "Top Speed",
   "tentaworks.configuration.speed.max.tooltip": "Top Rig speed, blocks per second. Caps the Speed in every player's Rig Settings; Swift raises both on its Rig",
-  "tentaworks.configuration.strikeReach": "Strike Reach",
-  "tentaworks.configuration.strikeReach.copper": "Copper Strike Reach",
-  "tentaworks.configuration.strikeReach.copper.tooltip": "Strike Reach of a Copper Rig: how far its Actuator hits or uses on mobs and players, blocks. Far Reach does not add to it",
-  "tentaworks.configuration.strikeReach.netherite": "Netherite Strike Reach",
-  "tentaworks.configuration.strikeReach.netherite.tooltip": "Strike Reach of a Netherite Rig: how far its Actuator hits or uses on mobs and players, blocks. Far Reach does not add to it",
   "tentaworks.configuration.title": "Octo Arms: Config",
   "tentaworks.display_source.rig_air": "Rig Air",
   "tentaworks.display_source.rig_air.air": "Air",
@@ -233,8 +228,6 @@
   "tentaworks.stats.air_use.value": "%s%%",
   "tentaworks.stats.reach": "Reach:",
   "tentaworks.stats.reach.value": "%s blocks",
-  "tentaworks.stats.strike_reach": "Strike Reach:",
-  "tentaworks.stats.strike_reach.value": "%s blocks",
   "tentaworks.stats.top_speed": "Top Speed:",
   "tentaworks.stats.top_speed.value": "%s b/s"
 }

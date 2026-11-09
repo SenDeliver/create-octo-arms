@@ -35,7 +35,7 @@ The spike item `tentaworks:tentacle_rig` never shipped and is gone.
 Phase 4 also adds the enchantments (Silent Step with 1.6) to the vanilla enchantment tags `minecraft:non_treasure` and `minecraft:in_enchanting_table` (so also tradeable and random loot through `#minecraft:non_treasure`), and gives both Rigs durability: Copper 112, Netherite 592 (`ArmorItem.Type.CHESTPLATE.getDurability(7 / 37)`, as Create's diving helmet and boots). Damage is the vanilla `minecraft:damage` component; a placed Rig Block keeps it in Create's `Components` patch.
 Phase 5: a Rig never breaks. Wear stops at max − 1 (damage 111 / 591); a stored damage above that (old item, `/give`) reads as max − 1. At that point the Rig is worn out: it cannot be Activated until repaired (anvil with a copper / netherite ingot, or Mending). No new component: "worn out" is derived from `minecraft:damage`.
 
-Not saved in worlds (safe to change): Ponder scene `tentaworks:tentacle_rig` and its schematic `assets/tentaworks/ponder/tentacle_rig.nbt`, Ponder tag `tentaworks:tentacle_rigs`, creative tab `tentaworks:main`, lang keys, models, textures, the transient attribute modifier `tentaworks:rig_float` (never saved: added with `addTransientModifier`), and from 2.0 the transient modifiers `tentaworks:far_use_reach`, `tentaworks:far_use_strike` and `tentaworks:actuator_heavy` (same rule).
+Not saved in worlds (safe to change): Ponder scene `tentaworks:tentacle_rig` and its schematic `assets/tentaworks/ponder/tentacle_rig.nbt`, Ponder tag `tentaworks:tentacle_rigs`, creative tab `tentaworks:main`, lang keys, models, textures, the transient attribute modifier `tentaworks:rig_float` (never saved: added with `addTransientModifier`), and from 2.0 the transient modifiers `tentaworks:far_use_reach`, `tentaworks:far_use_entity` and `tentaworks:actuator_heavy` (same rule).
 
 Entity attachments (2.0): `tentaworks:pinned` on a held or just set-down mob (holder UUID, calm-until game time) and `tentaworks:thrown` on a Thrown entity (thrower UUID, start, last speed, armed). Both are registered without a serializer, so they never reach NBT: a mob saved while held or Thrown loads as itself.
 Key mappings `key.tentaworks.settings` and `key.tentaworks.toggle` (both unbound by default) and `key.tentaworks.grab` (2.0, default V), category `key.categories.tentaworks`, are saved in each player's `options.txt`: renaming one only loses that player's binding.
@@ -98,7 +98,7 @@ Phase 8 kept every payload as is but bumped the registrar to `7` (server packet 
 
 | Key | Default | Range |
 |---|---|---|
-| `reach.copper` | 4.0 | 1–16 |
+| `reach.copper` | 5.0 | 1–16 (4.0 before 2.0) |
 | `reach.netherite` | 7.0 | 1–16 |
 | `speed.max` | 8.0 | 1–20 |
 | `air.idle` | 80.0 | 1–72000 (ticks per 1 Air, Copper, held still) |
@@ -115,8 +115,6 @@ Phase 8 kept every payload as is but bumped the registrar to `7` (server packet 
 | `air.farUse` | 0.5 | 0–50 (2.0: Air per accepted Far Use action, Copper) |
 | `air.grab` | 40.0 | 1–72000 (2.0: ticks per 1 Air while holding a Grab, Copper) |
 | `air.throw` | 10.0 | 0–500 (2.0: Air per Throw, Copper) |
-| `strikeReach.copper` | 3.5 | 1–16 (2.0: Strike Reach, blocks; Far Reach does not add) |
-| `strikeReach.netherite` | 5.0 | 1–16 |
 | `farUse.players` | true | true/false (2.0: Far Use may hit and use on players) |
 | `grab.tamedOthers` | false | true/false (2.0: Grab another player's tamed, owned or leashed animal) |
 | `grab.ships` | true | true/false (2.0: Ship Grab; also needs `ships.grip` and Sable) |
