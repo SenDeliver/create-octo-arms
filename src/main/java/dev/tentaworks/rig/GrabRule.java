@@ -1,11 +1,13 @@
 package dev.tentaworks.rig;
 
+import java.util.function.BooleanSupplier;
+
 /**
  * Who the Left Actuator may Grab, as a pure function of what the server sees (CONTEXT: Grab). A living mob, never a player,
  * never a boss ({@code tentaworks:bosses} or over {@value #BOSS_HEALTH} max health), nothing riding or ridden, nothing held
  * by another wearer, another player's tamed, owned or leashed animal only with {@code grab.tamedOthers}; within Reach +
  * {@value #SLACK} + half its width of the body and in sight of it. A light target ({@link #light}) takes the Left Actuator,
- * a heavy one both.
+ * a heavy one both. A claim or protection mod may still say no ({@link #claimed}).
  */
 public final class GrabRule {
     public static final double LIGHT_WIDTH = 1.5;
@@ -25,7 +27,7 @@ public final class GrabRule {
     public record Rules(double reach, boolean tamedOthers) {
     }
 
-    /** Lower-case names are the refusal keys ({@code tentaworks.refusal.<name>}). */
+    /** Lower-case names are the refusal keys ({@code tentaworks.refusal.grab.<name>}). */
     public enum Verdict {
         LIGHT, HEAVY, NOT_LIVING, GONE, PLAYER, RIDING, HELD, BOSS, OWNED, TOO_FAR, NO_SIGHT;
 
@@ -53,6 +55,15 @@ public final class GrabRule {
         if (t.distance() > r.reach() + SLACK + t.width() / 2) return Verdict.TOO_FAR;
         if (!t.sight()) return Verdict.NO_SIGHT;
         return light(t.width(), t.height()) ? Verdict.LIGHT : Verdict.HEAVY;
+    }
+
+    /**
+     * The protection check, the same a plain use of the target would get: {@code mayInteract} (spawn protection, world border,
+     * and mods hooking it) first, then the loader's interaction event, posted only when that passed; {@code cancelled} is true
+     * when a listener cancelled it.
+     */
+    public static boolean claimed(boolean mayInteract, BooleanSupplier cancelled) {
+        return !mayInteract || cancelled.getAsBoolean();
     }
 
     public static boolean light(double width, double height) {

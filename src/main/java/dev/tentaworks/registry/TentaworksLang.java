@@ -37,7 +37,7 @@ public final class TentaworksLang {
     }
 
     private static void refusal(String why, String text) {
-        REGISTRATE.addRawLang(TentaworksIds.MOD_ID + ".refusal." + why, text);
+        REGISTRATE.addRawLang(TentaworksIds.MOD_ID + ".refusal.grab." + why, text);
     }
 
     public static void init() {

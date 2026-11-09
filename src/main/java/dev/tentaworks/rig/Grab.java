@@ -63,6 +63,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 /**
@@ -86,7 +87,7 @@ public final class Grab {
     public static final TagKey<EntityType<?>> BOSSES = TagKey.create(Registries.ENTITY_TYPE, TentaworksIds.id(TentaworksIds.BOSSES));
     static final double SHIP_GAIN = 10.0;
     static final double SHIP_MAX_SPEED = 30.0;
-    public static final String REFUSAL = "tentaworks.refusal.";
+    public static final String REFUSAL = "tentaworks.refusal.grab.";
     private static final ResourceLocation HEAVY_ID = TentaworksIds.id(TentaworksIds.ACTUATOR_HEAVY);
     private static final Map<UUID, Held> HOLDS = new HashMap<>();
     private static final Map<UUID, Integer> STARTED = new HashMap<>();
@@ -206,7 +207,7 @@ public final class Grab {
     }
 
     /**
-     * True only while a Grab asks the entity-interaction event whether claim mods allow it: the event is not a real use, so a
+     * True only while a Grab asks the entity-interaction or right-click-block event whether claim mods allow it: not a real use, so a
      * listener that gates reach or sight (Far Use) lets it pass.
      */
     public static boolean asking() {
@@ -320,9 +321,19 @@ public final class Grab {
 
     /** The loader's entity-interaction event, as an empty-handed use on the target: cancelled means a claim or protection mod said no. */
     private static boolean claimed(ServerPlayer wearer, Entity target) {
+        return GrabRule.claimed(true, () -> ask(() -> CommonHooks.onInteractEntity(wearer, target, InteractionHand.MAIN_HAND) != null));
+    }
+
+    /** As an empty-handed right click on that Ship block (in its plot, where Sable puts every Ship block): the Ship's claim decides. */
+    private static boolean claimed(ServerPlayer wearer, BlockPos block, Direction face, Vec3 local) {
+        return GrabRule.claimed(wearer.level().mayInteract(wearer, block), () -> ask(() ->
+                CommonHooks.onRightClickBlock(wearer, InteractionHand.MAIN_HAND, block, new BlockHitResult(local, face, block, false)).isCanceled()));
+    }
+
+    private static boolean ask(BooleanSupplier post) {
         asking = true;
         try {
-            return CommonHooks.onInteractEntity(wearer, target, InteractionHand.MAIN_HAND) != null;
+            return post.getAsBoolean();
         } finally {
             asking = false;
         }
@@ -371,6 +382,7 @@ public final class Grab {
         if (why == null && body.distanceTo(frame.toWorld(local)) > TentacleRigItem.reach(wearer) + GrabRule.SLACK) why = "too_far";
         if (why == null && !Grips.visible(level, frame.toLocal(body), local, face, true)) why = "no_sight";
         if (why == null && crewed(wearer, frame)) why = "crewed";
+        if (why == null && claimed(wearer, block, face, local)) why = "claimed";
         if (why != null) {
             refuse(wearer, null, why, mass);
             return;
