@@ -37,7 +37,10 @@ if all(k in mk for k in ('ua', 'ub', 'uc')):
     g0, g1, g2 = mk['ua'][0], mk['ub'][0], mk['uc'][0]
     down = [tr[g - 1][1] - tr[g][1] for g in range(g0 + 1, g1 + 1) if g in tr and g - 1 in tr]
     idle = [abs(tr[g][1] - tr[g - 1][1]) for g in range(g1 + 5, g2 + 1) if g in tr and g - 1 in tr]
-    check('U no extra sinking with Shift under water (<= Rig step 0.28 + 0.01)', down and max(down) <= 0.29 and mk['ua'][1][1] - mk['ub'][1][1] > 1,
+    # the Rig's own step, measured on dry land in E (forward + Shift): Speed / 20 per tick (2.0: an unset Speed runs at speed.max 8, so 0.4)
+    land = [sum((tr[g][i] - tr[g - 1][i]) ** 2 for i in range(3)) ** 0.5 for g in range(mk['ea'][0] + 1, mk['eb'][0] + 1) if g in tr and g - 1 in tr] if 'ea' in mk and 'eb' in mk else []
+    step = max(land, default=0)
+    check(f'U no extra sinking with Shift under water (<= Rig step {step:.2f} on land + 0.01)', down and step > 0 and max(down) <= step + 0.01 and mk['ua'][1][1] - mk['ub'][1][1] > 1,
           f'feet {mk["ua"][1][1]:.2f} -> {mk["ub"][1][1]:.2f}, max per tick {max(down, default=0):.3f}')
     check('U no sinking at idle under water', idle and max(idle) < 0.01, f'max per tick {max(idle, default=0):.4f} over {len(idle)} ticks')
 else:
