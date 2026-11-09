@@ -13,15 +13,15 @@ The Curios `back` slot, a second place to wear a Rig when Curios is installed (a
 _Avoid_: curio slot, accessory slot, backpack slot
 
 **Tentacle**:
-One of the four pneumatic arms of a Rig. Also the crafted item that becomes one. A Tentacle reaches out to a Grip and holds the wearer there.
-_Avoid_: leg, arm, limb, appendage
+One of the four pneumatic Limbs of a Rig that carry the wearer. Also the crafted item that becomes one. A Tentacle reaches out to a Grip and holds the wearer there; it never holds, hits or moves anything else (that is an Actuator's job).
+_Avoid_: leg, arm, appendage
 
 **Air**:
-The Backtank's air, the only fuel of a Rig. Idle holding drains a trickle, moving more, climbing up the most; Netherite drains half. Refilled only as a placed Rig Block. Creative players use no Air and need none.
+The Backtank's air, the only fuel of a Rig. A Rig holds twice the Air of the Backtank it was made from (Capacity doubled too). Idle holding drains a trickle, moving more, climbing up the most; Netherite drains half. Actuators drink as well, lightly: a sip per Far Use, a trickle per tick of Grab, a gulp per Throw, tuned so a day's work never empties a tank on its own; Deft makes them free. With no Air left the Actuators hang limp and a held target is set down. Refilled only as a placed Rig Block. Creative players use no Air and need none.
 _Avoid_: pressure, fuel, charge, energy
 
 **Grip**:
-A spot on any solid block surface (floor, wall or ceiling, including the underside of a ledge, the top of a bottom slab or a chest lid at its real height; nothing narrower than half a block) that a Tentacle tip holds on to, in sight of the wearer: the straight line from the body to the spot crosses no block, so nothing behind a wall or under the floor is a Grip. The only place a Tentacle meets the world. Tentacles never push, hit or damage anything (fighting with them is a v2 idea). A Grip on a Ship block is stored in that Ship's plot coordinates; the Ship is implied by the block, so the Grip stays put while the Ship moves.
+A spot on any solid block surface (floor, wall or ceiling, including the underside of a ledge, the top of a bottom slab or a chest lid at its real height; nothing narrower than half a block) that a Tentacle tip holds on to, in sight of the wearer: the straight line from the body to the spot crosses no block, so nothing behind a wall or under the floor is a Grip. The only place a Tentacle meets the world. Tentacles never push, hit or damage anything; acting on the world is what Actuators do. A Grip on a Ship block is stored in that Ship's plot coordinates; the Ship is implied by the block, so the Grip stays put while the Ship moves.
 _Avoid_: foothold, anchor, foot, contact
 
 **Held**:
@@ -29,7 +29,7 @@ The wearer's state while at least two Tentacles have a Grip. Only Held positions
 _Avoid_: supported, anchored, stable
 
 **Reach**:
-How far from the wearer a Tentacle can place a Grip. Fixed per tier (Copper shorter, Netherite longer); it is the whole difference between the tiers besides Air use.
+How far from the wearer a Tentacle can place a Grip, and how far an Actuator can act. Fixed per tier (Copper shorter, Netherite longer).
 _Avoid_: range, length
 
 **Active**:
@@ -49,11 +49,11 @@ _Avoid_: toggle key, activate key
 _Avoid_: dismount, release, drop
 
 **Standing Height**:
-How far above the floor the Rig lifts the wearer on activation and holds them when no height key is pressed. Chosen by the player in the Rig Settings, up to the Reach.
+How far above the floor the Rig lifts the wearer on activation and holds them when no height key is pressed. Chosen by the player in the Rig Settings, up to the Reach; a fresh Rig stands at 1.5 blocks.
 _Avoid_: hover height, ride height, default height
 
 **Rig Settings**:
-The screen where the player tunes Standing Height, Speed and Activation Mode (Double Jump or key only), within limits set by the Server Config. Opened by sneak-using a Rig in hand, or by a key while wearing it.
+The screen where the player tunes Standing Height, Speed, Activation Mode (Double Jump or key only) and, on a fitted Rig, Far Use (always, Rig out only, or off), within limits set by the Server Config. A fresh Rig starts at the Server Config's top Speed. Opened by sneak-using a Rig in hand, or by a key while wearing it.
 _Avoid_: config, GUI, menu
 
 **Rig Block**:
@@ -79,6 +79,44 @@ _Avoid_: hover, rest
 One Tentacle letting go of its Grip and arcing to a new one while the others hold. Tentacles Step alone or in diagonal pairs (never more than two at once, never leaving fewer than two holding), so movement reads as a crawling gait.
 _Avoid_: re-grip, swing
 
+## Actuators
+
+**Limb**:
+The family word for a Tentacle or an Actuator; used only when a sentence is about both.
+_Avoid_: arm, appendage
+
+**Actuator**:
+One of the two Limbs that can be fitted to a finished Rig above its Tentacles, to act on the world instead of carrying the wearer. Also the crafted item: one kind for both tiers, since Reach and Air use come from the Rig it sits on. Fitting is optional and permanent: a Rig without Actuators is a complete Rig that only walks, and a Rig from before 2.0 is exactly that until its owner fits a pair. Actuators work wherever the wearer's hands work: Stowed or Active, on a Ride, gliding, Falling, during a Control Hold. They add a single key, Grab: otherwise they do what the wearer's hands already do, farther. The Right Actuator carries the hand's item out to the Rig's Reach; the Left Actuator Grabs.
+_Avoid_: arm, hand, claw, grabber, manipulator, functional tentacle
+
+**Fitting**:
+Putting two Actuators on a Rig. Two ways: a finished Rig with an Actuator on each side at a crafting table (the Rig keeps its Air, enchantments, Rig Settings and damage, it only gains the Actuators), or the Rig's own Mechanical Crafting recipe with an Actuator added on each side, which builds a fitted Rig in one go. The plain Rig recipe stays as it is. A fitted Copper Rig upgraded to Netherite stays fitted. The first wear after Fitting unfolds and flexes both Actuators.
+_Avoid_: upgrade, install, attach, mount
+
+**Rest Pose**:
+Where the Actuators sit when they have nothing to do, Stowed or Active: rising from the Rig's shoulders and curling up a little above head height, spread wider than the wearer's body so they frame the player and stay out of the third-person view, half-open, breathing slowly with small idle gestures. Any action reaches out from the wearer's side, never through the camera: in first person an Actuator enters the view from the frame's edge and arcs to the target. All Limbs in first person are drawn at an opacity the player chooses in the client config, from solid (default) down to faint, never invisible.
+_Avoid_: idle pose, folded, parked
+
+**Far Use**:
+Any action of either hand (mining, placing, hitting, item use) on a target beyond the wearer's own arm's length but within Reach. The Right Actuator performs it at its tip with that hand's item; with an Extendo Grip in hand it idles and the Rig adds no reach; within arm's length the wearer's hand does it and the Actuator idles. Blocks are reached at full Reach. Mobs and players are reached at the shorter Strike Reach, with any weapon or tool. Drops and XP from a block mined by Far Use fly to the wearer. Beyond arm's length the server also checks sight from the wearer's eye to the target (the Grip sight rule) before it accepts the action, and refuses the rest.
+_Avoid_: extended reach, long arm, reach mode
+
+**Strike Reach**:
+How far the Right Actuator hits or uses on a mob or player: per tier (Copper 3.5, Netherite 5 blocks), set in the Server Config, not raised by Far Reach. Shorter than the Reach for blocks, so a wearer still outranges a zombie but not by a whole room.
+_Avoid_: entity reach, melee range, attack range
+
+**Grab**:
+The Grab key (default V, rebindable) with an empty main hand on a mob or Ship block under the crosshair within Reach, in sight of the wearer's body as a Grip must be: the Left Actuator takes hold and keeps the target at its tip, low on the wearer's left and out of the crosshair. The wearer's own clicks pass through a held target: attack always Throws, use always reaches the world. Use and sneak keep their vanilla meanings, and Shift and Space keep moving the wearer down and up while Active. Any living mob but never a player and never a boss (the Ender Dragon, the Wither, the Warden, the loader's bosses tag collected in `tentaworks:bosses`, anything over 100 max health), nothing riding or ridden, nothing already held by another wearer or leashed to anyone else, and another player's tamed, owned or leashed animal only if the Server Config allows it. A Grab asks the loader's entity-interaction event first, so claim and protection mods can refuse it. A refused Grab says why in one action-bar line (boss, owned, too heavy, no Air, out of sight). Blocks are never Grabbed; a Ship is (see Ship Grab). The held target is swept to the tip with block collision, so it never passes a wall, a pane or a door; a target that cannot follow for a moment is set down at its last free spot. While holding, the Grab key again sets the target down where it is and attack Throws it from the tip along the camera; use stays free, so doors and chests still work with a mob in the other Actuator. Stowing, Setting Down, a Ride, a glide or Falling do not end a hold. The hold ends, from one place, only when the wearer stops being there or the Actuators go limp: Crawl, death, logout, taking the Rig off, the wearer or the target changing dimension, the target gone or out of Reach, or no Air left; the target is set down where it is, awake again. A held mob is Pinned: no attacks, no fuse, no spells or shots, it only squirms. Set down, it stays calm for one second (a Creeper's fuse reset) and is then itself again; Thrown, it wakes at once. A held mob can be sheared, milked, named, saddled or leashed like any mob, and set down over a seat, boat or minecart it takes the seat. While the crosshair rests on something grabbable in Reach, the Left Actuator uncurls and points at it. A light target (up to 1.5 blocks wide and 2 tall: zombie, villager, cow, spider) takes the Left Actuator alone; a heavy one (anything bigger: Iron Golem, Ravager, Horse, Enderman, Ghast, every Ship) takes both, Far Use pauses, and walking and Rig Speed drop to 60% while it is held (Rides and glides unaffected).
+_Avoid_: pick up, lift, carry
+
+**Throw**:
+Attack while an Actuator holds something: the target is flung along the camera at the tier's throw speed (Netherite faster). A thrown mob takes normal fall damage and Impact damage when it slams into a block or another mob, which is hurt as well. A thrown Ship flies as a body and Sable settles the collision. Fliers are thrown the same and simply recover.
+_Avoid_: launch, yeet (in player text)
+
+**Impact**:
+The damage a Thrown mob takes, and deals, when it hits a block or another mob before it stops; grows with the speed at that moment. Dealt once per Throw as the wearer's own damage, so loot, XP and protection rules see the wearer; a player is hurt by Impact only where the server's PvP rule lets the wearer harm them.
+_Avoid_: collision damage, crash
+
 ## Rides and controls
 
 **Ride**:
@@ -100,13 +138,17 @@ Being Active with every Grip above or beside the wearer, for example under a led
 _Avoid_: ceiling mode, climb mode
 
 **Tiers**:
-Copper Tentacle Rig and Netherite Tentacle Rig, made from the matching Backtank. They differ only in Reach and Air use.
+Copper Tentacle Rig and Netherite Tentacle Rig, made from the matching Backtank. They differ in Reach, Air use, throw speed and the Ship mass an Actuator pair can lift.
 
 ## Ships
 
 **Ship**:
 A Sable sub-level: a group of blocks that moves and turns as one body (Create Aeronautics builds its Ships on Sable). Its blocks are Grips like world blocks, if Sable is installed, the server config `ships.grip` is on and the Ship's scale is 1.
 _Avoid_: contraption, vehicle, sub-level (in player text)
+
+**Ship Grab**:
+Grab on a Ship (1.21.1 with Sable only): the Grab key with an empty main hand on any block of the Ship, and both Actuators take the Ship. Needs the Server Config `grab.ships` and `ships.grip`, a Ship of scale 1 within Reach, Sable mass up to the tier's cap, the clicked face in sight of the wearer, no other player on board, and not the Ship the wearer stands on or the wearer's Carry Ship. While held the Ship follows the wearer at the offset it had, rotation kept, and Grips on it do not hold the wearer up. Same controls, release rules and Air as Grab. Without Sable, refused silently.
+_Avoid_: lift ship, tow, ship carry, contraption grab
 
 **Frame**:
 Where a point lives: the world, or one Ship. Ship blocks sit at far-away plot coordinates of the same level; the Ship's pose maps them into the world. A Grip on a Ship is kept in the Ship's Frame.
@@ -119,10 +161,10 @@ _Avoid_: parent ship, host, anchor ship
 ## Enchanting
 
 **Rig Enchantments**:
-A Rig takes every vanilla chest-armor enchantment (Protection line, Unbreaking, Mending, Thorns), Create's Capacity (more Air), and four of its own: Far Reach (more Reach), Thrift (less Air per move), Swift (faster movement) and Silent Step (with the Rig out, no vibrations for Sculk Sensors, Shriekers and Wardens, and no Rig sounds).
+A Rig takes every vanilla chest-armor enchantment (Protection line, Unbreaking, Mending, Thorns), Create's Capacity (more Air), and five of its own: Far Reach (more Reach), Thrift (less Air per move), Swift (faster movement), Silent Step (with the Rig out, no vibrations for Sculk Sensors, Shriekers and Wardens, and no Rig sounds) and Deft (one level: the Actuators use no Air; it does nothing on an unfitted Rig and says so in the tooltip).
 A Rig wears like armor but never breaks (elytra-style): at 1 durability it can't be Activated (an Active one Sets Down) until repaired by anvil or Mending; Air, enchantments and Rig Settings are never lost.
 _Avoid_: upgrades, modifiers
 
 **Server Config**:
-Admin-set caps per tier: Reach, top Speed, Air costs and enchantment strengths; also whether Ships are Grips (`ships.grip`). Rig Settings are clamped to them.
+Admin-set caps per tier: Reach, Strike Reach, top Speed, Air costs, throw speed, Ship mass cap and enchantment strengths; also whether Ships are Grips (`ships.grip`), whether Ships can be Grabbed, whether Far Use may hit players and whether others' pets can be Grabbed. Rig Settings are clamped to them.
 _Avoid_: balance file, limits
