@@ -57,8 +57,8 @@ public final class TentaworksLang {
         rigTooltip(TentaworksIds.NETHERITE_TENTACLE_RIG, "Netherite: _longer Reach_, uses _half the Air_.");
         tooltip(TentaworksIds.ACTUATOR, "A pneumatic arm that _acts_ instead of walking. Fit _two_ to a finished _Tentacle Rig_ and it gains hands.",
                 "When Fitted", "Put a Rig between two Actuators in one row of a _crafting table_. The Rig keeps its _Air_, _enchantments_, _settings_ and _damage_.",
-                "Right Actuator", "Whatever your hand does, _farther_: mining, placing, hitting and using out to the Rig's _Reach_.",
-                "Left Actuator", "_Grab_ key with an empty hand takes a mob or a Ship. _Attack_ Throws it, _Grab_ again sets it down.");
+                "Each Actuator", "Does what its hand does, _farther_: mining, placing, hitting and using out to the Rig's _Reach_. With a tool in each hand, both work at once.",
+                "Grab key", "A _free_ Actuator takes a mob; a big one or a Ship needs _both_. Tap _Grab_ to set it down where you look, hold it and scroll to move it, _Attack_ Throws it.");
 
         enchantment(TentaworksIds.FAR_REACH, "Far Reach", "Longer Tentacles: more Reach per level, so the Rig grips, hangs and climbs from farther away.");
         enchantment(TentaworksIds.THRIFT, "Thrift", "The Rig uses less Air per level while holding, moving and climbing.");

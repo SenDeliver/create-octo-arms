@@ -1,4 +1,4 @@
-# Far Use: Right Actuator lends its Reach (blocks, mobs and players). TIMELINE faruse-timeline.txt, TW_REACH_COPPER=6
+# Far Use: the Actuators lend the hands their Reach (blocks, mobs and players). TIMELINE faruse-timeline.txt, TW_REACH_COPPER=6
 trace on
 hud on
 view first

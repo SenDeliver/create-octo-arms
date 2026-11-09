@@ -1,4 +1,4 @@
-# Grab: the Left Actuator holds a mob off the crosshair, sets it down, Throws it. TIMELINE grab-timeline.txt, SCRIPT2 grab-watch.txt, ANIMALS=true
+# Grab: a free Actuator holds a mob off the crosshair, sets it down, Throws it. TIMELINE grab-timeline.txt, SCRIPT2 grab-watch.txt, ANIMALS=true
 trace on
 hud on
 view first

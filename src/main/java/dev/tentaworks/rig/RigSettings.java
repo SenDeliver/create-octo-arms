@@ -61,7 +61,7 @@ public record RigSettings(float standingHeight, float speed, ActivationMode acti
         }
     }
 
-    /** When the Right Actuator lends either hand the Rig's Reach (Far Use). */
+    /** When the Actuators lend the hands the Rig's Reach (Far Use). */
     public enum FarUseMode implements StringRepresentable {
         ALWAYS,
         RIG_OUT,

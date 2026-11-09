@@ -29,7 +29,7 @@ clearchat
 shot look_fp_idle
 actuators rest
 signal restdone
-# F Far Use reach in first person (the Right Actuator at the husk), at 1.0 and 0.3
+# F Far Use reach in first person (the main-hand Actuator at the husk), at 1.0 and 0.3
 await far
 lookate minecraft:husk
 wait 3
@@ -107,7 +107,7 @@ key key.keyboard.v
 awaitheld off 20
 view first
 signal heavydone
-# C carry: the Right Actuator carries the main-hand item (pickaxe, block, bow) in third and first person, mid-swing, at pitch straight down and up
+# C carry: the main-hand Actuator carries the main-hand item (pickaxe, block, bow) in third and first person, mid-swing, at pitch straight down and up
 await carry
 cmd give @s minecraft:arrow 4
 cmd item replace entity @s weapon.mainhand with minecraft:iron_pickaxe

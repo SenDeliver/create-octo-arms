@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Who the Left Actuator may Grab, every refusal reason, and which targets are light (one Actuator) or heavy (both). */
+/** Who an Actuator may Grab, every refusal reason, and which targets are light (one Actuator) or heavy (both). */
 class GrabRuleTest {
     private static final Rules RULES = new Rules(4.0, false);
 
