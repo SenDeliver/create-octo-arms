@@ -235,7 +235,7 @@ public final class ActuatorRenderer {
     /** An observed wearer let go and the target flies off fast: that was a Throw (the wearer's own client already knows). */
     private static void watchRelease(Player p, Anim a) {
         if (a.releasedId < 0) return;
-        if (p.tickCount - a.releasedTick > 4 || a.throwStart >= a.releasedTick - 2) {
+        if (p == Minecraft.getInstance().player || p.tickCount - a.releasedTick > 4 || a.throwStart >= a.releasedTick - 2) {
             a.releasedId = -1;
             return;
         }
