@@ -123,6 +123,7 @@ New in 2.0. Two Actuators sit on the Rig above the Tentacles, the Right one and 
 - Whatever either hand does, farther: mining, placing, hitting and using items. Within your own arm's length your hand does it as usual; past it the Right Actuator reaches out and does it at its tip, with the item in that hand.
 - Blocks, mobs and players: out to the Rig's Reach (Copper 5, Netherite 7, Far Reach adds), with any item, weapon or tool. A Copper Rig reaches half a block past your bare hand on blocks and 2 blocks past it on mobs.
 - Past arm's length the server checks the target is in sight of your eye: nothing is reached through a wall, a pane or the floor.
+- Only an action that does something reaches out and costs Air: a lever flipped, a block placed, a mob hurt, a block that starts to break. An empty hand on stone does nothing, as it would by hand.
 - Drops and XP of a block mined by Far Use fly to you.
 - With an Extendo Grip in hand the Actuator idles and the Rig adds no reach.
 - Rig Settings row **Far Use**: Always (default), Rig out only, or Off.

@@ -28,7 +28,9 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.neoforge.common.NeoForge;
@@ -50,8 +52,10 @@ import java.util.UUID;
 /**
  * The Right Actuator's Far Use, server side (adr/0007). While it may act ({@link #lifts}), transient modifiers lift the
  * wearer's block and entity interaction ranges to the Rig's Reach, so vanilla's own click paths reach that far; vanilla syncs both attributes to every client, so the wearer's crosshair matches. A target past arm's
- * length ({@link #beyond}, the range without the lift) must also be in sight ({@link WorkSight}), may be a player only with
- * {@code farUse.players}, costs Air and is told to the clients ({@link FarUsePacket}).
+ * length ({@link #beyond}, the range without the lift) must also be in sight ({@link WorkSight}) and may be a player only with
+ * {@code farUse.players}: the gates on the interaction events refuse the rest. Only an action that did something costs Air
+ * and is told to the clients ({@link FarUsePacket}): a use that consumed the click ({@link #usedOn}), a hit that hurt
+ * ({@link #hit}), a mining start that makes progress ({@link #mines}); a use that passes (an empty hand on stone) is nothing.
  * <p>
  * Drops and XP of a block broken past arm's length go to the wearer: {@link BlockDropsEvent} hands over the item entities
  * and the XP before they enter the world, so they are moved to the wearer there, with no capture of spawned entities.
@@ -208,20 +212,18 @@ public final class FarUse {
 
     /**
      * A block action at {@code pos} ({@code face} the clicked face and {@code point} the clicked spot, each null when unknown):
-     * false when Far Use refuses it; an accepted one {@code acts}. A Grab's claim question ({@link Grab#asking}) is no action:
-     * it passes untouched.
+     * false when Far Use refuses it. A Grab's claim question ({@link Grab#asking}) is no action: it passes untouched.
      */
-    private static boolean block(ServerPlayer player, BlockPos pos, @Nullable Direction face, @Nullable Vec3 point, boolean acts) {
+    private static boolean block(ServerPlayer player, BlockPos pos, @Nullable Direction face, @Nullable Vec3 point) {
         if (Grab.asking() || blockFar(player, pos) != Far.FAR) return true;
         if (!WorkSight.seesBlock(player, pos, face, point)) {
             refuse(player, NO_SIGHT);
             return false;
         }
-        if (acts) act(player, point != null ? point : Vec3.atCenterOf(pos), FarUsePacket.Kind.BLOCK);
         return true;
     }
 
-    /** A hit or use on {@code target}: false when Far Use refuses it; an accepted one acts. A Grab's claim question passes. */
+    /** A hit or use on {@code target}: false when Far Use refuses it. A Grab's claim question passes. */
     private static boolean entity(ServerPlayer player, Entity target) {
         if (Grab.asking() || entityFar(player, target) != Far.FAR) return true;
         if (target instanceof Player && !TentaworksConfig.value(TentaworksConfig.FAR_USE_PLAYERS)) {
@@ -232,8 +234,32 @@ public final class FarUse {
             refuse(player, NO_SIGHT);
             return false;
         }
-        act(player, target.getBoundingBox().getCenter(), FarUsePacket.Kind.ENTITY);
         return true;
+    }
+
+    /** After a use on a block: a far one that consumed the click (the block's use, the item's use on it, a placement) acts. */
+    public static void usedOn(ServerPlayer player, BlockHitResult hit, InteractionResult result) {
+        if (result.consumesAction() && !Grab.asking() && blockFar(player, hit.getBlockPos()) == Far.FAR) act(player, hit.getLocation(), FarUsePacket.Kind.BLOCK);
+    }
+
+    /** After a use on an entity: a far one that consumed the click acts. */
+    public static void usedOn(ServerPlayer player, Entity target, InteractionResult result) {
+        if (result.consumesAction() && !Grab.asking() && entityFar(player, target) == Far.FAR) act(player, target.getBoundingBox().getCenter(), FarUsePacket.Kind.ENTITY);
+    }
+
+    /** After a hit that hurt its main target: a far one acts. */
+    public static void hit(ServerPlayer player, Entity target) {
+        if (entityFar(player, target) == Far.FAR) act(player, target.getBoundingBox().getCenter(), FarUsePacket.Kind.ENTITY);
+    }
+
+    /** A mining start at {@code pos} that vanilla will carry out and that makes progress (instant in creative): the same checks, in its order. */
+    static boolean mines(ServerPlayer player, BlockPos pos) {
+        ServerLevel level = player.serverLevel();
+        if (!level.mayInteract(player, pos)) return false;
+        BlockState state = level.getBlockState(pos);
+        if (state.isAir()) return false;
+        if (player.isCreative()) return true;
+        return !player.blockActionRestricted(level, pos, player.gameMode.getGameModeForPlayer()) && state.getDestroyProgress(player, level, pos) > 0;
     }
 
     /** An accepted far action: Air once per tick, a {@link FarUsePacket} to the wearer and trackers at most every {@value #PACKET_GAP} ticks. */
@@ -265,10 +291,12 @@ public final class FarUse {
             if (e.getAction() != PlayerInteractEvent.LeftClickBlock.Action.CLIENT_HOLD) mine(p, null);
             return;
         }
-        if (block(p, e.getPos(), e.getFace(), null, true)) {
+        if (block(p, e.getPos(), e.getFace(), null)) {
             BlockPos far = blockFar(p, e.getPos()) == Far.FAR ? e.getPos().immutable() : null;
-            mine(p, far);
             if (far != null) TRACKS.computeIfAbsent(p.getUUID(), u -> new Track()).seen = far;
+            boolean mines = far != null && mines(p, far);
+            if (mines) act(p, Vec3.atCenterOf(far), FarUsePacket.Kind.BLOCK);
+            mine(p, mines ? far : null);
             return;
         }
         mine(p, null);
@@ -285,7 +313,7 @@ public final class FarUse {
             t.seen = null;
             return;
         }
-        if (!e.isCanceled() && !block(p, e.getPos(), null, null, false)) e.setCanceled(true);
+        if (!e.isCanceled() && !block(p, e.getPos(), null, null)) e.setCanceled(true);
     }
 
     private static @Nullable BlockPos mining(ServerPlayer player) {
@@ -299,7 +327,7 @@ public final class FarUse {
     }
 
     private static void onRightClickBlock(PlayerInteractEvent.RightClickBlock e) {
-        if (!(e.getEntity() instanceof ServerPlayer p) || block(p, e.getPos(), e.getHitVec().getDirection(), e.getHitVec().getLocation(), true)) return;
+        if (!(e.getEntity() instanceof ServerPlayer p) || block(p, e.getPos(), e.getHitVec().getDirection(), e.getHitVec().getLocation())) return;
         e.setCanceled(true);
         e.setCancellationResult(InteractionResult.FAIL);
     }

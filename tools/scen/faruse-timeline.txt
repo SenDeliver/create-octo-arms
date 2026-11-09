@@ -116,3 +116,15 @@ tp Dev 11100.5 -60 74.5 -90 0
 #signal n10b
 #await n10done
 tentaworks probe 11105 -61 74
+# N11 a far use that does nothing (empty hand on stone) is no Far Use; a far lever flip is one. N10's drops went to the hand: clear it
+clear Dev dirt
+item replace entity Dev weapon.mainhand with air
+tp Dev 11100.5 -60 78.5 -90 0
+#sleep 0.5
+#signal n11
+#await n11a
+tp Dev 11100.5 -60 82.5 -90 0
+#sleep 0.5
+#signal n11b
+#await n11done
+tentaworks probe 11105 -60 82

@@ -5,6 +5,7 @@
   "plugin": "dev.tentaworks.mixin.TentaworksMixinPlugin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "ArmorStandFarUseMixin",
     "BacktankBlockEntityAccessor",
     "BacktankBlockEntityMixin",
     "BacktankUtilMixin",
@@ -13,9 +14,11 @@
     "LivingEntitySneakMixin",
     "MobPinnedMixin",
     "PlayerBackWearMixin",
+    "PlayerFarUseMixin",
     "PlayerHandsMixin",
     "PlayerSneakMixin",
-    "ServerGamePacketListenerImplAccessor"
+    "ServerGamePacketListenerImplAccessor",
+    "ServerPlayerGameModeFarUseMixin"
   ],
   "client": [
     "BacktankRendererMixin",

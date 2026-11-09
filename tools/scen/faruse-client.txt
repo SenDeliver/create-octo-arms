@@ -195,5 +195,24 @@ mark n10b1
 doublejump
 wait 60
 signal n10done
+# N11 empty hand on a far stone: nothing happens, so no Air and no reach shown; then a far lever flips: Air and reach
+await n11
+lookat 11106.0 -58.5 78.5
+wait 3
+mark n11a
+hit n11a
+key key.mouse.right
+wait 12
+mark n11a1
+signal n11a
+await n11b
+lookat 11105.5 -59.8 82.5
+wait 3
+mark n11b
+hit n11b
+key key.mouse.right
+wait 12
+mark n11b1
+signal n11done
 wait 10
 quit

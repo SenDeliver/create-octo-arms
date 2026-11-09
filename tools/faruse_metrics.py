@@ -135,6 +135,21 @@ for tag, z, st in (('n10a', 70, 'STOWED'), ('n10b', 74, 'ACTIVE')):
           and x and x[0]['far'] == 'FAR' and x[0]['sight'] and not x[0]['canceled'] and br and not br[0]['canceled'] and last_probe(pos) == 'minecraft:air' and not notes,
           f"state {a0 and a0['state']} crosshair {chitb.get(tag)} {x[:1]} break {br[:1]} probe {last_probe(pos)} refusals {notes}")
 
+print('== Only effective actions are Far Uses (Copper)')
+def ttl_in(a, b):
+    return [ctr[g] for g in range(spos[a]['gt'], spos[b]['gt'] + 1) if ctr.get(g, 0) > 0]
+if all(k in spos for k in ('n11a', 'n11a1', 'n11b', 'n11b1')):
+    x = sfar('rclick', '11106,-59,78')
+    p = paid('n11a', 'n11a1')
+    check('N11 empty hand on a far stone: accepted, does nothing, no Air, no reach shown', chitb.get('n11a') == ('BLOCK', '11106,-59,78') and x and x[0]['far'] == 'FAR'
+          and not x[0]['canceled'] and abs(p) < 0.01 and not ttl_in('n11a', 'n11a1'), f"crosshair {chitb.get('n11a')} {x[:1]} paid {p:.3f} far ttl {ttl_in('n11a', 'n11a1')}")
+    p = paid('n11b', 'n11b1')
+    lever = re.findall(r'PROBE 11105, -60, 82 Block\{minecraft:lever\}\[[^\]]*powered=(\w+)', s)
+    check('N11 a far lever flips: Air sip 0.5 and reach shown', chitb.get('n11b') == ('BLOCK', '11105,-60,82') and abs(p - 0.5) < 0.01 and ttl_in('n11b', 'n11b1')
+          and lever[-1:] == ['true'], f"crosshair {chitb.get('n11b')} paid {p:.3f} far ttl {ttl_in('n11b', 'n11b1')[:3]} lever powered {lever}")
+else:
+    check('N11 marks present', False, f"{[k for k in ('n11a', 'n11a1', 'n11b', 'n11b1') if k not in spos]}")
+
 exc = [l for l in (c + s).splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'authlib' not in l and 'neoforge-client.new.tmp.toml' not in l
        and 'Error loading class: net/irisshaders/' not in l and 'org.gradle.' not in l and 'MessageIOException' not in l]
 check('E exceptions', not exc, f'{len(exc)} exception lines' + (f': {exc[0][:200]}' if exc else ''))

@@ -36,6 +36,9 @@ summon husk 11108.3 -60 40.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw
 # N10 the floor 5 ahead (Copper): grass at z 70 (Stowed) and z 74 (Active), bedrock under each so a held attack stops there
 setblock 11105 -62 70 bedrock
 setblock 11105 -62 74 bedrock
+# N11 a stone at 5.5 to use with an empty hand (does nothing) and a lever at 5 to flip
+setblock 11106 -59 78 stone
+setblock 11105 -60 82 lever[face=floor,facing=east]
 op Dev
 tentaworks trace on
 gamemode survival Dev
