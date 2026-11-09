@@ -115,7 +115,12 @@ public final class Impact {
     private static void hit(Entity e, @Nullable ServerPlayer thrower, List<LivingEntity> touched, float damage) {
         if (thrower != null) RigEvents.fire(thrower, RigEvents.IMPACT, damage);
         if (damage <= 0) return;
-        if (e instanceof LivingEntity self) self.hurt(ImpactDamage.source(e.level(), null, thrower), damage);
+        if (e instanceof LivingEntity self) {
+            Vec3 keep = self.getDeltaMovement();
+            self.hurt(ImpactDamage.source(e.level(), null, thrower), damage);
+            // its own Impact has no source position, so vanilla's knockback would shove it a random way off the wall
+            self.setDeltaMovement(keep);
+        }
         for (LivingEntity o : touched) {
             if (o instanceof Player p && (thrower == null || !thrower.canHarmPlayer(p))) continue;
             o.hurt(ImpactDamage.source(e.level(), e, thrower), damage);
