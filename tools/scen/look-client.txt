@@ -1,4 +1,4 @@
-# Actuator look: Rest Pose, first-person side entry at limbOpacity 1.0 and 0.3, held mobs, HUD line, carried main-hand items, Back Slot (Curios only). TIMELINE look-timeline.txt, ANIMALS=true
+# Actuator look: Rest Pose, first-person side entry at limbOpacity 1.0 and 0.3, held mobs, HUD line, carried items, work in first person (no hand drawn twice, retarget), crosshair marks and Grab cues, Back Slot (Curios only). TIMELINE look-timeline.txt, ANIMALS=true
 trace on
 hud off
 view third
@@ -172,6 +172,177 @@ cmd item replace entity @s weapon.mainhand with minecraft:air
 cmd clear @s minecraft:arrow
 wait 5
 signal carrydone
+# W work in first person (no hand drawn twice in any state): far mining with a pickaxe, strike and retarget frames
+await work
+view first
+hud on
+looktrace on
+cmd item replace entity @s weapon.mainhand with minecraft:wooden_pickaxe
+wait 10
+lookat 11603 -58.5 -7.5
+wait 3
+holdkey key.attack on
+wait 6
+clearchat
+burst look_w_mine_fp 8
+lookat 11603 -57.5 -4.5
+burst look_w_retarget_fp 8
+holdkey key.attack off
+wait 12
+# both hands (Dual Wield mining), a held use (eating), the off hand alone, a left-handed wearer
+cmd item replace entity @s weapon.offhand with minecraft:wooden_pickaxe
+wait 12
+lookat 11603 -58.5 -7.5
+wait 4
+holdkey key.attack on
+wait 6
+clearchat
+burst look_w_dual_fp 8
+holdkey key.attack off
+wait 12
+cmd item replace entity @s weapon.offhand with minecraft:air
+cmd item replace entity @s weapon.mainhand with minecraft:golden_apple
+look -90 0
+wait 10
+holdkey key.use on
+wait 8
+clearchat
+burst look_w_eat_fp 4
+holdkey key.use off
+wait 10
+cmd item replace entity @s weapon.mainhand with minecraft:air
+cmd item replace entity @s weapon.offhand with minecraft:stone
+wait 12
+clearchat
+shot look_w_offhand_fp
+cmd item replace entity @s weapon.offhand with minecraft:air
+cmd item replace entity @s weapon.mainhand with minecraft:wooden_pickaxe
+mainarm left
+wait 12
+clearchat
+shot look_w_lefthanded_fp
+mainarm right
+wait 12
+looktrace off
+cmd item replace entity @s weapon.mainhand with minecraft:air
+signal workdone
+# M crosshair marks, Grab cues and hold hints (CHUD lines), at GUI scale 2 and 3
+await marks
+view first
+hud on
+guiscale 2
+cmd item replace entity @s weapon.mainhand with minecraft:wooden_pickaxe
+wait 10
+lookat 11603 -58.5 -7.5
+wait 12
+hudstate reach
+clearchat
+shot look_m_reach
+cmd item replace entity @s weapon.offhand with minecraft:wooden_pickaxe
+wait 12
+hudstate dual
+clearchat
+shot look_m_dual
+cmd item replace entity @s weapon.offhand with minecraft:air
+cmd tp @s 11594.5 -60 -6.5 -90 0
+wait 10
+lookat 11603 -58.5 -6.5
+wait 10
+hudstate out
+clearchat
+shot look_m_out
+cmd tp @s 11601.3 -60 -6.5 -90 0
+wait 10
+lookat 11603 -58.5 -6.5
+wait 10
+hudstate near
+cmd tp @s 11597.5 -60 -6.5 -90 0
+cmd tentaworks air 0
+wait 20
+lookat 11603 -58.5 -7.5
+wait 10
+hudstate limp
+clearchat
+shot look_m_limp
+cmd tentaworks air 900
+cmd item replace entity @s weapon.mainhand with minecraft:air
+cmd tp @s 11600.5 -60 0.5 -90 0
+wait 20
+lookate minecraft:pig
+wait 10
+hudstate cue_grab
+clearchat
+shot look_m_cue_grab
+cmd item replace entity @s weapon.mainhand with minecraft:wooden_pickaxe
+cmd item replace entity @s weapon.offhand with minecraft:wooden_pickaxe
+wait 12
+hudstate cue_full
+clearchat
+shot look_m_cue_full
+cmd tp @s 11600.5 -60 10.5 -90 0
+wait 10
+lookate minecraft:iron_golem
+wait 10
+hudstate cue_two
+clearchat
+shot look_m_cue_two
+cmd item replace entity @s weapon.mainhand with minecraft:air
+cmd item replace entity @s weapon.offhand with minecraft:air
+wait 12
+hudstate cue_both
+cmd tp @s 11600.5 -60 15.5 -90 0
+wait 10
+lookat 11603.5 -59.6 15.5
+wait 10
+hudstate cue_refused
+clearchat
+shot look_m_cue_refused
+cmd tp @s 11600.5 -60 0.5 -90 0
+wait 10
+lookate minecraft:pig
+wait 5
+key key.keyboard.v
+awaitheld on 20
+look -90 10
+wait 8
+hudstate hold
+clearchat
+shot look_m_hold
+spot 11603.5 -60 2.5 ok
+lookat 11603.5 -60 2.5
+wait 6
+hudstate spot_ok
+clearchat
+shot look_m_spot_ok
+spot 11603.5 -60 2.5 bad
+wait 3
+hudstate spot_bad
+clearchat
+shot look_m_spot_bad
+guiscale 3
+wait 5
+clearchat
+shot look_m_spot_bad_g3
+spot off
+view third
+wait 5
+hudstate third
+view first
+hud off
+wait 3
+hudstate f1
+shot look_m_f1
+hud on
+key key.keyboard.e
+wait 5
+hudstate screen
+close
+wait 5
+key key.keyboard.v
+awaitheld off 40
+guiscale 2
+wait 5
+signal marksdone
 # B Back Slot (Curios): a fitted Netherite Rig in the back slot over an iron chestplate
 await back
 ifmod curios

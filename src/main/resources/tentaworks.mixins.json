@@ -27,6 +27,7 @@
     "ItemInHandLayerMixin",
     "KineticBlockEntityGoggleMixin",
     "LivingEntityBodyYawMixin",
+    "LivingEntityRendererMixin",
     "LivingEntityWalkMixin",
     "LocalPlayerBobMixin",
     "LocalPlayerSneakMixin",

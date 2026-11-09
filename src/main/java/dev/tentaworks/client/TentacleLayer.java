@@ -72,7 +72,7 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
             RigVisuals.Visual visual = RigVisuals.get(player);
             TentacleRenderer.Space space = new TentacleRenderer.Space(m, cam, world, false, light, lod(visual, at.length()));
             TentacleRenderer.drawRig(ps, buffers, player, rig.tier(), visual, pt, space);
-            ActuatorRenderer.draw(ps, buffers, player, rig.tier(), pt, space, 0);
+            ActuatorRenderer.draw(ps, buffers, player, rig.tier(), pt, space, ActuatorRenderer.Pass.ALL);
             ps.popPose();
         });
     }
@@ -142,7 +142,7 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
             MultiBufferSource.BufferSource buffers = MultiBufferSource.immediate(FIRST_PERSON_BUFFER);
             TentacleRenderer.Space space = new TentacleRenderer.Space(new Matrix4f(ps.last().pose()), cam, true, true, 0xF000F0, 0);
             if (tentacles) TentacleRenderer.drawRig(ps, buffers, player, rig.tier(), visual, pt, space);
-            if (actuators) ActuatorRenderer.draw(ps, buffers, player, rig.tier(), pt, space, ActuatorRenderer.inHandPass(player) ? ActuatorPose.LEFT : 0);
+            if (actuators) ActuatorRenderer.draw(ps, buffers, player, rig.tier(), pt, space, ActuatorRenderer.Pass.WORLD);
             ps.popPose();
             buffers.endBatch();
         });

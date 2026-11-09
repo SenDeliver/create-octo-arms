@@ -1,6 +1,7 @@
 package dev.tentaworks.client;
 
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -29,8 +30,28 @@ public final class ActuatorPose {
     /** First person: distance of an Actuator's root from the eye, how far below it, and the angle past the frame's edge. */
     public static final double ENTRY_DISTANCE = 0.8, ENTRY_DROP = 0.32, ENTRY_MARGIN_DEGREES = 14;
     public static final float MIN_OPACITY = 0.1F;
-    /** Ticks for a reach to go out and to come back, the grab wind-up, the throw snap and return, and the Fitting flex. */
-    public static final float REACH_TICKS = 5, RETURN_TICKS = 7, WIND_UP_TICKS = 5, SNAP_TICKS = 2, FOLLOW_TICKS = 16, FLEX_TICKS = 20;
+    /** Ticks of the grab wind-up, the throw snap and return, and the Fitting flex. */
+    public static final float WIND_UP_TICKS = 5, SNAP_TICKS = 2, FOLLOW_TICKS = 16, FLEX_TICKS = 20;
+    /**
+     * Time constants (ticks) of the chases ({@link #chase}): an arm going out to act, coming back, its tip following a new
+     * target, and every other change of pose. Three time constants are 95% of the way: out and onto a new target in under two
+     * ticks, the rest within {@link #RETARGET_TICKS}.
+     */
+    public static final double ACT_TAU = 0.5, BACK_TAU = 1.1, AIM_TAU = 0.5, POSE_TAU = 1.0, IDLE_TAU = 2.2;
+    /** A new target counts as reached this many ticks after the crosshair moved to it: at most {@link #RETARGET_LEFT} of the way is left. */
+    public static final double RETARGET_TICKS = 3, RETARGET_LEFT = 0.01;
+    /** Swing progress (0..1, vanilla's attack animation) at the end of the wind-up, at the impact and at the end of the rebound. */
+    public static final double STRIKE_WIND = 0.12, STRIKE_IMPACT = 0.32, STRIKE_REBOUND = 0.5;
+    /** Between swings a tool waits a little cocked ({@link #strikeSwing}) and pulled back from the target ({@link #strikeBack}). */
+    public static final double READY_SWING = -0.25, READY_BACK = 0.5;
+    /** Swing progress at which a thrust (a use, a place, a punch) touches the target. */
+    public static final double THRUST_PEAK = 0.3;
+    /** Vanilla's swing while mining restarts every 4 ticks; a Dual Wield melee strike of the off hand starts this many ticks after the main one. */
+    public static final double MINING_CYCLE = 4, DUAL_BEAT = 3, SWING_TICKS = 6;
+    /** Gripper length from the wrist to the spot between the fingers where an item is held, blocks. */
+    public static final double GRIP_LENGTH = 0.245;
+    /** A held tool from the spot it is gripped at to its head, blocks at full size, and how far it rears back for a strike, radians. */
+    public static final double TOOL_LENGTH = 0.62, STRIKE_ARC = 1.45;
 
     private ActuatorPose() {
     }
@@ -224,16 +245,6 @@ public final class ActuatorPose {
         return k * k * k;
     }
 
-    /**
-     * A 0..1 level that set off from {@code from} toward on or off {@code age} ticks ago: out with {@link #easeOut} over
-     * {@link #REACH_TICKS}, back with {@link #easeIn} over {@link #RETURN_TICKS} (shorter for a shorter way). Never jumps when
-     * the goal flips mid-way: a flip starts a new run from the level at that moment.
-     */
-    public static double level(double from, boolean on, float age) {
-        if (on) return from + (1 - from) * easeOut(age / (REACH_TICKS * (float) Math.max(0.2, 1 - from)));
-        return from * (1 - easeIn(age / (RETURN_TICKS * (float) Math.max(0.2, from))));
-    }
-
     /** Grab start: how far the arm is cocked back (0..1) {@code age} ticks in; it pulls back, then lunges to the target. */
     public static double windUp(float age) {
         if (age <= 0 || age >= WIND_UP_TICKS) return 0;
@@ -261,22 +272,210 @@ public final class ActuatorPose {
         return s * s;
     }
 
-    /** Mining hammer: how far the tip pulls back along the arm for a swing progress 0..1, blocks. */
-    public static double hammer(float swing) {
-        return 0.22 * Math.sin(Mth.clamp(swing, 0, 1) * Math.PI);
+    /** Which side the Actuator of a hand is on: the main hand's on the wearer's main-arm side, the off hand's on the other. */
+    public static int side(boolean rightHanded, boolean mainHand) {
+        return rightHanded == mainHand ? RIGHT : LEFT;
+    }
+
+    /** How much of the way to its goal a chased value covers in {@code dt} ticks with time constant {@code tau}: the same at any frame rate. */
+    public static double chase(double dt, double tau) {
+        return dt <= 0 ? 0 : 1 - Math.exp(-dt / tau);
     }
 
     /**
-     * Carried item strike for a swing progress 0..1: how far the gripper goes ahead (x, blocks), lifts (y, blocks, negative
-     * dips) and pitches down (z, radians). It lifts, chops forward and down, and comes back.
+     * A tool's swing about the gripper for a swing progress 0..1: -1 wound back, +1 on the target. It waits a little cocked
+     * ({@link #READY_SWING}), winds back fast ({@link #STRIKE_WIND}), whips forward speeding up into the impact
+     * ({@link #STRIKE_IMPACT}), bounces off and comes back to ready; 0 and 1 are the same pose, so held mining loops.
      */
-    public static Vec3 strike(float swing) {
-        double s = Mth.clamp(swing, 0, 1);
-        return new Vec3(0.32 * Math.sin(Math.PI * s), 0.12 * Math.sin(2 * Math.PI * s), 0.7 * Math.sin(Math.PI * s));
+    public static double strikeSwing(double p) {
+        p = Mth.clamp(p, 0, 1);
+        if (p < STRIKE_WIND) return Mth.lerp(smooth(p / STRIKE_WIND), READY_SWING, -1);
+        if (p < STRIKE_IMPACT) {
+            double k = (p - STRIKE_WIND) / (STRIKE_IMPACT - STRIKE_WIND);
+            return -1 + 2 * k * k;
+        }
+        if (p < STRIKE_REBOUND) return Mth.lerp(smooth((p - STRIKE_IMPACT) / (STRIKE_REBOUND - STRIKE_IMPACT)), 1, 0.7);
+        return Mth.lerp(smooth((p - STRIKE_REBOUND) / (1 - STRIKE_REBOUND)), 0.7, READY_SWING);
     }
 
-    /** Carried block push for a place, blocks ahead for a swing progress 0..1. */
-    public static double push(float swing) {
-        return 0.18 * Math.sin(Math.PI * Mth.clamp(swing, 0, 1));
+    /** How far the gripper is pulled back from where it stands at the impact, 0..1, for a swing progress 0..1: back on the wind-up, 0 on the impact. */
+    public static double strikeBack(double p) {
+        p = Mth.clamp(p, 0, 1);
+        if (p < STRIKE_WIND) return Mth.lerp(smooth(p / STRIKE_WIND), READY_BACK, 1);
+        if (p < STRIKE_IMPACT) {
+            double k = (p - STRIKE_WIND) / (STRIKE_IMPACT - STRIKE_WIND);
+            return 1 - k * k;
+        }
+        if (p < STRIKE_REBOUND) return Mth.lerp(smooth((p - STRIKE_IMPACT) / (STRIKE_REBOUND - STRIKE_IMPACT)), 0, 0.2);
+        return Mth.lerp(smooth((p - STRIKE_REBOUND) / (1 - STRIKE_REBOUND)), 0.2, READY_BACK);
+    }
+
+    /** A thrust for a swing progress 0..1: 0 ready, 1 on the target at {@link #THRUST_PEAK}, then back. */
+    public static double thrust(double p) {
+        p = Mth.clamp(p, 0, 1);
+        return p < THRUST_PEAK ? easeOut(p / THRUST_PEAK) : 1 - smooth((p - THRUST_PEAK) / (1 - THRUST_PEAK));
+    }
+
+    /** Vanilla's swing progress {@code age} ticks into a held mining swing: half of it in three ticks, the rest in the fourth, then again. */
+    public static double miningSwing(double age) {
+        double t = age - Math.floor(age / MINING_CYCLE) * MINING_CYCLE;
+        return t < MINING_CYCLE - 1 ? t / SWING_TICKS : 0.5 + (t - (MINING_CYCLE - 1)) * 0.5;
+    }
+
+    /** Dual Wield mining: the off-hand Actuator's swing progress {@code age} ticks after the main swing began: half a cycle behind, so the two strike in turn. */
+    public static double dualMining(double age) {
+        return miningSwing(age + MINING_CYCLE / 2);
+    }
+
+    /** Dual Wield melee: the off-hand Actuator's swing progress {@code age} ticks after the main swing began: a beat later; -1 when it is not swinging. */
+    public static double dualMelee(double age) {
+        double p = (age - DUAL_BEAT) / SWING_TICKS;
+        return p < 0 || p >= 1 ? -1 : p;
+    }
+
+    /**
+     * Where a hand's item is held, in view space (x toward the Actuator's own side, y up, z ahead of the eye, blocks; first
+     * person: at the hand pass's 70 degree view): the spot, how far the item tips forward (radians), and how much the gripper
+     * turns from its arm's line to the look (0..1).
+     */
+    public record Grip(Vec3 at, double tilt, double along) {
+    }
+
+    /** First person: where the own wearer's empty main-hand gripper waits, view space. */
+    public static final Vec3 BARE = new Vec3(0.7, -0.52, 0.86);
+
+    /** A carried item at rest: where a hand would hold it, low on its own side. */
+    public static Grip carry(boolean first) {
+        return first ? new Grip(new Vec3(0.62, -0.38, 0.9), 0, 0) : new Grip(new Vec3(0.4, -0.3, 0.62), 0, 0);
+    }
+
+    /**
+     * A held use by its animation, {@code used} ticks in: food and drink come to the mouth and bob, a shield is raised in front,
+     * a bow or crossbow is aimed along the look (a bow shaking a little at full draw), a spear is cocked back over the shoulder,
+     * a spyglass goes to the eye, a horn to the mouth tipped up; anything else is drawn in a little.
+     */
+    public static Grip use(UseAnim anim, boolean first, float used) {
+        double in = easeOut(used / 4);
+        return switch (anim) {
+            case EAT, DRINK -> {
+                double bob = 0.03 * Math.sin(used * 1.57) * in;
+                yield first ? new Grip(new Vec3(0.24, -0.36 + bob, 0.8), 0.5, 0.6) : new Grip(new Vec3(0.07, -0.16 + bob, 0.4), 0.5, 0.6);
+            }
+            case BLOCK -> first ? new Grip(new Vec3(0.34, -0.24, 0.72), 0, 0.8) : new Grip(new Vec3(0.2, -0.3, 0.72), 0, 0.8);
+            case BOW -> {
+                double pull = Mth.clamp(used / 20, 0, 1);
+                double shake = pull >= 1 ? 0.006 * Math.sin(used * 2.6) : 0;
+                yield first ? new Grip(new Vec3(0.4, -0.26 + shake, 1.0 - 0.1 * pull), 0, 1) : new Grip(new Vec3(0.32, -0.16 + shake, 0.85 - 0.1 * pull), 0, 1);
+            }
+            case CROSSBOW -> first ? new Grip(new Vec3(0.36, -0.3, 0.8), 0.25, 1) : new Grip(new Vec3(0.26, -0.26, 0.66), 0.25, 1);
+            case SPEAR -> first ? new Grip(new Vec3(0.66, 0.12, 0.62), 1.45, 1) : new Grip(new Vec3(0.42, 0.34, -0.1), 1.45, 1);
+            case SPYGLASS -> first ? carry(true) : new Grip(new Vec3(0.12, -0.02, 0.36), 1.2, 1);
+            case TOOT_HORN -> first ? new Grip(new Vec3(0.24, -0.34, 0.8), -0.4, 0.6) : new Grip(new Vec3(0.08, -0.14, 0.42), -0.4, 0.6);
+            case BRUSH -> {
+                double sweep = 0.12 * Math.sin(used * 0.8) * in;
+                yield first ? new Grip(new Vec3(0.34 + sweep, -0.3, 0.95), 0.9, 0.5) : new Grip(new Vec3(0.26 + sweep, -0.36, 0.7), 0.9, 0.5);
+            }
+            default -> first ? new Grip(new Vec3(0.5, -0.34, 0.8), 0, 0.3) : new Grip(new Vec3(0.32, -0.28, 0.56), 0, 0.3);
+        };
+    }
+
+    /** Guard flinch for a hurt timer running {@code hurt} of {@code duration} ticks down: 1 at the blow, easing to 0. */
+    public static double flinch(float hurt, int duration) {
+        if (hurt <= 0 || duration <= 0) return 0;
+        double k = Mth.clamp(hurt / duration, 0, 1);
+        return k * k;
+    }
+
+    /** Brace for a fall: 0 up to 0.6 blocks per tick downward, 1 from 1.2. */
+    public static double brace(double fallSpeed) {
+        return smooth((fallSpeed - 0.6) / 0.6);
+    }
+
+    /** Low Air: 0 above a tenth of the tank, 1 at empty. */
+    public static double lowAir(double fraction) {
+        return smooth(1 - fraction / 0.1);
+    }
+
+    /** An occasional 0..1..0 bump {@code length} ticks long once per {@code every} ticks, shifted by {@code seed}. */
+    public static double bump(float time, float every, float length, int seed) {
+        float t = time + (seed & 0xFF) * every / 256F;
+        float in = t - Mth.floor(t / every) * every;
+        if (in >= length) return 0;
+        double s = Math.sin(in / length * Math.PI);
+        return s * s;
+    }
+
+    /** The plane a tool swings in: its axis (grip to head) at the impact and the way it rears back, unit and at right angles. */
+    public record Swing(Vec3 impact, Vec3 back) {
+        /** {@code back} is squared up to {@code impact}; a hint along it falls back to straight up, then sideways. */
+        public static Swing of(Vec3 impact, Vec3 back) {
+            Vec3 i = unit(impact, new Vec3(0, 0, 1));
+            Vec3 b = off(back, i);
+            if (b.lengthSqr() < 1.0E-8) b = off(new Vec3(0, 1, 0), i);
+            if (b.lengthSqr() < 1.0E-8) b = off(new Vec3(1, 0, 0), i);
+            return new Swing(i, b.normalize());
+        }
+    }
+
+    /**
+     * A held item this frame: the spot it is gripped at, its axis (grip to head, unit), the way its edge faces (unit, across the
+     * axis) and the way the gripper holding it points (unit).
+     */
+    public record Tool(Vec3 grip, Vec3 axis, Vec3 edge, Vec3 palm) {
+        public Vec3 head(double length) {
+            return grip.add(axis.scale(length));
+        }
+    }
+
+    /**
+     * A strike at {@code target} with a tool {@code length} long, at swing progress {@code p}: at the impact the head is on the
+     * target with the tool along the plane's impact axis; before it the tool rears back by up to {@link #STRIKE_ARC} and the
+     * grip pulls away by up to {@code pull}; the edge leads the head. The gripper is rigid on the handle and turns with it: it
+     * holds from behind the swing, or from the plane's side by {@code sideways} (-1..1, the sign picks the side), so it never
+     * flips mid-swing.
+     */
+    public static Tool strikeAt(Vec3 target, Swing plane, double length, double p, Vec3 pull, double sideways) {
+        double phi = (1 - strikeSwing(p)) / 2 * STRIKE_ARC;
+        double c = Math.cos(phi), s = Math.sin(phi);
+        Vec3 axis = plane.impact().scale(c).add(plane.back().scale(s));
+        Vec3 edge = plane.impact().scale(s).subtract(plane.back().scale(c));
+        Vec3 grip = target.subtract(plane.impact().scale(length)).add(pull.scale(strikeBack(p)));
+        Vec3 behind = axis.scale(0.5).subtract(edge.scale(0.85));
+        Vec3 palm = plane.impact().cross(plane.back()).scale(sideways).add(behind.scale(1 - Math.abs(sideways))).normalize();
+        return new Tool(grip, axis, edge, palm);
+    }
+
+    /** A wrist and the way its gripper points (unit). */
+    public record Hand(Vec3 wrist, Vec3 dir) {
+    }
+
+    /**
+     * The way a gripper points that closes square across an item's {@code axis} at {@code grip}, as a hand closes round a handle:
+     * from the arm's side of it (the arm comes from {@code root}), turned toward {@code toward} first by {@code along}, 0..1.
+     */
+    public static Vec3 palm(Vec3 root, Vec3 grip, Vec3 axis, Vec3 toward, double along) {
+        Vec3 u = unit(grip.subtract(root), new Vec3(0, 0, 1));
+        Vec3 from = along <= 0 ? u : unit(u.scale(1 - along).add(unit(toward, u).scale(along)), u);
+        Vec3 a = unit(axis, new Vec3(0, 1, 0));
+        Vec3 square = off(from, a);
+        if (square.lengthSqr() < 1.0E-6) square = off(u, a);
+        if (square.lengthSqr() < 1.0E-6) square = off(Math.abs(a.y) < 0.9 ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0), a);
+        return square.normalize();
+    }
+
+    /**
+     * The wrist for a gripper whose fingers meet on {@code grip}, coming from {@code root}. {@code held} 0: in line with the arm;
+     * {@code held} 1: pointing along {@code palm}.
+     */
+    public static Hand hand(Vec3 root, Vec3 grip, Vec3 palm, double held) {
+        Vec3 u = unit(grip.subtract(root), new Vec3(0, 0, 1));
+        if (held <= 0) return new Hand(grip.subtract(u.scale(GRIP_LENGTH)), u);
+        Vec3 dir = unit(u.scale(1 - held).add(unit(palm, u).scale(held)), u);
+        return new Hand(grip.subtract(dir.scale(GRIP_LENGTH)), dir);
+    }
+
+    /** {@link #hand(Vec3, Vec3, Vec3, double)} with the gripper square across the item's {@code axis} ({@link #palm}). */
+    public static Hand hand(Vec3 root, Vec3 grip, Vec3 axis, Vec3 toward, double along, double held) {
+        return hand(root, grip, held <= 0 ? toward : palm(root, grip, axis, toward, along), held);
     }
 }

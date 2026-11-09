@@ -670,7 +670,14 @@ public final class DevScript {
                     mc.stop();
                     return;
                 }
-                default -> LOG.warn("script: unknown line {}", line);
+                default -> {
+                    int wait = DevLook.run(mc, a);
+                    if (wait < 0) LOG.warn("script: unknown line {}", line);
+                    else if (wait > 0) {
+                        waitTicks = wait;
+                        return;
+                    }
+                }
             }
         }
     }
