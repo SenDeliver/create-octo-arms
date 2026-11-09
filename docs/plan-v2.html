@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Octo Arms 2.0 plan: Actuators</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js" integrity="sha384-rbtjAdnIQE/aQJGEgXrVUlMibdfTSa4PQju4HDhN3sR2PmaKFzhEafuePsl9H/9I" crossorigin="anonymous"></script>
+<style>
+:root{--ink:#1d2430;--mute:#5d6878;--line:#d9dee6;--bg:#fff;--soft:#f4f6f9;--acc:#0b63c4;--warn:#b35c00;--ok:#1d7a3a}
+*{box-sizing:border-box}
+body{margin:0;padding:0 32px 64px;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+h1{font-size:28px;margin:28px 0 4px}
+h2{font-size:20px;margin:40px 0 8px;padding-top:12px;border-top:2px solid var(--line)}
+h3{font-size:16px;margin:22px 0 6px}
+p{margin:6px 0}
+.sub{color:var(--mute)}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left}
+th{background:var(--soft)}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:13px}
+pre{background:var(--soft);padding:10px;overflow:auto;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:14px}
+.card{border:1px solid var(--line);border-radius:6px;padding:12px 14px;background:#fff}
+.card h3{margin-top:0}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border-radius:10px;background:var(--soft);color:var(--mute);margin-right:4px}
+.warn{color:var(--warn)}
+.ok{color:var(--ok)}
+ul{margin:4px 0 4px 20px;padding:0}
+li{margin:2px 0}
+.mermaid{background:#fff;margin:8px 0}
+nav a{margin-right:14px;color:var(--acc);text-decoration:none;font-size:14px}
+</style>
+</head>
+<body>
+<h1>Octo Arms 2.0 plan: Actuators</h1>
+<p class="sub">Branch <code>v1.21.1-v2</code>, base 1.8.0. Spec: <code>docs/CONTEXT.md</code> (section Actuators), <code>docs/adr/0007</code>. Review folded in: <code>docs/plan-v2-grill-review.md</code>. Written 2026-11-09.</p>
+<nav>
+<a href="#goal">Goal</a><a href="#decisions">Decisions</a><a href="#arch">Architecture</a><a href="#wp">Work packages</a><a href="#data">Data and wire</a><a href="#config">Config</a><a href="#numbers">Numbers</a><a href="#adv">Advancements</a><a href="#tests">Tests</a><a href="#port">1.20.1</a><a href="#risks">Risks</a>
+</nav>
+
+<h2 id="goal">1. Goal</h2>
+<p>Two Actuators fitted to a Rig. They look cool, feel cool, play cool, help and never annoy. Four Tentacles keep walking exactly as in 1.8.0. The release is 2.0.0 on both Minecraft lines together; this plan builds 1.21.1, the 1.20.1 copy is a later session.</p>
+<div class="grid">
+<div class="card"><h3>Right Actuator: Far Use</h3><p>Whatever either hand does, farther. Blocks at Reach, mobs and players at Strike Reach. Vanilla paths via reach attributes; server checks sight past arm's length. Drops fly home. Rig Setting always / Rig out only / off.</p></div>
+<div class="card"><h3>Left Actuator: Grab</h3><p>Key V, empty main hand, mobs (no boss, no player) and Ships. Held Pinned, low left, out of the crosshair. V again sets down (1 s calm), attack Throws with Impact. Works wherever hands work, Stowed included.</p></div>
+<div class="card"><h3>Economy</h3><p>Rig Air doubled. Actuators sip Air; Deft (one level) makes them free. Speed default = server max.</p></div>
+<div class="card"><h3>Look</h3><p>Rest Pose above the head, wider than the body, idle gestures, telegraph toward grabbables, side entry in first person, opacity slider for all Limbs, Fitting flex, Throw camera kick, Impact clank.</p></div>
+</div>
+
+<h2 id="decisions">2. Decisions (owner, grilled 2026-11-09)</h2>
+<table>
+<tr><th>Topic</th><th>Decision</th></tr>
+<tr><td>Base</td><td>1.8.0 + Actuators + doubled Air = 2.0.0. Old branch <code>v2</code> is a parts bin, never released.</td></tr>
+<tr><td>Limbs</td><td>4 Tentacles walk only. 2 Actuators act, Stowed or Active, on Rides, gliding, Falling, Control Hold.</td></tr>
+<tr><td>Item</td><td>One Actuator item, no tiers, Sequenced Assembly. Fitting is permanent and optional. Three recipes: Rig as now; Rig recipe + Actuator each side; Fitting at a crafting table keeping components.</td></tr>
+<tr><td>Far Use</td><td>Either hand. Blocks at full Reach, mobs/players at Strike Reach (Copper 3.5, Netherite 5, config, Far Reach does not add). Extendo Grip in hand: Actuator idles, no lift. Server line-of-sight check past arm's length. Setting always / Rig out only / off.</td></tr>
+<tr><td>Grab</td><td>Key V (G is Curios). Empty main hand only. Mobs: no players, no bosses (<code>tentaworks:bosses</code> tag + Dragon, Wither, Warden, &gt;100 max hp), nothing riding/ridden, not already held, not leashed by another, others' pets only with config. Ships via Ship Grab (Sable, 1.21.1 only). Claim-mod event asked first. Refusal = action-bar line.</td></tr>
+<tr><td>Hold</td><td>Low left of view, out of crosshair, own clicks pass through. Swept with block collision. Pinned (no AI, fuse, shots). Light: w ≤ 1.5, h ≤ 2, w²h ≤ 2; heavy takes both Actuators, Far Use pauses, walk and Rig Speed 60%.</td></tr>
+<tr><td>Release</td><td>V again = set down where it is, 1 s calm (Creeper fuse reset), seat/boat/minecart under it = seated. Hold survives Stow, Setting Down, Rides, glide, Falling. Ends on Crawl, death, logout, Rig off, dimension change, target gone/out of Reach, no Air.</td></tr>
+<tr><td>Throw</td><td>Attack while holding. Tier speed. Fall damage + Impact once (thrown mob and what it hits), wearer is the damage source, PvP rule for players.</td></tr>
+<tr><td>Air</td><td>Rig max Air = 2x Backtank (config multiplier). Far Use sip, Grab trickle, Throw gulp. Empty = Actuators limp, target set down. Deft: one level, Actuators free.</td></tr>
+<tr><td>Settings</td><td>Speed default = server max (unsaved 1.x Rigs speed up, changelog line). Standing Height 1.5. New row Far Use.</td></tr>
+<tr><td>Client config</td><td>First-person Limb opacity 100% default, 10% floor, all Limbs, acting Actuators too.</td></tr>
+<tr><td>Advancements</td><td>Keep Hang In There, Intelligence Is a Privilege (5 enchants), Spider Man, Power of the Sun, Fridge Mover. New: Fitted, Special Delivery. Dropped: Nine Lives, Brilliant But Lazy, Not a Monster.</td></tr>
+<tr><td>Extras</td><td>Telegraph, drops fly home, held-mob utility (shear, milk, name, saddle, lead), set down into seats, Throw camera kick + Impact clank + follow-through, Fitting flex on first wear.</td></tr>
+</table>
+
+<h2 id="arch">3. Architecture</h2>
+<p>Movement stays client-driven (ADR 0001). Actuator actions are server-authoritative (ADR 0007 of this branch): the client asks, the server validates and tells everyone. Actuator state lives outside <code>RigServer.Wearer</code> and <code>RigVisuals.Visual</code> because both exist only while the Rig is out.</p>
+<pre class="mermaid">
+flowchart LR
+  subgraph client[Client]
+    K[Grab key V] --> GP[RigGrabPacket c2s]
+    AC[ActuatorClient state] --> AR[ActuatorRenderer]
+    AC --> HUD[ActuatorHud]
+    FU[FarUseClient: reach attrs + Extendo rule] --> VAN[vanilla click paths]
+  end
+  subgraph server[Server]
+    GP --> GR[Grab]
+    GR --> RULE[GrabRule / Hold / Pinned]
+    GR --> SHIP[ShipBody via Sable internals]
+    GR --> IMP[Impact tracker]
+    FUS[FarUse: attrs + sight events + Strike Reach + drops home] --> VAN2[vanilla handlers]
+    GR --> AP[ActuatorStatePacket s2c]
+    FUS --> FP[FarUsePacket s2c]
+    GR --> EV[RigEvents trigger]
+  end
+  AP --> AC
+  FP --> AC
+</pre>
+<h3>New and changed classes</h3>
+<table>
+<tr><th>Area</th><th>Class</th><th>Role</th></tr>
+<tr><td>rig</td><td><code>Actuators</code></td><td>Static helpers: <code>fitted(stack)</code>, <code>fitted(player)</code> (WornRig), component set/get, <code>strikeReach(stack)</code>, Air cost helpers, limp check.</td></tr>
+<tr><td>rig</td><td><code>FarUse</code></td><td>Server: per-tick transient attribute modifiers (<code>BLOCK_INTERACTION_RANGE</code> = Reach, <code>ENTITY_INTERACTION_RANGE</code> = Strike Reach) when fitted, setting allows, no Extendo Grip in hand, no heavy hold, Air left. Sight checks on <code>BlockEvent.BreakEvent</code>, <code>LeftClickBlock</code>, <code>RightClickBlock</code>, <code>EntityInteract(Specific)</code>, <code>AttackEntityEvent</code> past base range (uses <code>WorkSight</code> from v2). Charges Air per accepted far action. Drops fly home on <code>BlockDropsEvent</code>. Sends <code>FarUsePacket</code> to trackers on accepted far action.</td></tr>
+<tr><td>rig</td><td><code>WorkSight</code></td><td>REUSE from v2 with test.</td></tr>
+<tr><td>rig</td><td><code>Grab</code>, <code>GrabRule</code>, <code>Hold</code></td><td>ADAPT from v2: V-key start, light/heavy bulk rule, lower-left hold point, sweep, release from one place with the new list, calm, seat set-down, claim event, action-bar refusals, Air per tick, no-Air release, rate limit 1 start / 5 ticks.</td></tr>
+<tr><td>rig</td><td><code>Pinned</code> + <code>MobPinnedMixin</code></td><td>Transient, non-serialized attachment (<code>tentaworks:pinned</code>). Mixin <code>@Inject(HEAD, cancellable)</code> on <code>Mob.serverAiStep</code> returns when pinned or calm; on pin: <code>setTarget(null)</code>, navigation stop, Creeper <code>setSwellDir(-1)</code>. Calm = 20 ticks after set-down. Never NBT.</td></tr>
+<tr><td>rig</td><td><code>Impact</code></td><td>Server tracker of Thrown entities (per entity: thrower, start pos, last speed, armed). Each tick: on first <code>horizontalCollision || verticalCollision</code> or speed drop &gt; 60% apply Impact to the mob and to entities its box touches; fire <code>throw_distance</code> event when it stops. Damage type <code>tentaworks:impact</code>, attacker = wearer, PvP gate via <code>canHarmPlayer</code>.</td></tr>
+<tr><td>rig</td><td><code>RigEvents</code>, <code>RigEventTrigger</code>, <code>TentaworksTriggers</code></td><td>REUSE from v2; events hang, spider_kill, grab_blaze, ship_grab, throw_distance.</td></tr>
+<tr><td>rig</td><td><code>FittingRecipe</code> + serializer</td><td>Crafting recipe: Actuator, Rig, Actuator in one row (any row, any 3-wide grid). Result = Rig copy with the component. JEI shows it via vanilla crafting category.</td></tr>
+<tr><td>compat</td><td><code>ShipBody</code>, <code>SableShips.Body</code></td><td>REUSE from v2; behind the Sable guard and a runtime class check so <code>ShipFramesTest</code> stays green.</td></tr>
+<tr><td>mixin</td><td><code>BacktankUtilMixin</code>, <code>BacktankBlockEntityMixin</code></td><td>Rig max Air × <code>air.capacityFactor</code> for Rig stacks and Rig Blocks (<code>@ModifyReturnValue</code> on <code>maxAir(ItemStack)</code>; BE fill cap for Rig blocks).</td></tr>
+<tr><td>network</td><td><code>RigGrabPacket</code> (c2s), <code>ActuatorStatePacket</code> (s2c), <code>FarUsePacket</code> (s2c)</td><td>Registrar "10". See section 5.</td></tr>
+<tr><td>client</td><td><code>ActuatorClient</code></td><td>Key handling, held prediction (moves held mob locally each tick), reach attributes on the client, state for renderer and HUD (held id, heavy, ship, far target with ttl), camera kick, fitting flex timer, telegraph target.</td></tr>
+<tr><td>client</td><td><code>ActuatorRenderer</code></td><td>Two arms from upper shoulders using <code>TentacleSpline</code> (v2) tube + v2 <code>claw()</code>. Poses: Rest (above head, wide, breathing, gestures), Telegraph, Far Use reach (4-tick arc to target, hammer while mining, return), Grab hold (tip at held box, fingers closed), both-arms heavy, limp (no Air), fold-out flex. Side entry in first person: shoulders placed at frame edges. Opacity: translucent render type when &lt; 1.</td></tr>
+<tr><td>client</td><td><code>ActuatorHud</code></td><td><code>RegisterGuiLayersEvent</code> layer: small icon while holding (light/heavy), nothing otherwise.</td></tr>
+<tr><td>client</td><td><code>RigSettingsScreen</code></td><td>Fourth row Far Use (always / rig out / off) on a fitted Rig.</td></tr>
+<tr><td>client</td><td><code>ItemInHandLayerMixin</code>, <code>RenderHandEvent</code></td><td>Hide the hand item while drawn at the Actuator tip during a Far Use reach.</td></tr>
+<tr><td>registry</td><td>Items, DataComponents, Lang, CreativeTabs, Datagen, Triggers, Attachments</td><td>Actuator + incomplete item, <code>tentaworks:actuators</code> Unit component, lang keys, tab entries (Actuator, fitted Rigs), recipes.</td></tr>
+</table>
+
+<h2 id="wp">4. Work packages</h2>
+<pre class="mermaid">
+flowchart TD
+  WP0[WP0 Foundations: ids, component, item, recipes, Deft, config, Air x2, packets, RigSettings farUse, tests] --> WP1[WP1 Far Use server+client logic]
+  WP0 --> WP2[WP2 Grab, Throw, Impact, Pinned, Ship Grab, events, advancements]
+  WP0 --> WP3[WP3 Visuals: renderer, HUD, first person, settings row, feedback]
+  WP1 --> WP4[WP4 Dev tooling + harness suites]
+  WP2 --> WP4
+  WP3 --> WP4
+  WP1 --> WP5[WP5 Lang x15, docs, version 2.0.0]
+  WP2 --> WP5
+  WP3 --> WP5
+  WP4 --> F[Final: build, test, review, owner in-game test]
+  WP5 --> F
+</pre>
+<table>
+<tr><th>WP</th><th>Scope</th><th>Done when</th></tr>
+<tr><td>WP0</td><td>Everything shared: <code>TentaworksIds</code> (ACTUATOR, INCOMPLETE_ACTUATOR, ACTUATORS, DEFT, BOSSES, PINNED), component, Actuator + incomplete items + models (icon via gen_models or hand JSON), Sequenced Assembly recipe, mechanical crafting fitted variants, <code>FittingRecipe</code>, Deft enchantment JSON + tags + <code>RigEnchants</code>, <code>tentaworks:bosses</code> tag, all Server Config keys (section 6) with en_us lang, client config opacity, <code>RigSettings.farUse</code> field, <code>RigAir</code> Actuator costs, Air ×2 mixins, <code>Grips.visible</code> public, registrar "10" + the three packets with handlers wired to stub <code>Grab</code>/<code>ActuatorClient</code>, <code>Actuators</code> helper, creative tab, tooltip lines, Fitted advancement, WorkSight + test, RigEventTrigger + TentaworksTriggers + Attachments registry.</td><td><code>./gradlew build</code> green, JUnit for component round trip, FittingRecipe, Deft data, RigSettings codec, Air factor.</td></tr>
+<tr><td>WP1</td><td><code>FarUse</code> server + <code>FarUseClient</code> part of <code>ActuatorClient</code>: attributes, Extendo rule, setting, heavy pause, sight events, Strike Reach, Air, drops + XP home, FarUsePacket emit.</td><td>Build green, JUnit for the gate decisions (pure function), manual dev run shows mining at 7 blocks and refusal through a wall.</td></tr>
+<tr><td>WP2</td><td><code>Grab</code>, <code>GrabRule</code>, <code>Hold</code>, <code>Pinned</code> + mixin, release list, calm, seats, claim event, refusals, <code>Impact</code>, damage type JSON, speed 60% (server topSpeed scale + <code>MOVEMENT_SPEED</code> transient modifier), <code>ShipBody</code>/Sable, RigEvents wiring, advancements JSON (spider_man, hang_in_there, power_of_the_sun, fridge_mover, intelligence with 5, special_delivery), RigServer hooks (relay, logout, death, dimension, Crawl, no Air), StartTracking sync.</td><td>Build green, JUnit GrabRuleTest (bulk rule, bosses, players), ImpactTest, HoldTest, RigEventsTest; dev run: grab pig, walk, set down, throw.</td></tr>
+<tr><td>WP3</td><td><code>ActuatorRenderer</code> (poses above), <code>TentacleSpline</code> + claw from v2, textures claw/lens/skin, opacity for all Limbs (Tentacles too), first-person side entry, hand item at tip + mixin, <code>ActuatorHud</code>, settings row, camera kick, Impact particles + sound, Fitting flex, telegraph, Back Slot render path, Ponder untouched.</td><td>Build green, look script shots (first + third person, hold, far use) reviewed.</td></tr>
+<tr><td>WP4</td><td>DevScript: <code>lookate TYPE</code>, <code>lookship</code>, <code>hit</code>; STRACE/TRACE fields appended; <code>/tentaworks config</code>, <code>tame</code>, mob summon helpers; suites <code>faruse</code>, <code>grab</code>, <code>shipgrab</code> (+ <code>look</code> shots), metrics, run_all lines, README sections. Run the new suites alone (no full regression, owner tests first).</td><td>New suites PASS alone.</td></tr>
+<tr><td>WP5</td><td>15 translations for every new key (<code>tools/lang_check.py</code> clean), CHANGELOG 2.0.0, README, <code>docs/save-format.md</code>, mods.toml description, version 2.0.0 in gradle.properties, CLAUDE.md suite count, store texts under <code>publishing/</code>.</td><td>lang_check exit 0, docs read true.</td></tr>
+</table>
+<p>WP1, WP2 and WP3 run in parallel in separate worktrees branched from WP0's commit, then merge into <code>v1.21.1-v2</code>. Shared files to watch at merge: <code>TentaworksLang</code>, <code>RigServer</code>, <code>RigClient</code>, <code>TentaworksClient</code>, <code>tentaworks.mixins.json</code>.</p>
+
+<h2 id="data">5. Data and wire</h2>
+<h3>Component</h3>
+<p><code>tentaworks:actuators</code>: <code>Unit</code>, persistent, network synchronized. Present = fitted. Lives on the Rig stack, survives Rig Block place and pick-up (component patch), smithing to Netherite, anvil repair. Save format note goes to <code>docs/save-format.md</code>.</p>
+<h3>Rig Settings</h3>
+<p>New lenient-optional field <code>far_use</code>: <code>always</code> (default) | <code>rig_out</code> | <code>off</code>. Stream codec appends it at the end. <code>DEFAULT_SPEED</code> becomes <code>maxSpeed()</code> at read time (default = server top speed; clamp still applies).</p>
+<h3>Packets (registrar "10")</h3>
+<table>
+<tr><th>Packet</th><th>Dir</th><th>Fields</th><th>When</th></tr>
+<tr><td><code>tentaworks:rig_grab</code></td><td>c2s</td><td>kind START(entityId) | SHIP(BlockPos, face) | RELEASE | THROW(Vec3 look)</td><td>Grab key, attack while holding.</td></tr>
+<tr><td><code>tentaworks:actuator_state</code></td><td>s2c</td><td>entityId, heldId (−1 none), heavy, ship BlockPos nullable, face, refusal key (string, empty none)</td><td>To wearer after every request (ack or refusal, refusal shown in action bar) and to trackers on change and StartTracking.</td></tr>
+<tr><td><code>tentaworks:far_use</code></td><td>s2c</td><td>entityId, target Vec3, kind (block/entity), ttl ticks</td><td>To trackers (not the wearer, who predicts) on each accepted far action, throttled 1 per 2 ticks.</td></tr>
+</table>
+<h3>Attachments (never serialized)</h3>
+<p><code>tentaworks:pinned</code> on mobs: <code>{holder UUID, calmUntil long}</code>. <code>tentaworks:thrown</code> on entities: Impact tracker record. Both registered with no codec so they never reach NBT.</p>
+
+<h2 id="config">6. Config</h2>
+<table>
+<tr><th>Key</th><th>Default</th><th>Range</th><th>Meaning</th></tr>
+<tr><td><code>air.capacityFactor</code></td><td>2.0</td><td>1–8</td><td>Rig max Air = Backtank max Air × factor (Capacity included).</td></tr>
+<tr><td><code>air.farUse</code></td><td>0.5</td><td>0–50</td><td>Air per accepted far action (block or entity).</td></tr>
+<tr><td><code>air.grab</code></td><td>40</td><td>1–72000</td><td>Ticks per Air while holding.</td></tr>
+<tr><td><code>air.throw</code></td><td>10</td><td>0–500</td><td>Air per Throw.</td></tr>
+<tr><td><code>strikeReach.copper</code> / <code>.netherite</code></td><td>3.5 / 5.0</td><td>1–16</td><td>Entity range of Far Use.</td></tr>
+<tr><td><code>farUse.players</code></td><td>true</td><td></td><td>Far Use may hit players.</td></tr>
+<tr><td><code>grab.tamedOthers</code></td><td>false</td><td></td><td>Others' tamed, owned or leashed animals.</td></tr>
+<tr><td><code>grab.ships</code></td><td>true</td><td></td><td>Ship Grab (needs Sable + ships.grip).</td></tr>
+<tr><td><code>grab.massCap.copper</code> / <code>.netherite</code></td><td>2000 / 6000</td><td>0–1e6</td><td>Sable mass cap.</td></tr>
+<tr><td><code>grab.throwSpeed.copper</code> / <code>.netherite</code></td><td>0.8 / 1.2</td><td>0.1–5</td><td>Blocks per tick.</td></tr>
+<tr><td><code>grab.heavySpeedFactor</code></td><td>0.6</td><td>0.1–1</td><td>Walk and Rig Speed while heavy held.</td></tr>
+<tr><td><code>impact.damagePerSpeed</code></td><td>12</td><td>0–100</td><td>Damage = (speed − minSpeed) × this, once.</td></tr>
+<tr><td><code>impact.minSpeed</code></td><td>0.3</td><td>0–5</td><td>Below it no Impact.</td></tr>
+<tr><td><code>impact.cap</code></td><td>20</td><td>0–1000</td><td>Max Impact damage per Throw.</td></tr>
+</table>
+<p>Client: <code>firstPerson.limbOpacity</code> 1.0 (0.1–1.0), all Limbs in first person.</p>
+
+<h2 id="numbers">7. Numbers and formulas</h2>
+<ul>
+<li><b>Light/heavy</b>: light if <code>w ≤ 1.5 && h ≤ 2.0 && w·w·h ≤ 2.0</code>. Spider 1.76 light, cow light, zombie light, horse 3.1 heavy, enderman heavy (height), golem, ravager, ghast heavy. Ships always heavy.</li>
+<li><b>Hold point</b>: camera basis (look, right, up): <code>eye + look·(1.1 + w/2) − right·(0.7 + w/2) − up·(0.55 + h/2 − 0.3)</code>, then <code>Hold.place</code> and <code>Hold.sweep</code>. Target stays visible lower-left and off the crosshair ray by at least 0.35 blocks; if the pick ray still hits it, the wearer's pick ignores it (client) and the server skips it as attack/interact target.</li>
+<li><b>Far rule</b>: target farther than Reach + 1 for 5 ticks → release "far".</li>
+<li><b>Throw</b>: velocity = look × throwSpeed(tier); mob woken before velocity; Impact armed.</li>
+<li><b>Impact</b>: at first collision, <code>d = clamp((v − minSpeed) × damagePerSpeed, 0, cap)</code> to the thrown mob and to each living entity whose box it touches (PvP gate for players). Then disarmed.</li>
+<li><b>Special Delivery</b>: horizontal distance from throw point to rest point ≥ 20.</li>
+<li><b>Heavy</b>: <code>MOVEMENT_SPEED</code> transient × 0.6 on server and client; Rig top speed × 0.6 in RigServer validation and RigClient.</li>
+<li><b>Strike Reach</b>: entity range attribute = max(base, strikeReach(tier)); server AttackEntityEvent/EntityInteract past base need sight (<code>WorkSight.seesBox</code>).</li>
+<li><b>Fitting flex</b>: 20 ticks on first wear after the component appears (client-side detection of stack change).</li>
+<li><b>Telegraph</b>: client ray hit on a living, grabbable-looking entity (not player, not boss tag) within Reach with empty hand → Left Actuator points, no packet.</li>
+</ul>
+
+<h2 id="adv">8. Advancements</h2>
+<table>
+<tr><th>Id</th><th>Parent</th><th>Trigger</th></tr>
+<tr><td><code>fitted</code> "Fitted"</td><td>doc_rig</td><td>inventory_changed: Rig with component <code>tentaworks:actuators</code></td></tr>
+<tr><td><code>power_of_the_sun</code></td><td>fitted</td><td>rig_event grab_blaze</td></tr>
+<tr><td><code>fridge_mover</code></td><td>fitted</td><td>rig_event ship_grab ≥ 50</td></tr>
+<tr><td><code>special_delivery</code> "Special Delivery"</td><td>fitted</td><td>rig_event throw_distance ≥ 20</td></tr>
+<tr><td><code>spider_man</code></td><td>doc_rig</td><td>rig_event spider_kill</td></tr>
+<tr><td><code>hang_in_there</code></td><td>doc_rig</td><td>rig_event hang ≥ 60</td></tr>
+<tr><td><code>intelligence_is_a_privilege</code></td><td>doc_rig</td><td>inventory_changed: Rig with far_reach, thrift, swift, silent_step, deft</td></tr>
+</table>
+
+<h2 id="tests">9. Tests</h2>
+<h3>JUnit (FML unit tests, run in build)</h3>
+<ul>
+<li>ActuatorsComponentTest: set, read, copy through FittingRecipe result, survives smithing-like copy.</li>
+<li>FittingRecipeTest: matches A-R-A rows only, result keeps Air, enchantments, damage, settings.</li>
+<li>RigEnchantDataTest: 5 enchantments, Deft max level 1.</li>
+<li>RigSettingsCodecTest: old JSON without far_use decodes to always; speed default = max.</li>
+<li>AirCapacityTest: factor applied to Rig stacks only.</li>
+<li>GrabRuleTest: bulk rule table above, bosses, players, riding, held, leashed, others' pets config.</li>
+<li>HoldTest: hold point off the crosshair ray, place/sweep against a wall (GripFaceTest world helper).</li>
+<li>ImpactTest: formula, cap, min speed, once.</li>
+<li>WorkSightTest (v2), RigEventsTest (v2).</li>
+<li>FarUseGateTest: pure decision (fitted, setting, Stowed/Active, Extendo, heavy, Air) → lift block / lift entity values.</li>
+</ul>
+<h3>Harness suites (tools/, run alone, not the full regression)</h3>
+<table>
+<tr><th>Suite</th><th>Checks</th></tr>
+<tr><td><code>faruse</code></td><td>Reach 6 copper: mine a block at 5.5 (ok), at 5.5 behind a pane (refused), hit a zombie at 3 (ok) and 4.5 (refused, Strike Reach 3.5), place at distance, Extendo Grip in hand → no lift, setting off → no lift, Air sip paid, drops arrive at wearer, Stowed and Active both.</td></tr>
+<tr><td><code>grab</code></td><td>V on pig: held 40 ticks within 0.6 of hold point on server/wearer/observer; walk 8 blocks holding; Stow keeps hold; Setting Down keeps hold; set down + 1 s calm; throw speed ≥ 0.8×config and &gt; 4 blocks; Impact damage logged; golem heavy both arms and 60% speed; Wither refused with action-bar key; player refused; no-Air release; creeper fuse no explosion while held; seat set-down.</td></tr>
+<tr><td><code>shipgrab</code></td><td>Adapted v2: start both arms mass 54; follow within 0.5; release slides &lt; 0.3; throw &gt; 2 blocks; mass cap refusal; observer sync.</td></tr>
+<tr><td><code>look</code></td><td>Shots: Rest Pose third person, first person idle, Far Use reach, hold light, hold heavy, opacity 0.3.</td></tr>
+</table>
+
+<h2 id="port">10. 1.20.1 port notes (later session)</h2>
+<ul>
+<li>Reach: <code>forge:block_reach</code> / <code>forge:entity_reach</code> attributes; verify server honours them in <code>handleUseItemOn</code>/<code>handleInteract</code>/<code>handleBlockBreakAction</code>.</li>
+<li>Component → NBT tag <code>Actuators</code>; verify Rig Block round trip keeps custom NBT (Create 0.5.1 BacktankBlockEntity) before trusting Fitting there. Also check RigSettings today.</li>
+<li>Bosses: <code>forge:bosses</code> into <code>tentaworks:bosses</code>.</li>
+<li>No Sable: Ship Grab absent, <code>fridge_mover</code> hidden on 1.20.1 (datagen flag or omitted file).</li>
+<li>Attachments → capabilities or a server-side map (no NBT).</li>
+<li>BlockDropsEvent does not exist on Forge 47: use <code>BlockEvent.BreakEvent</code> + <code>LivingDropsEvent</code>-style item entity capture or <code>Block.getDrops</code> hook.</li>
+</ul>
+
+<h2 id="risks">11. Risks and open engineering points</h2>
+<ul>
+<li class="warn"><b>Sable internals</b>: <code>RigidBodyHandle</code>, <code>ServerSubLevel.getMassTracker</code> exist 2.0.0–2.0.6 (signature check). Guard with a runtime class check and a try/catch at first use; keep range <code>[2.0.0,2.1)</code>. If missing, Ship Grab refuses silently.</li>
+<li class="warn"><b>Pinned via cancelled serverAiStep</b>: some modded mobs tick attacks outside goals. Accepted; Creeper handled explicitly.</li>
+<li class="warn"><b>Held mob sync</b>: server teleports each tick + wearer prediction; remote clients interpolate vanilla teleports. If jitter is visible, switch to passenger-based positioning later.</li>
+<li><b>Rig Block</b> does not draw Actuators when placed (block model unchanged). Deferred.</li>
+<li><b>Ponder</b> scene unchanged in 2.0; a Fitting scene is a follow-up.</li>
+<li><b>Protocol</b>: registrar "10", minor release rules.</li>
+<li><b>Harness noise</b>: Gradle MessageIOException lines fail exception checks on this machine; classify before blaming.</li>
+</ul>
+<script>mermaid.initialize({startOnLoad:true,theme:'neutral'});</script>
+</body>
+</html>
