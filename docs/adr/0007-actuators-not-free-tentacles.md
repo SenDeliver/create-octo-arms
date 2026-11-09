@@ -17,3 +17,13 @@ The first 2.0 design (branch `v2`, never released) let two of the four Tentacles
 - A held mob is Pinned (no AI) so a Grab is always safe for the wearer; this is the price of a toy-safe Grab and is deliberate.
 - Server stays the authority for Grab, Throw and Impact as ADR 0007 of the old branch argued; carrying the wearer stays client-driven (ADR 0001).
 - The old branch is a parts bin only (Claw model, advancement set, Ship Grab checks); its ADRs 0004, 0005 and 0007 are void.
+
+## Addendum (owner test round 3, before 2.0.0 shipped)
+
+"The Right Actuator extends the main hand, the Left Actuator Grabs" did not hold up in play: a wearer with a tool in the main hand could not Grab, the off hand's item had no Actuator, and two tools did nothing together. The decision above stands (two fitted Actuators, no selection, one new key); only the split of roles changed:
+
+- Each Actuator stands in for one hand, the main-hand one on the wearer's main-arm side. It carries that hand's item and performs every action of that hand, near or far.
+- Grab takes any Actuator whose hand is empty (a light target one, a heavy target or a Ship both). Throw is attack with an empty main hand, else the Grab key held with attack.
+- Reach for Far Use and Grab is measured from the Rig body, exactly as a Grip's, so Actuators and Tentacles reach the same places.
+- Dual Wield: with both Actuators free the off-hand item works along with the main-hand one.
+- Still no selection and no modes: which Actuator acts follows from which hand vanilla uses and which hand is empty, and the crosshair marks say so beforehand.
