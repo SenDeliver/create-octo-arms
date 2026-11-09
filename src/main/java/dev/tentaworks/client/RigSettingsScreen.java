@@ -8,6 +8,7 @@ import com.simibubi.create.foundation.gui.widget.SelectionScrollInput;
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.network.RigSettingsPacket;
 import dev.tentaworks.registry.TentaworksDataComponents;
+import dev.tentaworks.rig.Actuators;
 import dev.tentaworks.rig.RigSettings;
 import dev.tentaworks.rig.RigSettings.ActivationMode;
 import dev.tentaworks.rig.RigSlot;
@@ -28,13 +29,13 @@ import java.util.Locale;
 
 /**
  * Rig Settings (design §7), Create symmetry-wand style: scroll the rows, the values are written to the Rig on close.
- * The panel is Create's wand panel, stretched to three rows and a wider field.
+ * The panel is Create's wand panel, stretched to three rows (four with Far Use on a fitted Rig) and a wider field.
  */
 public class RigSettingsScreen extends AbstractSimiScreen {
     private static final AllGuiTextures PANEL = AllGuiTextures.WAND_OF_SYMMETRY;
     private static final int EXTRA = 56;
     private static final int W = 188 + EXTRA;
-    private static final int H = 127;
+    private static final int H3 = 127;
     private static final int ROW = 22;
     private static final int TITLE_COLOR = 0x592424;
 
@@ -44,7 +45,9 @@ public class RigSettingsScreen extends AbstractSimiScreen {
     private int height;
     private int speed;
     private ActivationMode mode;
-    private final RigSettings.FarUseMode farUse;
+    private RigSettings.FarUseMode farUse;
+    private final boolean fitted;
+    private final int h;
 
     public RigSettingsScreen(RigSlot slot, ItemStack rig) {
         super(Component.translatable(key("title"), rig.getHoverName()));
@@ -56,6 +59,8 @@ public class RigSettingsScreen extends AbstractSimiScreen {
         speed = Math.round(s.speed() * 10);
         mode = s.activation();
         farUse = s.farUse();
+        fitted = Actuators.fitted(rig);
+        h = H3 + (fitted ? ROW : 0);
     }
 
     public static void openInHand(InteractionHand hand) {
@@ -83,7 +88,7 @@ public class RigSettingsScreen extends AbstractSimiScreen {
 
     @Override
     protected void init() {
-        setWindowSize(W, H);
+        setWindowSize(W, h);
         setWindowOffset(-20, 0);
         super.init();
         int x = guiLeft, y = guiTop;
@@ -106,7 +111,12 @@ public class RigSettingsScreen extends AbstractSimiScreen {
                 .titled(Component.translatable(key("activation")))
                 .calling(v -> mode = ActivationMode.values()[v])
                 .setState(mode.ordinal()));
-        IconButton confirm = new IconButton(x + W - 33, y + H - 24, AllIcons.I_CONFIRM);
+        if (fitted) addRenderableWidget(new SelectionScrollInput(x + 43, y + 23 + 3 * ROW, 111 + EXTRA, 18)
+                .forOptions(List.of(farUseName(RigSettings.FarUseMode.ALWAYS), farUseName(RigSettings.FarUseMode.RIG_OUT), farUseName(RigSettings.FarUseMode.OFF)))
+                .titled(Component.translatable(key("far_use")))
+                .calling(v -> farUse = RigSettings.FarUseMode.values()[v])
+                .setState(farUse.ordinal()));
+        IconButton confirm = new IconButton(x + W - 33, y + h - 24, AllIcons.I_CONFIRM);
         confirm.withCallback(this::onClose);
         addRenderableWidget(confirm);
     }
@@ -115,13 +125,19 @@ public class RigSettingsScreen extends AbstractSimiScreen {
         return Component.translatable(key("activation." + m.getSerializedName()));
     }
 
+    private static MutableComponent farUseName(RigSettings.FarUseMode m) {
+        return Component.translatable(key("far_use." + m.getSerializedName()));
+    }
+
     @Override
     protected void renderWindow(GuiGraphics g, int mouseX, int mouseY, float partialTicks) {
         int x = guiLeft, y = guiTop;
         band(g, x, y, 0, 45, 0);
         band(g, x, y, 23, 45, 45);
         band(g, x, y, 23, 45, 67);
-        band(g, x, y, 63, 101, 89);
+        int extra = fitted ? ROW : 0;
+        if (fitted) band(g, x, y, 23, 45, 89);
+        band(g, x, y, 63, 101, 89 + extra);
         g.drawString(font, title, x + (W - font.width(title)) / 2, y + 4, TITLE_COLOR, false);
 
         row(g, x, y, 0, AllIcons.I_TOOL_MOVE_Y, Component.translatable(key("standing_height")),
@@ -129,17 +145,18 @@ public class RigSettingsScreen extends AbstractSimiScreen {
         row(g, x, y, 1, AllIcons.I_PRIORITY_VERY_HIGH, Component.translatable(key("speed")),
                 Component.translatable(key("blocks_per_second"), tenths(speed)));
         row(g, x, y, 2, AllIcons.I_ACTIVE, Component.translatable(key("activation")), modeName(mode));
+        if (fitted) row(g, x, y, 3, AllIcons.I_TARGET, Component.translatable(key("far_use")), farUseName(farUse));
 
         int hintColor = AllGuiTextures.FONT_COLOR;
         g.drawString(font, Component.translatable(key("limits"), tenths((int) Math.floor(reach * 10)), tenths((int) Math.round(TentacleRigItem.topSpeed(rig) * 10))),
-                x + 8, y + 102, hintColor, false);
+                x + 8, y + 102 + extra, hintColor, false);
         Component second = mode == ActivationMode.KEY
                 ? (TentaworksKeys.TOGGLE.isUnbound() ? Component.translatable(key("toggle_unbound"))
                 : Component.translatable(key("toggle_key"), TentaworksKeys.TOGGLE.getTranslatedKeyMessage()))
                 : Component.translatable(key("double_jump_hint"));
-        g.drawString(font, second, x + 8, y + 113, hintColor, false);
+        g.drawString(font, second, x + 8, y + 113 + extra, hintColor, false);
 
-        GuiGameElement.of(rig).<GuiGameElement.GuiRenderBuilder>at(x + W + 6, y + H - 56, 100).scale(5).render(g);
+        GuiGameElement.of(rig).<GuiGameElement.GuiRenderBuilder>at(x + W + 6, y + h - 56, 100).scale(5).render(g);
     }
 
     private void band(GuiGraphics g, int x, int y, int srcY0, int srcY1, int destY) {

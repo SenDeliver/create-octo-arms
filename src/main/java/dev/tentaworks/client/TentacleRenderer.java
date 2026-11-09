@@ -254,7 +254,7 @@ public final class TentacleRenderer {
      */
     static void drawRig(PoseStack ps, MultiBufferSource buffers, Player player, RigTier tier, RigVisuals.Visual visual, float pt, Space space) {
         Sprites sprites = Sprites.of(Style.of(tier));
-        VertexConsumer vc = buffers.getBuffer(RenderType.entityCutoutNoCull(InventoryMenu.BLOCK_ATLAS));
+        VertexConsumer vc = LimbBuffer.get(buffers, space.firstPerson);
         float deploy = visual == null || !space.world ? 0 : visual.deploy(pt);
         Matrix4f toTank = deploy > 0 ? new Matrix4f(space.toCamera).invert() : null;
         float time = player.tickCount + pt;
@@ -503,7 +503,7 @@ public final class TentacleRenderer {
         frame(ps, at, y.normalize(), hinge);
     }
 
-    private static void frame(PoseStack ps, Vector3f origin, Vector3f yAxis, Vector3f xHint) {
+    static void frame(PoseStack ps, Vector3f origin, Vector3f yAxis, Vector3f xHint) {
         Vector3f y = new Vector3f(yAxis).normalize();
         Vector3f x = new Vector3f(xHint).fma(-xHint.dot(y), y);
         if (x.lengthSquared() < 1.0E-6F) {
@@ -530,7 +530,7 @@ public final class TentacleRenderer {
      * Box in px around the current frame. TUBE/SLEEVE: sides tile V once per block, U centred, lit along {@code lit}; BLOCK: whole
      * texture per face; BAND: centre rows; AXLE: a rod along X. In first person a tube loses only the part within reach of the eye.
      */
-    private static void box(PoseStack.Pose p, VertexConsumer vc, TextureAtlasSprite s, Lit lit, Space space,
+    static void box(PoseStack.Pose p, VertexConsumer vc, TextureAtlasSprite s, Lit lit, Space space,
                             float x0, float x1, float y0, float y1, float z0, float z1, Mode mode) {
         if (y1 - y0 < 0.01f) return;
         float[] keep = space.cut(p, (x0 + x1) / 2 * PX, y0 * PX, y1 * PX, (z0 + z1) / 2 * PX, 0.6f + Math.max(x1 - x0, z1 - z0) * PX);
@@ -608,7 +608,7 @@ public final class TentacleRenderer {
     }
 
     /** A cog disc in the YZ plane at x (px), diameter (px), both sides. */
-    private static void decalX(PoseStack.Pose p, VertexConsumer vc, TextureAtlasSprite s, int light, Space space, float x, float diameter) {
+    static void decalX(PoseStack.Pose p, VertexConsumer vc, TextureAtlasSprite s, int light, Space space, float x, float diameter) {
         float X = x * PX, r = diameter / 2 * PX;
         if (space.nearCamera(p, X, 0, 0, 0, 0.5f)) return;
         quad(vc, p, s, light, -1, 0, 0, 0, 16, 0, 16, X, r, -r, X, r, r, X, -r, r, X, -r, -r);
@@ -627,7 +627,7 @@ public final class TentacleRenderer {
         quad(vc, p, s, light, 1, 0, 0, 8.5f, 15.5f, 0, 2.0f, r, Y1, r, r, Y1, -r, r, Y0, -r, r, Y0, r);
     }
 
-    private static void quad(VertexConsumer vc, PoseStack.Pose p, TextureAtlasSprite s, int light, float nx, float ny, float nz,
+    static void quad(VertexConsumer vc, PoseStack.Pose p, TextureAtlasSprite s, int light, float nx, float ny, float nz,
                              float uFrom, float uTo, float vFrom, float vTo,
                              float ax, float ay, float az, float bx, float by, float bz, float cx, float cy, float cz, float dx, float dy, float dz) {
         float u0 = s.getU(uFrom / 16f), u1 = s.getU(uTo / 16f);
@@ -638,7 +638,7 @@ public final class TentacleRenderer {
         vertex(vc, p, bx, by, bz, u1, v0, light, nx, ny, nz);
     }
 
-    private static void vertex(VertexConsumer vc, PoseStack.Pose p, float x, float y, float z, float u, float v, int light, float nx, float ny, float nz) {
+    static void vertex(VertexConsumer vc, PoseStack.Pose p, float x, float y, float z, float u, float v, int light, float nx, float ny, float nz) {
         vc.addVertex(p, x, y, z).setColor(0xFFFFFFFF).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(p, nx, ny, nz);
     }
 }

@@ -35,7 +35,7 @@ public final class TentaworksItems {
             .register();
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_ACTUATOR = REGISTRATE
             .item(TentaworksIds.INCOMPLETE_ACTUATOR, SequencedAssemblyItem::new)
-            .model((c, p) -> p.withExistingParent(c.getName(), p.modLoc("item/incomplete_tentacle_arm")))
+            .model((c, p) -> p.withExistingParent(c.getName(), p.modLoc("item/incomplete_actuator_arm")))
             .register();
 
     public static final ItemEntry<BacktankItem.BacktankBlockItem> COPPER_TENTACLE_RIG_PLACEABLE = REGISTRATE
