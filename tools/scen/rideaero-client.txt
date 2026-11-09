@@ -172,11 +172,15 @@ holdkey key.use off
 mousebtn right release
 wait 20
 # W5 Rig Active, handle grabbed sneaking (drag hold: moves no one, reads no keys): the Rig carries on, W still moves it
+# Shift is held 5 ticks before the click: pin Speed 5.6 (0.28 down per tick; at the 2.0 default 8 the body drops onto the floor
+# after the aim and the click hits the stone under the handle, SFAR rclick at 6070,-58,6)
 cmd tp @s 6066.5 -60 6.5 -90 0
 cmd item replace entity @s armor.chest with air
 wait 5
 cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
 wait 10
+rawsettings chest 1.5 5.6 double_jump
+wait 5
 doublejump
 wait 30
 hold shift on
