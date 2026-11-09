@@ -4,6 +4,9 @@ import com.mojang.serialization.JsonOps;
 import com.simibubi.create.AllItems;
 import dev.tentaworks.registry.TentaworksDataComponents;
 import dev.tentaworks.registry.TentaworksItems;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.item.ItemStack;
 import org.junit.jupiter.api.Test;
 
@@ -49,6 +52,21 @@ class ActuatorsComponentTest {
         assertTrue(Actuators.fitted(fitted.transmuteCopy(TentaworksItems.NETHERITE_TENTACLE_RIG.get(), 1)));
         ItemStack pickedUp = new ItemStack(TentaworksItems.COPPER_TENTACLE_RIG.get().builtInRegistryHolder(), 1, fitted.getComponentsPatch());
         assertTrue(Actuators.fitted(pickedUp));
+    }
+
+    @Test
+    void aFittedRigIsAnOctoRig() {
+        ItemStack copper = TentaworksItems.COPPER_TENTACLE_RIG.asStack();
+        assertEquals("item.tentaworks.copper_tentacle_rig", key(copper.getHoverName()));
+        assertEquals("item.tentaworks.copper_octo_rig", key(Actuators.fit(copper).getHoverName()));
+        assertEquals("item.tentaworks.netherite_octo_rig", key(Actuators.fit(TentaworksItems.NETHERITE_TENTACLE_RIG.asStack()).getHoverName()));
+        ItemStack named = Actuators.fit(copper);
+        named.set(DataComponents.CUSTOM_NAME, Component.literal("Doc's"));
+        assertEquals("Doc's", named.getHoverName().getString(), "an anvil name still wins");
+    }
+
+    private static String key(Component c) {
+        return c.getContents() instanceof TranslatableContents t ? t.getKey() : c.getString();
     }
 
     @Test

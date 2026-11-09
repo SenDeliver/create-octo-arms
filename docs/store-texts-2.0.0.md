@@ -18,7 +18,7 @@ A Create Backtank with four pneumatic Tentacles and two Actuators. Climb walls, 
 
 Craft a **Tentacle Rig**: a Backtank with four **Tentacles** and a Precision Mechanism. Wear it in the chest slot and **Double Jump**. The Tentacles grab nearby block faces and carry you where you look: across the floor, up a wall, under a ledge or a ceiling. Your hands stay free, so you can mine, build and fight while you hang. The Rig runs on the Backtank's **Air** and refills like any Backtank.
 
-**New in 2.0: Actuators.** Fit two Actuators to the Rig and it gains hands. The Right Actuator does whatever your hand does, farther: mining, placing, hitting and using out to the Rig's Reach (**Far Use**). The Left Actuator **Grabs** a mob with the `V` key, holds it out of your way, sets it down or **Throws** it, with Impact damage when it lands. With Sable it lifts a whole Ship.
+**New in 2.0: Actuators.** Fit two Actuators to the Rig and it gains hands: a Copper or Netherite **Octo Rig**. The Right Actuator does whatever your hand does, farther: mining, placing, hitting and using out to the Rig's Reach (**Far Use**). The Left Actuator **Grabs** a mob with the `V` key, holds it out of your way, sets it down or **Throws** it, with Impact damage when it lands. With Sable it lifts a whole Ship.
 
 ## Features
 

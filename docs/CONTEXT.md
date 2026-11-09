@@ -93,6 +93,10 @@ _Avoid_: arm, hand, claw, grabber, manipulator, functional tentacle
 Putting two Actuators on a Rig. Two ways: a finished Rig with an Actuator on each side at a crafting table (the Rig keeps its Air, enchantments, Rig Settings and damage, it only gains the Actuators), or the Rig's own Mechanical Crafting recipe with an Actuator added on each side, which builds a fitted Rig in one go. The plain Rig recipe stays as it is. A fitted Copper Rig upgraded to Netherite stays fitted. The first wear after Fitting unfolds and flexes both Actuators.
 _Avoid_: upgrade, install, attach, mount
 
+**Octo Rig**:
+A Rig with Actuators fitted, and its item name: Copper Octo Rig, Netherite Octo Rig. The same item as the plain Rig, only named after its Fitting (an anvil name still wins). In prose a fitted Rig is still a Rig; say Octo Rig where the fitted one must be told apart.
+_Avoid_: fitted Tentacle Rig as a name, Actuator Rig
+
 **Rest Pose**:
 Where the Actuators sit when they have nothing to do, Stowed or Active: rising from the Rig's shoulders and curling up a little above head height, spread wider than the wearer's body so they frame the player and stay out of the third-person view, half-open, breathing slowly with small idle gestures. Any action reaches out from the wearer's side, never through the camera: in first person an Actuator enters the view from the frame's edge and arcs to the target. All Limbs in first person are drawn at an opacity the player chooses in the client config, from solid (default) down to faint, never invisible.
 _Avoid_: idle pose, folded, parked

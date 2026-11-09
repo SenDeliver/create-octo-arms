@@ -1,6 +1,8 @@
 package dev.tentaworks.registry;
 
 import dev.tentaworks.TentaworksIds;
+import dev.tentaworks.rig.RigTier;
+import dev.tentaworks.rig.TentacleRigItem;
 
 import static dev.tentaworks.Tentaworks.REGISTRATE;
 
@@ -66,6 +68,8 @@ public final class TentaworksLang {
 
         REGISTRATE.addRawLang("advancement.tentaworks.doc_rig", "Doc's Rig");
         REGISTRATE.addRawLang("advancement.tentaworks.doc_rig.desc", "Get a Tentacle Rig: four Tentacles on a Backtank");
+        REGISTRATE.addRawLang(TentacleRigItem.octoKey(RigTier.COPPER), "Copper Octo Rig");
+        REGISTRATE.addRawLang(TentacleRigItem.octoKey(RigTier.NETHERITE), "Netherite Octo Rig");
         REGISTRATE.addRawLang("advancement.tentaworks.fitted", "Fitted");
         REGISTRATE.addRawLang("advancement.tentaworks.fitted.desc", "Fit two Actuators to a Rig: now it has hands");
         refusal(FAR_USE, "no_sight", "Out of sight: the Actuator does not reach through blocks");
