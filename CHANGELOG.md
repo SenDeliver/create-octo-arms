@@ -33,6 +33,11 @@ Platforms: the same version number ships for every supported Minecraft version (
 - Copper Rig Reach 4 → 5 (server config `reach.copper` default): a Copper Rig now reaches half a block past a bare hand on blocks and 2 blocks past it on mobs. Its Tentacle Grips and the highest Standing Height reach 5 blocks too.
 - A Rig whose Speed was never set in the Rig Settings now runs at the server's top Speed (`speed.max`, default 8 blocks/s) instead of 5.6. A Speed you saved stays.
 
+### Fixed
+
+- Going round an outside corner, or any diagonal move that grazes a block edge, above about 7 b/s no longer rubber-bands the wearer ("moved wrongly").
+- A Thrown mob no longer bounces off what it hits in a random direction; it lands where the Throw carried it.
+
 ### Compatibility
 
 - Network changed (registrar "10"): new Grab, Actuator and Far Use packets and a Far Use field in the Rig Settings packet. 1.8.0 and 2.0.0 clients and servers cannot join each other; update both.
