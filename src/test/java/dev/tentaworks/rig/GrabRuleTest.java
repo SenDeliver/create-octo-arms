@@ -151,4 +151,12 @@ class GrabRuleTest {
     private static boolean light(EntityType<?> type) {
         return GrabRule.light(type.getWidth(), type.getHeight());
     }
+
+    @Test
+    void anAttackWhileHoldingThrowsWithAnEmptyMainHandOrTheGrabKeyHeld() {
+        assertTrue(GrabRule.throwsOnAttack(true, false));
+        assertTrue(GrabRule.throwsOnAttack(false, true), "the Grab key held: Throw even with an item");
+        assertTrue(GrabRule.throwsOnAttack(true, true));
+        assertFalse(GrabRule.throwsOnAttack(false, false), "an item in the main hand: the plain attack is the item's");
+    }
 }

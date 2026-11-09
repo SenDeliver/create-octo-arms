@@ -69,6 +69,11 @@ public final class GrabRule {
         return mainEmpty ? HoldArm.MAIN : HoldArm.NONE;
     }
 
+    /** An attack while holding Throws: the main hand is empty, or the Grab key is held; with an item in the main hand a plain attack is the item's. */
+    public static boolean throwsOnAttack(boolean mainEmpty, boolean grabKeyDown) {
+        return mainEmpty || grabKeyDown;
+    }
+
     /** The refusal when {@link #arm} found no free Actuator: two hands needed (heavy, Ship) or hands full (light). */
     public static Verdict hands(int actuators) {
         return actuators >= 2 ? Verdict.TWO_HANDS : Verdict.HANDS_FULL;

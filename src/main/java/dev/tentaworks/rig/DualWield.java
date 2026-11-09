@@ -138,18 +138,25 @@ public final class DualWield {
         pay(player, "mine");
     }
 
+    /** A hit on this target may get the bonus: a living one, a player only when {@code farUse.players} allows Actuators to act on players. */
+    public static boolean targets(boolean living, boolean player, boolean playersAllowed) {
+        return living && (!player || playersAllowed);
+    }
+
+    private static boolean targets(Entity target) {
+        return targets(target instanceof LivingEntity, target instanceof Player, TentaworksConfig.value(TentaworksConfig.FAR_USE_PLAYERS));
+    }
+
     /** The off-hand item would add to a hit on {@code target} (client and server: no level needed). */
     public static boolean helps(Player player, Entity target) {
-        if (!(target instanceof LivingEntity) || !on(player)) return false;
-        if (target instanceof Player && !TentaworksConfig.value(TentaworksConfig.FAR_USE_PLAYERS)) return false;
+        if (!targets(target) || !on(player)) return false;
         ItemStack off = player.getOffhandItem();
         return attackBonus(off) > 0 || EnchantmentHelper.has(off, EnchantmentEffectComponents.DAMAGE);
     }
 
     /** The melee bonus for this hit on {@code target}, 0 when Dual Wield adds nothing. */
     public static float hitBonus(ServerPlayer player, Entity target, DamageSource source) {
-        if (!(target instanceof LivingEntity) || !on(player)) return 0;
-        if (target instanceof Player && !TentaworksConfig.value(TentaworksConfig.FAR_USE_PLAYERS)) return 0;
+        if (!targets(target) || !on(player)) return 0;
         ItemStack off = player.getOffhandItem();
         double item = Math.max(0, attackBonus(off));
         double enchant = player.level() instanceof ServerLevel sl ? Math.max(0, EnchantmentHelper.modifyDamage(sl, off, target, source, 0.0F)) : 0;

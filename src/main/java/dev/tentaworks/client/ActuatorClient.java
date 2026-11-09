@@ -358,7 +358,7 @@ public final class ActuatorClient {
     static void onInteraction(InputEvent.InteractionKeyMappingTriggered event) {
         Minecraft mc = Minecraft.getInstance();
         if (!event.isAttack() || mc.player == null || !local().holding()) return;
-        if (!mc.player.getMainHandItem().isEmpty() && !TentaworksKeys.GRAB.isDown()) return;
+        if (!GrabRule.throwsOnAttack(mc.player.getMainHandItem().isEmpty(), TentaworksKeys.GRAB.isDown())) return;
         KEY.threw();
         event.setCanceled(true);
         event.setSwingHand(false);

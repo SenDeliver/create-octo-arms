@@ -55,4 +55,12 @@ class DualWieldTest {
         assertEquals(0.5, RigAir.actuatorCost(dev.tentaworks.registry.TentaworksItems.COPPER_TENTACLE_RIG.asStack(), 0.5), 1.0E-9);
         assertEquals(0.25, RigAir.actuatorCost(dev.tentaworks.registry.TentaworksItems.NETHERITE_TENTACLE_RIG.asStack(), 0.5), 1.0E-9);
     }
+
+    @Test
+    void theMeleeBonusHitsPlayersOnlyWhenFarUsePlayersAllows() {
+        assertTrue(DualWield.targets(true, false, false), "a mob");
+        assertFalse(DualWield.targets(false, false, true), "not living: an Armor Stand is living, an item frame is not");
+        assertFalse(DualWield.targets(true, true, false), "a player, farUse.players off");
+        assertTrue(DualWield.targets(true, true, true), "a player, farUse.players on");
+    }
 }
