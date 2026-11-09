@@ -188,6 +188,18 @@ burst look_w_mine_fp 8
 lookat 11603 -57.5 -4.5
 burst look_w_retarget_fp 8
 holdkey key.attack off
+view third
+wait 6
+lookat 11603 -58.5 -7.5
+wait 3
+holdkey key.attack on
+wait 5
+clearchat
+burst look_w_mine_third 4
+lookat 11603 -57.5 -4.5
+burst look_w_retarget_third 6
+holdkey key.attack off
+view first
 wait 12
 # both hands (Dual Wield mining), a held use (eating), the off hand alone, a left-handed wearer
 cmd item replace entity @s weapon.offhand with minecraft:wooden_pickaxe
@@ -199,6 +211,14 @@ wait 6
 clearchat
 burst look_w_dual_fp 8
 holdkey key.attack off
+view third
+wait 6
+holdkey key.attack on
+wait 5
+clearchat
+burst look_w_dual_third 6
+holdkey key.attack off
+view first
 wait 12
 cmd item replace entity @s weapon.offhand with minecraft:air
 cmd item replace entity @s weapon.mainhand with minecraft:golden_apple
@@ -226,7 +246,7 @@ wait 12
 looktrace off
 cmd item replace entity @s weapon.mainhand with minecraft:air
 signal workdone
-# M crosshair marks, Grab cues and hold hints (CHUD lines), at GUI scale 2 and 3
+# M crosshair marks, Grab cues, holds by either Actuator, set-down spot, hold distance (CHUD lines), at GUI scale 2 and 3
 await marks
 view first
 hud on
@@ -244,13 +264,25 @@ hudstate dual
 clearchat
 shot look_m_dual
 cmd item replace entity @s weapon.offhand with minecraft:air
-cmd tp @s 11594.5 -60 -6.5 -90 0
+# just out of Reach (1 block past): hollow marks; 3 past: nothing until a click lands on nothing
+cmd tp @s 11595.0 -60 -6.5 -90 0
 wait 10
 lookat 11603 -58.5 -6.5
 wait 10
 hudstate out
 clearchat
 shot look_m_out
+cmd tp @s 11593.0 -60 -6.5 -90 0
+wait 10
+lookat 11603 -58.5 -6.5
+wait 10
+hudstate far_idle
+key key.mouse.left
+hudstate miss
+clearchat
+shot look_m_miss
+wait 20
+hudstate miss_gone
 cmd tp @s 11601.3 -60 -6.5 -90 0
 wait 10
 lookat 11603 -58.5 -6.5
@@ -297,6 +329,7 @@ wait 10
 hudstate cue_refused
 clearchat
 shot look_m_cue_refused
+# empty hands: the off-hand Actuator holds; the set-down spot follows the look (floor: valid, own feet: not)
 cmd tp @s 11600.5 -60 0.5 -90 0
 wait 10
 lookate minecraft:pig
@@ -308,14 +341,13 @@ wait 8
 hudstate hold
 clearchat
 shot look_m_hold
-spot 11603.5 -60 2.5 ok
 lookat 11603.5 -60 2.5
 wait 6
 hudstate spot_ok
 clearchat
 shot look_m_spot_ok
-spot 11603.5 -60 2.5 bad
-wait 3
+look -90 80
+wait 6
 hudstate spot_bad
 clearchat
 shot look_m_spot_bad
@@ -323,7 +355,21 @@ guiscale 3
 wait 5
 clearchat
 shot look_m_spot_bad_g3
-spot off
+guiscale 2
+# the Grab key held + the wheel: two notches farther, the distance on screen, no Set Down on release
+look -90 5
+wait 8
+holdkey key.tentaworks.grab on
+wait 3
+hudstate wheel0
+wheel 2
+wait 10
+hudstate wheel
+clearchat
+shot look_m_wheel
+holdkey key.tentaworks.grab off
+wait 10
+hudstate wheel_kept
 view third
 wait 5
 hudstate third
@@ -338,10 +384,85 @@ wait 5
 hudstate screen
 close
 wait 5
+# a tap carries the pig to the looked spot
+lookat 11603.5 -60 2.5
+wait 8
+burst look_m_setdown 8 bg
 key key.keyboard.v
 awaitheld off 40
-guiscale 2
+wait 30
+# a tool in the main hand: the off-hand Actuator Grabs, the Throw hint names the Grab key
+cmd item replace entity @s weapon.mainhand with minecraft:wooden_pickaxe
+wait 10
+lookate minecraft:pig
+wait 8
+hudstate cue_tool
+key key.keyboard.v
+awaitheld on 20
+look -90 0
+wait 10
+hudstate hold_tool
+clearchat
+shot look_m_hold_tool_fp
+view third
 wait 5
+clearchat
+shot look_m_hold_tool_third
+view first
+lookat 11603.5 -60 0.5
+wait 8
+key key.keyboard.v
+awaitheld off 40
+wait 30
+# an item in the off hand: the main-hand Actuator Grabs, the off hand's item stays on the other one
+cmd item replace entity @s weapon.mainhand with minecraft:air
+cmd item replace entity @s weapon.offhand with minecraft:wooden_pickaxe
+wait 10
+lookate minecraft:pig
+wait 8
+hudstate cue_main
+key key.keyboard.v
+awaitheld on 20
+look -90 0
+wait 10
+hudstate hold_main
+clearchat
+shot look_m_hold_main_fp
+view third
+wait 5
+clearchat
+shot look_m_hold_main_third
+view first
+lookat 11603.5 -60 2.5
+wait 8
+key key.keyboard.v
+awaitheld off 40
+cmd item replace entity @s weapon.offhand with minecraft:air
+wait 10
+# a Copper Rig (Reach 5): the tier tint at GUI scale 2 and 3
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900,tentaworks:actuators={}]
+cmd item replace entity @s weapon.mainhand with minecraft:wooden_pickaxe
+cmd tp @s 11598.3 -60 -6.5 -90 0
+wait 20
+lookat 11603 -58.5 -7.5
+wait 12
+hudstate copper_reach
+clearchat
+shot look_m_copper_g2
+cmd item replace entity @s weapon.offhand with minecraft:wooden_pickaxe
+wait 12
+hudstate copper_dual
+clearchat
+shot look_m_copper_dual_g2
+guiscale 3
+wait 5
+clearchat
+shot look_m_copper_dual_g3
+guiscale 2
+cmd item replace entity @s weapon.offhand with minecraft:air
+cmd item replace entity @s weapon.mainhand with minecraft:air
+cmd item replace entity @s armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900,tentaworks:actuators={}]
+wait 10
 signal marksdone
 # B Back Slot (Curios): a fitted Netherite Rig in the back slot over an iron chestplate
 await back
