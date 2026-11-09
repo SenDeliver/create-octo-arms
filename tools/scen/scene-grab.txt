@@ -1,0 +1,33 @@
+# Grab scenes (x 11180..11215). Flat world: ground top at y=-60. Needs ANIMALS=true (else the animals are removed). TIMELINE grab-timeline.txt, SCRIPT2 grab-watch.txt.
+# Mobs tagged tw (SMOB lines) keep their AI (NoAI has no physics: a Thrown mob could not fly) with no walking speed; the Wither has no AI.
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+gamerule doImmediateRespawn true
+gamerule keepInventory true
+gamerule doMobLoot false
+gamerule doMobSpawning false
+time set noon
+difficulty easy
+forceload add 11170 -10 11220 95
+# G1 light sheep, box 3.55 from the eye (past the 3.0 entity range: the claim probe must not be a Far Use)
+summon sheep 11204.5 -60 0.5 {Tags:["tw","s1"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
+# G2 pig with 40 HP thrown at a stone wall
+summon pig 11202.5 -60 12.5 {Tags:["tw","p1"],PersistenceRequired:1b,Silent:1b,Health:40f,attributes:[{id:"minecraft:generic.movement_speed",base:0.0},{id:"minecraft:generic.max_health",base:40.0}]}
+fill 11208 -60 8 11208 -53 17 stone
+# G4 heavy horse, light cow; iron golem for the walking speed
+summon horse 11203.5 -60 36.5 {Tags:["tw","h1"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
+summon cow 11203.5 -60 40.5 {Tags:["tw","w1"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
+summon iron_golem 11203.5 -60 48.5 {Tags:["tw","g1"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
+# G5 refusals: Wither (boss), Dev2 (player), Dev2's wolf (owned)
+summon wither 11205.5 -60 60.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","boss"]}
+summon wolf 11203.5 -60 68.5 {Tags:["tw","wolf"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
+# G6 sheep set down on a Create seat
+summon sheep 11203.5 -60 72.5 {Tags:["tw","s2"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
+setblock 11205 -60 76 create:white_seat
+# G7 releases: pig, wall west of the start (out of Reach)
+summon pig 11203.5 -60 84.5 {Tags:["tw","p4"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
+fill 11198 -60 80 11198 -54 89 stone
+op Dev
+op Dev2
+tentaworks trace on
+gamemode survival Dev

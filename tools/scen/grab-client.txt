@@ -1,0 +1,198 @@
+# Grab: the Left Actuator holds a mob off the crosshair, sets it down, Throws it. TIMELINE grab-timeline.txt, SCRIPT2 grab-watch.txt, ANIMALS=true
+trace on
+hud on
+view first
+# G1 light sheep: Grab, hold 40 ticks still, walk 8 blocks, Active and Setting Down keep it, set down (calm)
+await g1
+lookate minecraft:sheep
+wait 3
+mark g1a
+key key.keyboard.v
+awaitheld on 20
+mark g1held
+actuators g1
+look -90 10
+wait 40
+mark g1still
+shot grab_hold_light
+hold up on
+wait 40
+hold up off
+wait 5
+mark g1walk
+doublejump
+wait 30
+mark g1active
+doublejump
+wait 60
+mark g1stowed
+key key.keyboard.v
+awaitheld off 20
+mark g1down
+wait 40
+signal g1done
+# G2 Throw at the wall: Impact once, Thrown cleared on rest
+await g2
+lookate minecraft:pig
+wait 3
+key key.keyboard.v
+awaitheld on 20
+look -90 -20
+wait 10
+mark g2throw
+key key.mouse.left
+awaitheld off 20
+wait 80
+mark g2rest
+signal g2done
+# G3 creeper held: no swell, no target; set down, calm 20 ticks
+await g3
+lookate minecraft:creeper
+key key.keyboard.v
+awaitheld on 20
+mark g3held
+wait 60
+mark g3hold
+key key.keyboard.v
+awaitheld off 20
+mark g3down
+wait 40
+signal g3done
+# G4 heavy horse (both arms), light cow, walk 30 ticks bare, then 30 ticks holding the iron golem
+await g4h
+lookate minecraft:horse
+wait 3
+key key.keyboard.v
+awaitheld on 20
+wait 5
+mark g4h
+actuators g4h
+shot grab_hold_heavy
+key key.keyboard.v
+awaitheld off 20
+signal g4hdone
+await g4c
+lookate minecraft:cow
+wait 3
+key key.keyboard.v
+awaitheld on 20
+wait 5
+mark g4c
+key key.keyboard.v
+awaitheld off 20
+signal g4cdone
+await g4w
+look -90 0
+wait 5
+mark g4w0
+hold up on
+wait 30
+hold up off
+mark g4w1
+signal g4wdone
+await g4g
+lookate minecraft:iron_golem
+wait 3
+key key.keyboard.v
+awaitheld on 20
+look -90 0
+wait 5
+mark g4g0
+hold up on
+wait 30
+hold up off
+mark g4g1
+key key.keyboard.v
+awaitheld off 20
+signal g4gdone
+# G5 refusals: boss, player, another player's wolf
+await g5b
+lookate minecraft:wither
+wait 3
+key key.keyboard.v
+wait 10
+actuators g5b
+signal g5bdone
+await g5p
+lookate minecraft:player
+wait 3
+key key.keyboard.v
+wait 10
+actuators g5p
+signal g5pdone
+await g5w
+lookate minecraft:wolf
+wait 3
+key key.keyboard.v
+wait 10
+actuators g5w
+signal g5wdone
+# G6 set down onto a Create seat
+await g6
+lookate minecraft:sheep
+wait 3
+key key.keyboard.v
+awaitheld on 20
+lookat 11205.5 -59.6 76.5
+wait 10
+key key.keyboard.v
+awaitheld off 20
+wait 20
+mark g6
+signal g6done
+# G7 release reasons
+await g7a
+lookate minecraft:pig
+wait 3
+key key.keyboard.v
+awaitheld on 20
+signal g7aheld
+awaitheld off 40
+wait 5
+actuators g7limp
+signal g7alimp
+await g7c
+look -90 0
+doublejump
+wait 30
+lookate minecraft:pig
+wait 3
+key key.keyboard.v
+awaitheld on 20
+mark g7c
+signal g7cheld
+awaitheld off 40
+wait 80
+mark g7cend
+signal g7cdown
+await g7r
+lookate minecraft:pig
+wait 3
+key key.keyboard.v
+awaitheld on 20
+signal g7rheld
+awaitheld off 40
+signal g7rdone
+await g7f
+wait 10
+lookate minecraft:pig
+wait 3
+key key.keyboard.v
+awaitheld on 20
+signal g7fheld
+awaitheld off 60
+await g7l
+wait 10
+lookate minecraft:pig
+wait 3
+key key.keyboard.v
+awaitheld on 20
+mark g7l
+rejoin 40
+wait 60
+mark g7lback
+actuators g7lback
+signal g7ldone
+await end
+wait 10
+quit

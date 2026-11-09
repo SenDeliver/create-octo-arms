@@ -1,0 +1,7 @@
+# Dev2 (observer, no Rig): RWALK lines show what Dev's Actuators hold; also the player Dev must not Grab
+trace on
+hud off
+view first
+await end
+wait 20
+quit

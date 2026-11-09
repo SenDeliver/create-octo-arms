@@ -1,0 +1,95 @@
+# Grab timeline. Netherite Rig with Actuators (Reach 7, throw 1.2 b/t). Dev2 (no Rig) watches from the south, then stands in front of Dev (player refusal).
+gamemode survival Dev2
+tp Dev2 11203.5 -60 7.5 180 0
+tp Dev 11200.5 -60 0.5 -90 0
+clear Dev
+item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900,tentaworks:actuators={}]
+#sleep 1.5
+#signal g1
+#await g1done
+# G2 throw at the wall
+tp Dev 11200.5 -60 12.5 -90 0
+tp Dev2 11203.5 -60 19.5 180 0
+#sleep 0.5
+#signal g2
+#await g2done
+# G3 creeper: AI on, a long fuse and no blast; summoned once Dev looks
+tp Dev 11200.5 -60 24.5 -90 0
+#sleep 0.5
+summon creeper 11203.5 -60 24.5 {Tags:["tw","c1"],PersistenceRequired:1b,Silent:1b,Fuse:100s,ExplosionRadius:0b,Rotation:[90f,0f]}
+#signal g3
+#await g3done
+kill @e[type=creeper]
+# G4 heavy horse, light cow, walking speed bare then holding the iron golem
+tp Dev 11200.5 -60 36.5 -90 0
+#sleep 0.5
+#signal g4h
+#await g4hdone
+tp Dev 11200.5 -60 40.5 -90 0
+#sleep 0.5
+#signal g4c
+#await g4cdone
+tp Dev 11185.5 -60 44.5 -90 0
+#sleep 0.5
+#signal g4w
+#await g4wdone
+tp Dev 11200.5 -60 48.5 -90 0
+#sleep 0.5
+#signal g4g
+#await g4gdone
+# G5 refusals
+tp Dev 11200.5 -60 60.5 -90 0
+#sleep 0.5
+#signal g5b
+#await g5bdone
+kill @e[type=wither]
+tp Dev 11200.5 -60 64.5 -90 0
+tp Dev2 11203.5 -60 64.5 90 0
+#sleep 0.5
+#signal g5p
+#await g5pdone
+tentaworks tame @e[tag=wolf] Dev2
+data merge entity @e[tag=wolf,limit=1] {Sitting:1b}
+tp Dev 11200.5 -60 68.5 -90 0
+#sleep 0.5
+#signal g5w
+#await g5wdone
+# G6 seat
+tp Dev 11200.5 -60 72.5 -90 0
+#sleep 0.5
+#signal g6
+#await g6done
+# G7 release reasons: no Air (Stowed), Crawl (Active, no Air), Rig off, out of Reach, logout
+tp Dev 11200.5 -60 84.5 -90 0
+tp Dev2 11203.5 -60 91.5 180 0
+#sleep 0.5
+#signal g7a
+#await g7aheld
+tentaworks air 0
+#await g7alimp
+tentaworks air 900
+#sleep 0.5
+#signal g7c
+#await g7cheld
+tentaworks air 0
+#await g7cdown
+tentaworks air 900
+tp @e[tag=p4] 11203.5 -60 84.5
+tp Dev 11200.5 -60 84.5 -90 0
+#sleep 0.5
+#signal g7r
+#await g7rheld
+tentaworks unfit
+#sleep 0.5
+tentaworks fit
+#sleep 0.5
+#signal g7f
+#await g7fheld
+tp Dev 11187.5 -60 84.5 -90 0
+#sleep 1
+tp @e[tag=p4] 11203.5 -60 84.5
+tp Dev 11200.5 -60 84.5 -90 0
+#sleep 0.5
+#signal g7l
+#await g7ldone
+#signal end
