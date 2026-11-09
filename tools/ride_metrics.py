@@ -78,7 +78,11 @@ def ride_stows(tag, a, b, end, veh=None):
 def mounted_from(tag, a, b, want, veh=None):
     cg, sg = mounted(mk[a], mk[b], veh)
     # the server's Stow can reach the client a tick before the client sees the mount: read the state before the earlier side
-    st0 = before(min((g for g in (cg, sg) if g is not None), default=None))
+    g0 = min((g for g in (cg, sg) if g is not None), default=None)
+    # the jump to the vehicle's seat can reach the client a tick before the mount (the body lands by the vehicle and may be caught): read the state before that jump
+    if g0 is not None and g0 - 2 in ct and g0 - 1 in ct and ct[g0 - 1]['pos'] == ct[g0]['pos'] and math.dist(ct[g0 - 2]['pos'], ct[g0 - 1]['pos']) > 2:
+        g0 -= 1
+    st0 = before(g0)
     check(cg is not None and sg is not None and st0 == want, 'setup', f'{tag} mounted from {want}',
           f'client mount gt {cg} ({ct[cg]["veh"] if cg else "-"}), server mount gt {sg}, client state before {st0}')
     return cg, sg
@@ -144,7 +148,7 @@ else:
     # S3 key-only mode, toggle key
     if marks('s3a', 's3b', 's3c'):
         x = st.get(mk['s3a'])
-        check(x and x['veh'] == 'create:seat' and ct[mk['s3a']]['state'] == 'STOWED' and 'raw settings chest RigSettings[standingHeight=1.5, speed=5.6, activation=KEY]' in client,
+        check(x and x['veh'] == 'create:seat' and ct[mk['s3a']]['state'] == 'STOWED' and re.search(r'raw settings chest RigSettings\[standingHeight=1\.5, speed=5\.6, activation=KEY(?:, farUse=\w+)?\]', client),
               'setup', 'S3 seated Stowed, Activation Mode key only', f'server {x and (x["veh"], x["state"])}')
         bad, ok, n = stowed_span(mk['s3a'], mk['s3b'])
         check(ok and not bad, 'bug', 'S3 seated, the toggle key does not Activate the Rig', f'not Stowed on {len(bad)} ticks {bad[:4]}, {n}')
