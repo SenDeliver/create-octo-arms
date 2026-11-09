@@ -72,7 +72,7 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
             RigVisuals.Visual visual = RigVisuals.get(player);
             TentacleRenderer.Space space = new TentacleRenderer.Space(m, cam, world, false, light, lod(visual, at.length()));
             TentacleRenderer.drawRig(ps, buffers, player, rig.tier(), visual, pt, space);
-            ActuatorRenderer.draw(ps, buffers, player, rig.tier(), pt, space);
+            ActuatorRenderer.draw(ps, buffers, player, rig.tier(), pt, space, 0);
             ps.popPose();
         });
     }
@@ -133,29 +133,35 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
         boolean tentacles = visual != null && visual.visible(), actuators = Actuators.fitted(player);
         if (!tentacles && !actuators) return;
         float pt = event.getPartialTick().getGameTimeDeltaPartialTick(false);
+        ActuatorRenderer.worldProjection(event.getProjectionMatrix());
         TentacleRenderer.timed(() -> {
             Vec3 cam = event.getCamera().getPosition();
             PoseStack ps = event.getPoseStack();
             ps.pushPose();
-            Vec3 at = player.getPosition(pt).subtract(cam);
-            ps.translate(at.x, at.y, at.z);
-            ps.mulPose(Axis.YP.rotationDegrees(180.0F - Mth.rotLerp(pt, player.yBodyRotO, player.yBodyRot)));
-            float swim = player.getSwimAmount(pt);
-            if (swim > 0) {
-                float flat = player.isInWater() || player.isInFluidType((fluidType, height) -> player.canSwimInFluidType(fluidType)) ? -90.0F - player.getXRot() : -90.0F;
-                ps.mulPose(Axis.XP.rotationDegrees(Mth.lerp(swim, 0.0F, flat)));
-                if (player.isVisuallySwimming()) ps.translate(0.0F, -1.0F, 0.3F);
-            }
-            ps.scale(-1.0F, -1.0F, 1.0F);
-            ps.scale(0.9375F, 0.9375F, 0.9375F);
-            ps.translate(0.0F, -1.501F, 0.0F);
-            TentacleRenderer.toTankSpace(ps);
+            firstPersonTank(ps, player, pt, cam);
             MultiBufferSource.BufferSource buffers = MultiBufferSource.immediate(FIRST_PERSON_BUFFER);
             TentacleRenderer.Space space = new TentacleRenderer.Space(new Matrix4f(ps.last().pose()), cam, true, true, 0xF000F0, 0);
             if (tentacles) TentacleRenderer.drawRig(ps, buffers, player, rig.tier(), visual, pt, space);
-            if (actuators) ActuatorRenderer.draw(ps, buffers, player, rig.tier(), pt, space);
+            if (actuators) ActuatorRenderer.draw(ps, buffers, player, rig.tier(), pt, space, ActuatorRenderer.inHandPass(player) ? ActuatorPose.LEFT : 0);
             ps.popPose();
             buffers.endBatch();
         });
+    }
+
+    /** First person: from the camera to the wearer's tank space (the body model's transform without the model). */
+    static void firstPersonTank(PoseStack ps, Player player, float pt, Vec3 cam) {
+        Vec3 at = player.getPosition(pt).subtract(cam);
+        ps.translate(at.x, at.y, at.z);
+        ps.mulPose(Axis.YP.rotationDegrees(180.0F - Mth.rotLerp(pt, player.yBodyRotO, player.yBodyRot)));
+        float swim = player.getSwimAmount(pt);
+        if (swim > 0) {
+            float flat = player.isInWater() || player.isInFluidType((fluidType, height) -> player.canSwimInFluidType(fluidType)) ? -90.0F - player.getXRot() : -90.0F;
+            ps.mulPose(Axis.XP.rotationDegrees(Mth.lerp(swim, 0.0F, flat)));
+            if (player.isVisuallySwimming()) ps.translate(0.0F, -1.0F, 0.3F);
+        }
+        ps.scale(-1.0F, -1.0F, 1.0F);
+        ps.scale(0.9375F, 0.9375F, 0.9375F);
+        ps.translate(0.0F, -1.501F, 0.0F);
+        TentacleRenderer.toTankSpace(ps);
     }
 }

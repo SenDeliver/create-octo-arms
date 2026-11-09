@@ -21,7 +21,9 @@ def changed_px(a, b):
 
 curios = bool(re.search(r'\(curios\)', s))
 names = ['look_rest_third', 'look_rest_front', 'look_active_third', 'look_fp_idle', 'look_fp_far', 'look_fp_far_03', 'look_fp_hold_10',
-         'look_fp_hold_03', 'look_fp_hold_10b', 'look_hold_light_third', 'look_hud_limp', 'look_hold_heavy_third']
+         'look_fp_hold_03', 'look_fp_hold_10b', 'look_hold_light_third', 'look_hud_limp', 'look_hold_heavy_third',
+         'look_fp_far_carry', 'look_far_carry_third', 'look_carry_pick_third', 'look_carry_turn_third', 'look_carry_pick_front', 'look_carry_down_third', 'look_carry_up_third', 'look_carry_swing_third',
+         'look_carry_pick_fp', 'look_carry_swing_fp', 'look_carry_block_fp', 'look_carry_block_front', 'look_carry_bow_fp']
 cact = {m[0]: dict(held=int(m[1]), heavy=m[2] == 'true', hud=m[3], fitted=m[4] == 'true', limp=m[5] == 'true', speed=float(m[6]))
         for m in re.findall(r'CACT (\S+) gt=\d+ held=(-?\d+) heavy=(\w+) .*? hud="([^"]*)" fitted=(\w+) limp=(\w+) .*? speed=(\S+)', c)}
 grab = re.findall(r'SGRAB gt=\d+ Dev kind=(\w+) target=\S+ type=(\S+) why=(\S+) actuators=(\d+)', s)
@@ -32,12 +34,13 @@ print('== Shots')
 for n in names + (['look_backslot_third'] if curios else []):
     im = img(n)
     sd = ImageStat.Stat(im.convert('L')).stddev[0] if im else 0
-    check(f'S {n}', im is not None and f'Saved screenshot as {n}.png' in c and sd > 20, f"{'present' if im else 'missing'}, stddev {sd:.1f}")
+    floor = 10 if n in ('look_carry_down_third', 'look_carry_up_third') else 20
+    check(f'S {n}', im is not None and f'Saved screenshot as {n}.png' in c and sd > floor, f"{'present' if im else 'missing'}, stddev {sd:.1f}")
 a, b, b2 = img('look_fp_hold_10'), img('look_fp_hold_03'), img('look_fp_hold_10b')
 if a and b and b2:
     d, ctl = changed_px(a, b), changed_px(a, b2)
     check('F limbOpacity 0.3 shows in first person (held pig, same pose: 1.0 vs 0.3 against 1.0 vs 1.0)', d > 5000 and d > 10 * max(ctl, 1), f'{d} px changed, control {ctl} px')
-check('F Far Use reach drawn in first person at 1.0 and 0.3', len(far) == 2 and all(f == ('FAR', 'false') for f in far)
+check('F Far Use reach drawn in first person at 1.0 and 0.3, then carrying a pickaxe (first and third person)', len(far) == 4 and all(f == ('FAR', 'false') for f in far)
       and any(int(t) > 0 and o == '1.00' for t, o in opa) and any(int(t) > 0 and o == '0.30' for t, o in opa), f'SFAR {far}')
 
 print('== HUD and holds')
