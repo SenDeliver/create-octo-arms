@@ -57,10 +57,11 @@ hold up on
 wait 60
 hold up off
 mark c1b
-wait 260
+# 2.0: an unset Speed runs at 8 b/s, the climb on Air 5 goes higher (17 vs 12 blocks); the Crawl down at 1 b/s needs up to 20 s
+wait 420
 mark c1end
 signal c1done
-# LW low-air title while climbing from Air 93
+# LW low-air title while climbing from Air 183 (Create warns at max/10: 180 of 1800)
 await lw
 hud on
 view first

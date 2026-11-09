@@ -29,9 +29,9 @@ item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:b
 #await c1done
 data get entity Dev Pos
 data get entity Dev Health
-# LW low-air title
+# LW low-air title: Create warns when the Air crosses max/10 (180 of the 2.0 max 1800)
 tp Dev 677.5 -60 10.5 -90 0
-tentaworks air 93
+tentaworks air 183
 #sleep 0.5
 #signal lw
 #await lwdone
