@@ -16,7 +16,7 @@ tp Dev2 11203.5 -60 19.5 180 0
 # G3 creeper: AI on, a long fuse and no blast; summoned once Dev looks
 tp Dev 11200.5 -60 24.5 -90 0
 #sleep 0.5
-summon creeper 11203.5 -60 24.5 {Tags:["tw","c1"],PersistenceRequired:1b,Silent:1b,Fuse:100s,ExplosionRadius:0b,Rotation:[90f,0f]}
+summon creeper 11202.5 -60 24.5 {Tags:["tw","c1"],PersistenceRequired:1b,Silent:1b,Fuse:100s,ExplosionRadius:0b,Rotation:[90f,0f]}
 #signal g3
 #await g3done
 kill @e[type=creeper]

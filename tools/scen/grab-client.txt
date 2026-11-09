@@ -45,8 +45,9 @@ awaitheld off 20
 wait 80
 mark g2rest
 signal g2done
-# G3 creeper held: no swell, no target; set down, calm 20 ticks
+# G3 creeper swelling at Dev, then held: the swell stops and drops, no blast; set down, calm 20 ticks, then it swells again
 await g3
+wait 30
 lookate minecraft:creeper
 key key.keyboard.v
 awaitheld on 20
