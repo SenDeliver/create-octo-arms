@@ -2,6 +2,7 @@ package dev.tentaworks.rig;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -13,10 +14,13 @@ import java.util.List;
 import java.util.function.DoublePredicate;
 
 /**
- * Where the Left Actuator holds a Grabbed mob (CONTEXT: Grab), the same rule on every side: in the camera basis (look, right,
- * up) the box centre sits {@value #AHEAD} + r ahead, {@value #LEFT} + r to the left and {@value #DOWN} + h/2 − {@value #RAISE}
- * below the eye, so it stays low on the wearer's left and out of the crosshair. r = w/2 · (|sin yaw| + |cos yaw|) is the
- * half-width of the axis-aligned box across the turned view (w/2 facing along an axis, up to w/√2 at a diagonal). The mob never goes into a block:
+ * Where an Actuator holds a Grabbed mob (CONTEXT: Grab), the same rule on every side: in the camera basis (look, right,
+ * up) the box centre sits the hold distance ahead (by default {@value #AHEAD} + r), {@value #LEFT} + r to the holding Actuator's
+ * side ({@link #side}: left for the off hand of a right-handed wearer) and {@value #DOWN} + h/2 − {@value #RAISE} below the eye,
+ * so it stays low on that side and out of the crosshair. r = w/2 · (|sin yaw| + |cos yaw|) is the half-width of the axis-aligned
+ * box across the turned view (w/2 facing along an axis, up to w/√2 at a diagonal). The Grab key held with the mouse wheel moves
+ * it along the look ({@link #distance}), {@value #NOTCH} per notch, from {@value #MIN_AHEAD} + r out to Reach of the body
+ * ({@link #fit}). The mob never goes into a block:
  * where its box does not fit it is lifted in steps of {@value #LIFT_STEP} up to its own height (a tall mob held by a wearer on
  * the floor), else it stays where it is. Nor through one: it is swept from where it is toward that point and stops at the first
  * block in the way. A hold ends ({@link #ends}) on Crawl, the wearer's death, the Rig off or unfitted, no Air, the target gone or
@@ -30,20 +34,101 @@ public final class Hold {
     public static final double LIFT_STEP = 0.25;
     public static final double FAR_SLACK = 1.0;
     public static final int FAR_TICKS = 5;
+    public static final double NOTCH = 0.5;
+    public static final double MIN_AHEAD = 0.5;
+    /** Most wheel notches one packet may carry. */
+    public static final int MAX_NOTCHES = 10;
+    /** Nearest a held Ship point comes along the look. */
+    public static final double SHIP_MIN = 1.0;
+    /** Camera side of a hold: left (+1) or right (−1). */
+    public static final int LEFT_SIDE = 1, RIGHT_SIDE = -1;
 
-    /** What the server sees of a hold this tick; {@code farTicks} counts ticks in a row beyond Reach + {@value #FAR_SLACK}. */
-    public record Status(boolean wearerAlive, boolean fitted, boolean air, boolean crawl, boolean targetGone, boolean sameLevel, int farTicks) {
+    /**
+     * What the server sees of a hold this tick; {@code farTicks} counts ticks in a row beyond Reach + {@value #FAR_SLACK},
+     * {@code handFull} an item is in the hand of a holding Actuator.
+     */
+    public record Status(boolean wearerAlive, boolean fitted, boolean air, boolean crawl, boolean targetGone, boolean sameLevel, int farTicks,
+                         boolean handFull) {
     }
 
     private Hold() {
     }
 
-    /** The box centre of a held target of {@code width} × {@code height} for a wearer with this eye, look and yaw (degrees). */
+    /** The box centre of a held target of {@code width} × {@code height} held on the left at the default distance. */
     public static Vec3 point(Vec3 eye, Vec3 look, float yRot, double width, double height) {
+        return point(eye, look, yRot, width, height, LEFT_SIDE, Double.NaN);
+    }
+
+    /**
+     * The box centre of a held target of {@code width} × {@code height} for a wearer with this eye, look and yaw (degrees), on camera
+     * {@code side} ({@link #LEFT_SIDE}, {@link #RIGHT_SIDE}), {@code distance} along the look (NaN: the default).
+     */
+    public static Vec3 point(Vec3 eye, Vec3 look, float yRot, double width, double height, int side, double distance) {
         Vec3[] b = basis(look, yRot);
+        double half = half(width, yRot);
+        double ahead = Double.isNaN(distance) ? AHEAD + half : distance;
+        return eye.add(b[0].scale(ahead)).subtract(b[1].scale(side * (LEFT + half))).subtract(b[2].scale(DOWN + height / 2 - RAISE));
+    }
+
+    /** Half-width of the axis-aligned box across the view turned by {@code yRot} degrees. */
+    static double half(double width, float yRot) {
         float yaw = yRot * Mth.DEG_TO_RAD;
-        double half = width / 2 * (Math.abs(Mth.sin(yaw)) + Math.abs(Mth.cos(yaw)));
-        return eye.add(b[0].scale(AHEAD + half)).subtract(b[1].scale(LEFT + half)).subtract(b[2].scale(DOWN + height / 2 - RAISE));
+        return width / 2 * (Math.abs(Mth.sin(yaw)) + Math.abs(Mth.cos(yaw)));
+    }
+
+    /** The camera side of a hold on body side {@code arm}. */
+    public static int side(HumanoidArm arm) {
+        return arm == HumanoidArm.LEFT ? LEFT_SIDE : RIGHT_SIDE;
+    }
+
+    /** The default hold distance along the look (NaN stored = this). */
+    public static double defaultDistance(double width, float yRot) {
+        return AHEAD + half(width, yRot);
+    }
+
+    /** The nearest hold: the box clear of the wearer's body for its size. */
+    public static double minDistance(double width, float yRot) {
+        return MIN_AHEAD + half(width, yRot);
+    }
+
+    /**
+     * A new hold distance after {@code notches} of the wheel (positive: farther) from {@code distance} (NaN: the default), between
+     * {@link #minDistance} and {@code reach}; at most {@value #MAX_NOTCHES} notches count.
+     */
+    public static double distance(double distance, int notches, double width, float yRot, double reach) {
+        double from = Double.isNaN(distance) ? defaultDistance(width, yRot) : distance;
+        int n = Mth.clamp(notches, -MAX_NOTCHES, MAX_NOTCHES);
+        double min = minDistance(width, yRot);
+        return Mth.clamp(from + n * NOTCH, min, Math.max(min, reach));
+    }
+
+    /**
+     * The farthest distance up to {@code distance} (NaN: the default) at which the held box centre stays within {@code reach} of
+     * the body, never nearer than {@link #minDistance}: a hold far out along the look is pulled in where the body is farther away.
+     */
+    public static double fit(Vec3 eye, Vec3 look, float yRot, double width, double height, int side, double distance, Vec3 body, double reach) {
+        double min = minDistance(width, yRot);
+        double d = Math.max(min, Double.isNaN(distance) ? defaultDistance(width, yRot) : distance);
+        double r2 = reach * reach;
+        if (point(eye, look, yRot, width, height, side, d).distanceToSqr(body) <= r2) return d;
+        if (point(eye, look, yRot, width, height, side, min).distanceToSqr(body) > r2) return min;
+        double lo = min, hi = d;
+        for (int i = 0; i < 16; i++) {
+            double mid = (lo + hi) / 2;
+            if (point(eye, look, yRot, width, height, side, mid).distanceToSqr(body) <= r2) lo = mid;
+            else hi = mid;
+        }
+        return lo;
+    }
+
+    /**
+     * A held Ship point {@code rel} ({@link #shipRel}) moved {@code delta} along the look, between {@value #SHIP_MIN} and where
+     * it is {@code max} from the eye; across the view it stays.
+     */
+    public static Vec3 shipAlong(Vec3 rel, double delta, double max) {
+        double side2 = rel.y * rel.y + rel.z * rel.z;
+        double far = Math.sqrt(Math.max(0, max * max - side2));
+        return new Vec3(Math.min(Math.max(SHIP_MIN, rel.x + delta), far), rel.y, rel.z);
     }
 
     /** The camera basis for this look and yaw (degrees): look direction, right, up. */
@@ -107,7 +192,10 @@ public final class Hold {
         return distance > reach + FAR_SLACK;
     }
 
-    /** Why the hold ends now (the release reason), or null while it goes on. Stow, Setting Down, Rides, glides and Falling are not on the list. */
+    /**
+     * Why the hold ends now (the release reason), or null while it goes on: "hand" when an item lands in a holding Actuator's
+     * hand (pickup, swap, hotbar change). Stow, Setting Down, Rides, glides and Falling are not on the list.
+     */
     public static @Nullable String ends(Status s) {
         if (!s.wearerAlive()) return "death";
         if (!s.fitted()) return "rig_off";
@@ -116,6 +204,7 @@ public final class Hold {
         if (s.targetGone()) return "gone";
         if (!s.sameLevel()) return "dimension";
         if (s.farTicks() >= FAR_TICKS) return "far";
+        if (s.handFull()) return "hand";
         return null;
     }
 }

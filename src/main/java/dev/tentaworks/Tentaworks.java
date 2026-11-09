@@ -20,6 +20,7 @@ import dev.tentaworks.registry.TentaworksItems;
 import dev.tentaworks.registry.TentaworksLang;
 import dev.tentaworks.registry.TentaworksRecipes;
 import dev.tentaworks.registry.TentaworksTriggers;
+import dev.tentaworks.rig.DualWield;
 import dev.tentaworks.rig.FarUse;
 import dev.tentaworks.rig.Grab;
 import dev.tentaworks.rig.RigServer;
@@ -58,6 +59,7 @@ public class Tentaworks {
         RigServer.init();
         Grab.init();
         FarUse.init();
+        DualWield.init();
         ShipFrames.init();
         BackSlot.init();
     }

@@ -1,4 +1,4 @@
-# Far Use scenes (x 11000..11120). Flat world: ground top at y=-60. TW_REACH_COPPER=6: Copper Reach 6 (lift 1.5 over the 4.5 block range).
+# Far Use scenes (x 11000..11120). Flat world: ground top at y=-60. TW_REACH_COPPER=6: Copper Reach 6 (lift 2.22 over the 4.5 block range: Reach from the body + 0.72).
 # Netherite rows from x=11000.5 facing +x, Copper rows from x=11100.5. Mobs tagged tw (SMOB lines), NoAI, never despawn.
 gamerule doDaylightCycle false
 gamerule doWeatherCycle false
@@ -7,7 +7,7 @@ gamerule keepInventory true
 gamerule doMobLoot false
 time set noon
 difficulty easy
-forceload add 10990 -10 11130 85
+forceload add 10990 -10 11130 110
 # N1 dirt at 6.5 (eye to box); N2 dirt at 6.5 behind a stone wall; N3 three dirt at 6.5 + diamond ore (Air paid, drops, XP)
 setblock 11007 -59 0 dirt
 fill 11004 -60 2 11004 -55 6 stone
@@ -25,7 +25,7 @@ fill 11003 -60 38 11003 -55 43 stone
 summon husk 11005.3 -60 40.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","z2"],Rotation:[90f,0f]}
 summon iron_golem 11003.5 -60 50.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","g1"]}
 summon husk 11003.5 -60 60.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","z3"]}
-# C1 dirt at 5.5; C2 dirt at 5.5 behind a connected glass pane wall; C3 husk at 3.25; C4 husk at 4.6; C5 stone to place against at 5.5; C6 husk at 7.5 (past Reach 6 + 1)
+# C1 dirt at 5.5; C2 dirt at 5.5 behind a connected glass pane wall; C3 husk at 3.25; C4 husk at 4.6; C5 stone to place against at 5.5; C6 husk at 7.5 (past Reach 6 from the body)
 setblock 11106 -59 0 dirt
 fill 11103 -60 2 11103 -55 6 glass_pane[north=true,south=true]
 setblock 11106 -59 4 dirt
@@ -39,6 +39,14 @@ setblock 11105 -62 74 bedrock
 # N11 a stone at 5.5 to use with an empty hand (does nothing) and a lever at 5 to flip
 setblock 11106 -59 78 stone
 setblock 11105 -60 82 lever[face=floor,facing=east]
+# N12 the floor at the edge of Reach 6 from the body: grass at x 11106 seen from x 11100.2, hit at x 11106.1 (body 5.97 from the hit, eye 6.02 from the box), bedrock under
+setblock 11106 -62 86 bedrock
+# N13 stone at 5.5 mined with an off-hand stone pickaxe only (Dual Wield); N14 stone with a main-hand stone pickaxe, then with two
+setblock 11106 -59 90 stone
+setblock 11106 -59 94 stone
+setblock 11106 -59 98 stone
+# N15 husk at 3.25 hit with an empty main hand and an iron sword in the off hand
+summon husk 11104.05 -60 102.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","z7"],Rotation:[90f,0f]}
 op Dev
 tentaworks trace on
 gamemode survival Dev

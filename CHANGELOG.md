@@ -40,7 +40,7 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ### Compatibility
 
-- Network changed (registrar "10"): new Grab, Actuator and Far Use packets and a Far Use field in the Rig Settings packet. 1.8.0 and 2.0.0 clients and servers cannot join each other; update both.
+- Network changed (registrar "11"): new Grab, Actuator and Far Use packets and a Far Use field in the Rig Settings packet. 1.8.0 and 2.0.0 clients and servers cannot join each other; update both.
 - A server config file written by an older version keeps `reach.copper = 4.0`: set it to 5.0 by hand to take the new default.
 - Existing Rigs keep working as before and stay unfitted; fit Actuators later at a crafting table, nothing on the Rig is lost.
 - Existing Rigs keep their Air while the cap doubles, so the Air bar shows half until the Rig is refilled once.

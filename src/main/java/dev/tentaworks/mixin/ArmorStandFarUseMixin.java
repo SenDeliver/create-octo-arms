@@ -17,6 +17,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class ArmorStandFarUseMixin {
     @Inject(method = "interactAt", at = @At("RETURN"))
     private void tentaworks$farInteracted(Player player, Vec3 at, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
-        if (player instanceof ServerPlayer p) FarUse.usedOn(p, (ArmorStand) (Object) this, cir.getReturnValue());
+        if (player instanceof ServerPlayer p) FarUse.usedOn(p, (ArmorStand) (Object) this, hand, cir.getReturnValue());
     }
 }

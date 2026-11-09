@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Far Use: when the Right Actuator lends its Reach (fitted, Rig Setting, Extendo Grip, heavy hold, limp), how far it lifts the
+ * Far Use: when the Actuators lend their Reach (fitted, Rig Setting, Extendo Grip, heavy hold, limp), how far it lifts the
  * ranges, what counts as past arm's length, and how often a far action pays Air or is told to the clients.
  */
 class FarUseGateTest {
@@ -91,17 +91,67 @@ class FarUseGateTest {
 
     @Test
     void whereATargetLies() {
-        double reach = VANILLA_BLOCK + FarUse.amount(7.0, VANILLA_BLOCK);
-        assertEquals(Far.NEAR, FarUse.far(4.0 * 4.0, VANILLA_BLOCK, reach));
-        assertEquals(Far.FAR, FarUse.far(5.0 * 5.0, VANILLA_BLOCK, reach));
-        assertEquals(Far.FAR, FarUse.far(7.9 * 7.9, VANILLA_BLOCK, reach), "vanilla's 1 block of slack past the lifted range");
-        assertEquals(Far.OUT, FarUse.far(8.1 * 8.1, VANILLA_BLOCK, reach));
-        double mobs = VANILLA_ENTITY + FarUse.amount(5.0, VANILLA_ENTITY);
-        assertEquals(Far.FAR, FarUse.far(4.6 * 4.6, VANILLA_ENTITY, mobs), "a mob within Copper Reach past arm's length is a Far Use");
-        assertEquals(Far.OUT, FarUse.far(6.1 * 6.1, VANILLA_ENTITY, mobs));
-        assertEquals(Far.NEAR, FarUse.far(5.0 * 5.0, VANILLA_BLOCK, VANILLA_BLOCK), "no lift: vanilla rules alone");
+        double reach = 5.0;
+        assertEquals(Far.NEAR, FarUse.far(4.0 * 4.0, VANILLA_BLOCK, true, 9.0 * 9.0, reach), "within the hand's own range");
+        assertEquals(Far.FAR, FarUse.far(5.0 * 5.0, VANILLA_BLOCK, true, 4.5 * 4.5, reach));
+        assertEquals(Far.FAR, FarUse.far(6.3 * 6.3, VANILLA_BLOCK, true, 5.9 * 5.9, reach), "1 block of slack for the server's older view");
+        assertEquals(Far.OUT, FarUse.far(6.3 * 6.3, VANILLA_BLOCK, true, 6.1 * 6.1, reach), "past Reach of the body: refused");
+        assertEquals(Far.FAR, FarUse.far(5.4 * 5.4, VANILLA_BLOCK, true, 7.0 * 7.0, reach), "the hand's range + 1 still passes, as vanilla");
+        assertEquals(Far.FAR, FarUse.far(4.6 * 4.6, VANILLA_ENTITY, true, 4.6 * 4.6, reach), "a mob within Reach past arm's length is a Far Use");
+        assertEquals(Far.OUT, FarUse.far(6.1 * 6.1, VANILLA_ENTITY, true, 6.1 * 6.1, reach));
+        assertEquals(Far.NEAR, FarUse.far(5.0 * 5.0, VANILLA_BLOCK, false, 5.0 * 5.0, reach), "no lift: vanilla rules alone");
         double extendo = VANILLA_BLOCK + 2.0;
-        assertEquals(Far.NEAR, FarUse.far(5.0 * 5.0, extendo, extendo), "an Extendo Grip's range is the wearer's own");
+        assertEquals(Far.NEAR, FarUse.far(5.0 * 5.0, extendo, false, 5.0 * 5.0, reach), "an Extendo Grip's range is the wearer's own");
+    }
+
+    @Test
+    void theLiftCoversEveryPointWithinReachOfTheBody() {
+        double reach = 5.0;
+        double range = VANILLA_BLOCK + FarUse.amount(ActuatorReach.pickRange(reach), VANILLA_BLOCK);
+        Vec3 body = new Vec3(0.5, 3.4, 0.5);
+        Vec3 eye = body.add(0, ActuatorReach.EYE_OFFSET, 0);
+        for (int i = 0; i < 64; i++) {
+            double a = i * Math.PI / 32, b = (i % 8) * Math.PI / 8 - Math.PI / 2;
+            Vec3 p = body.add(new Vec3(Math.cos(a) * Math.cos(b), Math.sin(b), Math.sin(a) * Math.cos(b)).scale(reach));
+            assertTrue(eye.distanceTo(p) <= range + 1.0E-9, "i=" + i);
+            assertTrue(ActuatorReach.accepts(eye, body, p, VANILLA_BLOCK, reach + 1.0E-9), "i=" + i);
+        }
+        assertFalse(ActuatorReach.accepts(eye, body, body.add(0, -5.5, 0), VANILLA_BLOCK, reach), "below the body past Reach, yet within the lifted range of the eye");
+    }
+
+    /**
+     * Reach parity (CONTEXT: Reach): from Standing Height, the farthest floor block a Tentacle can still Grip (its top face within
+     * Reach of the body) is one the Actuators Far-Use, and a mob standing on it is one they Grab.
+     */
+    @Test
+    void theFloorAtTheEdgeOfTentacleReachIsFarUsableAndItsMobGrabbable() {
+        for (double reach : new double[]{5.0, 6.0, 7.0}) {
+            World w = new World();
+            for (int x = -2; x <= 12; x++)
+                for (int z = -2; z <= 2; z++) w.put(x, 0, z, Blocks.STONE.defaultBlockState());
+            Vec3 feet = new Vec3(0.5, 1.0 + RigSettings.DEFAULT_HEIGHT, 0.5);
+            Vec3 body = feet.add(0, 0.9, 0);
+            Vec3 eye = feet.add(0, 1.62, 0);
+            Grips.Face edge = null;
+            for (Grips.Face f : Grips.scan(w, body, reach + 1)) {
+                if (f.dir() != Direction.UP || f.block().getZ() != 0 || f.rect().distanceToSqr(body) > reach * reach) continue;
+                if (edge == null || f.block().getX() > edge.block().getX()) edge = f;
+            }
+            assertTrue(edge != null && edge.block().getX() >= 3, "reach=" + reach);
+            BlockPos pos = edge.block();
+            AABB block = new AABB(pos);
+            double range = VANILLA_BLOCK + FarUse.amount(ActuatorReach.pickRange(reach), VANILLA_BLOCK);
+            Vec3 aim = new Vec3(pos.getX(), 1.0, 0.5);
+            assertTrue(eye.distanceTo(aim) <= range, "the lifted pick from the eye gets there, reach=" + reach);
+            assertTrue(ActuatorReach.accepts(eye, body, aim, VANILLA_BLOCK, reach), "the client keeps the hit, reach=" + reach);
+            assertEquals(Far.FAR, FarUse.far(block.distanceToSqr(eye), VANILLA_BLOCK, true, block.distanceToSqr(body), reach), "reach=" + reach);
+            assertTrue(WorkSight.seesBlock(w, pos, Direction.UP, aim, eye, aim.subtract(eye).normalize(), range + 1.0, CollisionContext.empty()), "reach=" + reach);
+
+            AABB mob = new AABB(pos.getX() + 0.2, 1.0, 0.2, pos.getX() + 0.8, 2.95, 0.8);
+            GrabRule.Target t = new GrabRule.Target(true, false, false, false, false, false, 20, 0.6, 1.95, false, Math.sqrt(mob.distanceToSqr(body)),
+                    SetDown.sight(w, body, mob, CollisionContext.empty()));
+            assertEquals(GrabRule.Verdict.LIGHT, GrabRule.check(t, new GrabRule.Rules(reach, false)), "reach=" + reach);
+        }
     }
 
     @Test
@@ -123,7 +173,7 @@ class FarUseGateTest {
         Vec3 eye = new Vec3(0.5, 2.62, 0.5);
         for (int x = 5; x <= 6; x++) {
             BlockPos pos = new BlockPos(x, 0, 0);
-            assertEquals(Far.FAR, FarUse.far(new AABB(pos).distanceToSqr(eye), VANILLA_BLOCK, reach), "x=" + x);
+            assertEquals(Far.FAR, FarUse.far(new AABB(pos).distanceToSqr(eye), VANILLA_BLOCK, true, new AABB(pos).distanceToSqr(eye.subtract(0, 0.72, 0)), 5.0), "x=" + x);
             for (double dx = -0.75; dx <= 0.75; dx += 0.25) {
                 Vec3 look = new Vec3(x + 0.5 + dx, 1.0, 0.5).subtract(eye).normalize();
                 assertTrue(WorkSight.seesBlock(w, pos, Direction.UP, null, eye, look, reach + 1.0, CollisionContext.empty()), "x=" + x + " dx=" + dx);

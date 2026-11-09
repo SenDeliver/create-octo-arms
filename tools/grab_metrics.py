@@ -32,6 +32,10 @@ for m in re.finditer(r'SMOB gt=(\d+) id=(\d+) type=(\S+) pos=(\S+) v=(\S+) nogra
     first.setdefault(m[2], d)
 grab = [dict(gt=int(m[0]), kind=m[1], target=m[2], type=m[3], why=m[4], arms=int(m[5]), speed=float(m[6]))
         for m in re.findall(r'SGRAB gt=(\d+) Dev kind=(\w+) target=(\S+) type=(\S+) why=(\S+) actuators=(\d+) speed=(\S+)', s)]
+garm = {(int(m[0]), m[1], m[2]): m[3] for m in re.findall(r'SGRAB gt=(\d+) Dev kind=(\w+) target=(\S+) .*? arm=(\S+)', s)}
+sg = {m[0]: dict(arm=m[1], dist=float(m[2]), place=m[3] == 'true') for m in re.findall(r'SPOS (\S+) gt=\d+ Dev .*? garm=(\S+) gdist=(\S+) gplace=(\w+) dual=\w+', s)}
+cspot = {int(m[0]): (None if m[1] == '-' else vec(m[1]), m[2] == 'true', m[3]) for m in re.findall(r'TRACE t=\d+ gt=(\d+) .*? spot=(\S+) spotok=(\w+) aff=(\w+)', c)}
+wheel = [dict(gt=int(m[0]), n=int(m[1]), canceled=m[2] == 'true', slot=int(m[3])) for m in re.findall(r'CWHEEL gt=(\d+) n=(-?\d+) canceled=(\w+) slot=(\d+)', c)]
 event = [(int(g), e, float(n)) for g, e, n in re.findall(r'SRIGEVENT gt=(\d+) Dev event=(\w+) number=(\S+)', s)]
 hurt = [dict(gt=int(m[0]), id=m[1], source=m[2], amount=float(m[3]), by=m[4]) for m in re.findall(r'MHURT gt=(\d+) id=(\d+) type=\S+ source=(\S+) amount=(\S+) by=(\S+)', s)]
 far = [dict(gt=int(m[0]), at=m[1], far=m[2], asking=m[3] == 'true') for m in re.findall(r'SFAR gt=(\d+) Dev kind=interact at=(\S+) .*? far=(\w+) sight=\w+ asking=(\w+)', s)]
@@ -58,7 +62,8 @@ def paid(a, b):
 
 print('== Setup')
 want = {'s1': (11204.5, 0.5), 'p1': (11202.5, 12.5), 'h1': (11203.5, 36.5), 'w1': (11203.5, 40.5), 'g1': (11203.5, 48.5),
-        'boss': (11205.5, 60.5), 'wolf': (11203.5, 68.5), 's2': (11203.5, 72.5), 'p4': (11203.5, 84.5)}
+        'boss': (11205.5, 60.5), 'wolf': (11203.5, 68.5), 's2': (11203.5, 72.5), 'p4': (11203.5, 84.5),
+        'p5': (11203.5, 96.5), 'w2': (11203.5, 100.5), 'h2': (11203.5, 104.5), 'p6': (11203.5, 108.5), 'p7': (11203.5, 112.5), 'p8': (11203.5, 116.5)}
 ids = {k: mob(*v) for k, v in want.items()}
 for k, i in ids.items():
     check(f'[setup] {k} spawned', i is not None, f"id {i} {first[i]['type'] if i else '-'}")
@@ -108,7 +113,7 @@ fl = [d for d in track(p1i, th[0]['gt'], th[0]['gt'] + 5) if d['thrown']] if th 
 v0 = math.hypot(*fl[0]['v']) if fl else 0
 check('G2 Throw 1.2 b/t', th and abs(th[0]['speed'] - 1.2) < 1e-3 and v0 >= 0.96, f"{th[:1]} first flight speed {v0:.3f}")
 imp = [h for h in hurt if h['id'] == p1i and h['source'] == 'tentaworks.impact']
-ev = [e for e in event if e[1] == 'impact']
+ev = [e for e in event if e[1] == 'impact' and e[0] <= spos['g2rest']['gt']]
 check('G2 Impact damage once, matches the event', len(imp) == 1 and len(ev) == 1 and abs(imp[0]['amount'] - ev[0][2]) < 0.01 and imp[0]['by'] == 'Dev', f'{imp} {ev}')
 td = [e for e in event if e[1] == 'throw_distance']
 rest = smob.get((spos['g2rest']['gt'], p1i))
@@ -164,7 +169,46 @@ check('G7 Crawl case was Active', spos['g7c']['state'] == 'ACTIVE' and spos['g7c
 d = smob.get((spos['g7lback']['gt'], ids['p4']))
 check('G7 after logout and rejoin: nothing held, the pig free', cact.get('g7lback', {}).get('held') == -1 and d and d['pinned'] == '-', f"{cact.get('g7lback')} pig {d and d['pinned']}")
 
+
+print('== G8 hands, set-down spot, wheel')
+p5 = ids['p5']
+st = grabs('start', p5)
+th = grabs('throw', p5)
+check('G8a item in the main hand: the off-hand Actuator Grabs', st and garm.get((st[0]['gt'], 'start', p5)) == 'OFF' and sg.get('g8aheld', {}).get('arm') == 'OFF', f"{st[:1]} arm {st and garm.get((st[0]['gt'], 'start', p5))} {sg.get('g8aheld')}")
+check('G8a plain attack with the item: no Throw; the Grab key held + attack Throws', th and spos['g8aswing']['held'] == int(p5) and th[0]['gt'] > spos['g8aswing']['gt'] and spos['g8athrown']['held'] == -1,
+      f"held at swing {spos['g8aswing']['held']}, throw {th[:1]}, after {spos['g8athrown']['held']}")
+for tag, key, why, text in (('G8b both hands full: a light cow refused', 'w2', 'hands_full', 'Hands full: empty a hand to Grab'),
+                            ('G8c one hand full: a heavy horse refused', 'h2', 'two_hands', 'Needs both Actuators: empty both hands')):
+    r = [g for g in grab if g['kind'] == 'refuse' and g['target'] == ids[key]]
+    note = r and any(t == text and 0 <= g - r[0]['gt'] <= 5 for g, t in overlay)
+    check(tag, r and r[0]['why'] == why and not grabs('start', ids[key]) and note, f"{r[:1]} note {bool(note)}")
+p6 = ids['p6']
+st = grabs('start', p6)
+rl = grabs('release', p6)
+check('G8d off hand full: the main-hand Actuator Grabs; an item in its hand sets the pig down (why=hand)',
+      st and garm.get((st[0]['gt'], 'start', p6)) == 'MAIN' and rl and rl[0]['why'] == 'hand', f"{st[:1]} arm {st and garm.get((st[0]['gt'], 'start', p6))} release {rl[:1]}")
+p7 = ids['p7']
+rl = grabs('release', p7)
+pl = [g['gt'] for g in grabs('place', p7)]
+mk = cpos.get('g8espot', {}).get('gt')
+sp = next((cspot[g] for g in range(mk, mk - 6, -1) if g in cspot), None) if mk else None
+down = smob.get((spos['g8edown']['gt'], p7))
+gap = dist(down['pos'], sp[0]) if down and sp and sp[0] else 99
+check('G8e set down at the looked spot: valid spot, place then release, the pig stands there',
+      sp and sp[1] and pl and rl and rl[0]['why'] == 'release' and 0 < rl[0]['gt'] - pl[0] <= 8 and gap <= 0.3,
+      f"spot {sp} place {pl[-1:] if pl else '-'} release {rl[:1]} pig {down and down['pos']} gap {gap:.3f}")
+p8 = ids['p8']
+f0, f1, f2 = sg.get('g8f0', {}), sg.get('g8f1', {}), sg.get('g8f2', {})
+w0 = [w for w in wheel if w['n'] == 2]
+w1 = [w for w in wheel if w['n'] == 1]
+check('G8f the Grab key held + 2 notches: the hold 1.0 farther, the hotbar does not scroll', f0 and f1 and abs(f1['dist'] - f0['dist'] - 1.0) < 0.02
+      and w0 and w0[0]['canceled'], f"gdist {f0.get('dist')} -> {f1.get('dist')}, wheel {w0[:1]}")
+check('G8f releasing the key after the wheel sets nothing down; the wheel alone scrolls the hotbar; a tap sets down',
+      spos['g8f2']['held'] == int(p8) and w1 and not w1[0]['canceled'] and w0 and w1[0]['slot'] != w0[0]['slot'] and grabs('release', p8),
+      f"held {spos['g8f2']['held']} wheel {w1[:1]} release {grabs('release', p8)[:1]}")
+
 exc = [l for l in (c + c2 + s).splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'authlib' not in l and 'neoforge-client.new.tmp.toml' not in l
-       and 'Error loading class: net/irisshaders/' not in l and 'org.gradle.' not in l and 'MessageIOException' not in l]
+       and 'Error loading class: net/irisshaders/' not in l and 'org.gradle.' not in l and 'MessageIOException' not in l
+       and 'sun.nio.fs.UnixException' not in l]
 check('E exceptions', not exc, f'{len(exc)} exception lines' + (f': {exc[0][:200]}' if exc else ''))
 print('RESULT', 'PASS' if not fails else 'FAIL ' + ', '.join(fails))

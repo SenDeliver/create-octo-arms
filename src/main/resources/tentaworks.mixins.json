@@ -23,6 +23,7 @@
   "client": [
     "BacktankRendererMixin",
     "EntityRendererMixin",
+    "GameRendererPickMixin",
     "ItemInHandLayerMixin",
     "KineticBlockEntityGoggleMixin",
     "LivingEntityBodyYawMixin",

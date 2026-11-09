@@ -18,14 +18,22 @@ fill 11208 -60 8 11208 -53 17 stone
 summon horse 11203.5 -60 36.5 {Tags:["tw","h1"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
 summon cow 11203.5 -60 40.5 {Tags:["tw","w1"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
 summon iron_golem 11203.5 -60 48.5 {Tags:["tw","g1"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
-# G5 refusals: Wither (boss), Dev2 (player), Dev2's wolf (owned)
-summon wolf 11203.5 -60 68.5 {Tags:["tw","wolf"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
+# G5 refusals: Wither (boss), Dev2 (player), Dev2's wolf (owned); the wolf NoAI so it never hunts the G6 sheep 4 blocks off
+summon wolf 11203.5 -60 68.5 {NoAI:1b,Tags:["tw","wolf"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
 # G6 sheep set down on a Create seat
 summon sheep 11203.5 -60 72.5 {Tags:["tw","s2"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
 setblock 11205 -60 76 create:white_seat
 # G7 releases: pig, wall west of the start (out of Reach)
 summon pig 11203.5 -60 84.5 {Tags:["tw","p4"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
 fill 11198 -60 80 11198 -54 89 stone
+# G8 hands, set-down spot, wheel (z 96..117)
+forceload add 11170 96 11220 120
+summon pig 11203.5 -60 96.5 {Tags:["tw","p5"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
+summon cow 11203.5 -60 100.5 {Tags:["tw","w2"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
+summon horse 11203.5 -60 104.5 {Tags:["tw","h2"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
+summon pig 11203.5 -60 108.5 {Tags:["tw","p6"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
+summon pig 11203.5 -60 112.5 {Tags:["tw","p7"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
+summon pig 11203.5 -60 116.5 {Tags:["tw","p8"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
 op Dev
 op Dev2
 tentaworks trace on

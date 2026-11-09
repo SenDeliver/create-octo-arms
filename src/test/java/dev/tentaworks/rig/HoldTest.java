@@ -91,17 +91,19 @@ class HoldTest {
 
     @Test
     void releaseConditions() {
-        Status ok = new Status(true, true, true, false, false, true, 0);
+        Status ok = new Status(true, true, true, false, false, true, 0, false);
         assertNull(Hold.ends(ok), "Stowed, Setting Down, a Ride, a glide or Falling are not in the status: the hold goes on");
-        assertEquals("death", Hold.ends(new Status(false, true, true, false, false, true, 0)));
-        assertEquals("rig_off", Hold.ends(new Status(true, false, true, false, false, true, 0)));
-        assertEquals("crawl", Hold.ends(new Status(true, true, false, true, false, true, 0)));
-        assertEquals("air", Hold.ends(new Status(true, true, false, false, false, true, 0)));
-        assertEquals("gone", Hold.ends(new Status(true, true, true, false, true, true, 0)));
-        assertEquals("dimension", Hold.ends(new Status(true, true, true, false, false, false, 0)));
-        assertNull(Hold.ends(new Status(true, true, true, false, false, true, Hold.FAR_TICKS - 1)));
-        assertEquals("far", Hold.ends(new Status(true, true, true, false, false, true, Hold.FAR_TICKS)));
-        assertEquals("death", Hold.ends(new Status(false, false, false, true, true, false, 9)), "the first reason wins");
+        assertEquals("death", Hold.ends(new Status(false, true, true, false, false, true, 0, false)));
+        assertEquals("rig_off", Hold.ends(new Status(true, false, true, false, false, true, 0, false)));
+        assertEquals("crawl", Hold.ends(new Status(true, true, false, true, false, true, 0, false)));
+        assertEquals("air", Hold.ends(new Status(true, true, false, false, false, true, 0, false)));
+        assertEquals("gone", Hold.ends(new Status(true, true, true, false, true, true, 0, false)));
+        assertEquals("dimension", Hold.ends(new Status(true, true, true, false, false, false, 0, false)));
+        assertNull(Hold.ends(new Status(true, true, true, false, false, true, Hold.FAR_TICKS - 1, false)));
+        assertEquals("far", Hold.ends(new Status(true, true, true, false, false, true, Hold.FAR_TICKS, false)));
+        assertEquals("hand", Hold.ends(new Status(true, true, true, false, false, true, 0, true)), "an item landed in a holding Actuator's hand");
+        assertEquals("far", Hold.ends(new Status(true, true, true, false, false, true, Hold.FAR_TICKS, true)));
+        assertEquals("death", Hold.ends(new Status(false, false, false, true, true, false, 9, true)), "the first reason wins");
     }
     @Test
     void aHeldShipPointStaysWhereItWasInTheView() {
@@ -143,5 +145,50 @@ class HoldTest {
         Vector3d n = Hold.shipTurn(new Quaterniond(), 90).transform(new Vector3d(0, 0, -1));
         assertEquals(1, n.x, 1.0E-9, "facing south, a wearer at -z turned to look west (-x) still sees the face: it now points east at them");
         assertEquals(0, Hold.shipTurn(start, 360).transform(new Vector3d(0, 0, -1)).distance(facing), 1.0E-9);
+    }
+
+    @Test
+    void theWheelMovesTheHoldHalfABlockANotchBetweenTheBodyAndReach() {
+        double def = Hold.defaultDistance(0.9, 0);
+        assertEquals(def + 0.5, Hold.distance(Double.NaN, 1, 0.9, 0, 5.0), 1.0E-9, "from the default");
+        assertEquals(def - 0.5, Hold.distance(def, -1, 0.9, 0, 5.0), 1.0E-9);
+        assertEquals(Hold.minDistance(0.9, 0), Hold.distance(def, -20, 0.9, 0, 5.0), 1.0E-9, "never into the body");
+        assertEquals(5.0, Hold.distance(def, 9, 0.9, 0, 5.0), 1.0E-9, "never past Reach");
+        assertEquals(def + Hold.MAX_NOTCHES * Hold.NOTCH, Hold.distance(def, 1000, 0.9, 0, 99), 1.0E-9, "a packet moves at most MAX_NOTCHES");
+        assertEquals(def, Hold.distance(def, 0, 0.9, 0, 5.0), 1.0E-9);
+    }
+
+    @Test
+    void aFarHoldIsPulledInToReachOfTheBody() {
+        Vec3 body = EYE.subtract(0, 0.72, 0);
+        for (float pitch = -90; pitch <= 90; pitch += 15) {
+            Vec3 look = Vec3.directionFromRotation(pitch, 30);
+            double d = Hold.fit(EYE, look, 30, 0.9, 0.9, Hold.LEFT_SIDE, 5.0, body, 5.0);
+            assertTrue(d <= 5.0 && d >= Hold.minDistance(0.9, 30), "pitch " + pitch);
+            assertTrue(Hold.point(EYE, look, 30, 0.9, 0.9, Hold.LEFT_SIDE, d).distanceTo(body) <= 5.0 + 1.0E-3, "pitch " + pitch);
+        }
+        Vec3 look = Vec3.directionFromRotation(0, 0);
+        assertEquals(2.0, Hold.fit(EYE, look, 0, 0.9, 0.9, Hold.LEFT_SIDE, 2.0, body, 5.0), 1.0E-9, "a near hold stays");
+    }
+
+    @Test
+    void theHoldHangsOnTheHoldingActuatorsSide() {
+        Vec3 look = Vec3.directionFromRotation(0, 0);
+        Vec3 left = Hold.point(EYE, look, 0, 0.9, 0.9, Hold.side(net.minecraft.world.entity.HumanoidArm.LEFT), Double.NaN);
+        Vec3 right = Hold.point(EYE, look, 0, 0.9, 0.9, Hold.side(net.minecraft.world.entity.HumanoidArm.RIGHT), Double.NaN);
+        assertEquals(Hold.point(EYE, look, 0, 0.9, 0.9), left, "the old left hold");
+        assertTrue(left.x > 0 && right.x < 0, "facing +z, left is +x: " + left + " " + right);
+        assertEquals(left.z, right.z, 1.0E-9);
+        assertEquals(EYE.z + 3.0, Hold.point(EYE, look, 0, 0.9, 0.9, Hold.LEFT_SIDE, 3.0).z, 1.0E-9);
+    }
+
+    @Test
+    void aHeldShipPointMovesAlongTheLookWithinReach() {
+        Vec3 rel = new Vec3(2.0, 0.5, -0.4);
+        assertEquals(new Vec3(2.5, 0.5, -0.4), Hold.shipAlong(rel, 0.5, 4.5));
+        assertEquals(Hold.SHIP_MIN, Hold.shipAlong(rel, -5, 4.5).x, 1.0E-9);
+        Vec3 out = Hold.shipAlong(rel, 10, 4.5);
+        assertEquals(4.5, out.length(), 1.0E-9, "no farther than max from the eye");
+        assertEquals(0.5, out.y, 1.0E-9);
     }
 }

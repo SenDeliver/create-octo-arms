@@ -81,7 +81,8 @@ public final class TentaworksLang {
         advancement("intelligence_is_a_privilege", "Intelligence Is a Privilege", "Put Far Reach, Thrift, Swift, Silent Step and Deft on one Rig");
         advancement("special_delivery", "Special Delivery", "Throw a mob so it lands 20 blocks or more from where you threw it");
         refusal(GRAB, "no_air", "No Air: the Actuators hang limp");
-        refusal(GRAB, "hand", "Empty your main hand to Grab");
+        refusal(GRAB, "hands_full", "Hands full: empty a hand to Grab");
+        refusal(GRAB, "two_hands", "Needs both Actuators: empty both hands");
         refusal(GRAB, "not_living", "Only living mobs can be Grabbed");
         refusal(GRAB, "player", "Players can't be Grabbed");
         refusal(GRAB, "boss", "Too mighty to Grab: a boss");
@@ -159,6 +160,13 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(hud + "ship", "Ship");
         REGISTRATE.addRawLang(hud + "heavy", "heavy");
         REGISTRATE.addRawLang(hud + "no_air", "No Air: Actuators limp");
+        REGISTRATE.addRawLang(hud + "grab", "Grab");
+        REGISTRATE.addRawLang(hud + "set_down", "Set Down");
+        REGISTRATE.addRawLang(hud + "throw", "Throw");
+        REGISTRATE.addRawLang(hud + "distance", "Distance");
+        REGISTRATE.addRawLang(hud + "two_hands", "Needs both Actuators");
+        REGISTRATE.addRawLang(hud + "hands_full", "Hands full");
+        REGISTRATE.addRawLang(hud + "out_of_reach", "Out of Reach");
 
         String cfg = TentaworksIds.MOD_ID + ".configuration.";
         REGISTRATE.addRawLang(cfg + "title", "Octo Arms: Config");
@@ -172,6 +180,8 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(cfg + "movement.forward.flat", "Flat");
         REGISTRATE.addRawLang(cfg + "firstPerson", "First person");
         REGISTRATE.addRawLang(cfg + "firstPerson.limbOpacity", "Limb opacity");
+        REGISTRATE.addRawLang(cfg + "hud", "HUD");
+        REGISTRATE.addRawLang(cfg + "hud.crosshair", "Actuator crosshair marks");
         REGISTRATE.addRawLang(cfg + "reach", "Reach");
         REGISTRATE.addRawLang(cfg + "reach.copper", "Copper Reach");
         REGISTRATE.addRawLang(cfg + "reach.netherite", "Netherite Reach");
@@ -186,8 +196,11 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(cfg + "air.farUse", "Far Use: Air per action");
         REGISTRATE.addRawLang(cfg + "air.grab", "Grab: ticks per Air");
         REGISTRATE.addRawLang(cfg + "air.throw", "Throw: Air per Throw");
+        REGISTRATE.addRawLang(cfg + "air.dualWield", "Dual Wield: Air per action");
         REGISTRATE.addRawLang(cfg + "farUse", "Far Use");
         REGISTRATE.addRawLang(cfg + "farUse.players", "Far Use on players");
+        REGISTRATE.addRawLang(cfg + "actuators", "Actuators");
+        REGISTRATE.addRawLang(cfg + "actuators.dualWield", "Dual Wield");
         REGISTRATE.addRawLang(cfg + "grab", "Grab");
         REGISTRATE.addRawLang(cfg + "grab.tamedOthers", "Grab others' animals");
         REGISTRATE.addRawLang(cfg + "grab.ships", "Grab Ships");
@@ -225,6 +238,8 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(cfg + "air.farUse.tooltip", "Copper Rig: Air per Far Use (one block or mob action past arm's length)");
         REGISTRATE.addRawLang(cfg + "air.grab.tooltip", "Copper Rig holding a Grab: ticks per 1 Air");
         REGISTRATE.addRawLang(cfg + "air.throw.tooltip", "Copper Rig: Air per Throw");
+        REGISTRATE.addRawLang(cfg + "air.dualWield.tooltip", "Copper Rig: Air per Dual Wield action (a block broken or a hit the off-hand item helped with)");
+        REGISTRATE.addRawLang(cfg + "actuators.dualWield.tooltip", "Dual Wield: with both Actuators free, the off-hand item works along with the main-hand one (mining speed, melee damage)");
         REGISTRATE.addRawLang(cfg + "farUse.players.tooltip", "Far Use may hit and use on players (the PvP rule still applies)");
         REGISTRATE.addRawLang(cfg + "grab.tamedOthers.tooltip", "Grab may take another player's tamed, owned or leashed animal");
         REGISTRATE.addRawLang(cfg + "grab.ships.tooltip", "Grab may take Sable Ships (also needs Rigs grip Ships). Ignored without Sable");
@@ -236,6 +251,7 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(cfg + "impact.damagePerSpeed.tooltip", "Impact damage per block per tick of speed above the minimum, dealt once per Throw");
         REGISTRATE.addRawLang(cfg + "impact.minSpeed.tooltip", "Slowest Thrown speed that deals Impact damage, blocks per tick");
         REGISTRATE.addRawLang(cfg + "impact.cap.tooltip", "Most Impact damage one Throw can deal");
+        REGISTRATE.addRawLang(cfg + "hud.crosshair.tooltip", "Marks around the crosshair: what the Actuators reach, Grab and Set Down hints, Dual Wield");
         REGISTRATE.addRawLang(cfg + "firstPerson.limbOpacity.tooltip", "Opacity of every Limb (Tentacles and Actuators) in first person: 1.0 solid, 0.1 faint");
         REGISTRATE.addRawLang(cfg + "crawl.speed.tooltip", "Descent speed with no Air left (Crawl), blocks per second");
         REGISTRATE.addRawLang(cfg + "enchant.farReachPerLevel.tooltip", "Far Reach: extra Reach per level, blocks");
