@@ -21,7 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Every Rig enchantment has its data file (Rig items only, chest slot) and sits in the enchanting table and non-treasure tags. */
 class RigEnchantDataTest {
-    private static final List<String> OURS = List.of(TentaworksIds.FAR_REACH, TentaworksIds.THRIFT, TentaworksIds.SWIFT, TentaworksIds.SILENT_STEP);
+    private static final List<String> OURS = List.of(TentaworksIds.FAR_REACH, TentaworksIds.THRIFT, TentaworksIds.SWIFT, TentaworksIds.SILENT_STEP,
+            TentaworksIds.DEFT);
 
     /** Every copy on the classpath: the vanilla jar carries tag files of the same path as ours. */
     private static List<JsonObject> json(String path) throws IOException {
@@ -46,6 +47,7 @@ class RigEnchantDataTest {
             assertTrue(e.get("max_level").getAsInt() >= 1, id);
         }
         assertEquals(1, json("data/tentaworks/enchantment/silent_step.json").get(0).get("max_level").getAsInt());
+        assertEquals(1, json("data/tentaworks/enchantment/deft.json").get(0).get("max_level").getAsInt());
     }
 
     @Test
