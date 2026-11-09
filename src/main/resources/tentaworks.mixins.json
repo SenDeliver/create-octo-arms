@@ -18,6 +18,7 @@
   "client": [
     "BacktankRendererMixin",
     "EntityRendererMixin",
+    "ItemInHandLayerMixin",
     "KineticBlockEntityGoggleMixin",
     "LivingEntityBodyYawMixin",
     "LivingEntityWalkMixin",

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.tentaworks.TentaworksIds;
+import dev.tentaworks.rig.Actuators;
 import dev.tentaworks.rig.RigSlot;
 import dev.tentaworks.rig.TentacleRigItem;
 import dev.tentaworks.rig.WornRig;
@@ -35,8 +36,8 @@ import org.joml.Vector3f;
 
 /**
  * The Tentacles on every player wearing a Rig in the chest slot (third person, other players, inventory preview = Stowed pose), drawn in
- * the body's space on top of Create's Backtank layer; a Back Slot Rig is drawn by the Curios renderer through {@link #drawOnBody}.
- * First person has no player model: the local wearer's Tentacles are
+ * the body's space on top of Create's Backtank layer, with the Actuators of a fitted Rig ({@link ActuatorRenderer}); a Back Slot
+ * Rig is drawn by the Curios renderer through {@link #drawOnBody}. First person has no player model: the local wearer's Limbs are
  * drawn from the level stage instead, in the body's pose (upright, or flat for a swimming or crawling wearer), without the
  * parts within reach of the eye (shoulders and upper segments behind the head).
  */
@@ -57,7 +58,7 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
         drawOnBody(ps, buffers, light, player, worn.item(), pt, getParentModel().body);
     }
 
-    /** The Tentacles in the body's space; the Back Slot renderer draws them here too, over the chest armor. */
+    /** The Tentacles and Actuators in the body's space; the Back Slot renderer draws them here too, over the chest armor. */
     public static void drawOnBody(PoseStack ps, MultiBufferSource buffers, int light, Player player, TentacleRigItem rig, float pt, ModelPart body) {
         TentacleRenderer.timed(() -> {
             ps.pushPose();
@@ -69,8 +70,9 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
             Vector3f c = m.transformPosition(0.5F, 0.5F, 0.5F, new Vector3f());
             boolean world = c.distance((float) at.x, (float) at.y, (float) at.z) < 1.5F;
             RigVisuals.Visual visual = RigVisuals.get(player);
-            TentacleRenderer.drawRig(ps, buffers, player, rig.tier(), visual, pt,
-                    new TentacleRenderer.Space(m, cam, world, false, light, lod(visual, at.length())));
+            TentacleRenderer.Space space = new TentacleRenderer.Space(m, cam, world, false, light, lod(visual, at.length()));
+            TentacleRenderer.drawRig(ps, buffers, player, rig.tier(), visual, pt, space);
+            ActuatorRenderer.draw(ps, buffers, player, rig.tier(), pt, space);
             ps.popPose();
         });
     }
@@ -126,9 +128,10 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         if (player == null || !mc.options.getCameraType().isFirstPerson() || mc.getCameraEntity() != player || player.isSpectator()) return;
-        if (!(WornRig.of(player).item() instanceof TentacleRigItem rig)) return;
+        if (!(WornRig.of(player).item() instanceof TentacleRigItem rig) || player.getPose() == Pose.SLEEPING) return;
         RigVisuals.Visual visual = RigVisuals.get(player);
-        if (visual == null || !visual.visible() || player.getPose() == Pose.SLEEPING) return;
+        boolean tentacles = visual != null && visual.visible(), actuators = Actuators.fitted(player);
+        if (!tentacles && !actuators) return;
         float pt = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         TentacleRenderer.timed(() -> {
             Vec3 cam = event.getCamera().getPosition();
@@ -148,8 +151,9 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
             ps.translate(0.0F, -1.501F, 0.0F);
             TentacleRenderer.toTankSpace(ps);
             MultiBufferSource.BufferSource buffers = MultiBufferSource.immediate(FIRST_PERSON_BUFFER);
-            TentacleRenderer.drawRig(ps, buffers, player, rig.tier(), visual, pt,
-                    new TentacleRenderer.Space(new Matrix4f(ps.last().pose()), cam, true, true, 0xF000F0, 0));
+            TentacleRenderer.Space space = new TentacleRenderer.Space(new Matrix4f(ps.last().pose()), cam, true, true, 0xF000F0, 0);
+            if (tentacles) TentacleRenderer.drawRig(ps, buffers, player, rig.tier(), visual, pt, space);
+            if (actuators) ActuatorRenderer.draw(ps, buffers, player, rig.tier(), pt, space);
             ps.popPose();
             buffers.endBatch();
         });

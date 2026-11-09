@@ -91,6 +91,28 @@ public final class ActuatorClient {
         put(packet.entityId(), STATES.getOrDefault(packet.entityId(), State.NONE).far(packet.target(), packet.ttl()));
     }
 
+    /** The wearer's own Far Use, predicted (the server sends {@link FarUsePacket} only to the others): reach {@code target} for {@code ttl} ticks. */
+    public static void predictFarUse(Vec3 target, int ttl) {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null) put(player.getId(), get(player).far(target, Math.max(ttl, get(player).farTtl)));
+    }
+
+    /**
+     * A Throw by the wearer {@code wearerId}: camera kick (own wearer), follow-through, and a watch on the thrown mob for its Impact.
+     * The wearer's own attack calls it; observers infer it from a fast release until a server signal calls it for them.
+     */
+    public static void onThrow(int wearerId) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null || !(mc.level.getEntity(wearerId) instanceof Player wearer)) return;
+        ActuatorFx.thrown(wearer, get(wearer).heldId, wearer.getViewVector(1.0F));
+    }
+
+    /** An Impact of the Thrown {@code thrownId} at {@code at}, {@code speed} blocks per tick: sparks and a clank, once per Throw. */
+    public static void onImpact(int thrownId, Vec3 at, double speed) {
+        ActuatorFx.impacted(thrownId);
+        ActuatorFx.impact(at, speed);
+    }
+
     private static void put(int id, State s) {
         if (s.idle()) STATES.remove(id);
         else STATES.put(id, s);
@@ -122,7 +144,7 @@ public final class ActuatorClient {
     }
 
     /** What the crosshair rests on within {@code reach}: the nearest entity before the first block, else that block. */
-    private static HitResult aim(LocalPlayer player, double reach) {
+    static HitResult aim(LocalPlayer player, double reach) {
         Vec3 eye = player.getEyePosition();
         Vec3 look = player.getViewVector(1.0F);
         BlockHitResult block = player.level().clip(new ClipContext(eye, eye.add(look.scale(reach)), ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
@@ -143,6 +165,7 @@ public final class ActuatorClient {
         if (!event.isAttack() || mc.player == null || !local().holding()) return;
         event.setCanceled(true);
         PacketDistributor.sendToServer(RigGrabPacket.throwAlong(mc.player.getViewVector(1.0F)));
+        onThrow(mc.player.getId());
     }
 
     @SubscribeEvent

@@ -108,6 +108,15 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(gui + "toggle_key", "Toggle key: %s");
         REGISTRATE.addRawLang(gui + "toggle_unbound", "Bind \"Toggle Tentacle Rig\" in Controls");
         REGISTRATE.addRawLang(gui + "double_jump_hint", "Double Jump: activate, Set Down, let go");
+        REGISTRATE.addRawLang(gui + "far_use", "Far Use");
+        REGISTRATE.addRawLang(gui + "far_use.always", "Always");
+        REGISTRATE.addRawLang(gui + "far_use.rig_out", "Rig out only");
+        REGISTRATE.addRawLang(gui + "far_use.off", "Off");
+        String hud = "tentaworks.hud.";
+        REGISTRATE.addRawLang(hud + "holding", "Holding %s");
+        REGISTRATE.addRawLang(hud + "ship", "Ship");
+        REGISTRATE.addRawLang(hud + "heavy", "heavy");
+        REGISTRATE.addRawLang(hud + "no_air", "No Air: Actuators limp");
 
         String cfg = TentaworksIds.MOD_ID + ".configuration.";
         REGISTRATE.addRawLang(cfg + "title", "Octo Arms: Config");
