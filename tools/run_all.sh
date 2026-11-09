@@ -65,7 +65,7 @@ GRADLE_ARGS="$GRADLE_ARGS -PwithCurios" TIMELINE=$S/curios-timeline.txt SCRIPT2=
 GRADLE_ARGS="$GRADLE_ARGS -PwithCurios" TW_BACK_SLOT=false tools/run_split.sh $S/scene-curios.txt $S/curiosoff-client.txt tools/logs/$TAG-curiosoff
 TW_REACH_COPPER=6 TIMELINE=$S/faruse-timeline.txt tools/run_split.sh $S/scene-faruse.txt $S/faruse-client.txt tools/logs/$TAG-faruse
 ANIMALS=true TIMELINE=$S/grab-timeline.txt SCRIPT2=$S/grab-watch.txt tools/run_split.sh $S/scene-grab.txt $S/grab-client.txt tools/logs/$TAG-grab
-GRADLE_ARGS="$GRADLE_ARGS -PwithCurios" ANIMALS=true TIMELINE=$S/look-timeline.txt tools/run_split.sh $S/scene-look.txt $S/look-client.txt tools/logs/$TAG-look
+TW_REACH_COPPER=5 GRADLE_ARGS="$GRADLE_ARGS -PwithCurios" ANIMALS=true TIMELINE=$S/look-timeline.txt tools/run_split.sh $S/scene-look.txt $S/look-client.txt tools/logs/$TAG-look
 TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/p9-timeline.txt tools/run_split.sh $S/scene-p9.txt $S/p9-client.txt tools/logs/$TAG-p9
 TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/rideaero-timeline.txt tools/run_split.sh $S/scene-rideaero.txt $S/rideaero-client.txt tools/logs/$TAG-rideaero
 TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/shipgrab-timeline.txt SCRIPT2=$S/shipgrab-watch.txt tools/run_split.sh $S/scene-shipgrab.txt $S/shipgrab-client.txt tools/logs/$TAG-shipgrab
