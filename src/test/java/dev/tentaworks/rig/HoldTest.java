@@ -21,16 +21,16 @@ class HoldTest {
         return AABB.ofSize(centre, w, h, w);
     }
 
-    /** The box is axis-aligned while the offset turns with the yaw: a wide mob at a diagonal yaw is the closest, about 0.28 off. */
+    /** The plan's 0.35 at every yaw and pitch: the box is axis-aligned, so the offset uses its half-width across the turned view. */
     @Test
-    void offTheCrosshairByAtLeastAQuarterOfABlock() {
-        for (float yaw : new float[]{0, 30, 45, 90, 135, 180, -60, -135})
-            for (float pitch : new float[]{-75, -60, -30, 0, 30, 60, 75}) {
+    void offTheCrosshairByAtLeastAThirdOfABlock() {
+        for (float yaw = -180; yaw < 180; yaw += 7.5F)
+            for (float pitch = -90; pitch <= 90; pitch += 7.5F) {
                 Vec3 look = Vec3.directionFromRotation(pitch, yaw);
                 for (double[] m : MOBS) {
                     Vec3 c = Hold.point(EYE, look, yaw, m[0], m[1]);
                     String at = "yaw " + yaw + " pitch " + pitch + " mob " + m[0] + "x" + m[1];
-                    assertTrue(box(c, m[0], m[1]).inflate(0.25).clip(EYE, EYE.add(look.scale(16))).isEmpty(), at);
+                    assertTrue(box(c, m[0], m[1]).inflate(0.35).clip(EYE, EYE.add(look.scale(16))).isEmpty(), at);
                     assertTrue(c.subtract(EYE).dot(look) > 1.0, at + ": ahead of the eye");
                 }
             }
@@ -40,6 +40,8 @@ class HoldTest {
     void lowOnTheLeft() {
         Vec3 c = Hold.point(EYE, new Vec3(0, 0, 1), 0, 0.9, 0.9);
         assertEquals(Hold.AHEAD + 0.45, c.z, 1.0E-6);
+        Vec3 diagonal = Hold.point(EYE, Vec3.directionFromRotation(0, 45), 45, 0.9, 0.9).subtract(EYE);
+        assertEquals(Hold.LEFT + 0.45 * Math.sqrt(2), diagonal.dot(new Vec3(Math.cos(Math.PI / 4), 0, Math.sin(Math.PI / 4))), 1.0E-5, "a diagonal yaw: wider across the view");
         assertEquals(Hold.LEFT + 0.45, c.x, 1.0E-6, "facing south (+z) the left is +x");
         assertEquals(EYE.y - (Hold.DOWN + 0.45 - Hold.RAISE), c.y, 1.0E-6);
     }

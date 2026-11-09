@@ -12,8 +12,9 @@ import java.util.function.DoublePredicate;
 
 /**
  * Where the Left Actuator holds a Grabbed mob (CONTEXT: Grab), the same rule on every side: in the camera basis (look, right,
- * up) the box centre sits {@value #AHEAD} + w/2 ahead, {@value #LEFT} + w/2 to the left and {@value #DOWN} + h/2 −
- * {@value #RAISE} below the eye, so it stays low on the wearer's left and out of the crosshair. The mob never goes into a block:
+ * up) the box centre sits {@value #AHEAD} + r ahead, {@value #LEFT} + r to the left and {@value #DOWN} + h/2 − {@value #RAISE}
+ * below the eye, so it stays low on the wearer's left and out of the crosshair. r = w/2 · (|sin yaw| + |cos yaw|) is the
+ * half-width of the axis-aligned box across the turned view (w/2 facing along an axis, up to w/√2 at a diagonal). The mob never goes into a block:
  * where its box does not fit it is lifted in steps of {@value #LIFT_STEP} up to its own height (a tall mob held by a wearer on
  * the floor), else it stays where it is. Nor through one: it is swept from where it is toward that point and stops at the first
  * block in the way. A hold ends ({@link #ends}) on Crawl, the wearer's death, the Rig off or unfitted, no Air, the target gone or
@@ -42,7 +43,8 @@ public final class Hold {
         Vec3 right = new Vec3(-Mth.cos(yaw), 0, -Mth.sin(yaw));
         Vec3 dir = len < 1.0E-6 ? new Vec3(-Mth.sin(yaw), 0, Mth.cos(yaw)) : look.scale(1 / len);
         Vec3 up = right.cross(dir);
-        return eye.add(dir.scale(AHEAD + width / 2)).subtract(right.scale(LEFT + width / 2)).subtract(up.scale(DOWN + height / 2 - RAISE));
+        double half = width / 2 * (Math.abs(Mth.sin(yaw)) + Math.abs(Mth.cos(yaw)));
+        return eye.add(dir.scale(AHEAD + half)).subtract(right.scale(LEFT + half)).subtract(up.scale(DOWN + height / 2 - RAISE));
     }
 
     /** The first feet height from {@code feetY} up, in steps of {@value #LIFT_STEP} up to {@code height}, where the box {@code fits}; NaN when none does. */

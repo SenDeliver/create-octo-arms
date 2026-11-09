@@ -324,10 +324,18 @@ public final class Grab {
         return GrabRule.claimed(true, () -> ask(() -> CommonHooks.onInteractEntity(wearer, target, InteractionHand.MAIN_HAND) != null));
     }
 
-    /** As an empty-handed right click on that Ship block (in its plot, where Sable puts every Ship block): the Ship's claim decides. */
-    private static boolean claimed(ServerPlayer wearer, BlockPos block, Direction face, Vec3 local) {
-        return GrabRule.claimed(wearer.level().mayInteract(wearer, block), () -> ask(() ->
-                CommonHooks.onRightClickBlock(wearer, InteractionHand.MAIN_HAND, block, new BlockHitResult(local, face, block, false)).isCanceled()));
+    /**
+     * As an empty-handed right click on that Ship block, asked twice: in its plot (where Sable keeps every Ship block, as a real
+     * click on it is seen) and where it is in the world (a Ship parked inside a claim). Either no refuses. The click lands at the
+     * block centre, never on a face, so Create's value boxes and filter slots ignore it instead of acting on it.
+     */
+    private static boolean claimed(ServerPlayer wearer, BlockPos block, Direction face, Vec3 world) {
+        return claimedAt(wearer, block, face) || claimedAt(wearer, BlockPos.containing(world), face);
+    }
+
+    private static boolean claimedAt(ServerPlayer wearer, BlockPos pos, Direction face) {
+        return GrabRule.claimed(wearer.level().mayInteract(wearer, pos), () -> ask(() -> CommonHooks.onRightClickBlock(wearer,
+                InteractionHand.MAIN_HAND, pos, new BlockHitResult(Vec3.atCenterOf(pos), face, pos, true)).isCanceled()));
     }
 
     private static boolean ask(BooleanSupplier post) {
@@ -382,7 +390,7 @@ public final class Grab {
         if (why == null && body.distanceTo(frame.toWorld(local)) > TentacleRigItem.reach(wearer) + GrabRule.SLACK) why = "too_far";
         if (why == null && !Grips.visible(level, frame.toLocal(body), local, face, true)) why = "no_sight";
         if (why == null && crewed(wearer, frame)) why = "crewed";
-        if (why == null && claimed(wearer, block, face, local)) why = "claimed";
+        if (why == null && claimed(wearer, block, face, frame.toWorld(Vec3.atCenterOf(block)))) why = "claimed";
         if (why != null) {
             refuse(wearer, null, why, mass);
             return;
