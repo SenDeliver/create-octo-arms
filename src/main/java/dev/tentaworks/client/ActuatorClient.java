@@ -38,6 +38,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
@@ -67,6 +68,7 @@ public final class ActuatorClient {
     private static final GrabKeyState KEY = new GrabKeyState();
     private static @Nullable SetDown.Spot spot;
     private static Affordance affordance = Affordance.NONE;
+    private static @Nullable Vec3 affordanceAt;
 
     static {
         DualWield.clientSide(ActuatorClient::holdArm);
@@ -142,6 +144,11 @@ public final class ActuatorClient {
         return affordance;
     }
 
+    /** The centre of the mob, or the spot on the Ship, the Grab key would act on this tick; null when {@link #affordance} is NONE. */
+    public static @Nullable Vec3 affordanceAt() {
+        return affordance.kind() == Affordance.Kind.NONE ? null : affordanceAt;
+    }
+
     /** The Grab key is held down now. */
     public static boolean grabKeyDown() {
         return TentaworksKeys.GRAB.isDown();
@@ -150,11 +157,20 @@ public final class ActuatorClient {
     /** Dual Wield applies to the block or entity under the local crosshair: the off-hand item would help break or hit it. */
     public static boolean dualWield() {
         Minecraft mc = Minecraft.getInstance();
-        LocalPlayer p = mc.player;
-        if (p == null || mc.level == null) return false;
-        if (mc.hitResult instanceof BlockHitResult b && b.getType() == HitResult.Type.BLOCK)
-            return DualWield.on(p) && DualWield.effective(p.getOffhandItem().getDestroySpeed(mc.level.getBlockState(b.getBlockPos())));
-        return mc.hitResult instanceof EntityHitResult e && DualWield.helps(p, e.getEntity());
+        return mc.player != null && dualWield(mc.player, mc.hitResult);
+    }
+
+    /** Dual Wield applies to {@code player}'s action on {@code hit}: the off-hand item would help break that block or hit that entity. */
+    public static boolean dualWield(Player player, @Nullable HitResult hit) {
+        if (hit instanceof BlockHitResult b && b.getType() == HitResult.Type.BLOCK)
+            return DualWield.on(player) && DualWield.effective(player.getOffhandItem().getDestroySpeed(player.level().getBlockState(b.getBlockPos())));
+        return hit instanceof EntityHitResult e && DualWield.helps(player, e.getEntity());
+    }
+
+    /** The mob {@code player}'s Actuators hold, or null (nothing, a Ship, or not known to this client). */
+    public static @Nullable Entity held(Player player) {
+        int id = get(player).heldId();
+        return id < 0 ? null : player.level().getEntity(id);
     }
 
     /** {@code point} is within {@code player}'s Actuator Reach of the body (the one rule client and server use). */
@@ -230,7 +246,7 @@ public final class ActuatorClient {
         else STATES.put(id, s);
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGH)
     static void onClientTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         if (!STATES.isEmpty() && !mc.isPaused()) {
@@ -248,8 +264,8 @@ public final class ActuatorClient {
             return;
         }
         State s = get(player);
-        spot = s.heldId() >= 0 && mc.level.getEntity(s.heldId()) instanceof Entity held
-                ? SetDown.spot(mc.level, player, held, player.getEyePosition(), player.getViewVector(1.0F), TentacleRigItem.reach(player), 0) : null;
+        Entity held = held(player);
+        spot = held == null ? null : SetDown.spot(mc.level, player, held, player.getEyePosition(), player.getViewVector(1.0F), TentacleRigItem.reach(player), 0);
         affordance = s.holding() ? Affordance.NONE : affordance(player);
         if (mc.screen != null) {
             KEY.reset();
@@ -288,6 +304,7 @@ public final class ActuatorClient {
         boolean main = player.getMainHandItem().isEmpty(), off = player.getOffhandItem().isEmpty();
         HitResult aim = target(player);
         if (aim instanceof EntityHitResult e) {
+            affordanceAt = e.getEntity().getBoundingBox().getCenter();
             GrabRule.Verdict v = GrabRule.check(Grab.facts(player, e.getEntity(), heldByAnyone(e.getEntity())),
                     new GrabRule.Rules(reach, TentaworksConfig.value(TentaworksConfig.GRAB_TAMED_OTHERS)));
             if (v == GrabRule.Verdict.GONE) return Affordance.NONE;
@@ -298,7 +315,8 @@ public final class ActuatorClient {
         if (aim instanceof BlockHitResult b && b.getType() == HitResult.Type.BLOCK && ShipFrames.get().isPlot(player.level(), b.getBlockPos())) {
             Frame frame = ShipFrames.get().containing(player.level(), b.getBlockPos());
             if (frame == null || !TentaworksConfig.value(TentaworksConfig.GRAB_SHIPS) || !ShipFrames.enabled()) return Affordance.NONE;
-            if (!ActuatorReach.within(Grips.body(player), frame.toWorld(b.getLocation()), reach + GrabRule.SLACK))
+            affordanceAt = frame.toWorld(b.getLocation());
+            if (!ActuatorReach.within(Grips.body(player), affordanceAt, reach + GrabRule.SLACK))
                 return new Affordance(Affordance.Kind.OUT_OF_REACH, HoldArm.NONE, GrabRule.Verdict.TOO_FAR);
             return arms(2, main, off);
         }

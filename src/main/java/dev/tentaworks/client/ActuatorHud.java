@@ -2,11 +2,15 @@ package dev.tentaworks.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.tentaworks.TentaworksIds;
+import dev.tentaworks.client.ActuatorClient.Affordance;
 import dev.tentaworks.config.TentaworksClientConfig;
 import dev.tentaworks.registry.TentaworksItems;
 import dev.tentaworks.rig.Actuators;
+import dev.tentaworks.rig.Grab;
+import dev.tentaworks.rig.GrabRule;
 import dev.tentaworks.rig.RigSettings;
 import dev.tentaworks.rig.RigTier;
+import dev.tentaworks.rig.SetDown;
 import dev.tentaworks.rig.TentacleRigItem;
 import dev.tentaworks.rig.WornRig;
 import net.minecraft.ChatFormatting;
@@ -26,15 +30,18 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
+import java.util.Locale;
+
 /**
  * What the Actuators tell the wearer on screen.
  * <p>
  * Around the crosshair (first person, client config {@code hud.crosshair}): a claw bracket on each side while an Actuator would
- * do the action ({@link ActuatorSight.Mark}): the acting side lit in the tier's colour, both for Dual Wield, hollow grey just
- * out of Reach, red when limp; they close in for a moment when the action fires. Above it the Grab cue: an open claw with the
- * Grab key's name over a target a free Actuator can take, or why not (two hands needed, hands full, refused); a closed claw
- * while holding, with the set-down marker (red when the spot is not free), the hold distance while the Grab key is down, and
- * for the first seconds a row of hints below.
+ * do the action ({@link ActuatorSight.Mark}): the acting side lit in the tier's colour, both for Dual Wield, hollow and faint
+ * just out of Reach, red when limp; they close in with every strike, and a click that lands on nothing because its target is out
+ * of Reach flashes the hollow pair with a line saying so. Above it the Grab cue ({@link ActuatorClient#affordance}): an open
+ * claw with the Grab key's name over a target a free Actuator can take, or why not (two hands needed, hands full, refused),
+ * each with a word that fades after a moment; a closed claw while holding, with the set-down marker (red when the spot is not
+ * valid), the hold distance while the Grab key is down, and for the first seconds a row of hints below.
  * <p>
  * Left of the hotbar: a small line with what they hold (mob name or Ship, heavy) and the Far Use mode glyph, or that they hang
  * limp for lack of Air; drawn smaller when it does not fit.
@@ -46,9 +53,15 @@ public final class ActuatorHud {
             HOLLOW_RIGHT = sprite("mark_right_hollow"), CLAW_OPEN = sprite("claw_open"), CLAW_CLOSED = sprite("claw_closed"),
             TWO_HANDS = sprite("two_hands"), HANDS_FULL = sprite("hands_full"), REFUSED = sprite("refused"), SET_DOWN = sprite("set_down"),
             SCROLL = sprite("scroll");
-    /** Marks: size, gap to the crosshair's arms at rest and when the target is out of Reach, ticks the close-in lasts. */
+    /** Marks: size, gap to the crosshair's arms at rest and when the target is out of Reach. */
     static final int MARK_W = 7, MARK_H = 11;
-    static final float MARK_GAP = 3, OUT_GAP = 6, CLOSE_TICKS = 5;
+    static final float MARK_GAP = 3, OUT_GAP = 6;
+    /** A strike closes the marks in by {@link #CLOSE_PEAK} ticks and lets go by {@link #CLOSE_TICKS}: shorter than a mining swing, so they pulse. */
+    static final float CLOSE_PEAK = 1.5F, CLOSE_TICKS = 3.5F;
+    /** Opacity of the hollow marks at rest; a click out of Reach flashes them for this many ticks. */
+    static final float OUT_ALPHA = 0.5F, MISS_TICKS = 14;
+    /** A cue's word shows for this many ticks and fades over the last ones. */
+    static final int CUE_TEXT_TICKS = 50, CUE_TEXT_FADE = 10;
     /** The hint row shows for this many ticks of a hold and fades over the last ones. */
     static final int HINT_TICKS = 100, HINT_FADE = 12;
     private static final int COPPER = 0xF7A35C, NETHERITE = 0xC9A2F5, RED = 0xFF4A4A, WHITE = 0xFFFFFF;
@@ -66,10 +79,28 @@ public final class ActuatorHud {
         return TentaworksIds.id("hud/" + name);
     }
 
-    /** How far the marks have closed in on the crosshair {@code age} ticks after an action fired: 1 at one tick, back to 0 by {@link #CLOSE_TICKS}. */
+    /** How far the marks have closed in on the crosshair {@code age} ticks after a swing started: 1 at {@link #CLOSE_PEAK}, back to 0 by {@link #CLOSE_TICKS}. */
     static float closeIn(float age) {
         if (age <= 0 || age >= CLOSE_TICKS) return 0;
-        return age < 1 ? age : 1 - (age - 1) / (CLOSE_TICKS - 1);
+        return age < CLOSE_PEAK ? age / CLOSE_PEAK : 1 - (age - CLOSE_PEAK) / (CLOSE_TICKS - CLOSE_PEAK);
+    }
+
+    /** The out-of-Reach flash {@code age} ticks after a click landed on nothing: full for the first half, gone by {@link #MISS_TICKS}. */
+    static float miss(float age) {
+        if (age < 0 || age >= MISS_TICKS) return 0;
+        return Math.min(1, 2 * (1 - age / MISS_TICKS));
+    }
+
+    /** How far the flashing marks jump apart, 0..1: two quick beats that die out. */
+    static float missShake(float age) {
+        if (age < 0 || age >= MISS_TICKS) return 0;
+        return (float) Math.abs(Math.sin(age / MISS_TICKS * 2 * Math.PI)) * (1 - age / MISS_TICKS);
+    }
+
+    /** A cue's word's opacity {@code age} ticks after the cue came up. */
+    static float cueText(float age) {
+        if (age < 0 || age >= CUE_TEXT_TICKS) return 0;
+        return Math.min(1, (CUE_TEXT_TICKS - age) / CUE_TEXT_FADE);
     }
 
     /** Whether a side's mark shows: both sides for every mark but a plain reach, which shows the acting side only. */
@@ -95,6 +126,11 @@ public final class ActuatorHud {
                 && TentaworksClientConfig.crosshair() && Actuators.fitted(player);
     }
 
+    /** The out-of-Reach flash is showing (a click just landed on nothing because its target was out of Reach). */
+    public static boolean missShown(LocalPlayer player) {
+        return marksShown() && miss(ActuatorSight.missedAge(player, 0)) > 0;
+    }
+
     private static void renderMarks(GuiGraphics g, DeltaTracker delta) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
@@ -105,36 +141,52 @@ public final class ActuatorHud {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         ActuatorSight.Mark mark = ActuatorSight.mark();
-        if (mark != ActuatorSight.Mark.NONE) {
-            boolean hollow = hollow(mark), rightActs = player.getMainArm() == HumanoidArm.RIGHT;
+        float missAge = ActuatorSight.missedAge(player, pt);
+        float miss = mark == ActuatorSight.Mark.NONE || hollow(mark) ? miss(missAge) : 0;
+        if (mark != ActuatorSight.Mark.NONE || miss > 0) {
+            boolean hollow = miss > 0 || hollow(mark), rightActs = player.getMainArm() == HumanoidArm.RIGHT;
             int color = hollow ? WHITE : mark == ActuatorSight.Mark.LIMP ? RED : tint;
-            float gap = hollow ? OUT_GAP : MARK_GAP * (1 - (mark == ActuatorSight.Mark.LIMP ? 0 : closeIn(ActuatorSight.firedAge(player, pt))));
+            float alpha = hollow ? Math.max(OUT_ALPHA, miss) : 1;
+            float gap = hollow ? OUT_GAP + (miss > 0 ? 3 * missShake(missAge) : 0)
+                    : MARK_GAP * (1 - (mark == ActuatorSight.Mark.LIMP ? 0 : closeIn(ActuatorSight.firedAge(player, pt))));
             float y = cy - 0.5F - MARK_H / 2F;
-            if (lit(mark, !rightActs)) blit(g, hollow ? HOLLOW_LEFT : MARK_LEFT, cx - 5 - gap - MARK_W, y, MARK_W, MARK_H, color, 1);
-            if (lit(mark, rightActs)) blit(g, hollow ? HOLLOW_RIGHT : MARK_RIGHT, cx + 4 + gap, y, MARK_W, MARK_H, color, 1);
+            if (hollow || lit(mark, !rightActs)) blit(g, hollow ? HOLLOW_LEFT : MARK_LEFT, cx - 5 - gap - MARK_W, y, MARK_W, MARK_H, color, alpha);
+            if (hollow || lit(mark, rightActs)) blit(g, hollow ? HOLLOW_RIGHT : MARK_RIGHT, cx + 4 + gap, y, MARK_W, MARK_H, color, alpha);
+            if (miss > 0) centred(g, mc, Component.translatable(key("out_of_reach")), cx, cy + 12, 0xD0D0D0, miss);
         }
-        ActuatorView.HoldArm hold = ActuatorView.holdArm(player);
+        ActuatorClient.State state = ActuatorClient.get(player);
         int top = cy - 20;
-        if (hold == ActuatorView.HoldArm.NONE) {
-            ActuatorView.Cue cue = ActuatorSight.cue();
-            if (cue.grab()) {
-                float pop = 1 - Mth.clamp((ActuatorSight.cueAge(player) + pt) / 3F, 0, 1);
-                blit(g, CLAW_OPEN, cx - 5.5F, top + 1 - 2 * pop, 11, 9, tint, 1);
-                keyCap(g, mc, TentaworksKeys.GRAB.getTranslatedKeyMessage(), cx + 9, top + 1, 1);
-            } else if (cue == ActuatorView.Cue.TWO_HANDS) {
-                blit(g, TWO_HANDS, cx - 6.5F, top + 3, 13, 7, WHITE, 1);
-            } else if (cue == ActuatorView.Cue.HANDS_FULL) {
-                blit(g, HANDS_FULL, cx - 5.5F, top, 11, 10, WHITE, 1);
-            } else if (cue == ActuatorView.Cue.REFUSED) {
-                blit(g, REFUSED, cx - 5.5F, top, 11, 10, WHITE, 1);
+        if (!state.holding()) {
+            Affordance cue = ActuatorSight.cue();
+            float word = cueText(ActuatorSight.cueAge(player) + pt);
+            switch (cue.kind()) {
+                case GRAB -> {
+                    float pop = 1 - Mth.clamp((ActuatorSight.cueAge(player) + pt) / 3F, 0, 1);
+                    blit(g, CLAW_OPEN, cx - 5.5F, top + 1 - 2 * pop, 11, 9, tint, 1);
+                    int w = keyCap(g, mc, TentaworksKeys.GRAB.getTranslatedKeyMessage(), cx + 9, top + 1, 1);
+                    label(g, mc, Component.translatable(key("grab")), cx + 9 + w + 3, top + 1, word);
+                }
+                case TWO_HANDS -> {
+                    blit(g, TWO_HANDS, cx - 6.5F, top + 3, 13, 7, WHITE, 1);
+                    label(g, mc, Component.translatable(key("two_hands")), cx + 10, top + 2, word);
+                }
+                case HANDS_FULL -> {
+                    blit(g, HANDS_FULL, cx - 5.5F, top, 11, 10, WHITE, 1);
+                    label(g, mc, Component.translatable(key("hands_full")), cx + 9, top + 1, word);
+                }
+                case REFUSED -> {
+                    blit(g, REFUSED, cx - 5.5F, top, 11, 10, WHITE, 1);
+                    if (cue.verdict() != null) label(g, mc, Component.translatable(Grab.refusalKey(cue.verdict())), cx + 9, top + 1, word);
+                }
+                default -> {
+                }
             }
         } else {
-            blit(g, CLAW_CLOSED, cx - 5.5F, top + 1, 11, 9, tint, 1);
-            ActuatorView.Spot spot = ActuatorView.setDownSpot(player);
+            blit(g, CLAW_CLOSED, cx - 5.5F, top, 11, 10, tint, 1);
+            SetDown.Spot spot = ActuatorClient.setDownSpot();
             if (spot != null) blit(g, SET_DOWN, cx + 8, top + 1, 7, 8, spot.valid() ? tint : RED, 1);
-            if (ActuatorView.grabKeyDown()) {
-                double distance = ActuatorView.holdDistance(player);
-                String text = distance > 0 ? String.format(java.util.Locale.ROOT, "%.1f", distance) : "";
+            if (ActuatorClient.grabKeyDown()) {
+                String text = state.distance() > 0 ? String.format(Locale.ROOT, "%.1f", state.distance()) : "";
                 int w = mc.font.width(text);
                 blit(g, SCROLL, cx - 8 - 7, top, 7, 11, WHITE, 1);
                 if (w > 0) g.drawString(mc.font, text, cx - 8 - 9 - w, top + 2, WHITE, true);
@@ -156,6 +208,15 @@ public final class ActuatorHud {
         g.setColor(1, 1, 1, 1);
     }
 
+    /** A cue's word beside its glyph. */
+    private static void label(GuiGraphics g, Minecraft mc, Component text, int x, int y, float alpha) {
+        if (alpha > 0) g.drawString(mc.font, text, x, y, Math.max(4, Math.round(alpha * 255)) << 24 | 0xE0E0E0, true);
+    }
+
+    private static void centred(GuiGraphics g, Minecraft mc, Component text, int cx, int y, int rgb, float alpha) {
+        if (alpha > 0) g.drawString(mc.font, text, cx - mc.font.width(text) / 2, y, Math.max(4, Math.round(alpha * 255)) << 24 | rgb, true);
+    }
+
     /** A key's name on a dark cap; returns the cap's width. */
     private static int keyCap(GuiGraphics g, Minecraft mc, Component keys, int x, int y, float alpha) {
         int w = mc.font.width(keys) + 4;
@@ -173,10 +234,9 @@ public final class ActuatorHud {
 
     private static void hints(GuiGraphics g, Minecraft mc, LocalPlayer player, int cx, int y, float alpha) {
         Component grab = TentaworksKeys.GRAB.getTranslatedKeyMessage(), attack = mc.options.keyAttack.getTranslatedKeyMessage();
-        Component thrower = ActuatorView.throwNeedsGrabKey(player) ? Component.empty().append(grab).append(" + ").append(attack) : attack;
-        Hint[] row = {new Hint(grab, false, Component.translatableWithFallback(key("set_down"), "Set Down")),
-                new Hint(thrower, false, Component.translatableWithFallback(key("throw"), "Throw")),
-                new Hint(grab, true, Component.translatableWithFallback(key("distance"), "Distance"))};
+        Component thrower = throwKeys(grab, attack, GrabRule.throwsOnAttack(player.getMainHandItem().isEmpty(), false));
+        Hint[] row = {new Hint(grab, false, Component.translatable(key("set_down"))), new Hint(thrower, false, Component.translatable(key("throw"))),
+                new Hint(grab, true, Component.translatable(key("distance")))};
         int between = 10, width = -between;
         for (Hint h : row) width += h.width(mc) + between;
         float scale = Math.min(1, (g.guiWidth() - 8) / (float) width);
@@ -195,6 +255,11 @@ public final class ActuatorHud {
             x += 3 + mc.font.width(h.label()) + between;
         }
         g.pose().popPose();
+    }
+
+    /** The keys of a Throw: attack alone when a plain attack Throws ({@link GrabRule#throwsOnAttack}), else the Grab key with it. */
+    static Component throwKeys(Component grab, Component attack, boolean plainAttackThrows) {
+        return plainAttackThrows ? attack : Component.empty().append(grab).append(" + ").append(attack);
     }
 
     static String key(String name) {

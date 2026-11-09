@@ -9,8 +9,10 @@ import com.simibubi.create.content.equipment.zapper.ZapperItem;
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.compat.Frame;
 import dev.tentaworks.compat.ShipFrames;
+import dev.tentaworks.rig.ActuatorReach;
 import dev.tentaworks.rig.Actuators;
 import dev.tentaworks.rig.FarUse;
+import dev.tentaworks.rig.HoldArm;
 import dev.tentaworks.rig.RigAir;
 import dev.tentaworks.rig.RigSide;
 import dev.tentaworks.rig.RigTier;
@@ -76,7 +78,7 @@ import static dev.tentaworks.client.TentacleRenderer.PX;
  * other for the off hand ({@link #standsIn}). It carries its hand's item, and every swing and use of that hand is its own: a
  * tool strikes the target in step with the vanilla swing, anything else thrusts at it, a held use takes its pose by
  * {@link UseAnim}; with Dual Wield both strike in turn. At rest they curl above the shoulders, breathing; they lean toward a far
- * target under the crosshair, point at a grabbable one, hold a Grab ({@link ActuatorView#holdArm}), follow a Throw through, and
+ * target under the crosshair, point at a grabbable one, hold a Grab ({@link ActuatorClient#holdArm}), follow a Throw through, and
  * hang limp without Air. In first person they enter from the frame's sides; an arm working near the eye is drawn in the hand
  * pass in place of the vanilla hand, one reaching into the world in the world pass.
  * <p>
@@ -136,7 +138,7 @@ public final class ActuatorRenderer {
     /** One Actuator's animation. Inputs are set once per tick, levels (0..1) and the target chase them every frame. */
     static final class Arm {
         final int side;
-        boolean main, hand, carries, empty, acting, strike, dual, loop, using, pointing, holding, world;
+        boolean main, hand, carries, empty, acting, attack, strike, dual, loop, using, pointing, holding, world;
         Item item;
         UseAnim useAnim = UseAnim.NONE;
         float used;
@@ -150,7 +152,7 @@ public final class ActuatorRenderer {
         }
 
         void clear() {
-            hand = carries = empty = acting = strike = dual = loop = using = pointing = holding = world = false;
+            hand = carries = empty = acting = attack = strike = dual = loop = using = pointing = holding = world = false;
             lean = carry = bare = act = use = point = hold = glance = 0;
             goal = to = at = pointAt = lastHold = null;
         }
@@ -163,7 +165,7 @@ public final class ActuatorRenderer {
         final Arm[] arms = {new Arm(LEFT), new Arm(RIGHT)};
         final boolean[] throwArm = new boolean[2];
         Vec3 throwDir = Vec3.ZERO;
-        ActuatorView.HoldArm hold = ActuatorView.HoldArm.NONE;
+        HoldArm hold = HoldArm.NONE;
         int heldId = -1, glanceId = -1, glanceStart = Integer.MIN_VALUE / 2;
         BlockPos ship;
         Direction shipFace = Direction.UP;
@@ -258,9 +260,8 @@ public final class ActuatorRenderer {
         if (a == null) return;
         a.throwStart = player.tickCount;
         a.throwDir = dir.lengthSqr() < 1.0E-6 ? player.getViewVector(1.0F) : dir.normalize();
-        ActuatorView.HoldArm hold = a.hold == ActuatorView.HoldArm.NONE ? ActuatorView.HoldArm.OFF : a.hold;
-        a.throwArm[a.arm(true).side < 0 ? 0 : 1] = hold.main();
-        a.throwArm[a.arm(false).side < 0 ? 0 : 1] = hold.off();
+        HoldArm hold = a.hold.holding() ? a.hold : HoldArm.OFF;
+        for (InteractionHand h : HANDS) a.throwArm[a.arm(h).side < 0 ? 0 : 1] = hold.uses(h);
     }
 
     /** Culling: a wearer whose body is off screen still renders while an Actuator reaches or holds in view. */
@@ -272,7 +273,7 @@ public final class ActuatorRenderer {
             if (arm.act > 0.05 && arm.at != null) box = box.minmax(new AABB(arm.at, arm.at));
             if (arm.holding && arm.lastHold != null) box = box.minmax(new AABB(arm.lastHold, arm.lastHold));
         }
-        if (a.hold != ActuatorView.HoldArm.NONE) {
+        if (a.hold.holding()) {
             Entity held = a.heldId >= 0 ? player.level().getEntity(a.heldId) : null;
             if (held != null) box = box.minmax(held.getBoundingBox());
         }
@@ -325,7 +326,7 @@ public final class ActuatorRenderer {
         a.fitted = fitted;
         if (!fitted) {
             for (Arm arm : a.arms) arm.clear();
-            a.hold = ActuatorView.HoldArm.NONE;
+            a.hold = HoldArm.NONE;
             a.heldId = a.glanceId = -1;
             a.ship = null;
             a.limpK = 0;
@@ -335,12 +336,12 @@ public final class ActuatorRenderer {
         a.limp = !ready;
         a.rightHanded = p.getMainArm() == HumanoidArm.RIGHT;
         ActuatorClient.State s = ActuatorClient.get(p);
-        ActuatorView.HoldArm hold = ready ? ActuatorView.holdArm(p) : ActuatorView.HoldArm.NONE;
-        if (hold != ActuatorView.HoldArm.NONE && a.hold == ActuatorView.HoldArm.NONE) a.grabStart = p.tickCount;
+        HoldArm hold = ready && s.holding() ? s.arm() : HoldArm.NONE;
+        if (hold.holding() && !a.hold.holding()) a.grabStart = p.tickCount;
         a.hold = hold;
-        a.heavy = hold == ActuatorView.HoldArm.BOTH;
-        a.heldId = hold == ActuatorView.HoldArm.NONE ? -1 : s.heldId();
-        a.ship = hold == ActuatorView.HoldArm.NONE ? null : s.ship();
+        a.heavy = hold == HoldArm.BOTH;
+        a.heldId = hold.holding() ? s.heldId() : -1;
+        a.ship = hold.holding() ? s.ship() : null;
         a.shipFace = s.shipFace();
         a.lowAir = lowAir(p);
         if ((p.tickCount + p.getId()) % GLANCE_TICKS == 0) {
@@ -357,7 +358,7 @@ public final class ActuatorRenderer {
             ItemStack stack = p.getItemInHand(h);
             arm.main = main;
             arm.hand = ready && !extendo && !excluded(stack);
-            arm.holding = hold.with(main);
+            arm.holding = hold.uses(h);
             arm.carries = arm.hand && !stack.isEmpty() && !arm.holding;
             arm.empty = own && main && arm.hand && stack.isEmpty() && !arm.holding;
             if (stack.getItem() != arm.item) {
@@ -368,7 +369,8 @@ public final class ActuatorRenderer {
             if (swinging && p.swingTime <= 0) {
                 arm.loop = p.tickCount - arm.swingStart < ActuatorPose.SWING_TICKS;
                 arm.swingStart = p.tickCount;
-                arm.strike = striker(stack) && !(own && USED[main ? 0 : 1]);
+                arm.attack = !(own && USED[main ? 0 : 1]);
+                arm.strike = arm.attack && striker(stack);
                 if (own) ActuatorSight.fired(mc.player);
             }
             if (swinging) arm.lastSwing = p.tickCount;
@@ -393,19 +395,19 @@ public final class ActuatorRenderer {
             }
         }
         Arm mainArm = a.arm(true), offArm = a.arm(false);
-        if (mainArm.acting && mainArm.strike && offArm.hand && offArm.carries && !offArm.using
-                && ActuatorView.dualWield(p, own ? hit : pick(p))) {
+        if (mainArm.acting && mainArm.attack && offArm.hand && offArm.carries && !offArm.using
+                && ActuatorClient.dualWield(p, own ? hit : pick(p))) {
             offArm.dual = true;
             offArm.acting = true;
             offArm.goal = mainArm.goal;
         }
-        ActuatorView.Cue cue = own ? ActuatorSight.cue() : ActuatorView.Cue.NONE;
         Vec3 cueAt = own ? ActuatorSight.cuePoint() : null, pre = own ? ActuatorSight.farPoint() : null;
         boolean dualMark = own && ActuatorSight.mark() == ActuatorSight.Mark.DUAL;
-        for (Arm arm : a.arms) {
-            arm.pointing = cueAt != null && cue.with(arm.main) && arm.hand && !arm.acting && !arm.using;
+        for (InteractionHand h : HANDS) {
+            Arm arm = a.arm(h);
+            arm.pointing = cueAt != null && ActuatorSight.grabs(h) && arm.hand && !arm.acting && !arm.using;
             if (arm.pointing) arm.pointAt = cueAt;
-            arm.lean = pre != null && arm.hand && !arm.holding && !arm.using && (arm.main || dualMark && arm.carries)
+            arm.lean = pre != null && arm.hand && !arm.holding && !arm.using && (arm.main || arm.carries && (dualMark || mainArm.holding))
                     ? Math.min(PRE_AIM, PRE_AIM_BLOCKS / Math.max(0.5, pre.distanceTo(p.getEyePosition()))) : 0;
             if (own && !arm.acting && arm.lean > 0) arm.goal = pre;
         }
@@ -414,7 +416,7 @@ public final class ActuatorRenderer {
     /** What another player's hand works on: the first block or mob along its look within its Reach, else a point in the air ahead. */
     private static HitResult pick(Player p) {
         Vec3 eye = p.getEyePosition(), look = p.getViewVector(1.0F);
-        double reach = Math.max(3, ActuatorView.reach(p));
+        double reach = Math.max(3, ActuatorReach.pickRange(TentacleRigItem.reach(p)));
         BlockHitResult block = p.level().clip(new ClipContext(eye, eye.add(look.scale(reach)), ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, p));
         double range = block.getType() == HitResult.Type.MISS ? reach : block.getLocation().distanceTo(eye);
         Vec3 end = eye.add(look.scale(range));

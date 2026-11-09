@@ -1,6 +1,7 @@
 package dev.tentaworks.client;
 
 import dev.tentaworks.TentaworksIds;
+import dev.tentaworks.rig.SetDown;
 import net.minecraft.client.Minecraft;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -29,7 +30,8 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
 /**
  * Throw and Impact feedback: the thrower's camera kicks a little and the arms follow through; an Impact (told by the server)
  * sparks and thuds like a body landing (a mob's hurt sound comes with its damage); only an Iron Golem clanks. While holding, the
- * spot a Set Down would put the target on is outlined in the world: its footprint, and its box faintly, red where it may not go.
+ * spot a Set Down would put the mob on ({@link ActuatorClient#setDownSpot}) is outlined in the world: its footprint, and its box faintly,
+ * red where it may not go.
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public final class ActuatorFx {
@@ -88,16 +90,15 @@ public final class ActuatorFx {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         if (player == null || mc.options.hideGui || player.isSpectator()) return;
-        ActuatorView.Spot spot = ActuatorView.setDownSpot(player);
+        SetDown.Spot spot = ActuatorClient.setDownSpot();
         if (spot == null) return;
-        Entity held = ActuatorView.held(player);
-        double half = (held == null ? 0.6 : held.getBbWidth()) / 2 + 0.01, height = held == null ? 0.6 : held.getBbHeight();
-        Vec3 at = spot.pos().subtract(event.getCamera().getPosition());
+        Vec3 cam = event.getCamera().getPosition();
+        AABB box = spot.box().move(-cam.x, -cam.y, -cam.z).inflate(0.01, 0, 0.01);
         float r = 1, g = spot.valid() ? 1 : 0.25F, b = spot.valid() ? 1 : 0.25F;
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
         VertexConsumer lines = buffers.getBuffer(RenderType.lines());
-        LevelRenderer.renderLineBox(event.getPoseStack(), lines, new AABB(at.x - half, at.y + 0.005, at.z - half, at.x + half, at.y + 0.07, at.z + half), r, g, b, 0.95F);
-        LevelRenderer.renderLineBox(event.getPoseStack(), lines, new AABB(at.x - half, at.y + 0.07, at.z - half, at.x + half, at.y + height, at.z + half), r, g, b, 0.3F);
+        LevelRenderer.renderLineBox(event.getPoseStack(), lines, new AABB(box.minX, box.minY + 0.005, box.minZ, box.maxX, box.minY + 0.07, box.maxZ), r, g, b, 0.95F);
+        LevelRenderer.renderLineBox(event.getPoseStack(), lines, new AABB(box.minX, box.minY + 0.07, box.minZ, box.maxX, box.maxY, box.maxZ), r, g, b, 0.3F);
         buffers.endBatch(RenderType.lines());
     }
 }

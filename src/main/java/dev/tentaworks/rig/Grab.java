@@ -42,7 +42,6 @@ import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -339,6 +338,11 @@ public final class Grab {
 
     private static String key(GrabRule.Verdict v) {
         return v.name().toLowerCase(Locale.ROOT);
+    }
+
+    /** The lang key of the action-bar line for a refusing verdict. */
+    public static String refusalKey(GrabRule.Verdict v) {
+        return TentaworksLang.refusalKey(TentaworksLang.GRAB, key(v));
     }
 
     private static void start(ServerPlayer wearer, int id) {
