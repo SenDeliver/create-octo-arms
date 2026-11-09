@@ -16,6 +16,7 @@ import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
@@ -50,8 +51,10 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * The Right Actuator's Far Use, server side (adr/0007). While it may act ({@link #lifts}), transient modifiers lift the
- * wearer's block and entity interaction ranges to the Rig's Reach, so vanilla's own click paths reach that far; vanilla syncs both attributes to every client, so the wearer's crosshair matches. A target past arm's
+ * Far Use, server side (adr/0007): each hand's Actuator acts for that hand. While they may act ({@link #lifts}), transient modifiers lift the
+ * wearer's block and entity interaction ranges to {@link ActuatorReach#pickRange}, so vanilla's own click paths reach every point within
+ * Reach of the body; vanilla syncs both attributes to every client, so the wearer's crosshair matches, and the crosshair keeps only
+ * picks within Reach of the body ({@link ActuatorReach#accepts}); the gates refuse the rest ({@link Far#OUT}). A target past arm's
  * length ({@link #beyond}, the range without the lift) must also be in sight ({@link WorkSight}) and may be a player only with
  * {@code farUse.players}: the gates on the interaction events refuse the rest. Only an action that did something costs Air
  * and is told to the clients ({@link FarUsePacket}): a use that consumed the click ({@link #usedOn}), a hit that hurt
@@ -66,7 +69,7 @@ public final class FarUse {
     public static final ResourceLocation ENTITY_ID = TentaworksIds.id(TentaworksIds.FAR_USE_ENTITY);
     public static final String NO_SIGHT = TentaworksLang.refusalKey(TentaworksLang.FAR_USE, "no_sight");
     public static final String PLAYERS = TentaworksLang.refusalKey(TentaworksLang.FAR_USE, "players");
-    /** Ticks a {@link FarUsePacket} keeps the Right Actuator at its target. */
+    /** Ticks a {@link FarUsePacket} keeps the acting hand's Actuator at its target. */
     public static final int TTL = 10;
     static final int CHARGE_GAP = 1;
     static final int PACKET_GAP = 2;
@@ -81,7 +84,7 @@ public final class FarUse {
         NEAR,
         /** Past arm's length, within the lifted range: a Far Use. */
         FAR,
-        /** Past the lifted range too: vanilla refuses it anyway. */
+        /** Past Reach of the body (and past vanilla's own range): refused. */
         OUT
     }
 
@@ -101,7 +104,7 @@ public final class FarUse {
     private FarUse() {
     }
 
-    /** The Right Actuator lends either hand its Reach: fitted, allowed by the Rig Setting now, no Extendo Grip in hand, no heavy hold, not limp. */
+    /** The Actuators lend the hands their Reach: fitted, allowed by the Rig Setting now, no Extendo Grip in hand, no heavy hold, not limp. */
     public static boolean lifts(boolean fitted, FarUseMode mode, boolean rigOut, boolean extendo, boolean heavy, boolean limp) {
         if (!fitted || extendo || heavy || limp) return false;
         return switch (mode) {
@@ -121,11 +124,16 @@ public final class FarUse {
         return distSqr > base * base;
     }
 
-    /** Where a target {@code distSqr} away lies when the range is {@code base} without the lift and {@code range} with it. */
-    public static Far far(double distSqr, double base, double range) {
-        if (range <= base + EPS || !beyond(distSqr, base)) return Far.NEAR;
-        double r = range + SLACK;
-        return distSqr < r * r ? Far.FAR : Far.OUT;
+    /**
+     * Where a target lies ({@link ActuatorReach}): {@code eyeDistSqr} from the eye and {@code bodyDistSqr} from the body to its box
+     * (squared), {@code base} the range without the lift, {@code lifted} whether the Actuator lends its Reach now. Past arm's length
+     * it is a Far Use when its box comes within Reach + {@value #SLACK} of the body (or within vanilla's own {@value #SLACK} of
+     * slack past {@code base}), else out of reach: the lifted range no longer bounds anything, so the gates refuse it.
+     */
+    public static Far far(double eyeDistSqr, double base, boolean lifted, double bodyDistSqr, double reach) {
+        if (!lifted || !beyond(eyeDistSqr, base)) return Far.NEAR;
+        double r = reach + SLACK, v = base + SLACK;
+        return bodyDistSqr <= r * r || eyeDistSqr <= v * v ? Far.FAR : Far.OUT;
     }
 
     /** At least {@code gap} ticks passed since {@code last}. */
@@ -163,13 +171,13 @@ public final class FarUse {
 
     static void tick(ServerPlayer player) {
         boolean on = lifting(player);
-        double reach = on ? TentacleRigItem.reach(player) : 0;
+        double reach = on ? ActuatorReach.pickRange(TentacleRigItem.reach(player)) : 0;
         lift(player.getAttribute(Attributes.BLOCK_INTERACTION_RANGE), REACH_ID, reach);
         lift(player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE), ENTITY_ID, reach);
         keepMining(player, on);
     }
 
-    /** While a far block is mined the Right Actuator stays at it: the {@link FarUsePacket} is told again before its ttl runs out. */
+    /** While a far block is mined the main-hand Actuator stays at it: the {@link FarUsePacket} is told again before its ttl runs out. */
     private static void keepMining(ServerPlayer player, boolean on) {
         Track t = TRACKS.get(player.getUUID());
         if (t == null || t.mining == null) return;
@@ -180,7 +188,8 @@ public final class FarUse {
         int now = player.server.getTickCount();
         if (!due(t.sent, now, TTL - PACKET_GAP)) return;
         t.sent = now;
-        PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new FarUsePacket(player.getId(), Vec3.atCenterOf(t.mining), FarUsePacket.Kind.BLOCK, TTL));
+        PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new FarUsePacket(player.getId(), Vec3.atCenterOf(t.mining), FarUsePacket.Kind.BLOCK, TTL,
+                InteractionHand.MAIN_HAND));
     }
 
     private static void lift(@Nullable AttributeInstance inst, ResourceLocation id, double target) {
@@ -194,20 +203,22 @@ public final class FarUse {
         }
     }
 
-    private static Far far(Player player, Holder<Attribute> attr, ResourceLocation id, double distSqr) {
+    /** {@link #far(double, double, boolean, double, double)} for a target box under this player's range {@code attr} (lifted by modifier {@code id}). */
+    public static Far far(Player player, Holder<Attribute> attr, ResourceLocation id, AABB box) {
         AttributeInstance inst = player.getAttribute(attr);
         AttributeModifier m = inst == null ? null : inst.getModifier(id);
         if (m == null) return Far.NEAR;
-        return far(distSqr, inst.getValue() - m.amount(), inst.getValue());
+        return far(box.distanceToSqr(player.getEyePosition()), inst.getValue() - m.amount(), m.amount() > EPS, box.distanceToSqr(Grips.body(player)),
+                TentacleRigItem.reach(player));
     }
 
-    private static Far blockFar(ServerPlayer player, BlockPos pos) {
+    public static Far blockFar(Player player, BlockPos pos) {
         if (ShipFrames.get().isPlot(player.level(), pos)) return Far.NEAR;
-        return far(player, Attributes.BLOCK_INTERACTION_RANGE, REACH_ID, new AABB(pos).distanceToSqr(player.getEyePosition()));
+        return far(player, Attributes.BLOCK_INTERACTION_RANGE, REACH_ID, new AABB(pos));
     }
 
-    private static Far entityFar(ServerPlayer player, Entity target) {
-        return far(player, Attributes.ENTITY_INTERACTION_RANGE, ENTITY_ID, target.getBoundingBox().distanceToSqr(player.getEyePosition()));
+    public static Far entityFar(Player player, Entity target) {
+        return far(player, Attributes.ENTITY_INTERACTION_RANGE, ENTITY_ID, target.getBoundingBox());
     }
 
     /**
@@ -215,7 +226,9 @@ public final class FarUse {
      * false when Far Use refuses it. A Grab's claim question ({@link Grab#asking}) is no action: it passes untouched.
      */
     private static boolean block(ServerPlayer player, BlockPos pos, @Nullable Direction face, @Nullable Vec3 point) {
-        if (Grab.asking() || blockFar(player, pos) != Far.FAR) return true;
+        if (Grab.asking()) return true;
+        Far far = blockFar(player, pos);
+        if (far != Far.FAR) return far == Far.NEAR;
         if (!WorkSight.seesBlock(player, pos, face, point)) {
             refuse(player, NO_SIGHT);
             return false;
@@ -225,7 +238,9 @@ public final class FarUse {
 
     /** A hit or use on {@code target}: false when Far Use refuses it. A Grab's claim question passes. */
     private static boolean entity(ServerPlayer player, Entity target) {
-        if (Grab.asking() || entityFar(player, target) != Far.FAR) return true;
+        if (Grab.asking()) return true;
+        Far far = entityFar(player, target);
+        if (far != Far.FAR) return far == Far.NEAR;
         if (target instanceof Player && !TentaworksConfig.value(TentaworksConfig.FAR_USE_PLAYERS)) {
             refuse(player, PLAYERS);
             return false;
@@ -237,19 +252,20 @@ public final class FarUse {
         return true;
     }
 
-    /** After a use on a block: a far one that consumed the click (the block's use, the item's use on it, a placement) acts. */
-    public static void usedOn(ServerPlayer player, BlockHitResult hit, InteractionResult result) {
-        if (result.consumesAction() && !Grab.asking() && blockFar(player, hit.getBlockPos()) == Far.FAR) act(player, hit.getLocation(), FarUsePacket.Kind.BLOCK);
+    /** After a use on a block with {@code hand}: a far one that consumed the click (the block's use, the item's use on it, a placement) acts. */
+    public static void usedOn(ServerPlayer player, BlockHitResult hit, InteractionHand hand, InteractionResult result) {
+        if (result.consumesAction() && !Grab.asking() && blockFar(player, hit.getBlockPos()) == Far.FAR) act(player, hit.getLocation(), FarUsePacket.Kind.BLOCK, hand);
     }
 
-    /** After a use on an entity: a far one that consumed the click acts. */
-    public static void usedOn(ServerPlayer player, Entity target, InteractionResult result) {
-        if (result.consumesAction() && !Grab.asking() && entityFar(player, target) == Far.FAR) act(player, target.getBoundingBox().getCenter(), FarUsePacket.Kind.ENTITY);
+    /** After a use on an entity with {@code hand}: a far one that consumed the click acts. */
+    public static void usedOn(ServerPlayer player, Entity target, InteractionHand hand, InteractionResult result) {
+        if (result.consumesAction() && !Grab.asking() && entityFar(player, target) == Far.FAR)
+            act(player, target.getBoundingBox().getCenter(), FarUsePacket.Kind.ENTITY, hand);
     }
 
-    /** After a hit that hurt its main target: a far one acts. */
+    /** After a hit that hurt its main target: a far one acts (the main hand's). */
     public static void hit(ServerPlayer player, Entity target) {
-        if (entityFar(player, target) == Far.FAR) act(player, target.getBoundingBox().getCenter(), FarUsePacket.Kind.ENTITY);
+        if (entityFar(player, target) == Far.FAR) act(player, target.getBoundingBox().getCenter(), FarUsePacket.Kind.ENTITY, InteractionHand.MAIN_HAND);
     }
 
     /** A mining start at {@code pos} that vanilla will carry out and that makes progress (instant in creative): the same checks, in its order. */
@@ -263,7 +279,7 @@ public final class FarUse {
     }
 
     /** An accepted far action: Air once per tick, a {@link FarUsePacket} to the wearer and trackers at most every {@value #PACKET_GAP} ticks. */
-    private static void act(ServerPlayer player, Vec3 target, FarUsePacket.Kind kind) {
+    private static void act(ServerPlayer player, Vec3 target, FarUsePacket.Kind kind, InteractionHand hand) {
         Track t = TRACKS.computeIfAbsent(player.getUUID(), u -> new Track());
         int now = player.server.getTickCount();
         if (due(t.charged, now, CHARGE_GAP)) {
@@ -272,7 +288,7 @@ public final class FarUse {
         }
         if (due(t.sent, now, PACKET_GAP)) {
             t.sent = now;
-            PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new FarUsePacket(player.getId(), target, kind, TTL));
+            PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new FarUsePacket(player.getId(), target, kind, TTL, hand));
         }
     }
 
@@ -295,7 +311,7 @@ public final class FarUse {
             BlockPos far = blockFar(p, e.getPos()) == Far.FAR ? e.getPos().immutable() : null;
             if (far != null) TRACKS.computeIfAbsent(p.getUUID(), u -> new Track()).seen = far;
             boolean mines = far != null && mines(p, far);
-            if (mines) act(p, Vec3.atCenterOf(far), FarUsePacket.Kind.BLOCK);
+            if (mines) act(p, Vec3.atCenterOf(far), FarUsePacket.Kind.BLOCK, InteractionHand.MAIN_HAND);
             mine(p, mines ? far : null);
             return;
         }

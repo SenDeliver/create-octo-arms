@@ -81,11 +81,45 @@ class GrabRuleTest {
     }
 
     @Test
-    void reachAddsSlackAndHalfTheWidth() {
-        double edge = 4.0 + GrabRule.SLACK + 0.45;
+    void reachIsFromTheBodyToTheNearestPointPlusSlack() {
+        double edge = 4.0 + GrabRule.SLACK;
         assertEquals(Verdict.LIGHT, check(mob(0.9, 0.9, 10, edge - 0.01)));
         assertEquals(Verdict.TOO_FAR, check(mob(0.9, 0.9, 10, edge + 0.01)));
-        assertEquals(Verdict.LIGHT, GrabRule.check(mob(0.9, 0.9, 10, edge + 1.5), new Rules(5.5, false)));
+        assertEquals(Verdict.LIGHT, GrabRule.check(mob(0.9, 0.9, 10, edge + 1.4), new Rules(5.5, false)));
+    }
+
+    @Test
+    void aLightTargetTakesTheOffHandActuatorFirst() {
+        assertEquals(HoldArm.OFF, GrabRule.arm(1, true, true));
+        assertEquals(HoldArm.OFF, GrabRule.arm(1, false, true), "an item in the main hand: the off-hand Actuator Grabs");
+        assertEquals(HoldArm.MAIN, GrabRule.arm(1, true, false), "the off hand holds something: the main-hand Actuator");
+        assertEquals(HoldArm.NONE, GrabRule.arm(1, false, false));
+        assertEquals(Verdict.HANDS_FULL, GrabRule.hands(1));
+    }
+
+    @Test
+    void aHeavyTargetOrAShipTakesBothHandsEmpty() {
+        assertEquals(HoldArm.BOTH, GrabRule.arm(2, true, true));
+        assertEquals(HoldArm.NONE, GrabRule.arm(2, false, true));
+        assertEquals(HoldArm.NONE, GrabRule.arm(2, true, false));
+        assertEquals(HoldArm.NONE, GrabRule.arm(2, false, false));
+        assertEquals(Verdict.TWO_HANDS, GrabRule.hands(2));
+        assertEquals("two_hands", Verdict.TWO_HANDS.name().toLowerCase(java.util.Locale.ROOT));
+        assertEquals("hands_full", Verdict.HANDS_FULL.name().toLowerCase(java.util.Locale.ROOT));
+    }
+
+    @Test
+    void holdArmSides() {
+        assertEquals(net.minecraft.world.entity.HumanoidArm.RIGHT, HoldArm.MAIN.side(net.minecraft.world.entity.HumanoidArm.RIGHT));
+        assertEquals(net.minecraft.world.entity.HumanoidArm.LEFT, HoldArm.OFF.side(net.minecraft.world.entity.HumanoidArm.RIGHT));
+        assertEquals(net.minecraft.world.entity.HumanoidArm.RIGHT, HoldArm.OFF.side(net.minecraft.world.entity.HumanoidArm.LEFT), "left-handed: the off hand is the right");
+        assertEquals(HoldArm.OFF, HoldArm.of(net.minecraft.world.entity.HumanoidArm.LEFT, net.minecraft.world.entity.HumanoidArm.RIGHT));
+        assertEquals(HoldArm.MAIN, HoldArm.of(net.minecraft.world.entity.HumanoidArm.LEFT, net.minecraft.world.entity.HumanoidArm.LEFT));
+        for (HoldArm a : HoldArm.values()) assertEquals(a, HoldArm.byId(a.ordinal()));
+        assertEquals(HoldArm.NONE, HoldArm.byId(99));
+        assertTrue(HoldArm.BOTH.uses(net.minecraft.world.InteractionHand.MAIN_HAND) && HoldArm.BOTH.uses(net.minecraft.world.InteractionHand.OFF_HAND));
+        assertFalse(HoldArm.OFF.uses(net.minecraft.world.InteractionHand.MAIN_HAND));
+        assertFalse(HoldArm.NONE.holding());
     }
 
     @Test

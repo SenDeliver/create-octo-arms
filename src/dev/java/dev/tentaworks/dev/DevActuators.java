@@ -10,6 +10,7 @@ import dev.tentaworks.registry.TentaworksDataComponents;
 import dev.tentaworks.rig.Actuators;
 import dev.tentaworks.rig.FarUse;
 import dev.tentaworks.rig.Grab;
+import dev.tentaworks.rig.Grips;
 import dev.tentaworks.rig.Pinned;
 import dev.tentaworks.rig.RigAir;
 import dev.tentaworks.rig.RigEnchants;
@@ -196,10 +197,10 @@ public final class DevActuators {
         double d2 = new AABB(pos).distanceToSqr(eye);
         AttributeInstance range = p.getAttribute(Attributes.BLOCK_INTERACTION_RANGE);
         double lift = lift(range, FarUse.REACH_ID);
-        LOG.info("SFAR gt={} {} kind={} at={} type={} dist={} range={} lift={} far={} sight={} asking={} canceled={}", p.level().getGameTime(), p.getName().getString(), kind,
+        LOG.info("SFAR gt={} {} kind={} at={} type={} dist={} range={} lift={} far={} sight={} asking={} canceled={} bdist={}", p.level().getGameTime(), p.getName().getString(), kind,
                 pos.toShortString().replace(" ", ""), BuiltInRegistries.BLOCK.getKey(p.level().getBlockState(pos).getBlock()), f3(Math.sqrt(d2)), f3(range == null ? 0 : range.getValue()),
-                f3(lift), ShipFrames.get().isPlot(p.level(), pos) ? "PLOT" : lift > 0 ? FarUse.far(d2, range.getValue() - lift, range.getValue()) : FarUse.Far.NEAR,
-                WorkSight.seesBlock(p, pos, face, point), Grab.asking(), canceled);
+                f3(lift), ShipFrames.get().isPlot(p.level(), pos) ? "PLOT" : FarUse.blockFar(p, pos),
+                WorkSight.seesBlock(p, pos, face, point), Grab.asking(), canceled, f3(Math.sqrt(new AABB(pos).distanceToSqr(Grips.body(p)))));
     }
 
     private static void farEntity(ServerPlayer p, String kind, Entity target, boolean canceled) {
@@ -207,10 +208,10 @@ public final class DevActuators {
         double d2 = target.getBoundingBox().distanceToSqr(eye);
         AttributeInstance range = p.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
         double lift = lift(range, FarUse.ENTITY_ID);
-        LOG.info("SFAR gt={} {} kind={} at={} type={} dist={} range={} lift={} far={} sight={} asking={} canceled={}", p.level().getGameTime(), p.getName().getString(), kind,
+        LOG.info("SFAR gt={} {} kind={} at={} type={} dist={} range={} lift={} far={} sight={} asking={} canceled={} bdist={}", p.level().getGameTime(), p.getName().getString(), kind,
                 target.getId(), type(target), f3(Math.sqrt(d2)), f3(range == null ? 0 : range.getValue()), f3(lift),
-                lift > 0 ? FarUse.far(d2, range.getValue() - lift, range.getValue()) : FarUse.Far.NEAR,
-                WorkSight.seesEntity(p, target), Grab.asking(), canceled);
+                FarUse.entityFar(p, target),
+                WorkSight.seesEntity(p, target), Grab.asking(), canceled, f3(Math.sqrt(target.getBoundingBox().distanceToSqr(Grips.body(p)))));
     }
 
     static void grabEvent(Grab.Event e) {

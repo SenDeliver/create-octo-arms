@@ -47,6 +47,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityTravelToDimensionEvent;
@@ -71,12 +72,15 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 /**
- * The Left Actuator's Grab and Throw, server side (adr/0007: the server is the authority, the client only asks with
+ * Grab and Throw, server side (adr/0007: the server is the authority, the client only asks with
  * {@link RigGrabPacket} and draws what {@link ActuatorStatePacket} tells it). START takes a mob under the wearer's crosshair:
- * fitted Actuators with Air, an empty main hand, at most one start per {@value #START_EVERY} ticks, the target rules
- * ({@link GrabRule}) and then the loader's entity-interaction event, so claim and protection mods can refuse. The mob is then
- * Pinned ({@link #pinned}) and swept to the hold point ({@link Hold}) every tick; a heavy one takes both Actuators and slows the
- * wearer to {@code grab.heavySpeedFactor}. Holding pays {@code air.grab}, a Throw {@code air.throw}.
+ * fitted Actuators with Air, at most one start per {@value #START_EVERY} ticks, the target rules ({@link GrabRule}), a free
+ * Actuator for it ({@link GrabRule#arm}: a light mob the off-hand one, else the main-hand one, each needing its hand empty; a heavy
+ * mob or a Ship both, with both hands empty) and then the loader's entity-interaction event, so claim and protection mods can
+ * refuse. The mob is then Pinned ({@link #pinned}) and swept to the hold point ({@link Hold}) on the holding Actuator's side every
+ * tick, at the hold distance the wheel sets (DISTANCE); a heavy one takes both Actuators and slows the
+ * wearer to {@code grab.heavySpeedFactor}. Holding pays {@code air.grab}, a Throw {@code air.throw}. PLACE carries a held mob to
+ * the looked spot ({@link SetDown}, checked here again) and sets it down there.
  * Ship Grab (Sable): SHIP takes the Ship owning a plot block with both Actuators; its body velocity drives the held face to
  * where it was in the wearer's view at the start (no farther than Reach − {@value #SHIP_INSIDE} from the eye), so it swings
  * round the wearer as they look about, and turns its yaw with the wearer's ({@link Hold#shipPoint}, {@link Hold#shipTurn};
@@ -109,6 +113,13 @@ public final class Grab {
     private static final class Held {
         final Entity target;
         final boolean heavy;
+        final HoldArm arm;
+        double distance = Double.NaN;
+        @Nullable Vec3 placeFrom;
+        @Nullable Vec3 placeTo;
+        int placeTicks;
+        @Nullable Vec3 seatEye;
+        @Nullable Vec3 seatLook;
         int far;
         Vec3 centre;
         ShipBody ship;
@@ -124,9 +135,10 @@ public final class Grab {
         double mass = -1;
         Vec3 taken;
 
-        Held(@Nullable Entity target, boolean heavy) {
+        Held(@Nullable Entity target, boolean heavy, HoldArm arm) {
             this.target = target;
             this.heavy = heavy;
+            this.arm = arm;
         }
     }
 
@@ -153,7 +165,7 @@ public final class Grab {
                 PacketDistributor.sendToPlayer(watcher, state(wearer, ""));
         });
         NeoForge.EVENT_BUS.addListener((AttackEntityEvent e) -> {
-            if (e.getEntity() instanceof ServerPlayer p && e.getTarget() == target(p)) e.setCanceled(true);
+            if (e.getEntity() instanceof ServerPlayer p && e.getTarget() == target(p) && p.getMainHandItem().isEmpty()) e.setCanceled(true);
         });
         NeoForge.EVENT_BUS.addListener((ServerStoppingEvent e) -> {
             for (ServerPlayer p : e.getServer().getPlayerList().getPlayers()) release(p, "stop", null);
@@ -178,11 +190,33 @@ public final class Grab {
                 if (!release(wearer, "release", null)) reply(wearer, "");
             }
             case THROW -> throwAlong(wearer, packet.look());
+            case PLACE -> place(wearer, packet.look());
+            case DISTANCE -> distance(wearer, packet.notches());
         }
     }
 
     public static boolean holding(ServerPlayer wearer) {
         return HOLDS.containsKey(wearer.getUUID());
+    }
+
+    /** Which Actuator(s) hold, NONE when nothing is held. */
+    public static HoldArm arm(ServerPlayer wearer) {
+        Held h = HOLDS.get(wearer.getUUID());
+        return h == null ? HoldArm.NONE : h.arm;
+    }
+
+    /** The hold distance along the look this tick (blocks), 0 when nothing is held (dev trace, state packet). */
+    public static double distance(ServerPlayer wearer) {
+        Held h = HOLDS.get(wearer.getUUID());
+        if (h == null) return 0;
+        if (h.ship != null) return h.rel == null ? 0 : h.rel.x;
+        return Double.isNaN(h.distance) ? Hold.defaultDistance(h.target.getBbWidth(), wearer.getYRot()) : h.distance;
+    }
+
+    /** The held mob is being carried to its set-down spot. */
+    public static boolean placing(ServerPlayer wearer) {
+        Held h = HOLDS.get(wearer.getUUID());
+        return h != null && h.placeTo != null;
     }
 
     /** The held target takes both Actuators (a heavy mob or a Ship). */
@@ -295,24 +329,37 @@ public final class Grab {
     /** Why this wearer cannot Grab now ("" silently), or null. */
     private static @Nullable String wearerRefusal(ServerPlayer wearer) {
         if (holding(wearer) || wearer.isSpectator() || !wearer.isAlive() || !Actuators.fitted(wearer) || !rated(wearer)) return "";
-        if (!RigAir.has(wearer)) return "no_air";
-        return wearer.getMainHandItem().isEmpty() ? null : "hand";
+        return RigAir.has(wearer) ? null : "no_air";
+    }
+
+    /** The free Actuator(s) for a target needing {@code actuators}, or NONE. */
+    private static HoldArm arm(ServerPlayer wearer, int actuators) {
+        return GrabRule.arm(actuators, wearer.getMainHandItem().isEmpty(), wearer.getOffhandItem().isEmpty());
+    }
+
+    private static String key(GrabRule.Verdict v) {
+        return v.name().toLowerCase(Locale.ROOT);
     }
 
     private static void start(ServerPlayer wearer, int id) {
         Entity target = wearer.level().getEntity(id);
         String why = wearerRefusal(wearer);
         GrabRule.Verdict verdict = null;
+        HoldArm arm = HoldArm.NONE;
         if (why == null) {
             verdict = GrabRule.check(facts(wearer, target), new GrabRule.Rules(TentacleRigItem.reach(wearer), TentaworksConfig.value(TentaworksConfig.GRAB_TAMED_OTHERS)));
-            if (!verdict.ok()) why = verdict == GrabRule.Verdict.GONE ? "" : verdict.name().toLowerCase(Locale.ROOT);
+            if (!verdict.ok()) why = verdict == GrabRule.Verdict.GONE ? "" : key(verdict);
         }
-        if (why == null && claimed(wearer, target)) why = "claimed";
+        if (why == null) {
+            arm = arm(wearer, verdict.actuators());
+            if (arm == HoldArm.NONE) why = key(GrabRule.hands(verdict.actuators()));
+        }
+        if (why == null && claimed(wearer, target, arm == HoldArm.OFF ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND)) why = "claimed";
         if (why != null) {
             refuse(wearer, target, why, -1);
             return;
         }
-        Held h = new Held(target, verdict == GrabRule.Verdict.HEAVY);
+        Held h = new Held(target, verdict == GrabRule.Verdict.HEAVY, arm);
         target.setDeltaMovement(Vec3.ZERO);
         target.resetFallDistance();
         target.removeData(TentaworksAttachments.THROWN);
@@ -323,14 +370,14 @@ public final class Grab {
         }
         HOLDS.put(wearer.getUUID(), h);
         if (h.heavy) heavySpeed(wearer, true);
-        listener.accept(new Event(wearer, "start", target, verdict.name().toLowerCase(Locale.ROOT), verdict.actuators(), 0, -1));
+        listener.accept(new Event(wearer, "start", target, key(verdict), verdict.actuators(), 0, -1));
         changed(wearer);
         if (target instanceof Blaze) RigEvents.fire(wearer, RigEvents.GRAB_BLAZE, 1);
     }
 
-    /** The loader's entity-interaction event, as an empty-handed use on the target: cancelled means a claim or protection mod said no. */
-    private static boolean claimed(ServerPlayer wearer, Entity target) {
-        return GrabRule.claimed(true, () -> ask(() -> CommonHooks.onInteractEntity(wearer, target, InteractionHand.MAIN_HAND) != null));
+    /** The loader's entity-interaction event, as a use of the holding hand (empty) on the target: cancelled means a claim or protection mod said no. */
+    private static boolean claimed(ServerPlayer wearer, Entity target, InteractionHand hand) {
+        return GrabRule.claimed(true, () -> ask(() -> CommonHooks.onInteractEntity(wearer, target, hand) != null));
     }
 
     /**
@@ -362,7 +409,7 @@ public final class Grab {
         boolean boss = target.getType().is(BOSSES) || target instanceof EnderDragon || target instanceof WitherBoss;
         return new GrabRule.Target(target instanceof LivingEntity, false, target instanceof Player, target.isPassenger() || target.isVehicle(),
                 heldByAnyone(target), boss, target instanceof LivingEntity l ? l.getMaxHealth() : 0, target.getBbWidth(), target.getBbHeight(),
-                othersAnimal(wearer, target), Grips.body(wearer).distanceTo(target.getBoundingBox().getCenter()), sight(wearer, target));
+                othersAnimal(wearer, target), Math.sqrt(target.getBoundingBox().distanceToSqr(Grips.body(wearer))), sight(wearer, target));
     }
 
     /** Tamed or owned by another player, or leashed to anything but the wearer (a fence knot belongs to someone too). */
@@ -371,14 +418,9 @@ public final class Grab {
         return target instanceof Leashable l && l.isLeashed() && l.getLeashHolder() != wearer;
     }
 
-    /** The Grip sight rule toward the target: no block on the line from the body to the centre of its box before the line enters it. */
+    /** The Grip sight rule toward the target ({@link SetDown#sight}). */
     private static boolean sight(Player wearer, Entity target) {
-        Vec3 body = Grips.body(wearer);
-        AABB box = target.getBoundingBox();
-        Vec3 centre = box.getCenter();
-        Vec3 entry = box.clip(body, centre).orElse(body);
-        BlockHitResult hit = wearer.level().clip(new ClipContext(body, centre, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, wearer));
-        return hit.getType() != HitResult.Type.BLOCK || hit.getLocation().distanceToSqr(body) >= entry.distanceToSqr(body) - 1.0E-4;
+        return SetDown.sight(wearer.level(), Grips.body(wearer), target.getBoundingBox(), CollisionContext.of(wearer));
     }
 
     private static void startShip(ServerPlayer wearer, BlockPos block, Direction face) {
@@ -399,12 +441,13 @@ public final class Grab {
         if (why == null && body.distanceTo(frame.toWorld(local)) > TentacleRigItem.reach(wearer) + GrabRule.SLACK) why = "too_far";
         if (why == null && !Grips.visible(level, frame.toLocal(body), local, face, true)) why = "no_sight";
         if (why == null && crewed(wearer, frame)) why = "crewed";
+        if (why == null && arm(wearer, 2) == HoldArm.NONE) why = key(GrabRule.hands(2));
         if (why == null && claimed(wearer, block, face, frame.toWorld(Vec3.atCenterOf(block)))) why = "claimed";
         if (why != null) {
             refuse(wearer, null, why, mass);
             return;
         }
-        Held h = new Held(null, true);
+        Held h = new Held(null, true, HoldArm.BOTH);
         h.ship = ship;
         h.level = level;
         h.block = block.immutable();
@@ -459,6 +502,49 @@ public final class Grab {
     }
 
     /**
+     * The Grab key tapped with a set-down spot ({@code feet}, the client's): a held mob is carried there and set down. The spot is
+     * checked as the client found it ({@link SetDown#check}, Reach + {@value GrabRule#SLACK}); failing that the server's own look
+     * picks one ({@link SetDown#spot}); with no valid spot it is set down where it hangs. A Ship is released as by RELEASE.
+     */
+    private static void place(ServerPlayer wearer, Vec3 feet) {
+        Held h = HOLDS.get(wearer.getUUID());
+        if (h == null || h.ship != null || h.placeTo != null) {
+            if (h == null || h.ship != null) onPacket(wearer, RigGrabPacket.release());
+            return;
+        }
+        Entity t = h.target;
+        Level level = wearer.level();
+        double reach = TentacleRigItem.reach(wearer);
+        SetDown.Spot spot = Double.isFinite(feet.x) && Double.isFinite(feet.y) && Double.isFinite(feet.z) ? SetDown.check(level, wearer, t, feet, reach + GrabRule.SLACK) : null;
+        if (spot == null || !spot.valid()) spot = SetDown.spot(level, wearer, t, wearer.getEyePosition(), wearer.getViewVector(1.0F), reach, GrabRule.SLACK);
+        if (spot == null || !spot.valid()) {
+            release(wearer, "release", null);
+            return;
+        }
+        h.placeFrom = t.position();
+        h.placeTo = spot.feet();
+        h.placeTicks = 0;
+        h.seatEye = wearer.getEyePosition();
+        h.seatLook = wearer.getViewVector(1.0F);
+        listener.accept(new Event(wearer, "place", t, "spot", h.heavy ? 2 : 1, 0, -1));
+    }
+
+    /** The wheel with the Grab key held: the hold moves {@code notches} × {@value Hold#NOTCH} along the look, clamped ({@link Hold#distance}, {@link Hold#shipAlong}). */
+    private static void distance(ServerPlayer wearer, int notches) {
+        Held h = HOLDS.get(wearer.getUUID());
+        if (h == null || notches == 0 || h.placeTo != null) return;
+        double reach = TentacleRigItem.reach(wearer);
+        if (h.ship != null) {
+            if (h.rel == null) return;
+            h.rel = Hold.shipAlong(h.rel, Mth.clamp(notches, -Hold.MAX_NOTCHES, Hold.MAX_NOTCHES) * Hold.NOTCH, Math.max(1.0, reach - SHIP_INSIDE));
+        } else {
+            h.distance = Hold.distance(h.distance, notches, h.target.getBbWidth(), wearer.getYRot(), reach);
+        }
+        listener.accept(new Event(wearer, "distance", h.target, String.format(Locale.ROOT, "%.2f", distance(wearer)), h.heavy ? 2 : 1, 0, h.mass));
+        changed(wearer);
+    }
+
+    /**
      * Ends the wearer's hold, if any: the target is set down where it is ({@code velocity} null) or flung with {@code velocity}
      * (blocks per tick). {@code why} names the cause for logs and events; only "release" (the Grab key) seats the target.
      * True when something was held.
@@ -482,7 +568,8 @@ public final class Grab {
                 Impact.thrown(wearer, t, velocity);
             } else {
                 if (t instanceof Mob) t.setData(TentaworksAttachments.PINNED, new Pinned(wearer.getUUID(), t.level().getGameTime() + CALM_TICKS));
-                if ("release".equals(why)) seat(wearer, t);
+                if ("release".equals(why)) seat(wearer, t, h.seatEye == null ? wearer.getEyePosition() : h.seatEye,
+                        h.seatLook == null ? wearer.getViewVector(1.0F) : h.seatLook);
             }
         }
         listener.accept(new Event(wearer, velocity != null ? "throw" : "release", h.target, why, h.heavy ? 2 : 1, velocity == null ? 0 : velocity.length(), h.mass));
@@ -490,12 +577,11 @@ public final class Grab {
         return true;
     }
 
-    /** A set-down target over a seat, boat or minecart (under the crosshair, or under or touching the target) takes it. */
-    private static void seat(ServerPlayer wearer, Entity target) {
+    /** A set-down target over a seat, boat or minecart (under the crosshair from {@code eye} along {@code look}, or under or touching the target) takes it. */
+    private static void seat(ServerPlayer wearer, Entity target, Vec3 eye, Vec3 look) {
         Level level = wearer.level();
         if (target.isPassenger() || target.isVehicle()) return;
-        Vec3 eye = wearer.getEyePosition();
-        Vec3 end = eye.add(wearer.getViewVector(1.0F).scale(TentacleRigItem.reach(wearer)));
+        Vec3 end = eye.add(look.scale(ActuatorReach.pickRange(TentacleRigItem.reach(wearer))));
         BlockHitResult block = level.clip(new ClipContext(eye, end, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, wearer));
         Vec3 to = block.getType() == HitResult.Type.MISS ? end : block.getLocation();
         EntityHitResult aimed = ProjectileUtil.getEntityHitResult(wearer, eye, to, wearer.getBoundingBox().expandTowards(to.subtract(eye)).inflate(1.0),
@@ -531,7 +617,7 @@ public final class Grab {
         Held h = HOLDS.get(wearer.getUUID());
         if (h == null) return ActuatorStatePacket.empty(wearer.getId(), refusal);
         return new ActuatorStatePacket(wearer.getId(), h.target == null ? -1 : h.target.getId(), h.heavy, h.ship == null ? null : h.block,
-                h.ship == null ? Direction.UP : h.face, refusal);
+                h.ship == null ? Direction.UP : h.face, refusal, h.arm, (float) distance(wearer));
     }
 
     /** To the wearer only: the current hold and a refusal key ("" none). */
@@ -569,21 +655,36 @@ public final class Grab {
     private static Hold.Status status(ServerPlayer wearer, Held h) {
         boolean gone = h.ship != null ? !h.ship.alive() : h.target.isRemoved() || !h.target.isAlive() || h.target.isPassenger();
         Level level = h.ship != null ? h.level : h.target.level();
+        boolean full = h.arm.uses(InteractionHand.MAIN_HAND) && !wearer.getMainHandItem().isEmpty()
+                || h.arm.uses(InteractionHand.OFF_HAND) && !wearer.getOffhandItem().isEmpty();
         return new Hold.Status(wearer.isAlive(), Actuators.fitted(wearer), RigAir.has(wearer), RigServer.state(wearer) == RigState.CRAWL, gone,
-                level == wearer.level(), h.far);
+                level == wearer.level(), h.far, full);
     }
 
     private static void holdMob(ServerPlayer wearer, Held h) {
         Entity t = h.target;
         Level level = wearer.level();
-        h.centre = Hold.point(wearer.getEyePosition(), wearer.getViewVector(1.0F), wearer.getYRot(), t.getBbWidth(), t.getBbHeight());
-        Vec3 to = Hold.sweep(level, t, Hold.place(level, t, h.centre.subtract(0, t.getBbHeight() / 2, 0)));
+        Vec3 to;
+        if (h.placeTo != null) {
+            h.placeTicks++;
+            Vec3 aim = h.placeFrom.lerp(h.placeTo, Math.min(1.0, h.placeTicks / (double) SetDown.CARRY_TICKS));
+            to = Hold.sweep(level, t, aim);
+            h.centre = aim.add(0, t.getBbHeight() / 2, 0);
+        } else {
+            Vec3 eye = wearer.getEyePosition(), look = wearer.getViewVector(1.0F);
+            float yaw = wearer.getYRot();
+            int side = Hold.side(h.arm.side(wearer.getMainArm()));
+            double d = Hold.fit(eye, look, yaw, t.getBbWidth(), t.getBbHeight(), side, h.distance, Grips.body(wearer), TentacleRigItem.reach(wearer));
+            h.centre = Hold.point(eye, look, yaw, t.getBbWidth(), t.getBbHeight(), side, d);
+            to = Hold.sweep(level, t, Hold.place(level, t, h.centre.subtract(0, t.getBbHeight() / 2, 0)));
+        }
         t.setPos(to.x, to.y, to.z);
         t.setDeltaMovement(Vec3.ZERO);
         t.resetFallDistance();
         if (t instanceof Mob mob) mob.getNavigation().stop();
         ((ServerLevel) level).getChunkSource().broadcast(t, new ClientboundTeleportEntityPacket(t));
         far(wearer, h, t.getBoundingBox().getCenter());
+        if (h.placeTo != null && h.placeTicks >= SetDown.CARRY_TICKS) release(wearer, "release", null);
     }
 
     private static void far(ServerPlayer wearer, Held h, Vec3 at) {

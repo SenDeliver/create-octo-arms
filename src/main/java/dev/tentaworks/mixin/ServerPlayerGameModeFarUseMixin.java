@@ -19,6 +19,6 @@ public class ServerPlayerGameModeFarUseMixin {
     @Inject(method = "useItemOn", at = @At("RETURN"))
     private void tentaworks$farUsedOn(ServerPlayer player, Level level, ItemStack stack, InteractionHand hand, BlockHitResult hit,
                                       CallbackInfoReturnable<InteractionResult> cir) {
-        FarUse.usedOn(player, hit, cir.getReturnValue());
+        FarUse.usedOn(player, hit, hand, cir.getReturnValue());
     }
 }

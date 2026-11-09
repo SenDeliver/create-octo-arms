@@ -22,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class PlayerFarUseMixin {
     @Inject(method = "interactOn", at = @At("RETURN"))
     private void tentaworks$farInteracted(Entity target, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
-        if ((Object) this instanceof ServerPlayer p) FarUse.usedOn(p, target, cir.getReturnValue());
+        if ((Object) this instanceof ServerPlayer p) FarUse.usedOn(p, target, hand, cir.getReturnValue());
     }
 
     @WrapOperation(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
