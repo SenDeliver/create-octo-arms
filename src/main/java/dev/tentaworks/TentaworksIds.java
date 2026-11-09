@@ -28,8 +28,8 @@ public final class TentaworksIds {
     public static final String RIG_EVENT = "rig_event";
     public static final String IMPACT = "impact";
     public static final String FITTED = "fitted";
-    public static final String ACTUATOR_REACH = "actuator_reach";
-    public static final String ACTUATOR_STRIKE = "actuator_strike";
+    public static final String FAR_USE_REACH = "far_use_reach";
+    public static final String FAR_USE_STRIKE = "far_use_strike";
     public static final String ACTUATOR_HEAVY = "actuator_heavy";
 
     private TentaworksIds() {

@@ -7,8 +7,8 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Server → trackers (not the wearer, who draws its own): player {@code entityId} did a Far Use at {@code target}, so its Right
- * Actuator reaches there for {@code ttl} ticks. Throttled by the sender.
+ * Server → the wearer and trackers: player {@code entityId} did a Far Use at {@code target}, so its Right Actuator reaches there
+ * for {@code ttl} ticks. Sent on each accepted far action, at most one per 2 ticks per wearer.
  */
 public record FarUsePacket(int entityId, Vec3 target, Kind kind, int ttl) implements CustomPacketPayload {
     public static final Type<FarUsePacket> TYPE = new Type<>(TentaworksIds.id("far_use"));
