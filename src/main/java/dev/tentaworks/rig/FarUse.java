@@ -32,6 +32,8 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.neoforge.common.NeoForge;
@@ -210,6 +212,23 @@ public final class FarUse {
         if (m == null) return Far.NEAR;
         return far(box.distanceToSqr(player.getEyePosition()), inst.getValue() - m.amount(), m.amount() > EPS, box.distanceToSqr(Grips.body(player)),
                 TentacleRigItem.reach(player));
+    }
+
+    /**
+     * The crosshair pick of a wearer from {@code eye} (this frame's), cut to what the hands and the Actuators reach: with a lifted
+     * range, a hit past the unlifted one counts only within Reach of the body ({@link ActuatorReach#accepts}); else it becomes a
+     * miss, as vanilla's own range filter makes it. Ship blocks are left to the Ship mod.
+     */
+    public static HitResult filter(Player player, HitResult hit, Vec3 eye) {
+        if (hit.getType() == HitResult.Type.MISS) return hit;
+        boolean entity = hit instanceof EntityHitResult;
+        if (!entity && hit instanceof BlockHitResult b && ShipFrames.get().isPlot(player.level(), b.getBlockPos())) return hit;
+        AttributeInstance inst = player.getAttribute(entity ? Attributes.ENTITY_INTERACTION_RANGE : Attributes.BLOCK_INTERACTION_RANGE);
+        AttributeModifier m = inst == null ? null : inst.getModifier(entity ? ENTITY_ID : REACH_ID);
+        if (m == null || m.amount() <= EPS) return hit;
+        Vec3 at = hit.getLocation();
+        if (ActuatorReach.accepts(eye, ActuatorReach.bodyFromEye(player, eye), at, inst.getValue() - m.amount(), TentacleRigItem.reach(player))) return hit;
+        return BlockHitResult.miss(at, Direction.getNearest(at.x - eye.x, at.y - eye.y, at.z - eye.z), BlockPos.containing(at));
     }
 
     public static Far blockFar(Player player, BlockPos pos) {
