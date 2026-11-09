@@ -24,6 +24,10 @@ tp Dev 11597.5 -60 5.5 -90 0
 #sleep 0.5
 #signal carry
 #await carrydone
+tp Dev 11597.5 -60 -6.5 -90 0
+#sleep 0.5
+#signal work
+#await workdone
 #sleep 0.5
 #signal back
 #await end

@@ -101,6 +101,8 @@ public final class ActuatorRenderer {
     private static final float NEAR_EYE = 0.25F;
     private static float worldM11 = (float) (1 / Math.tan(Math.toRadians(HAND_FOV) / 2));
     private static boolean placing;
+    /** First-person item draws so far, per hand (main, off): the harness checks no hand is drawn twice in a frame. */
+    public static final int[] ITEM_DRAWS = new int[2];
 
     /** A 0..1 level easing out to on and back to off ({@link ActuatorPose#level}), set once per tick. */
     static final class Tween {
@@ -669,6 +671,7 @@ public final class ActuatorRenderer {
     private static void drawItem(PoseStack ps, MultiBufferSource buffers, Player player, Drawn d, TentacleRenderer.Space space) {
         ItemStack stack = player.getMainHandItem();
         Minecraft mc = Minecraft.getInstance();
+        if (space.firstPerson()) ITEM_DRAWS[0]++;
         Vector3f dir = d.dir();
         float top = PALM_LEN + WRIST_HUB * 0.6F;
         Vector3f grip = new Vector3f(d.wrist()).fma((top + PROX * 0.8F) * PX, dir);

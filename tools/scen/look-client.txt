@@ -172,6 +172,25 @@ cmd item replace entity @s weapon.mainhand with minecraft:air
 cmd clear @s minecraft:arrow
 wait 5
 signal carrydone
+# W work: far mining with a pickaxe in first person (no hand drawn twice), strike and retarget frames
+await work
+view first
+hud on
+looktrace on
+cmd item replace entity @s weapon.mainhand with minecraft:wooden_pickaxe
+wait 10
+lookat 11603 -58.5 -7.5
+wait 3
+holdkey key.attack on
+wait 6
+burst look_w_mine_fp 8
+lookat 11603 -57.5 -4.5
+burst look_w_retarget_fp 8
+holdkey key.attack off
+wait 10
+looktrace off
+cmd item replace entity @s weapon.mainhand with minecraft:air
+signal workdone
 # B Back Slot (Curios): a fitted Netherite Rig in the back slot over an iron chestplate
 await back
 ifmod curios

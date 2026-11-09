@@ -51,6 +51,14 @@ check('H no Air: limp HUD line, the pig let go', cact.get('limp', {}).get('limp'
 check('H heavy hold: "Holding Iron Golem heavy", both Actuators, speed x0.6', cact.get('heavy', {}).get('hud') == 'Holding Iron Golem heavy' and abs(cact['heavy']['speed'] - 0.6) < 1e-3
       and ('start', 'minecraft:iron_golem', 'heavy', '2') in grab, f"{cact.get('heavy')}")
 
+print('== First-person hands')
+look = [dict(first=m[0] == 'true', frames=int(m[1]), v=(int(m[2]), int(m[3])), a=(int(m[4]), int(m[5])), dbl=int(m[6]) + int(m[7]))
+        for m in re.findall(r'CLOOK gt=\d+ first=(\w+) frames=(\d+) vhand=(\d+),(\d+) ahand=(\d+),(\d+) dbl=(\d+),(\d+)', c)]
+fp = [l for l in look if l['first']]
+check('D no hand or item drawn twice in first person (vanilla hand and Actuator in one frame)', len(fp) > 20 and sum(l['dbl'] for l in fp) == 0
+      and sum(l['a'][0] for l in fp) > 20, f"{len(fp)} first-person ticks, {sum(l['frames'] for l in fp)} frames, vanilla main {sum(l['v'][0] for l in fp)} off {sum(l['v'][1] for l in fp)}, "
+      f"Actuator main {sum(l['a'][0] for l in fp)} off {sum(l['a'][1] for l in fp)}, doubled {sum(l['dbl'] for l in fp)}")
+
 print('== Back Slot')
 if curios:
     check('B Back Slot Rig fitted over an iron chestplate', cact.get('back', {}).get('fitted'), f"{cact.get('back')}")
