@@ -83,10 +83,26 @@ key key.keyboard.v
 awaitheld on 20
 wait 10
 mark c2
+holdkey key.tentaworks.grab on
+wait 3
+wheel -2
+wait 10
+mark c2w
+holdkey key.tentaworks.grab off
+wait 10
+mark c2k
 key key.keyboard.v
 awaitheld off 20
 wait 10
 signal cdone
+# T an item in the main hand: a Ship needs both Actuators (two_hands)
+await t
+lookship
+wait 3
+key key.keyboard.v
+wait 10
+actuators t
+signal tdone
 await end
 wait 10
 quit

@@ -16,7 +16,7 @@ tp Dev 11423.5 -60 0.5 -90 0
 #signal m
 #await mdone
 tentaworks config grab.massCap.netherite 6000
-# C crewed: Dev2 on top of sc, then gone (control)
+# C crewed: Dev2 on top of sc, then gone (control); the Grab key + wheel -2 brings the hold 1.0 closer, releasing the key sets nothing down, a tap does
 tp Dev2 11447.5 -57 0.5 90 0
 tp Dev 11443.5 -60 0.5 -90 0
 #sleep 1.5
@@ -26,4 +26,10 @@ tp Dev2 11444.5 -60 8.5 180 0
 #sleep 1.5
 #signal c2
 #await cdone
+# T an item in the main hand: refused (two_hands)
+item replace entity Dev weapon.mainhand with stick
+#sleep 0.5
+#signal t
+#await tdone
+item replace entity Dev weapon.mainhand with air
 #signal end

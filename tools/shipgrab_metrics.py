@@ -26,6 +26,8 @@ for m in re.finditer(r'SPOS (\S+) gt=(\d+) Dev pos=(\S+) .*? air=(\d+) .*? gheld
 dev = {int(g): vec(p) for g, p in re.findall(r'STRACE gt=(\d+) Dev pos=(\S+)', s)}
 grab = [dict(gt=int(m[0]), kind=m[1], why=m[2], arms=int(m[3]), speed=float(m[4]), mass=float(m[5]))
         for m in re.findall(r'SGRAB gt=(\d+) Dev kind=(\w+) target=-1 type=ship why=(\S+) actuators=(\d+) speed=(\S+) mass=(\S+)', s)]
+sg = {m[0]: float(m[1]) for m in re.findall(r'SPOS (\S+) gt=\d+ Dev .*? gdist=(\S+) gplace=\w+ dual=\w+', s)}
+wheel = [dict(gt=int(m[0]), n=int(m[1]), canceled=m[2] == 'true') for m in re.findall(r'CWHEEL gt=(\d+) n=(-?\d+) canceled=(\w+) slot=\d+', c)]
 conf = re.findall(r'SCONFIG gt=\d+ path=grab\.massCap\.netherite value=(\S+)', s)
 cact = {m[0]: dict(heavy=m[1] == 'true', ship=m[2], hud=m[3], speed=float(m[4])) for m in re.findall(r'CACT (\S+) gt=\d+ held=-?\d+ heavy=(\w+) ship=(\S+) .*? hud="([^"]*)" .*? speed=(\S+)', c)}
 overlay = [(int(g), t) for g, t in re.findall(r'OVERLAY gt=(\d+) text="([^"]*)"', c)]
@@ -119,7 +121,20 @@ ctl = [g for g in st if cr and g['gt'] > cr[0]['gt']]
 check('C control: Grabbed once Dev2 is off', ctl and c2s.get('ship', '-') not in ('-', k1['ship']) and sc and math.dist(c2s['centre'], sc['pos']) < 2.5,
       f"{ctl[:1]} gship {c2s.get('ship')}")
 
+
+print('== W wheel, tap, two hands')
+w = [x for x in wheel if x['n'] == -2]
+d0, d1 = sg.get('c2'), sg.get('c2w')
+check('W the Grab key + 2 notches closer: the hold 1.0 nearer along the look (or at the 1.0 floor), the hotbar does not scroll',
+      d0 is not None and d1 is not None and (abs(d0 - d1 - 1.0) < 0.02 or (d1 == 1.0 and d0 > d1)) and w and w[0]['canceled'], f"gdist {d0} -> {d1}, wheel {w[:1]}")
+rl = [g for g in kind('release') if spos.get('c2k') and g['gt'] >= spos['c2k']['gt'] and g['gt'] > spos['c2w']['gt'] + 5]
+check('W releasing the key after the wheel keeps the Ship; a tap releases it (why=release)', spos.get('c2k', {}).get('ship', '-') not in ('-',) and rl and rl[0]['why'] == 'release',
+      f"held {spos.get('c2k', {}).get('ship')} release {rl[:1]}")
+t = kind('refuse', 'two_hands')
+check('T an item in the main hand: a Ship refused (two_hands)', t and noted('Needs both Actuators: empty both hands', t[0]['gt']), f'{t[:1]}')
+
 exc = [l for l in (c + c2 + s).splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'authlib' not in l and 'neoforge-client.new.tmp.toml' not in l
-       and 'Error loading class: net/irisshaders/' not in l and 'org.gradle.' not in l and 'MessageIOException' not in l]
+       and 'Error loading class: net/irisshaders/' not in l and 'org.gradle.' not in l and 'MessageIOException' not in l
+       and 'sun.nio.fs.UnixException' not in l]
 check('E exceptions', not exc, f'{len(exc)} exception lines' + (f': {exc[0][:200]}' if exc else ''))
 print('RESULT', 'PASS' if not fails else 'FAIL ' + ', '.join(fails))
