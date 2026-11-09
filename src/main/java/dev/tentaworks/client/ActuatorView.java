@@ -29,7 +29,7 @@ import org.jetbrains.annotations.Nullable;
 public final class ActuatorView {
     private static final TagKey<EntityType<?>> BOSSES = TagKey.create(Registries.ENTITY_TYPE, TentaworksIds.id(TentaworksIds.BOSSES));
     /** A set-down spot shown in place of the real one (dev scripts). */
-    static @Nullable Spot preview;
+    private static @Nullable Spot preview;
 
     /** Which Actuators hold the Grab. */
     public enum HoldArm {
@@ -68,6 +68,11 @@ public final class ActuatorView {
     private ActuatorView() {
     }
 
+    /** Shows {@code spot} as the set-down spot whatever is held (dev scripts); null ends it. */
+    public static void preview(@Nullable Spot spot) {
+        preview = spot;
+    }
+
     /** Which of the player's Actuators hold its Grab. */
     public static HoldArm holdArm(Player player) {
         ActuatorClient.State s = ActuatorClient.get(player);
@@ -75,11 +80,21 @@ public final class ActuatorView {
         return s.heavy() || s.ship() != null ? HoldArm.BOTH : HoldArm.OFF;
     }
 
+    /** The mob the player's Actuators hold, or null (nothing, a Ship, or not known here). */
+    public static @Nullable Entity held(Player player) {
+        ActuatorClient.State s = ActuatorClient.get(player);
+        return s.holding() && s.heldId() >= 0 ? player.level().getEntity(s.heldId()) : null;
+    }
+
     /** How far from the eye the held target is kept, blocks; 0 while nothing is held or it is not known. */
     public static double holdDistance(Player player) {
-        ActuatorClient.State s = ActuatorClient.get(player);
-        Entity held = s.heldId() >= 0 ? player.level().getEntity(s.heldId()) : null;
+        Entity held = held(player);
         return held == null ? 0 : held.getBoundingBox().getCenter().distanceTo(player.getEyePosition());
+    }
+
+    /** A Throw needs the Grab key held with the attack: the main hand holds an item and its Actuator is not the one holding. */
+    public static boolean throwNeedsGrabKey(Player player) {
+        return !holdArm(player).main() && !player.getMainHandItem().isEmpty();
     }
 
     /** Where a tap of the Grab key would set the held target down now; null when there is no spot (it is set down where it hangs). */
