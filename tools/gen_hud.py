@@ -1,5 +1,5 @@
 """Crosshair HUD sprites of the Actuators (GUI atlas, own pixels): claw brackets left and right of the crosshair (solid and
-hollow), the Grab claws, the reason glyphs, the set-down marker and the scroll wheel.
+hollow), the Grab claws (open: free to take; closed: the open claw shut around a block), the reason glyphs, the set-down marker and the scroll wheel.
 Shapes are drawn as ASCII grids: W white, L light grey, A amber, R red, G grey; every shape gets a dark one-pixel rim so it reads
 on any background. White and light grey take the tint ActuatorHud draws them with (tier, red when limp).
 usage: python3 tools/gen_hud.py"""
@@ -37,10 +37,11 @@ CLAW_CLOSED = """
 ...WWW...
 ...WLW...
 ..WWWWW..
-.WW...WW.
-.W..L..W.
-.WW.L.WW.
-..WW.WW..
+.WW.W.WW.
+WW.LLL.WW
+W..LLL..W
+WW.LLL.WW
+.W.....W.
 """
 TWO_HANDS = """
 .AAA...AAA.
@@ -53,11 +54,11 @@ HANDS_FULL = """
 ...AAA...
 ...AaA...
 ..AAAAA..
-.AA...AA.
-.A.aaa.A.
-.A.aaa.A.
-.AA...AA.
-..AA.AA..
+.AA.A.AA.
+AA.aaa.AA
+A..aaa..A
+AA.aaa.AA
+.A.....A.
 """
 REFUSED = """
 ...GGG..R
