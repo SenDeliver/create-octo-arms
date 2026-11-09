@@ -38,6 +38,7 @@ tp Dev 11200.5 -60 48.5 -90 0
 #signal g4g
 #await g4gdone
 # G5 refusals
+summon wither 11205.5 -60 60.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","boss"]}
 tp Dev 11200.5 -60 60.5 -90 0
 #sleep 0.5
 #signal g5b

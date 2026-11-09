@@ -1,5 +1,5 @@
 # Grab scenes (x 11180..11215). Flat world: ground top at y=-60. Needs ANIMALS=true (else the animals are removed). TIMELINE grab-timeline.txt, SCRIPT2 grab-watch.txt.
-# Mobs tagged tw (SMOB lines) keep their AI (NoAI has no physics: a Thrown mob could not fly) with no walking speed; the Wither has no AI.
+# Mobs tagged tw (SMOB lines) keep their AI (NoAI has no physics: a Thrown mob could not fly) with no walking speed; the Wither (no AI) is summoned for G5 only (its boss bar).
 gamerule doDaylightCycle false
 gamerule doWeatherCycle false
 gamerule doImmediateRespawn true
@@ -19,7 +19,6 @@ summon horse 11203.5 -60 36.5 {Tags:["tw","h1"],PersistenceRequired:1b,Silent:1b
 summon cow 11203.5 -60 40.5 {Tags:["tw","w1"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
 summon iron_golem 11203.5 -60 48.5 {Tags:["tw","g1"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
 # G5 refusals: Wither (boss), Dev2 (player), Dev2's wolf (owned)
-summon wither 11205.5 -60 60.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","boss"]}
 summon wolf 11203.5 -60 68.5 {Tags:["tw","wolf"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
 # G6 sheep set down on a Create seat
 summon sheep 11203.5 -60 72.5 {Tags:["tw","s2"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}

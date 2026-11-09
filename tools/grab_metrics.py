@@ -74,9 +74,9 @@ check('G1 start: light, one Actuator', st and st[0]['why'] == 'light' and st[0][
 a, b = spos['g1held']['gt'], spos['g1still']['gt']
 off = [dist(smob[(g, s1)]['box'], strace[g]['centre']) for g in range(a, b + 1) if (g, s1) in smob and g in strace]
 check('G1 server: held 40 ticks at the hold point (box within 0.6)', len(off) >= 38 and max(off) <= 0.6, f'{len(off)} ticks, max {max(off, default=99):.3f}')
-ct = [ctr[g] for g in range(a, b + 1) if g in ctr and ctr[g]['held'] == int(s1)]
+ct = [ctr[g] for g in range(a + 5, b + 1) if g in ctr and ctr[g]['held'] == int(s1)]
 coff = [dist(t['hmob'], t['hpt']) for t in ct]
-check('G1 wearer client: mob at the hold point', len(ct) >= 35 and max(coff) <= 0.6, f'{len(ct)} ticks, max {max(coff, default=99):.3f}')
+check('G1 wearer client: mob at the hold point (after 5 ticks of entity lerp)', len(ct) >= 30 and max(coff) <= 0.6, f'{len(ct)} ticks, max {max(coff, default=99):.3f}')
 check('G1 off the crosshair', ct and all(t['xh'] != s1 and (t['xd'] or 0) > 0.3 for t in ct),
       f"xh {sorted({t['xh'] for t in ct})} xd min {min((t['xd'] or 0 for t in ct), default=0):.3f}")
 ob = [dist(rwalk[g]['hmob'], smob[(g, s1)]['box']) for g in range(a + 5, b + 1) if g in rwalk and (g, s1) in smob and rwalk[g]['held'] == int(s1)]

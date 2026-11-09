@@ -16,6 +16,7 @@ mark k1
 actuators k1
 view third
 wait 4
+clearchat
 shot shipgrab_hold
 view first
 look 90 0
