@@ -1,9 +1,12 @@
-# Actuator look: Rest Pose, first-person side entry at limbOpacity 1.0 and 0.3, held mobs, HUD line, Back Slot (Curios only). TIMELINE look-timeline.txt, ANIMALS=true
+# Actuator look: Rest Pose, first-person side entry at limbOpacity 1.0 and 0.3, held mobs, HUD line, carried main-hand items, Back Slot (Curios only). TIMELINE look-timeline.txt, ANIMALS=true
 trace on
 hud off
 view third
 # R Rest Pose: Stowed (behind, front), Active
 await rest
+look -90 -30
+key key.mouse.left
+wait 10
 look -90 10
 wait 20
 clearchat
@@ -39,6 +42,22 @@ key key.mouse.left
 clearchat
 shot look_fp_far_03
 opacity 1.0
+cmd item replace entity @s weapon.mainhand with minecraft:iron_pickaxe
+wait 10
+lookate minecraft:husk
+wait 3
+key key.mouse.left
+clearchat
+shot look_fp_far_carry
+view third
+lookate minecraft:husk
+wait 1
+key key.mouse.left
+clearchat
+shot look_far_carry_third
+view first
+cmd item replace entity @s weapon.mainhand with minecraft:air
+wait 5
 signal fardone
 # H light hold (pig): first person at 1.0, 0.3, 1.0 again (control), third person, HUD line; then limp (no Air)
 await hold
@@ -88,6 +107,71 @@ key key.keyboard.v
 awaitheld off 20
 view first
 signal heavydone
+# C carry: the Right Actuator carries the main-hand item (pickaxe, block, bow) in third and first person, mid-swing, at pitch straight down and up
+await carry
+cmd give @s minecraft:arrow 4
+cmd item replace entity @s weapon.mainhand with minecraft:iron_pickaxe
+look -90 10
+view third
+wait 20
+clearchat
+shot look_carry_pick_third
+look 30 10
+clearchat
+shot look_carry_turn_third
+look -90 10
+wait 10
+view front
+wait 5
+clearchat
+shot look_carry_pick_front
+look -90 90
+view third
+wait 10
+clearchat
+shot look_carry_down_third
+look -90 -90
+view front
+wait 10
+clearchat
+shot look_carry_up_third
+view third
+look -90 -20
+wait 10
+mousebtn left press
+clearchat
+shot look_carry_swing_third
+mousebtn left release
+view first
+wait 10
+clearchat
+shot look_carry_pick_fp
+mousebtn left press
+clearchat
+shot look_carry_swing_fp
+mousebtn left release
+cmd item replace entity @s weapon.mainhand with minecraft:stone
+look -90 10
+wait 10
+clearchat
+shot look_carry_block_fp
+view front
+wait 10
+clearchat
+shot look_carry_block_front
+view first
+cmd item replace entity @s weapon.mainhand with minecraft:bow
+look -90 -20
+wait 10
+mousebtn right press
+wait 15
+clearchat
+shot look_carry_bow_fp
+mousebtn right release
+cmd item replace entity @s weapon.mainhand with minecraft:air
+cmd clear @s minecraft:arrow
+wait 5
+signal carrydone
 # B Back Slot (Curios): a fitted Netherite Rig in the back slot over an iron chestplate
 await back
 ifmod curios
