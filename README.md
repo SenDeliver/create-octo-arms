@@ -21,7 +21,7 @@ Craft a **Tentacle Rig**: a Backtank with four **Tentacles** and a Precision Mec
 
 The Rig runs on the Backtank's **Air**. Holding still uses a trickle, moving uses more, climbing the most. Place the Rig as a block under a spinning shaft to refill it, like any Backtank. Double Jump again and the Rig **Sets you Down** on the floor.
 
-New in 2.0: fit two **Actuators** to the Rig. The right one does whatever your hand does, farther (**Far Use**); the left one **Grabs** a mob, holds it out of your way, sets it down or **Throws** it. See [Actuators](#actuators).
+New in 2.0: fit two **Actuators** to the Rig. Each one stands in for a hand and does whatever that hand does, farther (**Far Use**); with a tool in each they work together (**Dual Wield**); a free one **Grabs** a mob, holds it out of your way, sets it down where you look or **Throws** it. See [Actuators](#actuators).
 
 The only required dependency is Create. With Sable (optional) the Rig also grips and rides Ships. The terms used here (Tentacle Rig, Grip, Reach, Air, Crawl, ...) are explained in the [glossary](docs/CONTEXT.md).
 
@@ -35,7 +35,7 @@ The only required dependency is Create. With Sable (optional) the Rig also grips
 - **Setting Down**: Double Jump again and the Rig lowers you to the floor and folds up. With no floor in Reach, it lets go at the lowest point it can hold.
 - **Crawl**: out of Air, the Rig does not drop you. It slowly lowers you to the nearest floor, then folds up.
 - **Hands free**: mining, placing, fighting and using items all work while the Rig carries you. `Shift` also sneaks, so sneak + right click works, without the crouch.
-- **Actuators** (2.0): two extra arms above the Tentacles, fitted at a crafting table. **Far Use** mines, places, hits and uses out to the Rig's Reach; **Grab** (`V`) takes a mob, **Throw** flings it with Impact damage. With Sable, **Ship Grab** lifts a whole Ship. See [Actuators](#actuators).
+- **Actuators** (2.0): two extra arms above the Tentacles, fitted at a crafting table. **Far Use** mines, places, hits and uses out to the Rig's Reach; **Dual Wield** adds the off-hand tool or weapon; **Grab** (`V`) takes a mob with any free Actuator, **Throw** flings it with Impact damage. With Sable, **Ship Grab** lifts a whole Ship. See [Actuators](#actuators).
 - **Still a Backtank**: it holds Air (twice as much as the Backtank it was made from), feeds a Diving Helmet, takes Capacity and refills under a shaft.
 - **Keep your chestplate**: with [Curios](https://www.curseforge.com/minecraft/mc-mods/curios-continuation) installed the Rig also fits the back slot. There it is a Rig and not armor: everything works, it gives no armor value and armor enchantments on it are idle. See [Curios](#curios-back-slot).
 - **Two tiers**: Copper (Reach 5) and Netherite (Reach 7, half the Air use, fire resistant).
@@ -110,7 +110,7 @@ Ponder (hold `W` over a Rig or Tentacle) shows all of this step by step.
 
 ## Actuators
 
-New in 2.0. Two Actuators sit on the Rig above the Tentacles, the Right one and the Left one. The Tentacles keep walking exactly as before; the Actuators act on the world. They work wherever your hands work: Stowed or Active, on a Ride, gliding, Falling. Fitting is optional and permanent: a Rig without Actuators is a complete Rig that only walks, and a Rig from before 2.0 is one of those until you fit a pair.
+New in 2.0. Two Actuators sit on the Rig above the Tentacles, one for each hand: the one on your main-arm side is the main-hand Actuator, the other the off-hand Actuator (left-handed players get them the other way round). Each carries its hand's item, in first and third person, and does everything that hand does while your own arms stay still. The Tentacles keep walking exactly as before; the Actuators act on the world. They work wherever your hands work: Stowed or Active, on a Ride, gliding, Falling. Fitting is optional and permanent: a Rig without Actuators is a complete Rig that only walks, and a Rig from before 2.0 is one of those until you fit a pair.
 
 **Getting them**
 
@@ -118,36 +118,52 @@ New in 2.0. Two Actuators sit on the Rig above the Tentacles, the Right one and 
 2. **Fit two** to a finished Rig: Actuator, Rig, Actuator in one row of a crafting table. The Rig keeps its Air, enchantments, Rig Settings and damage. Or build a fitted Rig in one go on Mechanical Crafters (the Rig recipe with an Actuator added on each side).
 3. A fitted Rig is named **Copper Octo Rig** or **Netherite Octo Rig**. Smithing a fitted Copper Rig to Netherite keeps the Actuators. The first time you wear a freshly fitted Rig, both Actuators unfold and flex.
 
-**Far Use (Right Actuator)**
+**Far Use**
 
-- Whatever either hand does, farther: mining, placing, hitting and using items. Within your own arm's length your hand does it as usual; past it the Right Actuator reaches out and does it at its tip, with the item in that hand.
-- Blocks, mobs and players: out to the Rig's Reach (Copper 5, Netherite 7, Far Reach adds), with any item, weapon or tool. A Copper Rig reaches half a block past your bare hand on blocks and 2 blocks past it on mobs.
+- Whatever either hand does, farther: mining, placing, hitting and using items. The hand's Actuator does it at its tip, with the item in that hand, near or far.
+- Blocks, mobs and players: out to the Rig's Reach (Copper 5, Netherite 7, Far Reach adds), with any item, weapon or tool. Reach is measured from the Rig body, like a Tentacle's Grip: what a Tentacle can hold on to, an Actuator can work on, the floor around you included.
 - Past arm's length the server checks the target is in sight of your eye: nothing is reached through a wall, a pane or the floor.
-- Only an action that does something reaches out and costs Air: a lever flipped, a block placed, a mob hurt, a block that starts to break. An empty hand on stone does nothing, as it would by hand.
+- Only an action past arm's length that does something costs Air: a lever flipped, a block placed, a mob hurt, a block that starts to break. An empty hand on stone does nothing, as it would by hand.
 - Drops and XP of a block mined by Far Use fly to you.
-- With an Extendo Grip in hand the Actuator idles and the Rig adds no reach.
+- With an Extendo Grip in hand the Rig adds no reach.
 - Rig Settings row **Far Use**: Always (default), Rig out only, or Off.
 
-**Grab and Throw (Left Actuator)**
+**Dual Wield**
 
-- Press **Grab** (`V`, rebindable; Curios keeps `G`) with an empty main hand while looking at a mob within Reach and in sight. The Left Actuator takes it and holds it low on your left, out of the crosshair. While you look at something grabbable, the Left Actuator points at it.
+- With both Actuators free, the off-hand item works along with the main-hand one.
+- Mining: two tools that both suit the block (two axes on a log, two pickaxes on stone) break it at the sum of their speeds, each with its own Efficiency, and both wear. An off-hand tool alone does the work, gets its drops and takes the wear; the main-hand item takes none. Fortune and Silk Touch stay the main hand's.
+- Melee: the off-hand weapon or tool adds its damage and its damage enchantments to the hit, scaled by your attack strength, and wears.
+- Each block broken or hit landed this way costs 0.5 Air on a Copper Rig. Item use is not sped up.
+- Not while the off-hand Actuator holds a mob, during a heavy hold, or without Air. Server config `actuators.dualWield` turns it off.
+
+**Grab and Throw**
+
+- Press **Grab** (`V`, rebindable; Curios keeps `G`) while looking at a mob within Reach and in sight. A free Actuator takes it: the off-hand one if your off hand is empty, else the main-hand one if your main hand is empty. It holds the mob low on its side, out of the crosshair. While you look at something grabbable, the Actuator that would take it points at it.
+- Your other hand keeps working while one Actuator holds: mine, fight, place, open doors. An item that lands in the holding Actuator's hand sets the mob down.
 - The held mob is **Pinned**: no attacks, no Creeper fuse, no spells or shots. You can still shear, milk, name, saddle or leash it.
-- **`V` again** sets it down where it is, calm for one second; over a seat, boat or minecart it takes the seat.
-- **Attack** while holding **Throws** it along your view (Netherite faster). A thrown mob takes fall damage and **Impact** damage when it slams into a block or another mob, which is hurt too. Impact counts as your damage (loot, XP and protection rules see you) and hurts players only where PvP allows.
-- Light mobs (up to 1.5 blocks wide and 2 tall: zombie, villager, cow, spider) take one Actuator. Heavy ones (Iron Golem, Ravager, Horse, Enderman, Ghast) take both: Far Use pauses and you move at 60% speed while you hold them (Rides and glides unaffected).
-- Never: players, bosses (Ender Dragon, Wither, Warden, anything over 100 max health, the `tentaworks:bosses` entity tag), anything riding or ridden, anything another wearer holds or another player has on a lead, or another player's pet unless the server allows it. Claim and protection mods are asked first. A refused Grab says why in the action bar.
+- **Tap `V`** to set it down where you look: on top of the block under the crosshair, or beside its side and down to the floor. An outline shows the spot, red when the mob does not fit there or the spot is out of Reach or out of sight; with no valid spot it is set down where it hangs. It stays calm for one second; looking at a seat, boat or minecart puts it in.
+- **Hold `V` and turn the mouse wheel** to move it nearer or farther, half a block a notch, out to Reach. The hotbar does not scroll meanwhile.
+- **Attack** while holding **Throws** it along your view (Netherite faster). With an item in the main hand a plain attack uses the item, so hold `V` and attack to Throw. A thrown mob takes fall damage and **Impact** damage when it slams into a block or another mob, which is hurt too. Impact counts as your damage (loot, XP and protection rules see you) and hurts players only where PvP allows.
+- Light mobs (up to 1.5 blocks wide and 2 tall: zombie, villager, cow, spider) take one Actuator. Heavy ones (Iron Golem, Ravager, Horse, Enderman, Ghast) take both and need both hands empty: Far Use pauses and you move at 60% speed while you hold them (Rides and glides unaffected).
+- Never: players, bosses (Ender Dragon, Wither, Warden, anything over 100 max health, the `tentaworks:bosses` entity tag), anything riding or ridden, anything another wearer holds or another player has on a lead, or another player's pet unless the server allows it. Claim and protection mods are asked first. A refused Grab says why in the action bar (hands full, needs both Actuators, boss, owned, out of sight, no Air).
 - The hold lasts through Stowing, Setting Down, Rides, gliding and Falling. It ends on Crawl, death, logout, taking the Rig off, a dimension change, the target gone or out of Reach, or no Air left: the target is set down where it is.
-- A small HUD line shows what you hold (and "heavy") and when the Actuators are out of Air.
 
-**Ship Grab** (1.21.1 with Sable only): `V` on a block of a Ship takes the whole Ship in both Actuators. It stays where it was in your view: look around and it swings round you, turn and it turns with you (its tilt stays); `V` sets it down, attack throws it. Needs a Ship of scale 1 within the tier's mass cap (Copper 2000, Netherite 6000 Sable mass), nobody else on board, and not the Ship you stand on or hang from. Server config `grab.ships` (and `ships.grip`) turn it off.
+**On screen**
+
+- Crosshair marks (first person): a claw mark beside the crosshair when an Actuator will reach what you look at, on the acting side, in the tier's colour (copper or netherite purple); both sides when Dual Wield applies; a hollow pair when the target is just out of Reach, flashing with "Out of Reach" when a click lands on nothing for that reason; red when the Actuators are out of Air. The marks pulse with every strike.
+- Above the crosshair: an open claw with the Grab key over a mob a free Actuator can take, or why not (needs both Actuators, hands full, refused). While holding: a closed claw, the set-down marker (red when the spot is not valid), the hold distance while `V` is down and, for the first seconds, the keys for Set Down, Throw and distance.
+- A small HUD line by the hotbar shows what you hold (and "heavy") and when the Actuators are out of Air.
+- Hidden with F1 and in third person; client config `hud.crosshair` turns the crosshair marks and cues off.
+
+**Ship Grab** (1.21.1 with Sable only): `V` on a block of a Ship, with both hands empty, takes the whole Ship in both Actuators. It stays where it was in your view: look around and it swings round you, turn and it turns with you (its tilt stays); `V` with the wheel moves it nearer or farther, a tap of `V` lets it go, attack throws it. Needs a Ship of scale 1 within the tier's mass cap (Copper 2000, Netherite 6000 Sable mass), nobody else on board, and not the Ship you stand on or hang from. Server config `grab.ships` (and `ships.grip`) turn it off.
 
 **Air and Deft**
 
-The Actuators drink lightly from the Rig's Air. Copper Rig: 0.5 Air per Far Use action, 1 Air per 2 s of holding, 10 Air per Throw; Netherite half, Thrift less. With no Air left the Actuators hang limp and a held target is set down. The **Deft** enchantment makes them free. Creative players use no Air.
+The Actuators drink lightly from the Rig's Air. Copper Rig: 0.5 Air per Far Use action, 0.5 per Dual Wield block or hit, 1 Air per 2 s of holding, 10 Air per Throw; Netherite half, Thrift less. With no Air left the Actuators hang limp and a held target is set down. The **Deft** enchantment makes them free. Creative players use no Air.
 
 **Look**
 
-At rest the Actuators curl up above your head, wider than your body, so they frame you without blocking the third-person view, breathing with small idle gestures. In first person they enter from the edge of the view. Client config `firstPerson.limbOpacity` draws every Limb (Tentacles and Actuators) in first person from solid (1.0, default) down to faint (0.1). A Throw kicks the camera, an Impact clanks.
+At rest the Actuators curl up above your head, wider than your body, so they frame you without blocking the third-person view, breathing with small idle gestures; the acting one leans toward a far target before you click. Work shows at the tip, in step with your swing: strikes that follow the crosshair from block to block, both Actuators in turn for Dual Wield, a thrust for placing and using, held items raised as you use them (eating, a shield, a bow). In first person they enter from the edge of the view and stand in for both hands. Client config `firstPerson.limbOpacity` draws every Limb (Tentacles and Actuators) in first person from solid (1.0, default) down to faint (0.1). A Throw kicks the camera, an Impact clanks.
 
 ## Compatibility
 
@@ -257,7 +273,9 @@ Server config: `serverconfig/tentaworks-server.toml` inside the world folder (pu
 | `air` | `farUse` | 0.5 | Copper Rig: Air per Far Use action (0–50) |
 | `air` | `grab` | 40.0 | Copper Rig holding a Grab: ticks per 1 Air |
 | `air` | `throw` | 10.0 | Copper Rig: Air per Throw (0–500) |
+| `air` | `dualWield` | 0.5 | Copper Rig: Air per Dual Wield action, a block broken or a hit the off-hand item helped with (0–50) |
 | `farUse` | `players` | true | Far Use may hit and use on players (the PvP rule still applies) |
+| `actuators` | `dualWield` | true | Dual Wield: with both Actuators free, the off-hand item works along with the main-hand one (mining speed, melee damage) |
 | `grab` | `tamedOthers` | false | Grab may take another player's tamed, owned or leashed animal |
 | `grab` | `ships` | true | Ship Grab (1.21.1). Also needs `ships.grip`. No effect without Sable |
 | `grab.massCap` | `copper` | 2000.0 | Heaviest Ship a Copper Rig can Grab, Sable mass |
@@ -277,6 +295,7 @@ Client config: `config/tentaworks-client.toml`, or in game under Mods > Octo Arm
 | `animation` | `walkWhileHeld` | false | Vanilla walk animation (swinging arms and legs) while the Rig or a Ship carries you. Off: the body hangs still |
 | `movement` | `forward` | look | What `W`/`S` follow while the Rig carries you. `look`: the camera, look down and `W` takes you down. `flat`: level only, like walking or creative flight; `Space`/`Shift` change the height |
 | `firstPerson` | `limbOpacity` | 1.0 | How solid every Limb (Tentacles and Actuators) is drawn in first person: 1.0 solid, down to 0.1 faint |
+| `hud` | `crosshair` | true | Actuator marks and Grab cues around the crosshair (first person). Off: a plain crosshair |
 
 Key binds (client): **Grab (Actuators)** (`V`), **Rig Settings (worn Rig)** and **Toggle Tentacle Rig (key-only mode)** (both unbound by default).
 

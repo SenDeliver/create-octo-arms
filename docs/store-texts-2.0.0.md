@@ -18,7 +18,7 @@ A Create Backtank with four pneumatic Tentacles and two Actuators. Climb walls, 
 
 Craft a **Tentacle Rig**: a Backtank with four **Tentacles** and a Precision Mechanism. Wear it in the chest slot and **Double Jump**. The Tentacles grab nearby block faces and carry you where you look: across the floor, up a wall, under a ledge or a ceiling. Your hands stay free, so you can mine, build and fight while you hang. The Rig runs on the Backtank's **Air** and refills like any Backtank.
 
-**New in 2.0: Actuators.** Fit two Actuators to the Rig and it gains hands: a Copper or Netherite **Octo Rig**. The Right Actuator does whatever your hand does, farther: mining, placing, hitting and using out to the Rig's Reach (**Far Use**). The Left Actuator **Grabs** a mob with the `V` key, holds it out of your way, sets it down or **Throws** it, with Impact damage when it lands. With Sable it lifts a whole Ship.
+**New in 2.0: Actuators.** Fit two Actuators to the Rig and it gains hands: a Copper or Netherite **Octo Rig**. Each Actuator stands in for one of your hands and does whatever that hand does, farther: mining, placing, hitting and using out to the Rig's Reach (**Far Use**). Put a tool in each hand and both work at once (**Dual Wield**). A free Actuator **Grabs** a mob with the `V` key, holds it out of your way, sets it down where you look or **Throws** it, with Impact damage when it lands. With Sable the pair lifts a whole Ship.
 
 ## Features
 
@@ -27,11 +27,14 @@ Craft a **Tentacle Rig**: a Backtank with four **Tentacles** and a Precision Mec
 - **Double Jump** to activate, also in mid-air: the Rig catches you with no fall damage. Double Jump again to be **Set Down**.
 - **Crawl**: out of Air, the Rig does not drop you. It slowly lowers you to the floor.
 - **Hands free**: mining, placing, fighting and using items all work while the Rig carries you.
-- **Actuators**: two extra arms above the Tentacles, fitted at a crafting table. They work Stowed or Active, on a Ride, gliding or Falling.
-  - **Far Use**: blocks, mobs and players out to the Rig's Reach. Never through a wall. Drops and XP fly to you. A Rig Setting turns it to Always, Rig out only or Off.
-  - **Grab** (`V`, empty hand): the mob is Pinned (no attacks, no Creeper fuse), hangs low on your left and out of the crosshair. Shear, milk, name or leash it while you hold it. `V` again sets it down, also into a seat, boat or minecart.
-  - **Throw**: attack while holding. The mob flies along your view and takes Impact damage when it hits a block or another mob.
-  - Heavy mobs (Iron Golem, Ravager, Horse, Enderman) take both Actuators and slow you down. Players and bosses can't be Grabbed; claim mods are asked first.
+- **Actuators**: two extra arms above the Tentacles, fitted at a crafting table, one for each hand. They carry your items and do the work of your hands, Stowed or Active, on a Ride, gliding or Falling.
+  - **Far Use**: blocks, mobs and players out to the Rig's Reach, as far as a Tentacle can grip. Never through a wall. Drops and XP fly to you. A Rig Setting turns it to Always, Rig out only or Off.
+  - **Dual Wield**: two axes fell a tree twice as fast, two pickaxes mine at the sum of their speeds, an off-hand sword adds its damage to every hit.
+  - **Grab** (`V`): any Actuator with an empty hand takes the mob, so you can hold a mob in one and keep a tool in the other. The mob is Pinned (no attacks, no Creeper fuse) and hangs low at your side, out of the crosshair. Shear, milk, name or leash it while you hold it.
+  - **Set Down where you look**: tap `V` and the Actuator carries the mob to the outlined spot, also into a seat, boat or minecart. Hold `V` and scroll to move it nearer or farther.
+  - **Throw**: attack while holding (with a tool in the main hand: `V` + attack). The mob flies along your view and takes Impact damage when it hits a block or another mob.
+  - Heavy mobs (Iron Golem, Ravager, Horse, Enderman) take both Actuators and both empty hands, and slow you down. Players and bosses can't be Grabbed; claim mods are asked first.
+  - **Crosshair marks** show what the Actuators will do before you click: in Reach, both working, just out of Reach, out of Air, grabbable and why not.
 - **Still a Backtank**: it holds twice the Air of the Backtank it was made from, feeds a Diving Helmet, takes Capacity and refills under a spinning shaft.
 - **Two tiers**: Copper (Reach 5) and Netherite (Reach 7, half the Air use, faster Throws, fire resistant).
 - **Five enchantments**: Far Reach, Thrift, Swift, Silent Step (quiet for Sculk Sensors and Wardens) and Deft (the Actuators use no Air), plus vanilla chest armor enchantments.
@@ -49,7 +52,7 @@ Craft a **Tentacle Rig**: a Backtank with four **Tentacles** and a Precision Mec
 3. Place the Rig as a block under a spinning shaft to fill it. Pick it up again with an empty hand.
 4. Wear it in the chest slot and Double Jump. Look where you want to go and walk.
 5. Double Jump again to be Set Down. Sneak + use the Rig in the air to open Rig Settings.
-6. Make two **Actuators** (Piston Extension Pole: deploy Brass Casing, press, deploy Sticker, 2 loops) and put the Rig between them in one row of a crafting table. The Rig keeps its Air, enchantments and settings. Press `V` with an empty hand on a mob to Grab it, attack to Throw it.
+6. Make two **Actuators** (Piston Extension Pole: deploy Brass Casing, press, deploy Sticker, 2 loops) and put the Rig between them in one row of a crafting table. The Rig keeps its Air, enchantments and settings. Press `V` with an empty hand on a mob to Grab it, tap `V` to set it down where you look, attack to Throw it.
 
 Ponder (hold `W` over a Rig or Tentacle) shows the Tentacles step by step.
 
@@ -57,7 +60,7 @@ Ponder (hold `W` over a Rig or Tentacle) shows the Tentacles step by step.
 
 Octo Arms works fully with Sable Ships, and Create Aeronautics Ships are Sable Ships, so they are supported the same way. With Sable installed, the blocks of a Ship are Grips like world blocks. Grip a Ship's floor, walls, hull or underside, parked or moving, and move between the world and a Ship both ways. Air use counts only your own move.
 
-With Actuators fitted, **Ship Grab** takes a whole Ship in both arms: it stays in front of you wherever you look, turns as you turn, and can be set down or thrown. The tier sets the heaviest Ship you can lift. Server admins can turn Ship Grips off with `ships.grip = false` and Ship Grab with `grab.ships = false`.
+With Actuators fitted, **Ship Grab** takes a whole Ship in both Actuators: it stays in front of you wherever you look, turns as you turn, moves nearer or farther with `V` and the wheel, and can be let go or thrown. The tier sets the heaviest Ship you can lift. Server admins can turn Ship Grips off with `ships.grip = false` and Ship Grab with `grab.ships = false`.
 
 ![A player gripping the side of a Ship moving at 4 blocks per second](https://raw.githubusercontent.com/SenDeliver/create-octo-arms/1.21.1/docs/images/ship-moving.png)
 
