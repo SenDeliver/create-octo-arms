@@ -8,6 +8,11 @@ tr = {}
 for m in re.finditer(r'TRACE t=\d+ gt=(\d+) pos=' + num + r' d=\S+ cmd=\S+ held=(\d) state=(\w+)', c):
     tr[int(m[1])] = dict(p=tuple(map(float, m.group(2, 3, 4))), held=int(m[5]), state=m[6])
 mk = {m[0]: int(m[1]) for m in re.findall(r'CPOS (\S+) gt=(\d+)', c)}
+wrong, sgt = [], None
+for line in open(f'{pre}-server.log', errors='replace'):
+    m = re.search(r'STRACE gt=(\d+)', line)
+    if m: sgt = int(m[1])
+    elif 'Dev moved wrongly' in line and sgt is not None: wrong.append(sgt)
 PX, PZ = 5000.5, 0.5
 fails = []
 
@@ -41,7 +46,9 @@ for tag, a, b in (('S round copper', 'sa', 'sb'), ('T round netherite', 'ta', 't
     w = span(a, b)
     a0, a1 = angle(w[0]['p']), angle(w[-1]['p'])
     far = max(abs((angle(x['p']) - a0 + 540) % 360 - 180) for x in w)
-    check(far >= 80 and states(w) == 'ACTIVE', tag, f"furthest {far:.0f} deg round the pole (>= 80: past the first corner onto the next face; 32 before the fix), feet y {w[0]['p'][1] + 60:.2f} -> {w[-1]['p'][1] + 60:.2f}, pos {w[0]['p'][0]:.2f},{w[0]['p'][2]:.2f} -> {w[-1]['p'][0]:.2f},{w[-1]['p'][2]:.2f}, held min {min(x['held'] for x in w)}, states {states(w)}")
+    mw = sum(1 for g in wrong if mk[a] <= g <= mk[b] + 2)
+    # 2.0 (Speed 8): 78 deg and 67 "moved wrongly" each before the axis-order fix (Grips.orderSafe)
+    check(far >= 80 and states(w) == 'ACTIVE' and mw == 0, tag, f"furthest {far:.0f} deg round the pole (>= 80: past the first corner onto the next face; 32 before the fix), server moved wrongly {mw} (want 0), feet y {w[0]['p'][1] + 60:.2f} -> {w[-1]['p'][1] + 60:.2f}, pos {w[0]['p'][0]:.2f},{w[0]['p'][2]:.2f} -> {w[-1]['p'][0]:.2f},{w[-1]['p'][2]:.2f}, held min {min(x['held'] for x in w)}, states {states(w)}")
 def offsets(p):
     return f"{5100 - p[0]:.2f} west / {p[2] - 2:.2f} south of the corner"
 

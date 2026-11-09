@@ -316,6 +316,43 @@ public final class Grips {
      * (world coords, before the Rig's own move): Held is tested where the body really ends up. {@code faces} must also cover the carry.
      */
     public static Vec3 clampHeld(Level level, Entity entity, Vec3 motion, double reach, List<Face> faces, Vec3 carry) {
+        Vec3 m = heldMove(level, entity, motion, reach, faces, carry);
+        if (carry.lengthSqr() > 0 || m.x == 0 || m.z == 0) return m;
+        Vec3 safe = orderSafe(entity.getBoundingBox(), m, (axis, box, d) -> Entity.collideBoundingBox(entity,
+                new Vec3(axis == Direction.Axis.X ? d : 0, axis == Direction.Axis.Y ? d : 0, axis == Direction.Axis.Z ? d : 0), box, level, List.of()).get(axis));
+        return safe == m || !held(faces, body(entity).add(collide(level, entity, safe)), reach) ? m : safe;
+    }
+
+    /** One single-axis sweep of a box, as vanilla's collision does it axis by axis. */
+    public interface AxisSweep {
+        double sweep(Direction.Axis axis, AABB box, double d);
+    }
+
+    /**
+     * {@code m} cut to a horizontal move both axis orders agree on. Vanilla collides the larger horizontal axis first and the
+     * server replays the client's position delta with the same rule, so a near-diagonal move grazing an outside corner can end
+     * one axis apart on the two sides; past vanilla's 0.25 block tolerance (a 45 deg step at about 7 b/s and up) the server
+     * says "moved wrongly" and sets the wearer back, tick after tick. Such a move keeps the part reached in both orders.
+     * Returns {@code m} itself when the order does not matter.
+     */
+    public static Vec3 orderSafe(AABB box, Vec3 m, AxisSweep c) {
+        if (m.x == 0 || m.z == 0) return m;
+        AABB b = box.move(0, c.sweep(Direction.Axis.Y, box, m.y), 0);
+        double xx = c.sweep(Direction.Axis.X, b, m.x), xz = c.sweep(Direction.Axis.Z, b.move(xx, 0, 0), m.z);
+        double zz = c.sweep(Direction.Axis.Z, b, m.z), zx = c.sweep(Direction.Axis.X, b.move(0, 0, zz), m.x);
+        if (Math.abs(xx - zx) < 1.0E-7 && Math.abs(xz - zz) < 1.0E-7) return m;
+        double x = Math.abs(xx) < Math.abs(zx) ? xx : zx, z = Math.abs(xz) < Math.abs(zz) ? xz : zz;
+        if (bothOrders(b, x, z, c)) return new Vec3(x, m.y, z);
+        return Math.abs(xx * m.x) >= Math.abs(zz * m.z) ? new Vec3(xx, m.y, 0) : new Vec3(0, m.y, zz);
+    }
+
+    private static boolean bothOrders(AABB b, double x, double z, AxisSweep c) {
+        double a = c.sweep(Direction.Axis.X, b, x), d = c.sweep(Direction.Axis.Z, b, z);
+        return Math.abs(a - x) < 1.0E-7 && Math.abs(d - z) < 1.0E-7
+                && Math.abs(c.sweep(Direction.Axis.Z, b.move(x, 0, 0), z) - z) < 1.0E-7 && Math.abs(c.sweep(Direction.Axis.X, b.move(0, 0, z), x) - x) < 1.0E-7;
+    }
+
+    private static Vec3 heldMove(Level level, Entity entity, Vec3 motion, double reach, List<Face> faces, Vec3 carry) {
         if (motion.lengthSqr() < 1.0E-8) return Vec3.ZERO;
         Vec3 centre = body(entity).add(carry);
         Vec3 dir = motion.normalize();
