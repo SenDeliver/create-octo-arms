@@ -404,11 +404,16 @@ public final class Grab {
     }
 
     private static GrabRule.Target facts(ServerPlayer wearer, @Nullable Entity target) {
+        return facts(wearer, target, target != null && heldByAnyone(target));
+    }
+
+    /** What {@code wearer}'s side knows of {@code target} for {@link GrabRule#check}; {@code held}: some wearer holds it. */
+    public static GrabRule.Target facts(Player wearer, @Nullable Entity target, boolean held) {
         if (target == null || target.isRemoved() || !target.isAlive() || target.isSpectator())
             return new GrabRule.Target(false, true, false, false, false, false, 0, 0, 0, false, Double.MAX_VALUE, false);
         boolean boss = target.getType().is(BOSSES) || target instanceof EnderDragon || target instanceof WitherBoss;
         return new GrabRule.Target(target instanceof LivingEntity, false, target instanceof Player, target.isPassenger() || target.isVehicle(),
-                heldByAnyone(target), boss, target instanceof LivingEntity l ? l.getMaxHealth() : 0, target.getBbWidth(), target.getBbHeight(),
+                held, boss, target instanceof LivingEntity l ? l.getMaxHealth() : 0, target.getBbWidth(), target.getBbHeight(),
                 othersAnimal(wearer, target), Math.sqrt(target.getBoundingBox().distanceToSqr(Grips.body(wearer))), sight(wearer, target));
     }
 

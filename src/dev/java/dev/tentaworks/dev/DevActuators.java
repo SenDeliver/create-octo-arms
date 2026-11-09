@@ -8,6 +8,7 @@ import dev.tentaworks.config.TentaworksConfig;
 import dev.tentaworks.registry.TentaworksAttachments;
 import dev.tentaworks.registry.TentaworksDataComponents;
 import dev.tentaworks.rig.Actuators;
+import dev.tentaworks.rig.DualWield;
 import dev.tentaworks.rig.FarUse;
 import dev.tentaworks.rig.Grab;
 import dev.tentaworks.rig.Grips;
@@ -161,6 +162,8 @@ public final class DevActuators {
     @SubscribeEvent
     static void onStarted(ServerStartedEvent event) {
         Grab.listen(DevActuators::grabEvent);
+        DualWield.listen((p, kind) -> LOG.info("SDUAL gt={} {} kind={} off={} offdmg={} air={}", p.level().getGameTime(), p.getName().getString(), kind,
+                BuiltInRegistries.ITEM.getKey(p.getOffhandItem().getItem()), p.getOffhandItem().getDamageValue(), f3(RigAir.air(p) - debt(p))));
         RigEvents.listen(e -> LOG.info("SRIGEVENT gt={} {} event={} number={}", e.player().level().getGameTime(), e.player().getName().getString(), e.event(),
                 String.format(Locale.ROOT, "%.3f", e.number())));
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, true, PlayerInteractEvent.LeftClickBlock.class, e -> {
@@ -227,9 +230,9 @@ public final class DevActuators {
                 paid = f3(hold[1] - air);
             }
         }
-        LOG.info("SGRAB gt={} {} kind={} target={} type={} why={} actuators={} speed={} mass={} ticks={} air={}", gt, p.getName().getString(), e.kind(),
+        LOG.info("SGRAB gt={} {} kind={} target={} type={} why={} actuators={} speed={} mass={} ticks={} air={} arm={}", gt, p.getName().getString(), e.kind(),
                 e.target() == null ? -1 : e.target().getId(), e.target() == null ? (e.mass() >= 0 ? "ship" : "-") : type(e.target()),
-                e.why().isEmpty() ? "-" : e.why(), e.actuators(), f3(e.speed()), String.format(Locale.ROOT, "%.1f", e.mass()), ticks, paid);
+                e.why().isEmpty() ? "-" : e.why(), e.actuators(), f3(e.speed()), String.format(Locale.ROOT, "%.1f", e.mass()), ticks, paid, Grab.arm(p));
     }
 
     @SubscribeEvent
@@ -267,11 +270,11 @@ public final class DevActuators {
         Entity held = Grab.target(p);
         BlockPos ship = Grab.ship(p);
         AttributeInstance speed = p.getAttribute(Attributes.MOVEMENT_SPEED);
-        return String.format(Locale.ROOT, " lift=%.3f,%.3f gheld=%d gheavy=%b gship=%s gcentre=%s gmass=%.1f adebt=%.4f mspd=%.4f xp=%d fitted=%b deft=%b farmode=%s",
+        return String.format(Locale.ROOT, " lift=%.3f,%.3f gheld=%d gheavy=%b gship=%s gcentre=%s gmass=%.1f adebt=%.4f mspd=%.4f xp=%d fitted=%b deft=%b farmode=%s garm=%s gdist=%.2f gplace=%b dual=%b",
                 lift(p.getAttribute(Attributes.BLOCK_INTERACTION_RANGE), FarUse.REACH_ID), lift(p.getAttribute(Attributes.ENTITY_INTERACTION_RANGE), FarUse.ENTITY_ID),
                 held == null ? -1 : held.getId(), Grab.heavy(p), ship == null ? "-" : ship.toShortString().replace(" ", ""), vec(Grab.centre(p)), Grab.shipMass(p),
                 debt(p), speed == null ? 0 : speed.getValue(), p.totalExperience, Actuators.fitted(rig), RigEnchants.deft(rig),
-                rig.isEmpty() ? "-" : RigSettings.of(rig).farUse().getSerializedName());
+                rig.isEmpty() ? "-" : RigSettings.of(rig).farUse().getSerializedName(), Grab.arm(p), Grab.distance(p), Grab.placing(p), DualWield.on(p));
     }
 
     private static double lift(@Nullable AttributeInstance inst, ResourceLocation id) {

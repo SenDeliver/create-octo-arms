@@ -19,6 +19,7 @@ import net.minecraft.world.item.MaceItem;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.TridentItem;
 import net.minecraft.world.item.component.Tool;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -135,6 +136,14 @@ public final class DualWield {
         Tool tool = off.get(DataComponents.TOOL);
         if (tool != null && state.getDestroySpeed(level, pos) != 0.0F && tool.damagePerBlock() > 0) off.hurtAndBreak(tool.damagePerBlock(), player, EquipmentSlot.OFFHAND);
         pay(player, "mine");
+    }
+
+    /** The off-hand item would add to a hit on {@code target} (client and server: no level needed). */
+    public static boolean helps(Player player, Entity target) {
+        if (!(target instanceof LivingEntity) || !on(player)) return false;
+        if (target instanceof Player && !TentaworksConfig.value(TentaworksConfig.FAR_USE_PLAYERS)) return false;
+        ItemStack off = player.getOffhandItem();
+        return attackBonus(off) > 0 || EnchantmentHelper.has(off, EnchantmentEffectComponents.DAMAGE);
     }
 
     /** The melee bonus for this hit on {@code target}, 0 when Dual Wield adds nothing. */

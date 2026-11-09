@@ -5,7 +5,9 @@ import dev.tentaworks.client.ActuatorClient;
 import dev.tentaworks.client.ActuatorHud;
 import dev.tentaworks.client.RigClient;
 import dev.tentaworks.rig.Actuators;
+import dev.tentaworks.rig.Grips;
 import dev.tentaworks.rig.Hold;
+import dev.tentaworks.rig.SetDown;
 import dev.tentaworks.client.RigVisuals;
 import dev.tentaworks.rig.RigSlot;
 import dev.tentaworks.rig.WornRig;
@@ -396,6 +398,12 @@ public final class DevScript {
                         HELD.remove(k);
                         k.setDown(false);
                     }
+                }
+                case "wheel" -> {
+                    int n = Integer.parseInt(a[1]);
+                    boolean canceled = net.neoforged.neoforge.client.ClientHooks.onMouseScroll(mc.mouseHandler, 0, n);
+                    if (!canceled) mc.player.getInventory().swapPaint(n);
+                    LOG.info("CWHEEL gt={} n={} canceled={} slot={}", mc.level.getGameTime(), n, canceled, mc.player.getInventory().selected);
                 }
                 case "holdkey" -> {
                     KeyMapping km = Arrays.stream(mc.options.keyMappings).filter(k -> k.getName().equals(a[1])).findFirst().orElse(null);
@@ -885,11 +893,22 @@ public final class DevScript {
     private static String actuatorFields(Minecraft mc, LocalPlayer p) {
         ActuatorClient.State s = ActuatorClient.get(p);
         Entity held = s.heldId() < 0 ? null : mc.level.getEntity(s.heldId());
-        String point = held == null ? "-" : fmt(Hold.point(p.getEyePosition(), p.getViewVector(1.0F), p.getYRot(), held.getBbWidth(), held.getBbHeight()));
-        return String.format(Locale.ROOT, " gheld=%d gheavy=%b gship=%s far=%d xh=%s hmob=%s hpt=%s xd=%s limp=%b opa=%.2f", s.heldId(), s.heavy(),
+        String point = "-";
+        if (held != null) {
+            Vec3 eye = p.getEyePosition(), look = p.getViewVector(1.0F);
+            int side = Hold.side(s.arm().side(p.getMainArm()));
+            double d = Hold.fit(eye, look, p.getYRot(), held.getBbWidth(), held.getBbHeight(), side, s.distance() > 0 ? s.distance() : Double.NaN,
+                    Grips.body(p), TentacleRigItem.reach(p));
+            point = fmt(Hold.point(eye, look, p.getYRot(), held.getBbWidth(), held.getBbHeight(), side, d));
+        }
+        SetDown.Spot spot = ActuatorClient.setDownSpot();
+        ActuatorClient.Affordance aff = ActuatorClient.affordance();
+        return String.format(Locale.ROOT, " gheld=%d gheavy=%b gship=%s far=%d xh=%s hmob=%s hpt=%s xd=%s limp=%b opa=%.2f harm=%s hdist=%.2f spot=%s spotok=%b aff=%s affarm=%s dual=%b gkey=%b farhand=%s",
+                s.heldId(), s.heavy(),
                 s.ship() == null ? "-" : s.ship().toShortString().replace(" ", ""), s.farTtl(), crosshair(mc), heldCentre(mc, s), point,
                 held == null ? "-" : String.format(Locale.ROOT, "%.3f", rayGap(p.getEyePosition(), p.getViewVector(1.0F), held.getBoundingBox())),
-                Actuators.limp(p), TentaworksClientConfig.limbOpacity());
+                Actuators.limp(p), TentaworksClientConfig.limbOpacity(), s.arm(), s.distance(), spot == null ? "-" : fmt(spot.feet()), spot != null && spot.valid(),
+                aff.kind(), aff.arm(), ActuatorClient.dualWield(), ActuatorClient.grabKeyDown(), s.farHand() == net.minecraft.world.InteractionHand.OFF_HAND ? "off" : "main");
     }
 
     private static double rayGap(Vec3 eye, Vec3 look, net.minecraft.world.phys.AABB box) {
