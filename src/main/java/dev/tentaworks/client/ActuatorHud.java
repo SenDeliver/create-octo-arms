@@ -22,11 +22,12 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 /**
  * A small line left of the hotbar while the Actuators have something to say: what they hold (mob name or Ship, heavy) with the
- * Far Use mode glyph, or that they hang limp for lack of Air. Nothing otherwise; refusals go to the action bar.
+ * Far Use mode glyph, or that they hang limp for lack of Air. A line too long for the room left of the hotbar (big GUI scale,
+ * long mob names or translations) is drawn smaller. Nothing otherwise; refusals go to the action bar.
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public final class ActuatorHud {
-    private static final int GAP = 6, OFFHAND = 29;
+    private static final int GAP = 6, OFFHAND = 29, ICON = 18, EDGE = 2;
 
     private ActuatorHud() {
     }
@@ -49,9 +50,15 @@ public final class ActuatorHud {
         int right = g.guiWidth() / 2 - 91 - GAP;
         if (!player.getOffhandItem().isEmpty() && player.getMainArm() == HumanoidArm.RIGHT) right -= OFFHAND;
         int y = g.guiHeight() - 19;
-        int x = right - mc.font.width(line);
-        g.drawString(mc.font, line, x, y + 4, 0xFFFFFF, true);
-        int icon = x - 18;
+        int width = mc.font.width(line);
+        float scale = Math.min(1f, (right - ICON - EDGE) / (float) width);
+        int x = right - Math.round(width * scale);
+        g.pose().pushPose();
+        g.pose().translate(x, y + 4 + 4 * (1 - scale), 0);
+        g.pose().scale(scale, scale, 1);
+        g.drawString(mc.font, line, 0, 0, 0xFFFFFF, true);
+        g.pose().popPose();
+        int icon = x - ICON;
         g.renderItem(TentaworksItems.ACTUATOR.asStack(), icon, y);
         g.pose().pushPose();
         g.pose().translate(0, 0, 200);

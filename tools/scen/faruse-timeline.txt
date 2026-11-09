@@ -1,0 +1,102 @@
+# Far Use timeline. Netherite Rig with Actuators, Stowed unless the case says Active; PROBE after every dig shows what stayed.
+tentaworks pos t0
+tp Dev 11000.5 -60 0.5 -90 0
+clear Dev
+item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900,tentaworks:actuators={}]
+#sleep 1
+#signal n1
+#await n1done
+tentaworks probe 11007 -59 0
+# N2 out of sight
+tp Dev 11000.5 -60 4.5 -90 0
+#sleep 0.5
+#signal n2
+#await n2done
+tentaworks probe 11007 -59 4
+# N3 Air paid Stowed (air.farUse 8: 4 per Netherite Far Use), drops and XP at the wearer
+tentaworks config air.farUse 8
+tp Dev 11000.5 -60 9.5 -90 0
+#sleep 0.5
+#signal n3
+#await n3mined
+tentaworks config air.farUse 0.5
+tentaworks probe 11007 -59 8
+tentaworks probe 11007 -59 9
+tentaworks probe 11007 -59 10
+tp Dev 11000.5 -60 14.5 -90 0
+item replace entity Dev weapon.mainhand with diamond_pickaxe
+#sleep 0.5
+#signal n3x
+#await n3done
+item replace entity Dev weapon.mainhand with air
+tentaworks probe 11007 -59 14
+# N4 Active
+tp Dev 11000.5 -60 18.5 -90 0
+#sleep 0.5
+#signal n4
+#await n4done
+tentaworks probe 11007 -60 18
+# N5 Setting off, then Rig out (Stowed: no lift, Active: lift), then always
+tp Dev 11000.5 -60 22.5 -90 0
+tentaworks farmode off
+#sleep 0.5
+#signal n5
+#await n5off
+tentaworks probe 11007 -59 22
+tentaworks farmode rig_out
+#sleep 0.3
+#signal n5r
+#await n5done
+tentaworks farmode always
+# N6 Extendo Grip in hand
+item replace entity Dev weapon.mainhand with create:extendo_grip
+#sleep 0.5
+#signal n6
+#await n6done
+item replace entity Dev weapon.mainhand with air
+# N7 far hit, N8 far hit out of sight (a cheating client), N9 heavy and light holds
+tp Dev 11000.5 -60 30.5 -90 0
+#sleep 0.5
+#signal n7
+#await n7done
+tp Dev 11000.5 -60 40.5 -90 0
+#sleep 0.5
+#signal n8
+#await n8done
+tp Dev 11000.5 -60 50.5 -90 0
+#sleep 0.5
+#signal n9
+#await n9heavy
+tp Dev 11000.5 -60 60.5 -90 0
+#sleep 0.5
+#signal n9l
+#await n9done
+# C Copper Rig, Reach 6, Strike Reach 3.5
+tp Dev 11100.5 -60 0.5 -90 0
+item replace entity Dev armor.chest with air
+#sleep 0.3
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900,tentaworks:actuators={}]
+#sleep 0.5
+#signal c1
+#await c1done
+tentaworks probe 11106 -59 0
+tp Dev 11100.5 -60 4.5 -90 0
+#sleep 0.5
+#signal c2
+#await c2done
+tentaworks probe 11106 -59 4
+tp Dev 11100.5 -60 10.5 -90 0
+#sleep 0.5
+#signal c3
+#await c3done
+tp Dev 11100.5 -60 20.5 -90 0
+#sleep 0.5
+#signal c4
+#await c4done
+tp Dev 11100.5 -60 30.5 -90 0
+item replace entity Dev weapon.mainhand with dirt 4
+#sleep 0.5
+#signal c5
+#await c5done
+tentaworks probe 11105 -59 30
+tentaworks probe 11106 -59 30

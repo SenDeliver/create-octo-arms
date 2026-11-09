@@ -1,0 +1,164 @@
+# Far Use: Right Actuator lends its Reach (blocks) and Strike Reach (mobs). TIMELINE faruse-timeline.txt, TW_REACH_COPPER=6
+trace on
+hud on
+view first
+# N1 Netherite Stowed: mine dirt at 6.5
+await n1
+lookat 11007.5 -58.5 0.5
+wait 5
+mark n1a
+actuators n1
+dig 11007 -59 0 n1
+wait 10
+mark n1b
+signal n1done
+# N2 the same behind a wall: the cheat path (dig sends the break with no crosshair)
+await n2
+look -90 0
+wait 3
+dig 11007 -59 4 n2 40
+wait 10
+mark n2b
+signal n2done
+# N3 three mines Stowed with air.farUse 8, then diamond ore with a pickaxe (XP at home)
+await n3
+look -90 0
+wait 10
+mark n3a
+dig 11007 -59 8 n3a
+wait 8
+dig 11007 -59 9 n3b
+wait 8
+dig 11007 -59 10 n3c
+wait 10
+mark n3b
+signal n3mined
+await n3x
+lookat 11007.5 -58.5 14.5
+wait 5
+mark n3xa
+dig 11007 -59 14 n3x
+wait 40
+mark n3xb
+signal n3done
+# N4 Active: double jump, mine dirt on the ground at 6.5, set down
+await n4
+look -90 0
+doublejump
+wait 30
+mark n4a
+lookat 11007.5 -59.5 18.5
+wait 3
+dig 11007 -60 18 n4
+wait 10
+mark n4b
+doublejump
+wait 60
+signal n4done
+# N5 Setting off: no lift, the far dig is vanilla-refused; Rig out: no lift Stowed, lift Active
+await n5
+look -90 0
+wait 5
+mark n5off
+dig 11007 -59 22 n5 40
+wait 10
+signal n5off
+await n5r
+wait 5
+mark n5rs
+doublejump
+wait 30
+mark n5ra
+doublejump
+wait 60
+signal n5done
+# N6 Extendo Grip in hand: Create lifts the range, the Actuator idles
+await n6
+wait 5
+mark n6
+actuators n6
+signal n6done
+# N7 far hit at 4.5 (empty hand, the real crosshair)
+await n7
+lookate minecraft:husk
+wait 3
+hit n7
+key key.mouse.left
+wait 10
+signal n7done
+# N8 hit behind a wall (cheat: attack with no crosshair)
+await n8
+look -90 0
+wait 3
+attack minecraft:husk
+wait 10
+signal n8done
+# N9 heavy hold (iron golem) pauses the lift, a light one (husk) does not
+await n9
+lookate minecraft:iron_golem
+wait 3
+key key.keyboard.v
+awaitheld on 20
+wait 5
+mark n9h
+actuators n9h
+key key.keyboard.v
+awaitheld off 20
+wait 5
+mark n9hoff
+signal n9heavy
+await n9l
+lookate minecraft:husk
+wait 3
+key key.keyboard.v
+awaitheld on 20
+wait 5
+mark n9l
+key key.keyboard.v
+awaitheld off 20
+wait 5
+signal n9done
+# C1 Copper Reach 6: mine dirt at 5.5
+await c1
+wait 10
+lookat 11106.5 -58.5 0.5
+wait 3
+mark c1a
+dig 11106 -59 0 c1
+wait 10
+mark c1b
+signal c1done
+# C2 behind glass panes (cheat path)
+await c2
+look -90 0
+wait 3
+dig 11106 -59 4 c2 40
+wait 10
+signal c2done
+# C3 hit at 3.25 (Strike Reach 3.5); C4 at 4.6: the crosshair misses, a cheat attack is vanilla-refused
+await c3
+lookate minecraft:husk
+wait 3
+hit c3
+key key.mouse.left
+wait 10
+signal c3done
+await c4
+lookate minecraft:husk
+wait 3
+hit c4
+key key.mouse.left
+wait 5
+attack minecraft:husk
+wait 10
+signal c4done
+# C5 place dirt against the west face of a stone at 5.5
+await c5
+lookat 11106.0 -58.5 30.5
+wait 3
+hit c5
+key key.mouse.right
+wait 10
+signal c5done
+wait 10
+quit

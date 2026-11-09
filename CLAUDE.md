@@ -19,7 +19,7 @@ Always `git fetch --all --prune` and fast-forward the branch you work on (and `1
 
 - `src/main`: the mod. `rig/` server + shared logic, `client/` wearer side (`RigClient` drives movement, `RigVisuals` what every client renders), `mixin/` (common list vs `client` list in `tentaworks.mixins.json`; common code never loads client classes, bridge with a predicate as `RigSneak` does).
 - `src/dev`: dev-only commands, TRACE/STRACE logging, `DevScript` client scripts. Not in the jar.
-- `tools/`: harness. Suites = scene (RCON) + client script + timeline + `*_metrics.py`. `run_all.sh <tag>` runs all 23, about 44 min on the Mac, GUI clients pop up.
+- `tools/`: harness. Suites = scene (RCON) + client script + timeline + `*_metrics.py`. `run_all.sh <tag>` runs all 32 (44 min was measured with fewer suites; the 2.0 suites faruse, grab, look, shipgrab took about 5 min together, run alone), GUI clients pop up.
 
 ## Verify a mixin target before trusting it
 

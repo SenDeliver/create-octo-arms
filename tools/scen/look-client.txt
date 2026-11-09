@@ -1,0 +1,108 @@
+# Actuator look: Rest Pose, first-person side entry at limbOpacity 1.0 and 0.3, held mobs, HUD line, Back Slot (Curios only). TIMELINE look-timeline.txt, ANIMALS=true
+trace on
+hud off
+view third
+# R Rest Pose: Stowed (behind, front), Active
+await rest
+look -90 10
+wait 20
+clearchat
+shot look_rest_third
+view front
+wait 5
+clearchat
+shot look_rest_front
+view third
+doublejump
+wait 40
+clearchat
+shot look_active_third
+doublejump
+wait 60
+view first
+hud on
+wait 5
+clearchat
+shot look_fp_idle
+actuators rest
+signal restdone
+# F Far Use reach in first person (the Right Actuator at the husk), at 1.0 and 0.3
+await far
+lookate minecraft:husk
+wait 3
+key key.mouse.left
+clearchat
+shot look_fp_far
+opacity 0.3
+wait 30
+key key.mouse.left
+clearchat
+shot look_fp_far_03
+opacity 1.0
+signal fardone
+# H light hold (pig): first person at 1.0, 0.3, 1.0 again (control), third person, HUD line; then limp (no Air)
+await hold
+lookate minecraft:pig
+wait 3
+key key.keyboard.v
+awaitheld on 20
+look -90 0
+wait 30
+clearchat
+shot look_fp_hold_10
+opacity 0.3
+wait 5
+clearchat
+shot look_fp_hold_03
+opacity 1.0
+wait 5
+clearchat
+shot look_fp_hold_10b
+actuators hold
+view third
+wait 5
+clearchat
+shot look_hold_light_third
+view first
+signal holddone
+awaitheld off 40
+wait 10
+clearchat
+shot look_hud_limp
+actuators limp
+signal limpdone
+# G heavy hold (iron golem), third person
+await heavy
+wait 10
+lookate minecraft:iron_golem
+wait 3
+key key.keyboard.v
+awaitheld on 20
+look -90 0
+view third
+wait 20
+clearchat
+shot look_hold_heavy_third
+actuators heavy
+key key.keyboard.v
+awaitheld off 20
+view first
+signal heavydone
+# B Back Slot (Curios): a fitted Netherite Rig in the back slot over an iron chestplate
+await back
+ifmod curios
+cmd item replace entity @s armor.chest with minecraft:iron_chestplate
+cmd tentaworks back set tentaworks:netherite_tentacle_rig 900
+wait 5
+cmd tentaworks fit
+wait 20
+view third
+look -90 10
+wait 10
+clearchat
+shot look_backslot_third
+actuators back
+endif
+signal end
+wait 10
+quit

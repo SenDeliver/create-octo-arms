@@ -239,7 +239,7 @@ public final class ActuatorRenderer {
         float time = player.tickCount + pt;
         Anim a = ANIMS.get(player.getId());
         if (!space.world() || a == null) {
-            for (int side : new int[]{LEFT, RIGHT}) drawArm(ps, vc, sp, restArm(side, time), null, space);
+            for (int side : new int[]{LEFT, RIGHT}) drawArm(ps, vc, sp, restArm(side, time), player.level(), space);
             return;
         }
         Matrix4f toTank = new Matrix4f(space.toCamera()).invert();
