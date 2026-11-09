@@ -6,6 +6,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Quaterniond;
+import org.joml.Quaterniondc;
 
 import java.util.List;
 import java.util.function.DoublePredicate;
@@ -38,13 +40,42 @@ public final class Hold {
 
     /** The box centre of a held target of {@code width} × {@code height} for a wearer with this eye, look and yaw (degrees). */
     public static Vec3 point(Vec3 eye, Vec3 look, float yRot, double width, double height) {
+        Vec3[] b = basis(look, yRot);
+        float yaw = yRot * Mth.DEG_TO_RAD;
+        double half = width / 2 * (Math.abs(Mth.sin(yaw)) + Math.abs(Mth.cos(yaw)));
+        return eye.add(b[0].scale(AHEAD + half)).subtract(b[1].scale(LEFT + half)).subtract(b[2].scale(DOWN + height / 2 - RAISE));
+    }
+
+    /** The camera basis for this look and yaw (degrees): look direction, right, up. */
+    static Vec3[] basis(Vec3 look, float yRot) {
         double len = look.length();
         float yaw = yRot * Mth.DEG_TO_RAD;
         Vec3 right = new Vec3(-Mth.cos(yaw), 0, -Mth.sin(yaw));
         Vec3 dir = len < 1.0E-6 ? new Vec3(-Mth.sin(yaw), 0, Mth.cos(yaw)) : look.scale(1 / len);
-        Vec3 up = right.cross(dir);
-        double half = width / 2 * (Math.abs(Mth.sin(yaw)) + Math.abs(Mth.cos(yaw)));
-        return eye.add(dir.scale(AHEAD + half)).subtract(right.scale(LEFT + half)).subtract(up.scale(DOWN + height / 2 - RAISE));
+        return new Vec3[] {dir, right, right.cross(dir)};
+    }
+
+    /**
+     * A held Ship point {@code held} in the camera basis at the start (along the look, right, up), no farther than {@code max}
+     * from the eye: {@link #shipPoint} puts it back in front of the eye wherever the wearer looks.
+     */
+    public static Vec3 shipRel(Vec3 eye, Vec3 look, float yRot, Vec3 held, double max) {
+        Vec3[] b = basis(look, yRot);
+        Vec3 d = held.subtract(eye);
+        Vec3 rel = new Vec3(d.dot(b[0]), d.dot(b[1]), d.dot(b[2]));
+        double len = rel.length();
+        return len > max && len > 1.0E-9 ? rel.scale(max / len) : rel;
+    }
+
+    /** Where the held Ship point goes this tick: {@code rel} ({@link #shipRel}) in this tick's camera basis. */
+    public static Vec3 shipPoint(Vec3 eye, Vec3 look, float yRot, Vec3 rel) {
+        Vec3[] b = basis(look, yRot);
+        return eye.add(b[0].scale(rel.x)).add(b[1].scale(rel.y)).add(b[2].scale(rel.z));
+    }
+
+    /** The held Ship's orientation after the wearer turned by {@code yawDelta} degrees since the start: yaw follows, pitch and roll stay. */
+    public static Quaterniond shipTurn(Quaterniondc start, double yawDelta) {
+        return new Quaterniond().rotateY(-Math.toRadians(yawDelta)).mul(start);
     }
 
     /** The first feet height from {@code feetY} up, in steps of {@value #LIFT_STEP} up to {@code height}, where the box {@code fits}; NaN when none does. */

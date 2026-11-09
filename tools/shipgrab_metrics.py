@@ -14,8 +14,8 @@ def vec(t):
     return None if t == '-' else tuple(float(x) for x in t.split(','))
 
 ships = {}
-for m in re.finditer(r'SSHIP gt=(\d+) name=(\S+) id=\S+ pos=(\S+) q=\S+ v=(\S+)', s):
-    ships.setdefault(m[2], {})[int(m[1])] = dict(pos=vec(m[3]), v=vec(m[4]))
+for m in re.finditer(r'SSHIP gt=(\d+) name=(\S+) id=\S+ pos=(\S+) q=(\S+) v=(\S+)', s):
+    ships.setdefault(m[2], {})[int(m[1])] = dict(pos=vec(m[3]), q=vec(m[4]), v=vec(m[5]))
 if not ships:
     print('SKIP no SSHIP lines: run with GRADLE_ARGS=-PwithSable')
     print('RESULT SKIP'); sys.exit(0)
@@ -63,6 +63,27 @@ check('K1 the Ship block click is left to Sable (PLOT, not cancelled), claim pro
 ca = cact.get('k1', {})
 check('K1 heavy hold: speed x0.6, HUD line', k1['heavy'] and abs(k1['mspd'] - 0.06) < 1e-4 and ca.get('heavy') and abs(ca.get('speed', 0) - 0.6) < 1e-3
       and ca.get('hud') == 'Holding Ship heavy', f"mspd {k1['mspd']} {ca}")
+def rot(q, v):
+    x, y, z, w = q
+    t = (2 * (y * v[2] - z * v[1]), 2 * (z * v[0] - x * v[2]), 2 * (x * v[1] - y * v[0]))
+    return (v[0] + w * t[0] + y * t[2] - z * t[1], v[1] + w * t[1] + z * t[0] - x * t[2], v[2] + w * t[2] + x * t[1] - y * t[0])
+
+def heading(v):
+    return math.degrees(math.atan2(v[2], v[0]))
+
+def turn(a, b):
+    return (b - a + 180) % 360 - 180
+
+q0, q1 = spos['kq0'], spos['kq1']
+s0, s1 = at('sg', q0['gt']), at('sg', q1['gt'])
+e0, e1 = (q0['pos'][0], q0['pos'][1] + 1.62, q0['pos'][2]), (q1['pos'][0], q1['pos'][1] + 1.62, q1['pos'][2])
+r0, r1 = [tuple(p - e for p, e in zip(sh['pos'], eye)) for sh, eye in ((s0, e0), (s1, e1))]
+swing = turn(heading(r0), heading(r1))
+spin = turn(heading(rot(s0['q'], (1, 0, 0))), heading(rot(s1['q'], (1, 0, 0))))
+dist = math.hypot(r1[0], r1[2]) - math.hypot(r0[0], r0[2])
+tilt = abs(rot(s1['q'], (0, 1, 0))[1] - rot(s0['q'], (0, 1, 0))[1])
+check('K2 a quarter turn north swings the Ship round the wearer, its yaw turns with them', abs(swing + 90) <= 10 and abs(spin + 90) <= 10 and abs(dist) <= 0.5
+      and abs(r1[1] - r0[1]) <= 0.5 and tilt <= 0.05, f'swing {swing:.1f} deg, ship yaw {spin:.1f} deg, distance change {dist:.3f}, height change {r1[1] - r0[1]:.3f}, tilt {tilt:.3f}')
 a, b = spos['kw0']['gt'], spos['kw1']['gt']
 off = [(at('sg', g)['pos'][0] - dev[g][0], at('sg', g)['pos'][2] - dev[g][2]) for g in range(a, b + 1) if g in dev and at('sg', g)]
 dx = [math.dist(o, off[0]) for o in off]

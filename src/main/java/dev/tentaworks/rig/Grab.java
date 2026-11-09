@@ -21,6 +21,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -58,6 +59,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaterniond;
+import org.joml.Vector3d;
 import org.joml.Vector3dc;
 
 import java.util.ArrayList;
@@ -75,9 +77,11 @@ import java.util.function.Consumer;
  * ({@link GrabRule}) and then the loader's entity-interaction event, so claim and protection mods can refuse. The mob is then
  * Pinned ({@link #pinned}) and swept to the hold point ({@link Hold}) every tick; a heavy one takes both Actuators and slows the
  * wearer to {@code grab.heavySpeedFactor}. Holding pays {@code air.grab}, a Throw {@code air.throw}.
- * Ship Grab (Sable): SHIP takes the Ship owning a plot block with both Actuators; its body velocity drives it to the wearer's
- * body plus the offset it had at the start, rotation kept ({@value #SHIP_GAIN}/s of the error plus the wearer's move, which also
- * cancels gravity). Grips on it do not hold the wearer up while held.
+ * Ship Grab (Sable): SHIP takes the Ship owning a plot block with both Actuators; its body velocity drives the held face to
+ * where it was in the wearer's view at the start (no farther than Reach − {@value #SHIP_INSIDE} from the eye), so it swings
+ * round the wearer as they look about, and turns its yaw with the wearer's ({@link Hold#shipPoint}, {@link Hold#shipTurn};
+ * {@value #SHIP_GAIN}/s of the error plus the target's own move, which also cancels gravity). Sable collides it on the way.
+ * Grips on it do not hold the wearer up while held.
  * Every hold ends in {@link #release}: set down where it is (calm for {@value #CALM_TICKS} ticks, onto a seat, boat or minecart
  * when one is under the crosshair or the target) or thrown (awake at once, its Impact armed, {@link ActuatorFxPacket} THROW to
  * the clients). The automatic ends are
@@ -90,6 +94,7 @@ public final class Grab {
     public static final TagKey<EntityType<?>> BOSSES = TagKey.create(Registries.ENTITY_TYPE, TentaworksIds.id(TentaworksIds.BOSSES));
     static final double SHIP_GAIN = 10.0;
     static final double SHIP_MAX_SPEED = 30.0;
+    static final double SHIP_INSIDE = 0.5;
     private static final ResourceLocation HEAVY_ID = TentaworksIds.id(TentaworksIds.ACTUATOR_HEAVY);
     private static final Map<UUID, Held> HOLDS = new HashMap<>();
     private static final Map<UUID, Integer> STARTED = new HashMap<>();
@@ -111,9 +116,11 @@ public final class Grab {
         BlockPos block;
         Direction face;
         Vec3 local;
-        Vec3 offset;
+        Vec3 rel;
+        float yaw;
         Quaterniond orientation;
-        Vec3 lastBody;
+        Vec3 lastAim;
+        float lastYaw;
         double mass = -1;
         Vec3 taken;
 
@@ -404,9 +411,12 @@ public final class Grab {
         h.face = face;
         h.local = local;
         h.mass = mass;
-        h.offset = vec(frame.pose().position()).subtract(body);
-        h.orientation = new Quaterniond(frame.pose().orientation());
         h.centre = frame.toWorld(local);
+        h.rel = Hold.shipRel(wearer.getEyePosition(), wearer.getViewVector(1.0F), wearer.getYRot(), h.centre,
+                Math.max(1.0, TentacleRigItem.reach(wearer) - SHIP_INSIDE));
+        h.yaw = wearer.getYRot();
+        h.lastYaw = h.yaw;
+        h.orientation = new Quaterniond(frame.pose().orientation());
         h.taken = h.centre;
         HOLDS.put(wearer.getUUID(), h);
         heavySpeed(wearer, true);
@@ -581,20 +591,26 @@ public final class Grab {
         else h.far = 0;
     }
 
-    /** Drives the held Ship to the wearer's body plus its offset, its rotation as at the start. */
+    /** Drives the held Ship so its held face sits where it was in the wearer's view, its yaw turned with the wearer's since the start. */
     private static void holdShip(ServerPlayer wearer, Held h) {
         Frame f = h.ship.frame();
-        Vec3 body = Grips.body(wearer);
-        Vec3 feed = h.lastBody == null ? Vec3.ZERO : body.subtract(h.lastBody).scale(20);
-        h.lastBody = body;
-        Vec3 v = feed.add(body.add(h.offset).subtract(vec(f.pose().position())).scale(SHIP_GAIN));
+        float yaw = wearer.getYRot();
+        Quaterniond want = Hold.shipTurn(h.orientation, yaw - h.yaw);
+        Vec3 point = Hold.shipPoint(wearer.getEyePosition(), wearer.getViewVector(1.0F), yaw, h.rel);
+        Vector3d arm = want.transform(new Vector3d(h.local.x - f.pose().pivot().x(), h.local.y - f.pose().pivot().y(), h.local.z - f.pose().pivot().z()));
+        Vec3 aim = point.subtract(arm.x, arm.y, arm.z);
+        Vec3 feed = h.lastAim == null ? Vec3.ZERO : aim.subtract(h.lastAim).scale(20);
+        double spin = Mth.wrapDegrees(yaw - h.lastYaw) * Mth.DEG_TO_RAD * -20;
+        h.lastAim = aim;
+        h.lastYaw = yaw;
+        Vec3 v = feed.add(aim.subtract(vec(f.pose().position())).scale(SHIP_GAIN));
         if (v.length() > SHIP_MAX_SPEED) v = v.normalize().scale(SHIP_MAX_SPEED);
-        Quaterniond err = new Quaterniond(h.orientation).mul(new Quaterniond(f.pose().orientation()).conjugate());
+        Quaterniond err = new Quaterniond(want).mul(new Quaterniond(f.pose().orientation()).conjugate());
         double sign = err.w < 0 ? -1 : 1;
         Vec3 axis = new Vec3(err.x * sign, err.y * sign, err.z * sign);
         double len = axis.length();
         double k = len < 1.0E-9 ? 2 : 2 * Math.atan2(len, Math.abs(err.w)) / len;
-        h.ship.velocity(v, axis.scale(k * SHIP_GAIN));
+        h.ship.velocity(v, axis.scale(k * SHIP_GAIN).add(0, spin, 0));
         h.centre = f.toWorld(h.local);
         far(wearer, h, h.centre);
     }

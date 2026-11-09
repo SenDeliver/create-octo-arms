@@ -139,7 +139,7 @@ New in 2.0. Two Actuators sit on the Rig above the Tentacles, the Right one and 
 - The hold lasts through Stowing, Setting Down, Rides, gliding and Falling. It ends on Crawl, death, logout, taking the Rig off, a dimension change, the target gone or out of Reach, or no Air left: the target is set down where it is.
 - A small HUD line shows what you hold (and "heavy") and when the Actuators are out of Air.
 
-**Ship Grab** (1.21.1 with Sable only): `V` on a block of a Ship takes the whole Ship in both Actuators. It follows you at the offset it had, rotation kept; `V` sets it down, attack throws it. Needs a Ship of scale 1 within the tier's mass cap (Copper 2000, Netherite 6000 Sable mass), nobody else on board, and not the Ship you stand on or hang from. Server config `grab.ships` (and `ships.grip`) turn it off.
+**Ship Grab** (1.21.1 with Sable only): `V` on a block of a Ship takes the whole Ship in both Actuators. It stays where it was in your view: look around and it swings round you, turn and it turns with you (its tilt stays); `V` sets it down, attack throws it. Needs a Ship of scale 1 within the tier's mass cap (Copper 2000, Netherite 6000 Sable mass), nobody else on board, and not the Ship you stand on or hang from. Server config `grab.ships` (and `ships.grip`) turn it off.
 
 **Air and Deft**
 

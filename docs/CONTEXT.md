@@ -143,7 +143,7 @@ A Sable sub-level: a group of blocks that moves and turns as one body (Create Ae
 _Avoid_: contraption, vehicle, sub-level (in player text)
 
 **Ship Grab**:
-Grab on a Ship (1.21.1 with Sable only): the Grab key with an empty main hand on any block of the Ship, and both Actuators take the Ship. Needs the Server Config `grab.ships` and `ships.grip`, a Ship of scale 1 within Reach, Sable mass up to the tier's cap, the clicked face in sight of the wearer, no other player on board, and not the Ship the wearer stands on or the wearer's Carry Ship. While held the Ship follows the wearer at the offset it had, rotation kept, and Grips on it do not hold the wearer up. Same controls, release rules and Air as Grab. Without Sable, refused silently.
+Grab on a Ship (1.21.1 with Sable only): the Grab key with an empty main hand on any block of the Ship, and both Actuators take the Ship. Needs the Server Config `grab.ships` and `ships.grip`, a Ship of scale 1 within Reach, Sable mass up to the tier's cap, the clicked face in sight of the wearer, no other player on board, and not the Ship the wearer stands on or the wearer's Carry Ship. While held the held face stays where it was in the wearer's view (no farther than Reach − 0.5 from the eye), so the Ship swings round the wearer as they look about, and its yaw turns with the wearer's while its pitch and roll stay, and Grips on it do not hold the wearer up. Same controls, release rules and Air as Grab. Without Sable, refused silently.
 _Avoid_: lift ship, tow, ship carry, contraption grab
 
 **Frame**:

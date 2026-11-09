@@ -57,7 +57,7 @@ Ponder (hold `W` over a Rig or Tentacle) shows the Tentacles step by step.
 
 Octo Arms works fully with Sable Ships, and Create Aeronautics Ships are Sable Ships, so they are supported the same way. With Sable installed, the blocks of a Ship are Grips like world blocks. Grip a Ship's floor, walls, hull or underside, parked or moving, and move between the world and a Ship both ways. Air use counts only your own move.
 
-With Actuators fitted, **Ship Grab** takes a whole Ship in both arms: it follows you, keeps its rotation, and can be set down or thrown. The tier sets the heaviest Ship you can lift. Server admins can turn Ship Grips off with `ships.grip = false` and Ship Grab with `grab.ships = false`.
+With Actuators fitted, **Ship Grab** takes a whole Ship in both arms: it stays in front of you wherever you look, turns as you turn, and can be set down or thrown. The tier sets the heaviest Ship you can lift. Server admins can turn Ship Grips off with `ships.grip = false` and Ship Grab with `grab.ships = false`.
 
 ![A player gripping the side of a Ship moving at 4 blocks per second](https://raw.githubusercontent.com/SenDeliver/create-octo-arms/1.21.1/docs/images/ship-moving.png)
 
