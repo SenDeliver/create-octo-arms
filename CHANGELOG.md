@@ -9,6 +9,10 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ## [Unreleased]
 
+### Fixed
+
+- Rig Settings: with Swift, the Speed slider stopped below the top Speed named under it. The Speed row now shows the Speed the Rig really carries you at (the setting times Swift), so a full slider reads the top Speed. The stored setting is unchanged. Thanks @snipernumber3.
+
 ## [1.8.0] - 2026-11-08
 
 ### Added
