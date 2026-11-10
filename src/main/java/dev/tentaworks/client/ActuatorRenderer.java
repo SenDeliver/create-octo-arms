@@ -50,11 +50,14 @@ import net.minecraft.world.item.TridentItem;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -106,6 +109,8 @@ public final class ActuatorRenderer {
     /** An arm stays on its target this many ticks after its swing ends; a swing at nothing strikes this far ahead, blocks. */
     private static final int LINGER_TICKS = 4;
     private static final double AIR_DISTANCE = 1.9;
+    /** A gripper pulled in short of a block keeps this far from it, blocks. */
+    private static final double ROOM = 0.15;
     /** How far an arm leans toward a far target under the crosshair before any action: this much of the way to its ready pose, at most this many blocks. */
     private static final double PRE_AIM = 0.3, PRE_AIM_BLOCKS = 0.4;
     /** A glance looks for a mob within this range, every this many ticks; a reach-out hisses at most once per this many ticks. */
@@ -144,8 +149,16 @@ public final class ActuatorRenderer {
         float used;
         double lean;
         int swingStart = Integer.MIN_VALUE / 2, lastSwing = Integer.MIN_VALUE / 2, equipTick = Integer.MIN_VALUE / 2;
-        Vec3 goal, to, at, pointAt, lastHold;
+        Vec3 goal, to, at, pointAt, lastHold, farFrom;
+        /** Normal of the block face the arm works on (null: a mob or the air), and the one the tool follows this frame. */
+        Vec3 face, n;
+        Vec3[] probe;
         double carry, bare, act, use, point, hold, glance, tipDistance;
+        /** Turn of the chain's bend about its root-to-wrist line that keeps it out of blocks: this frame's and the goal, picked once a tick. */
+        double bend, bendGoal;
+        /** How much of the way from the shoulder to its aimed grip the arm goes, short of a block in between: this frame's and the goal. */
+        double room = 1, roomGoal = 1;
+        int bendTick = Integer.MIN_VALUE / 2;
 
         Arm(int side) {
             this.side = side;
@@ -154,7 +167,10 @@ public final class ActuatorRenderer {
         void clear() {
             hand = carries = empty = acting = attack = strike = dual = loop = using = pointing = holding = world = false;
             lean = carry = bare = act = use = point = hold = glance = 0;
-            goal = to = at = pointAt = lastHold = null;
+            goal = to = at = pointAt = lastHold = farFrom = face = n = null;
+            probe = null;
+            bend = bendGoal = 0;
+            room = roomGoal = 1;
         }
     }
 
@@ -200,6 +216,16 @@ public final class ActuatorRenderer {
 
         Aim withOpen(float open) {
             return new Aim(grip, axis, edge, palm, bulge, straight, open, held, scale);
+        }
+
+        Aim withGrip(Vec3 grip) {
+            return new Aim(grip, axis, edge, palm, bulge, straight, open, held, scale);
+        }
+
+        Aim withAxis(Vec3 to) {
+            if (to == axis) return this;
+            Vec3 square = palm.subtract(to.scale(palm.dot(to)));
+            return new Aim(grip, to, edge, square.lengthSqr() < 1.0E-6 ? palm : square.normalize(), bulge, straight, open, held, scale);
         }
     }
 
@@ -384,10 +410,24 @@ public final class ActuatorRenderer {
             arm.acting = arm.hand && !arm.holding && !arm.using
                     && (swinging || main && mining || p.tickCount - arm.lastSwing <= LINGER_TICKS);
             arm.dual = false;
-            if (own && arm.acting && hit != null && hit.getType() != HitResult.Type.MISS) arm.goal = hit.getLocation();
+            if (own && arm.acting && hit != null && hit.getType() != HitResult.Type.MISS) {
+                arm.goal = hit.getLocation();
+                arm.face = face(hit);
+            }
             if (!own && arm.acting) {
-                if (far != null) arm.goal = far;
-                else if (!was || swinging && p.swingTime <= 0) arm.goal = pick(p).getLocation();
+                if (far != null) {
+                    if (!far.equals(arm.farFrom)) {
+                        arm.farFrom = far;
+                        BlockHitResult on = surface(p, far);
+                        arm.goal = on == null ? far : on.getLocation();
+                        arm.face = face(on);
+                    }
+                } else if (!was || swinging && p.swingTime <= 0) {
+                    HitResult on = pick(p);
+                    arm.goal = on.getLocation();
+                    arm.face = face(on);
+                    arm.farFrom = null;
+                }
             }
             if (arm.acting && !was && arm.goal != null && arm.goal.distanceToSqr(p.getEyePosition()) > 9 && p.tickCount - a.hissTick >= HISS_TICKS) {
                 a.hissTick = p.tickCount;
@@ -400,6 +440,7 @@ public final class ActuatorRenderer {
             offArm.dual = true;
             offArm.acting = true;
             offArm.goal = mainArm.goal;
+            offArm.face = mainArm.face;
         }
         Vec3 cueAt = own ? ActuatorSight.cuePoint() : null, pre = own ? ActuatorSight.farPoint() : null;
         boolean dualMark = own && ActuatorSight.mark() == ActuatorSight.Mark.DUAL;
@@ -409,7 +450,10 @@ public final class ActuatorRenderer {
             if (arm.pointing) arm.pointAt = cueAt;
             arm.lean = pre != null && arm.hand && !arm.holding && !arm.using && (arm.main || arm.carries && (dualMark || mainArm.holding))
                     ? Math.min(PRE_AIM, PRE_AIM_BLOCKS / Math.max(0.5, pre.distanceTo(p.getEyePosition()))) : 0;
-            if (own && !arm.acting && arm.lean > 0) arm.goal = pre;
+            if (own && !arm.acting && arm.lean > 0) {
+                arm.goal = pre;
+                arm.face = face(hit);
+            }
         }
     }
 
@@ -424,6 +468,67 @@ public final class ActuatorRenderer {
                 e -> !e.isSpectator() && e.isPickable(), range * range);
         if (entity != null) return entity;
         return block.getType() == HitResult.Type.MISS ? BlockHitResult.miss(eye.add(look.scale(AIR_DISTANCE)), Direction.UP, block.getBlockPos()) : block;
+    }
+
+    /**
+     * How much of the way from the shoulder {@code s} to the aimed grip (or the tip of the item it carries) an arm can go: all of it, or up to a block in between less
+     * a little room for the gripper (a Rest Pose under a low ceiling, a carried item against a wall). A shoulder inside a block
+     * leaves it alone.
+     */
+    private static double room(Level level, Vec3 s, Vec3 grip) {
+        double len = grip.distanceTo(s);
+        if (len < 1.0E-3 || solid(level, s)) return 1;
+        BlockHitResult hit = level.clip(new ClipContext(s, grip, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, CollisionContext.empty()));
+        if (hit.getType() == HitResult.Type.MISS) return 1;
+        return Mth.clamp((hit.getLocation().distanceTo(s) - ROOM) / len, 0.15, 1);
+    }
+
+    /** A carried item's axis tilted so its far end stays off the block face it would reach into ({@link ActuatorClearance#tilt}). */
+    private static Vec3 itemClear(Level level, Vec3 grip, Vec3 axis, double len) {
+        if (axis.lengthSqr() < 1.0E-8 || solid(level, grip)) return axis;
+        Vec3 a = axis.normalize();
+        BlockHitResult hit = level.clip(new ClipContext(grip, grip.add(a.scale(len + ActuatorClearance.ITEM_CLEAR * 2)), ClipContext.Block.COLLIDER,
+                ClipContext.Fluid.NONE, CollisionContext.empty()));
+        if (hit.getType() == HitResult.Type.MISS) return axis;
+        Vec3 n = Vec3.atLowerCornerOf(hit.getDirection().getNormal());
+        Vec3 t = ActuatorClearance.tilt(a, n, grip.subtract(hit.getLocation()).dot(n), len);
+        return t == a ? axis : t;
+    }
+
+    /** The normal of the block face a pick lands on, or null (a mob, the air). */
+    private static Vec3 face(HitResult hit) {
+        return hit instanceof BlockHitResult b && b.getType() == HitResult.Type.BLOCK ? Vec3.atLowerCornerOf(b.getDirection().getNormal()) : null;
+    }
+
+    /** Another player's far target as a face: the server sends a block's centre; the face of it the wearer's eye sees, or null. */
+    private static BlockHitResult surface(Player p, Vec3 target) {
+        Vec3 eye = p.getEyePosition(), d = target.subtract(eye);
+        double len = d.length();
+        if (len < 1.0E-6) return null;
+        BlockHitResult hit = p.level().clip(new ClipContext(eye, target.add(d.scale(0.05 / len)), ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, p));
+        return hit.getType() == HitResult.Type.BLOCK ? hit : null;
+    }
+
+    /** A point on its way to a new target, moved out of a block it cuts through along the target face's normal (at most a block). */
+    private static Vec3 outside(Level level, Vec3 p, Vec3 n) {
+        if (n == null || !solid(level, p)) return p;
+        for (int i = 1; i <= 5; i++) {
+            Vec3 q = p.add(n.scale(0.2 * i));
+            if (!solid(level, q)) return q;
+        }
+        return p;
+    }
+
+    /** A world point inside a block's collision shape. */
+    static boolean solid(Level level, Vec3 p) {
+        BlockPos pos = BlockPos.containing(p);
+        BlockState state = level.getBlockState(pos);
+        VoxelShape shape = state.getCollisionShape(level, pos);
+        if (shape.isEmpty()) return false;
+        if (state.isCollisionShapeFullBlock(level, pos)) return true;
+        Vec3 local = p.subtract(pos.getX(), pos.getY(), pos.getZ());
+        for (AABB box : shape.toAabbs()) if (box.contains(local)) return true;
+        return false;
     }
 
     /** The mob an idle Actuator glances at: the nearest living one within {@link #GLANCE_RANGE} (wearers near the camera only), or -1. */
@@ -473,13 +578,18 @@ public final class ActuatorRenderer {
             boolean looks = glance != null && idle && time - a.glanceStart < GLANCE_LENGTH && glance.position().subtract(p.position()).dot(b.out(arm.side)) > 0;
             arm.glance = chase(arm.glance, looks ? 1 : 0, dt, ActuatorPose.IDLE_TAU, snap);
             double goal = arm.acting ? 1 : arm.lean;
+            boolean fresh = arm.act < 0.02;
             arm.act = chase(arm.act, goal, dt, goal > arm.act ? ActuatorPose.ACT_TAU : ActuatorPose.BACK_TAU, snap);
+            arm.bend = snap ? arm.bendGoal : ActuatorClearance.turnToward(arm.bend, arm.bendGoal, ActuatorPose.chase(dt, ActuatorPose.AIM_TAU));
+            arm.room = chase(arm.room, arm.roomGoal, dt, ActuatorPose.AIM_TAU, snap);
             Vec3 to = arm.goal;
             if (own && arm.acting) to = contact(mc, a, arm, b);
             else if (to != null) to = offset(to, a, arm, b);
+            Vec3 face = arm.face != null ? arm.face : b.look.scale(-1);
+            arm.n = snap || fresh ? face : ActuatorClearance.turnNormal(arm.n, face, ActuatorPose.chase(dt, ActuatorPose.AIM_TAU));
             arm.to = to;
             if (to != null && (arm.acting || arm.lean > 0))
-                arm.at = arm.at == null || snap || arm.act < 0.02 ? to : arm.at.lerp(to, ActuatorPose.chase(dt, ActuatorPose.AIM_TAU));
+                arm.at = arm.at == null || snap || fresh ? to : outside(b.level, arm.at.lerp(to, ActuatorPose.chase(dt, ActuatorPose.AIM_TAU)), arm.n);
             if (b.first) arm.world = arm.tipDistance > (arm.world ? WORLD_PASS_IN : WORLD_PASS_OUT);
             else arm.world = false;
         }
@@ -490,23 +600,29 @@ public final class ActuatorRenderer {
         HitResult hit = mc.hitResult;
         Vec3 at = hit != null && hit.getType() != HitResult.Type.MISS ? hit.getLocation() : b.eye.add(b.look.scale(AIR_DISTANCE));
         arm.goal = at;
+        arm.face = face(hit);
         return offset(at, a, arm, b);
     }
 
     /**
-     * The contact point sits just off the surface, so the item does not sink into it. First person: also a little to the arm's
-     * own side of the crosshair and below it, so the item does not cover what the wearer looks at; with both arms on one target
-     * they land side by side.
+     * The contact point sits just off the surface, so the item does not sink into it: on a block face off it along its normal,
+     * else toward the eye. First person: also a little to the arm's own side of the crosshair and below it (along the face), so
+     * the item does not cover what the wearer looks at; with both arms on one target they land side by side.
      */
     private static Vec3 offset(Vec3 at, Anim a, Arm arm, Body b) {
         double d = at.distanceTo(b.eye);
         boolean pair = arm.dual || a.arm(!arm.main).dual;
+        Vec3 nudge;
         if (!b.first) {
-            Vec3 off = d < 1.0E-6 ? at : at.subtract(at.subtract(b.eye).scale(Math.min(0.25, d * 0.2) / d));
-            return pair ? off.add(b.out(arm.side).scale(0.14)) : off;
+            Vec3 side = pair ? b.out(arm.side).scale(0.14) : Vec3.ZERO;
+            nudge = arm.face != null || d < 1.0E-6 ? side : side.subtract(at.subtract(b.eye).scale(Math.min(0.25, d * 0.2) / d));
+        } else {
+            double out = pair ? 0.07 : 0.035;
+            nudge = b.headRight.scale(arm.side * out * d).subtract(b.headUp.scale(0.02 * d)).subtract(b.look.scale(Math.min(0.1, d * 0.2)));
         }
-        double out = pair ? 0.07 : 0.035;
-        return at.add(b.headRight.scale(arm.side * out * d)).subtract(b.headUp.scale(0.02 * d)).subtract(b.look.scale(Math.min(0.1, d * 0.2)));
+        if (arm.face == null) return at.add(nudge);
+        Vec3 on = ActuatorClearance.onFace(at, nudge, arm.face);
+        return b.level.isLoaded(BlockPos.containing(on)) && solid(b.level, on) ? ActuatorClearance.onFace(at, Vec3.ZERO, arm.face) : on;
     }
 
     /**
@@ -563,10 +679,32 @@ public final class ActuatorRenderer {
                 Vec3 s = b.shoulder(arm.side);
                 Aim aim = aim(arm, a, player, b, space, time, pt);
                 arm.tipDistance = aim.grip().distanceTo(b.eye);
+                boolean clear = !inHand || arm.act > 0.05;
+                ItemStack stack = arm.carries ? player.getItemInHand(arm.main ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND) : ItemStack.EMPTY;
+                if (!inHand) {
+                    if (arm.bendTick != player.tickCount) arm.roomGoal = room(player.level(), s, aim.grip());
+                    if (arm.room < 1) aim = aim.withGrip(s.add(aim.grip().subtract(s).scale(arm.room)));
+                    if (!arm.acting && !stack.isEmpty()) aim = aim.withAxis(itemClear(player.level(), aim.grip(), aim.axis(), itemLength(stack, aim)));
+                } else {
+                    arm.roomGoal = arm.room = 1;
+                }
                 ActuatorPose.Hand hand = ActuatorPose.hand(s, aim.grip(), aim.palm(), aim.held());
                 double seg = ActuatorPose.segment(s.distanceTo(hand.wrist()), aim.straight(), b.maxSegment);
-                ActuatorPose.Chain chain = ActuatorPose.chain(s, hand.wrist(), aim.bulge(), b.out(arm.side).add(b.up.scale(0.3)), seg);
-                arms[i] = toTank(toTank, space, chain, aim, arm.side);
+                Vec3 fallback = b.out(arm.side).add(b.up.scale(0.3));
+                if (clear) {
+                    Level level = player.level();
+                    if (arm.bendTick != player.tickCount
+                            || ActuatorClearance.inside(ActuatorClearance.chain(s, hand.wrist(), aim.bulge(), fallback, seg, arm.bend), q -> solid(level, q)) > 0) {
+                        arm.bendTick = player.tickCount;
+                        arm.bendGoal = ActuatorClearance.bend(s, hand.wrist(), aim.bulge(), fallback, seg, arm.bendGoal, q -> solid(level, q));
+                    }
+                } else {
+                    arm.bendGoal = 0;
+                }
+                ActuatorPose.Chain chain = ActuatorClearance.chain(s, hand.wrist(), aim.bulge(), fallback, seg, arm.bend);
+                Vec3 d = handDir(chain, aim);
+                arm.probe = probe(chain, d, aim, stack);
+                arms[i] = toTank(toTank, space, chain, aim, d, arm.side);
             }
         }
         boolean[] tip = new boolean[2];
@@ -584,7 +722,7 @@ public final class ActuatorRenderer {
 
     /** The wearer's frame this frame (world): shoulders, the body's out (per side) and up, the head's look basis and the longest segment. */
     private record Body(Vec3 left, Vec3 right, Vec3 rightDir, Vec3 up, Vec3 forward, Vec3 eye, Vec3 look, Vec3 headRight, Vec3 headUp,
-                        boolean first, double handScale, double maxSegment) {
+                        boolean first, double handScale, double maxSegment, Level level) {
         static Body of(Player player, TentacleRenderer.Space space, float pt) {
             Vec3 rightDir = vec(space.direction(new Vector3f(1, 0, 0)));
             Vec3 up = vec(space.direction(new Vector3f(0, 1, 0)));
@@ -597,7 +735,7 @@ public final class ActuatorRenderer {
             Vec3 headUp = headRight.cross(look).normalize();
             if (!space.firstPerson()) {
                 return new Body(world(space, ActuatorPose.shoulder(LEFT)), world(space, ActuatorPose.shoulder(RIGHT)), rightDir, up, forward,
-                        eye, look, headRight, headUp, false, 1, maxSegment);
+                        eye, look, headRight, headUp, false, 1, maxSegment, player.level());
             }
             Minecraft mc = Minecraft.getInstance();
             Camera cam = mc.gameRenderer.getMainCamera();
@@ -607,7 +745,7 @@ public final class ActuatorRenderer {
             Vec3 c = space.camera();
             return new Body(entry(c, ActuatorPose.entry(LEFT, fov, aspect), camRight, camUp, camLook),
                     entry(c, ActuatorPose.entry(RIGHT, fov, aspect), camRight, camUp, camLook), camRight, camUp, camLook,
-                    c, camLook, camRight, camUp, true, ActuatorRenderer.handScale(), maxSegment);
+                    c, camLook, camRight, camUp, true, ActuatorRenderer.handScale(), maxSegment, player.level());
         }
 
         private static Vec3 entry(Vec3 eye, Vec3 local, Vec3 right, Vec3 up, Vec3 look) {
@@ -762,11 +900,13 @@ public final class ActuatorRenderer {
                 over = over.lengthSqr() < 1.0E-6 ? b.up : over.normalize();
                 plane = ActuatorPose.Swing.of(dir.scale(0.78).subtract(over.scale(0.62)), over.scale(0.8).subtract(dir.scale(0.6)));
             }
+            if (arm.n != null) plane = ActuatorClearance.onFace(plane, arm.n, ActuatorClearance.MIN_INTO);
             Vec3 pull = dir.scale(-0.22 * scale).add(plane.back().scale(0.1 * scale));
             ActuatorPose.Tool t = ActuatorPose.strikeAt(target, plane, ActuatorPose.TOOL_LENGTH * scale, p, pull, b.first ? -0.85 * side : 0);
             return new Aim(t.grip(), t.axis(), t.edge(), t.palm(), bulge, FAR_STRAIGHT, CARRY_OPEN, 1, scale);
         }
         double k = ActuatorPose.thrust(p);
+        if (arm.n != null) dir = ActuatorClearance.into(dir, arm.n, ActuatorClearance.MIN_INTO);
         if (!arm.carries) {
             Vec3 tip = target.subtract(dir.scale(Mth.lerp(k, 0.45, 0.03)));
             return reach(s, tip, bulge, FAR_STRAIGHT, (float) Mth.lerp(k, REACH_OPEN, 0.15), b);
@@ -861,7 +1001,51 @@ public final class ActuatorRenderer {
         return new Drawn(j, vec3f(chain.hinge()), ActuatorPose.restOpen(side, time), side, dir, axis.normalize(), new Vector3f(dir), 1);
     }
 
-    private static Drawn toTank(Matrix4f toTank, TentacleRenderer.Space space, ActuatorPose.Chain chain, Aim aim, int side) {
+    /** The way the drawn gripper points (world): along the last segment, turned toward the aimed grip by how much the gripper holds. */
+    private static Vec3 handDir(ActuatorPose.Chain chain, Aim aim) {
+        Vec3 line = chain.wristDir(), to = aim.grip().subtract(chain.wrist());
+        Vec3 d = aim.held() <= 0 || to.lengthSqr() < 1.0E-8 ? line : line.lerp(to.normalize(), Math.min(1, aim.held()));
+        return d.lengthSqr() < 1.0E-8 ? line : d.normalize();
+    }
+
+    /** The drawn item's axis (world, unit): the aimed one, squared to the gripper as far as it does not hold. */
+    private static Vec3 itemAxis(ActuatorPose.Chain chain, Aim aim, Vec3 d) {
+        Vec3 ax = aim.axis().subtract(d.scale(aim.axis().dot(d) * (1 - Math.min(1, aim.held()))));
+        if (ax.lengthSqr() < 1.0E-8) ax = chain.hinge().cross(d);
+        return ax.normalize();
+    }
+
+    /** World points of a drawn Actuator past its root: along each segment, the gripper and the item it carries. */
+    private static Vec3[] probe(ActuatorPose.Chain chain, Vec3 d, Aim aim, ItemStack stack) {
+        Vec3[] j = chain.joints();
+        int n = j.length - 1;
+        boolean item = !stack.isEmpty();
+        Vec3[] out = new Vec3[n * 3 + 1 + (item ? 2 : 0)];
+        int k = 0;
+        for (int i = 0; i < n; i++) for (int t = 1; t <= 3; t++) out[k++] = j[i].lerp(j[i + 1], t / 3.0);
+        Vec3 grip = chain.wrist().add(d.scale(ActuatorPose.GRIP_LENGTH));
+        out[k++] = grip;
+        if (item) {
+            Vec3 ax = itemAxis(chain, aim, d);
+            double len = itemLength(stack, aim);
+            out[k++] = grip.add(ax.scale(len * 0.5));
+            out[k] = grip.add(ax.scale(len));
+        }
+        return out;
+    }
+
+    private static double itemLength(ItemStack stack, Aim aim) {
+        return (striker(stack) ? ActuatorPose.TOOL_LENGTH : 0.3) * aim.scale();
+    }
+
+    /** The own wearer's drawn points of one Actuator this frame (world), empty when not drawn (the harness reads it). */
+    public static Vec3[] probe(Player player, boolean main) {
+        Anim a = ANIMS.get(player.getId());
+        Vec3[] p = a == null || !a.fitted ? null : a.arm(main).probe;
+        return p == null ? new Vec3[0] : p;
+    }
+
+    private static Drawn toTank(Matrix4f toTank, TentacleRenderer.Space space, ActuatorPose.Chain chain, Aim aim, Vec3 d, int side) {
         Vec3 c = space.camera();
         Vec3[] w = chain.joints();
         Vector3f[] j = new Vector3f[w.length];
@@ -869,13 +1053,7 @@ public final class ActuatorRenderer {
             j[i] = toTank.transformPosition((float) (w[i].x - c.x), (float) (w[i].y - c.y), (float) (w[i].z - c.z), new Vector3f());
             if (!j[i].isFinite()) return null;
         }
-        Vec3 line = chain.wristDir(), to = aim.grip().subtract(chain.wrist());
-        Vec3 d = aim.held() <= 0 || to.lengthSqr() < 1.0E-8 ? line : line.lerp(to.normalize(), Math.min(1, aim.held()));
-        if (d.lengthSqr() < 1.0E-8) d = line;
-        d = d.normalize();
-        Vec3 ax = aim.axis().subtract(d.scale(aim.axis().dot(d) * (1 - Math.min(1, aim.held()))));
-        if (ax.lengthSqr() < 1.0E-8) ax = chain.hinge().cross(d);
-        ax = ax.normalize();
+        Vec3 ax = itemAxis(chain, aim, d);
         Vec3 ed = aim.edge().subtract(ax.scale(aim.edge().dot(ax)));
         if (ed.lengthSqr() < 1.0E-8) ed = d.subtract(ax.scale(d.dot(ax)));
         if (ed.lengthSqr() < 1.0E-8) ed = chain.hinge().cross(ax);
