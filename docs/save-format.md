@@ -143,5 +143,6 @@ Enchantment levels above an enchantment's `max_level` (e.g. from `/give`) count 
 | `movement.forward` | `LOOK` | `LOOK` \| `FLAT` |
 | `firstPerson.limbOpacity` | 1.0 | 0.1–1.0 (2.0: opacity of every Limb in first person) |
 | `hud.crosshair` | true | true/false (2.0: Actuator marks and Grab cues around the crosshair) |
+| `hud.hints` | true | true/false (2.0: key hints for the first two holds of a game session) |
 
 Renaming a key only resets its value to the default.

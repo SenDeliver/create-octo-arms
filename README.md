@@ -145,13 +145,15 @@ New in 2.0. Two Actuators sit on the Rig above the Tentacles, one for each hand:
 - **Hold `V` and turn the mouse wheel** to move it nearer or farther, half a block a notch, out to Reach. The hotbar does not scroll meanwhile.
 - **Attack** while holding **Throws** it along your view (Netherite faster). With an item in the main hand a plain attack uses the item, so hold `V` and attack to Throw. A thrown mob takes fall damage and **Impact** damage when it slams into a block or another mob, which is hurt too. Impact counts as your damage (loot, XP and protection rules see you) and hurts players only where PvP allows.
 - Light mobs (up to 1.5 blocks wide and 2 tall: zombie, villager, cow, spider) take one Actuator. Heavy ones (Iron Golem, Ravager, Horse, Enderman, Ghast) take both and need both hands empty: Far Use pauses and you move at 60% speed while you hold them (Rides and glides unaffected).
-- Never: players, bosses (Ender Dragon, Wither, Warden, anything over 100 max health, the `tentaworks:bosses` entity tag), anything riding or ridden, anything another wearer holds or another player has on a lead, or another player's pet unless the server allows it. Claim and protection mods are asked first. A refused Grab says why in the action bar (hands full, needs both Actuators, boss, owned, out of sight, no Air).
+- Never: players, bosses (Ender Dragon, Wither, Warden, anything over 100 max health, the `tentaworks:bosses` entity tag), anything riding or ridden, anything another wearer holds or another player has on a lead, or another player's pet unless the server allows it. Claim and protection mods are asked first. A refused Grab says why in the action bar (hands full, needs both Actuators, boss, owned, out of sight, out of Reach, no Air).
 - The hold lasts through Stowing, Setting Down, Rides, gliding and Falling. It ends on Crawl, death, logout, taking the Rig off, a dimension change, the target gone or out of Reach, or no Air left: the target is set down where it is.
 
 **On screen**
 
-- Crosshair marks (first person): a claw mark beside the crosshair when an Actuator will reach what you look at, on the acting side, in the tier's colour (copper or netherite purple); both sides when Dual Wield applies; a hollow pair when the target is just out of Reach, flashing with "Out of Reach" when a click lands on nothing for that reason; red when the Actuators are out of Air. The marks pulse with every strike.
-- Above the crosshair: an open claw with the Grab key over a mob a free Actuator can take, or why not (needs both Actuators, hands full, refused). While holding: a closed claw, the set-down marker (red when the spot is not valid), the hold distance while `V` is down and, for the first seconds, the keys for Set Down, Throw and distance.
+- Crosshair marks (first person): a claw mark beside the crosshair when an Actuator will reach what you look at, on the acting side, in the tier's colour (copper or netherite purple); both sides when Dual Wield applies; a hollow pair when the target is just out of Reach, flashing when a click or a Grab lands on nothing for that reason; red when the Actuators are out of Air. The marks pulse with every strike.
+- Each bracket is one Actuator (the left bracket is the left one). While an Actuator holds, its bracket is shut tight against the crosshair, both for a heavy hold; it goes pale over a spot the mob cannot be set down on. With `V` down a small column of ticks beside it shows the hold distance, the lit tick moving with the wheel.
+- Above the crosshair: an open claw over a mob a free Actuator can take, or a glyph for why not (needs both Actuators, hands full, refused). No words at the crosshair: press `V` anyway and the action bar says why.
+- Key hints, for the first two holds of a game session: the Grab key beside the open claw, and after a Grab one action-bar line with your keys for Set Down, Throw and the hold distance. Client config `hud.hints` turns them off.
 - A small HUD line by the hotbar shows what you hold (and "heavy") and when the Actuators are out of Air.
 - Hidden with F1 and in third person; client config `hud.crosshair` turns the crosshair marks and cues off.
 
@@ -296,6 +298,7 @@ Client config: `config/tentaworks-client.toml`, or in game under Mods > Octo Arm
 | `movement` | `forward` | look | What `W`/`S` follow while the Rig carries you. `look`: the camera, look down and `W` takes you down. `flat`: level only, like walking or creative flight; `Space`/`Shift` change the height |
 | `firstPerson` | `limbOpacity` | 1.0 | How solid every Limb (Tentacles and Actuators) is drawn in first person: 1.0 solid, down to 0.1 faint |
 | `hud` | `crosshair` | true | Actuator marks and Grab cues around the crosshair (first person). Off: a plain crosshair |
+| `hud` | `hints` | true | Key hints for the first two holds of a game session: the Grab key beside the crosshair, and the keys for Set Down, Throw and the hold distance on the action bar after a Grab |
 
 Key binds (client): **Grab (Actuators)** (`V`), **Rig Settings (worn Rig)** and **Toggle Tentacle Rig (key-only mode)** (both unbound by default).
 
