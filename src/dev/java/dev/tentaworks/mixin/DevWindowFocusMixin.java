@@ -5,7 +5,9 @@ import net.minecraftforge.fml.loading.ImmediateWindowHandler;
 import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
@@ -16,6 +18,8 @@ import java.util.function.Supplier;
  * Dev source set only, added to the mixin config by {@link TentaworksMixinPlugin} when {@code -Dtentaworks.nofocus} is set
  * (GLFW focuses a new window on creation unless told otherwise; FML's early window must be off, see tools/setup_run.sh).
  * A redirect, not an inject: Mixin 0.8.5 (Forge 47) refuses an {@code @Inject} inside a constructor at an INVOKE point.
+ * With {@code -Dtentaworks.minimized} as well the window starts minimized (WSLg ignores the focus hints and stacks new windows on top;
+ * a minimized client keeps ticking, at the inactivity frame limit, and no stray mouse turns its camera).
  */
 @Mixin(Window.class)
 public class DevWindowFocusMixin {
@@ -24,5 +28,10 @@ public class DevWindowFocusMixin {
         GLFW.glfwWindowHint(GLFW.GLFW_FOCUSED, GLFW.GLFW_FALSE);
         GLFW.glfwWindowHint(GLFW.GLFW_FOCUS_ON_SHOW, GLFW.GLFW_FALSE);
         return ImmediateWindowHandler.setupMinecraftWindow(width, height, title, monitor);
+    }
+
+    @Inject(method = "<init>", at = @At("RETURN"))
+    private void tentaworks$minimizedOnOpen(CallbackInfo ci) {
+        if (System.getProperty("tentaworks.minimized") != null) GLFW.glfwIconifyWindow(((Window) (Object) this).getWindow());
     }
 }

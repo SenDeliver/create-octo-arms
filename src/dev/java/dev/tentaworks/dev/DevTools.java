@@ -56,7 +56,8 @@ import java.util.Locale;
  * (east) face of the wall column at x=X; Grips on a block at x=20047 whose outer neighbour is in unloaded chunk 1253 when only 20000 0 is forceloaded), burst N (each fake packet
  * sent N times per tick), netstats TAG (NETSTATS: motion packets handled, relays, server tick time), probe X Y Z (reads a block:
  * CHUNKLOAD control), fake slideN (real Grips, zero claimed motion, the server moves the player N blocks per second: speed check),
- * ghost FROM TO (air on the server only: a client ghost block), nbt X Y Z TAG (SNBT: a block entity's NBT), chain FROM TO (connects two Create chain conveyors). Logs CHUNKLOAD for chunks at x ≥ 1250. Logs FALL (LivingFallEvent distance) and HURT (damage taken) lines for fall-damage checks, SBREAK (a player broke a block) and, with trace on, SGEVENT (game events with a player source: what Sculk Sensors hear).
+ * ghost FROM TO (air on the server only: a client ghost block), lag MS TICKS (the server thread sleeps MS at the end of each of the next TICKS
+ * ticks: a slow or stalling server; logs LAG on and LAG off), nbt X Y Z TAG (SNBT: a block entity's NBT), chain FROM TO (connects two Create chain conveyors). Logs CHUNKLOAD for chunks at x ≥ 1250. Logs FALL (LivingFallEvent distance) and HURT (damage taken) lines for fall-damage checks, SBREAK (a player broke a block) and, with trace on, SGEVENT (game events with a player source: what Sculk Sensors hear).
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID)
 public final class DevTools {
@@ -65,6 +66,8 @@ public final class DevTools {
     private static String fakeKind = "";
     private static int fakeTicks;
     private static int burst = 1;
+    private static int lagMs;
+    private static int lagTicks;
     private static long tickStart;
     private static int tickCount;
     private static long tickNanos;
@@ -164,6 +167,12 @@ public final class DevTools {
                     maxTickNanos = 0;
                     return reply(c.getSource(), "netstats");
                 })))
+                .then(Commands.literal("lag").then(Commands.argument("ms", IntegerArgumentType.integer(1)).then(Commands.argument("ticks", IntegerArgumentType.integer(1)).executes(c -> {
+                    lagMs = IntegerArgumentType.getInteger(c, "ms");
+                    lagTicks = IntegerArgumentType.getInteger(c, "ticks");
+                    LOG.info("LAG on ms={} ticks={}", lagMs, lagTicks);
+                    return reply(c.getSource(), "lag " + lagMs + " x " + lagTicks);
+                }))))
                 .then(Commands.literal("burst").then(Commands.argument("n", IntegerArgumentType.integer(1)).executes(c -> {
                     burst = IntegerArgumentType.getInteger(c, "n");
                     LOG.info("burst {}", burst);
@@ -301,6 +310,14 @@ public final class DevTools {
         tickNanos += dt;
         maxTickNanos = Math.max(maxTickNanos, dt);
         DevRecipes.tick();
+        if (lagTicks > 0) {
+            try {
+                Thread.sleep(lagMs);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            if (--lagTicks == 0) LOG.info("LAG off");
+        }
         if (!trace) return;
         for (ServerPlayer p : event.getServer().getPlayerList().getPlayers()) LOG.info("STRACE {}", line(p));
     }

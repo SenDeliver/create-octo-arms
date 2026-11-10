@@ -8,6 +8,7 @@ public final class TentaworksConfig {
     public static final ForgeConfigSpec.DoubleValue REACH_COPPER;
     public static final ForgeConfigSpec.DoubleValue REACH_NETHERITE;
     public static final ForgeConfigSpec.DoubleValue SPEED_MAX;
+    public static final ForgeConfigSpec.BooleanValue SPEED_CHECK;
     public static final ForgeConfigSpec.DoubleValue AIR_IDLE;
     public static final ForgeConfigSpec.DoubleValue AIR_MOVE;
     public static final ForgeConfigSpec.DoubleValue AIR_CLIMB;
@@ -28,6 +29,7 @@ public final class TentaworksConfig {
         b.pop();
         b.translation(t + "speed").push("speed");
         SPEED_MAX = b.comment("Top Rig speed, blocks per second. Caps the Speed in every player's Rig Settings; Swift raises both on its Rig").translation(t + "speed.max").defineInRange("max", 8.0, 1.0, 20.0);
+        SPEED_CHECK = b.comment("Stow a Rig that moves faster than its top Speed (anti-cheat). Off: the server trusts the wearer's speed, for servers that lag").translation(t + "speed.check").define("check", true);
         b.pop();
         b.translation(t + "air").push("air");
         AIR_IDLE = b.comment("Copper Rig held still (Idle, Hang): ticks per 1 Air").translation(t + "air.idle").defineInRange("idle", 80.0, 1.0, 72000.0);
