@@ -12,18 +12,18 @@ if pgrep -f "bootstraplauncher.*$PWD/build/moddev" > /dev/null; then echo "a dev
 tools/setup_run.sh > /dev/null
 rm -rf run/server/world run/signal run2/signal
 # TW_SPEED_MAX (e.g. 20), TW_SPEED_CHECK (true|false), TW_SWIFT_PER_LEVEL / TW_FAR_REACH_PER_LEVEL (a level past the max: levels are capped at max_level), TW_REACH_COPPER (default 4, the 1.x Reach the movement suites are built on) / TW_REACH_NETHERITE, TW_BACK_SLOT (true|false): this run's world overrides those keys (world/serverconfig beats config/).
-# A [curios] section missing from an older config/ copy is appended (NeoForge fills the other keys with defaults).
+# A [speed] check key or [curios] section missing from an older config/ copy is added (NeoForge fills the other keys with defaults).
 if [ -n "$TW_SPEED_MAX$TW_SPEED_CHECK$TW_SWIFT_PER_LEVEL$TW_FAR_REACH_PER_LEVEL$TW_REACH_COPPER$TW_REACH_NETHERITE$TW_BACK_SLOT" ] && [ -f run/server/config/tentaworks-server.toml ]; then
   mkdir -p run/server/world/serverconfig
-  awk -v sp="$TW_SPEED_MAX" -v sc="$TW_SPEED_CHECK" -v sw="$TW_SWIFT_PER_LEVEL" -v fr="$TW_FAR_REACH_PER_LEVEL" -v rc="$TW_REACH_COPPER" -v rn="$TW_REACH_NETHERITE" -v bs="$TW_BACK_SLOT" '/^\[/{sec=$0}
+  awk -v sp="$TW_SPEED_MAX" -v sc="$TW_SPEED_CHECK" -v sw="$TW_SWIFT_PER_LEVEL" -v fr="$TW_FAR_REACH_PER_LEVEL" -v rc="$TW_REACH_COPPER" -v rn="$TW_REACH_NETHERITE" -v bs="$TW_BACK_SLOT" '/^\[/{if (sec=="[speed]" && sc!="" && !sck) printf "\tcheck = %s\n", sc; sec=$0}
     sec=="[speed]" && $1=="max" && sp!="" {sub(/=.*/, "= " sp)}
-    sec=="[speed]" && $1=="check" && sc!="" {sub(/=.*/, "= " sc)}
+    sec=="[speed]" && $1=="check" && sc!="" {sub(/=.*/, "= " sc); sck=1}
     sec=="[enchant]" && $1=="swiftPerLevel" && sw!="" {sub(/=.*/, "= " sw)}
     sec=="[enchant]" && $1=="farReachPerLevel" && fr!="" {sub(/=.*/, "= " fr)}
     sec=="[reach]" && $1=="copper" && rc!="" {sub(/=.*/, "= " rc)}
     sec=="[reach]" && $1=="netherite" && rn!="" {sub(/=.*/, "= " rn)}
     sec=="[curios]" && $1=="backSlot" && bs!="" {sub(/=.*/, "= " bs); seen=1} {print}
-    END {if (bs!="" && !seen) printf "\n[curios]\n\tbackSlot = %s\n", bs}' run/server/config/tentaworks-server.toml > run/server/world/serverconfig/tentaworks-server.toml
+    END {if (sec=="[speed]" && sc!="" && !sck) printf "\tcheck = %s\n", sc; if (bs!="" && !seen) printf "\n[curios]\n\tbackSlot = %s\n", bs}' run/server/config/tentaworks-server.toml > run/server/world/serverconfig/tentaworks-server.toml
 fi
 # TW_CLIENT_WALK (true|false): this run's client config animation.walkWhileHeld on both clients (default: the mod default, false)
 # TW_CLIENT_FORWARD (look|flat): this run's client config movement.forward on both clients (default: the mod default, look)
