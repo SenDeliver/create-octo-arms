@@ -11,6 +11,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * Harness clients open their window without taking the keyboard focus, so the person running the suites keeps working.
  * Dev source set only, added to the mixin config by {@link TentaworksMixinPlugin} when {@code -Dtentaworks.nofocus} is set
  * (GLFW focuses a new window on creation unless told otherwise; FML's early window must be off, see tools/setup_run.sh).
+ * With {@code -Dtentaworks.minimized} as well the window starts minimized (WSLg ignores the focus hints and stacks new windows on top;
+ * a minimized client keeps ticking, at the inactivity frame limit, and no stray mouse turns its camera).
  */
 @Mixin(Window.class)
 public class DevWindowFocusMixin {
@@ -18,5 +20,10 @@ public class DevWindowFocusMixin {
     private void tentaworks$noFocusOnOpen(CallbackInfo ci) {
         GLFW.glfwWindowHint(GLFW.GLFW_FOCUSED, GLFW.GLFW_FALSE);
         GLFW.glfwWindowHint(GLFW.GLFW_FOCUS_ON_SHOW, GLFW.GLFW_FALSE);
+    }
+
+    @Inject(method = "<init>", at = @At("RETURN"))
+    private void tentaworks$minimizedOnOpen(CallbackInfo ci) {
+        if (System.getProperty("tentaworks.minimized") != null) GLFW.glfwIconifyWindow(((Window) (Object) this).getWindow());
     }
 }

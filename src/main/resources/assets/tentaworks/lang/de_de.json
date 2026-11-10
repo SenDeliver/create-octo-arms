@@ -77,6 +77,8 @@
   "tentaworks.configuration.ships.grip": "Rigs greifen Schiffe",
   "tentaworks.configuration.ships.grip.tooltip": "Rigs greifen Sable-Schiffe wie Weltblöcke. Ohne Sable wirkungslos",
   "tentaworks.configuration.speed": "Tempo",
+  "tentaworks.configuration.speed.check": "Tempoprüfung",
+  "tentaworks.configuration.speed.check.tooltip": "Verstaut ein Rig, das sich schneller als sein Höchsttempo bewegt (Anti-Cheat). Aus: Der Server vertraut dem Tempo des Trägers, für Server mit Lag",
   "tentaworks.configuration.speed.max": "Höchsttempo",
   "tentaworks.configuration.speed.max.tooltip": "Höchsttempo des Rigs, Blöcke pro Sekunde. Begrenzt das Tempo in den Rig-Einstellungen jedes Spielers; Flinkheit erhöht beides bei ihrem Rig",
   "tentaworks.configuration.title": "Octo Arms: Konfiguration",

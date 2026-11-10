@@ -9,6 +9,14 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ## [Unreleased]
 
+### Fixed
+
+- A Rig moving at its top Speed was Stowed on a lagging server ("moves faster than its top Speed: stowing"), dropping the wearer: the speed check counted server ticks, so below about 13 TPS, or when the server caught up after a stall, a legal move read as too fast. The allowed distance now follows the wearer's move packets, like vanilla's move check, counted only up to the real time that passed, so extra packets buy no speed. Thanks @snipernumber3.
+
+### Added
+
+- Server config `speed.check` (default on): off, the server no longer Stows a Rig for moving faster than its top Speed, for servers that lag badly.
+
 ## [1.8.0] - 2026-11-08
 
 ### Added

@@ -77,6 +77,8 @@
   "tentaworks.configuration.ships.grip": "Zestawy chwytają statki",
   "tentaworks.configuration.ships.grip.tooltip": "Zestawy chwytają statki Sable jak bloki świata. Ignorowane bez Sable",
   "tentaworks.configuration.speed": "Prędkość",
+  "tentaworks.configuration.speed.check": "Kontrola prędkości",
+  "tentaworks.configuration.speed.check.tooltip": "Chowa zestaw, który porusza się szybciej niż jego maks. prędkość (anty-cheat). Wył.: serwer ufa prędkości noszącego, dla serwerów z lagiem",
   "tentaworks.configuration.speed.max": "Maks. prędkość",
   "tentaworks.configuration.speed.max.tooltip": "Maksymalna prędkość zestawu w blokach na sekundę. Ogranicza prędkość w ustawieniach zestawu każdego gracza; Zwinność podnosi obie wartości na swoim zestawie",
   "tentaworks.configuration.title": "Octo Arms: konfiguracja",
