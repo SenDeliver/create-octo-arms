@@ -77,6 +77,8 @@
   "tentaworks.configuration.ships.grip": "リグがシップをつかむ",
   "tentaworks.configuration.ships.grip.tooltip": "リグがSableのシップをワールドのブロックと同じようにつかみます。Sableがない場合は無視されます",
   "tentaworks.configuration.speed": "速度",
+  "tentaworks.configuration.speed.check": "速度チェック",
+  "tentaworks.configuration.speed.check.tooltip": "最高速度より速く動くリグを収納する（チート対策）。オフ：サーバーは装着者の速度を信用する（ラグのあるサーバー向け）",
   "tentaworks.configuration.speed.max": "最高速度",
   "tentaworks.configuration.speed.max.tooltip": "リグの最高速度、ブロック/秒。全プレイヤーのリグ設定の速度の上限になります。高速移動はそのリグで両方を上げます",
   "tentaworks.configuration.title": "Octo Arms：設定",

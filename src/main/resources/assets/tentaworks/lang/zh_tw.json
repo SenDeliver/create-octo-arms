@@ -77,6 +77,8 @@
   "tentaworks.configuration.ships.grip": "背架抓握船艦",
   "tentaworks.configuration.ships.grip.tooltip": "背架能像抓握世界方塊一樣抓握 Sable 船艦。未安裝 Sable 時忽略",
   "tentaworks.configuration.speed": "速度",
+  "tentaworks.configuration.speed.check": "速度檢查",
+  "tentaworks.configuration.speed.check.tooltip": "收起移動速度超過其最高速度的背架（反作弊）。關閉：伺服器信任穿戴者的速度，適用於延遲的伺服器",
   "tentaworks.configuration.speed.max": "最高速度",
   "tentaworks.configuration.speed.max.tooltip": "背架的最高速度，單位為格/秒。限制每位玩家背架設定中的速度；迅捷會同時提高該背架的這兩項數值",
   "tentaworks.configuration.title": "Octo Arms：設定",

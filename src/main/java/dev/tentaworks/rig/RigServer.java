@@ -7,6 +7,7 @@ import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.compat.Frame;
 import dev.tentaworks.compat.Pose;
 import dev.tentaworks.compat.ShipFrames;
+import dev.tentaworks.config.TentaworksConfig;
 import dev.tentaworks.mixin.ServerGamePacketListenerImplAccessor;
 import dev.tentaworks.network.RigMotionPacket;
 import dev.tentaworks.network.RigStatePacket;
@@ -519,7 +520,7 @@ public final class RigServer {
         if (!w.state.carries()) return;
         noFlying(player);
         noGliding(player);
-        if (w.overSpeed > REJECT_TICKS) {
+        if (w.overSpeed > REJECT_TICKS && TentaworksConfig.value(TentaworksConfig.SPEED_CHECK)) {
             LOG.warn("Tentacle Rig of {} moves faster than its top Speed: stowing", player.getName().getString());
             stow(player, true);
             return;
