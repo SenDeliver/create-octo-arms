@@ -156,6 +156,8 @@
   "tentaworks.configuration.ships.grip": "장비가 배를 붙잡음",
   "tentaworks.configuration.ships.grip.tooltip": "장비가 Sable 배를 월드 블록처럼 붙잡습니다. Sable이 없으면 무시됩니다",
   "tentaworks.configuration.speed": "속도",
+  "tentaworks.configuration.speed.check": "속도 검사",
+  "tentaworks.configuration.speed.check.tooltip": "최고 속도보다 빠르게 움직이는 장비를 접습니다 (치트 방지). 끄기: 서버가 착용자의 속도를 믿습니다 (렉이 있는 서버용)",
   "tentaworks.configuration.speed.max": "최고 속도",
   "tentaworks.configuration.speed.max.tooltip": "장비의 최고 속도, 블록/초. 모든 플레이어의 장비 설정에 있는 속도의 상한입니다. 신속은 해당 장비에서 둘 다 올립니다",
   "tentaworks.configuration.title": "Octo Arms: 설정",

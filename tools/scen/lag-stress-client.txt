@@ -1,0 +1,46 @@
+# lag-stress: Netherite Rig, Swift II + Far Reach III; with TW_SWIFT_PER_LEVEL=0.225 TW_FAR_REACH_PER_LEVEL=1.334 one level past each max (Reach 11, top Speed 11.6 b/s); Standing Height 8 (legs stretched), else the same as lag-client.txt.
+# W0 walk, no lag (control). W1 walk through sustained lag (130 ms ticks, about 7.7 TPS, 70 ticks). W2 walk through three 1.5 s stalls.
+# A anti-cheat: Rig Set Down and folded, the timeline forges a 20 b/s server-side slide with 5 packets per tick (must still stow, unless speed.check=false).
+# Flat superflat ground at y -60, nothing around x 8500. TIMELINE lag-timeline.txt
+wait 40
+trace on
+hud off
+view third
+cmd tp @s 8500.5 -60 0.5 0 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:netherite_tentacle_rig[enchantments={levels:{"tentaworks:swift":2,"tentaworks:far_reach":3}},create:banktank_air=900]
+wait 10
+rawsettings chest 8 8 double_jump
+reach rig
+wait 10
+doublejump
+wait 40
+look 0 0
+mark w0a
+hold up on
+wait 100
+mark w0b
+signal w1
+await w1lag
+look 0 0
+mark w1a
+wait 200
+mark w1b
+signal w1end
+await w1off
+look 0 0
+mark w2a
+signal w2
+await w2done
+mark w2b
+hold up off
+wait 10
+doublejump
+wait 60
+mark aa
+signal a
+await adone
+mark ab
+wait 20
+quit

@@ -7,6 +7,7 @@ import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.compat.Frame;
 import dev.tentaworks.compat.Pose;
 import dev.tentaworks.compat.ShipFrames;
+import dev.tentaworks.config.TentaworksConfig;
 import dev.tentaworks.mixin.ServerGamePacketListenerImplAccessor;
 import dev.tentaworks.network.RigMotionPacket;
 import dev.tentaworks.network.RigStatePacket;
@@ -66,6 +67,7 @@ public final class RigServer {
     private static final double REAL_STILL = 0.01;
     private static final double SPEED_SLACK = 1.25;
     private static final double SPEED_EXTRA = 1.0;
+    private static final double NANOS_PER_TICK = 50_000_000.0;
     private static final int LOG_QUIET_TICKS = 200;
     private static final Map<UUID, Wearer> WEARERS = new HashMap<>();
     private static final Map<UUID, Double> LAST_Y = new HashMap<>();
@@ -97,6 +99,12 @@ public final class RigServer {
         Vec3 tickPos;
         final double[] window = new double[SPEED_WINDOW];
         int windowAt;
+        /** Rig motion packets (one per client tick) since the last server tick, then per tick in the window. */
+        int packets;
+        final int[] packetWindow = new int[SPEED_WINDOW];
+        /** Real time per server tick in the window, in ticks of 50 ms. */
+        final double[] timeWindow = new double[SPEED_WINDOW];
+        long tickNanos;
         int overSpeed;
         Vec3 realMove = Vec3.ZERO;
         RigState relayedState;
@@ -139,6 +147,10 @@ public final class RigServer {
                 w.tickPos = null;
                 w.tickAnchor = null;
                 Arrays.fill(w.window, 0);
+                Arrays.fill(w.packetWindow, 0);
+                Arrays.fill(w.timeWindow, 0);
+                w.packets = 0;
+                w.tickNanos = 0;
                 w.overSpeed = 0;
             }
         });
@@ -279,6 +291,8 @@ public final class RigServer {
             stow(player, false);
             return;
         }
+        Wearer counted = WEARERS.get(player.getUUID());
+        if (counted != null) counted.packets++;
         PENDING.put(player.getUUID(), packet);
     }
 
@@ -550,7 +564,7 @@ public final class RigServer {
         if (!w.state.carries()) return;
         noFlying(player);
         noGliding(player);
-        if (w.overSpeed > REJECT_TICKS) {
+        if (w.overSpeed > REJECT_TICKS && TentaworksConfig.value(TentaworksConfig.SPEED_CHECK)) {
             LOG.warn("Tentacle Rig of {} moves faster than its top Speed: stowing", player.getName().getString());
             stow(player, true);
             return;
@@ -583,7 +597,11 @@ public final class RigServer {
      * The server's own view of the wearer's move: position delta per server tick, read after all players ticked (during the
      * player tick vanilla moves a ServerPlayer by its velocity and then puts it back), teleport events reset it. Feeds the Air rate
      * (never below what the real move costs) and the speed check (a {@value #SPEED_WINDOW}-tick window, so bursty move
-     * packets after lag do not count as speeding). The carry Ship's move since the last tick is not the wearer's.
+     * packets after lag do not count as speeding). Like vanilla's move check, the allowed distance follows the wearer's move
+     * packets (one per client tick), not server ticks: a server below 20 TPS, or one catching up after a stall, gets
+     * several client ticks of move per server tick. The packets count only up to the real time of the window, so sending
+     * extra packets buys no speed (on a server at 20 TPS the allowance stays the old {@value #SPEED_WINDOW} steps), and
+     * never below {@value #SPEED_WINDOW}. The carry Ship's move since the last tick is not the wearer's.
      */
     private static void trackRealMove(ServerPlayer player, Wearer w) {
         Vec3 pos = player.position();
@@ -593,7 +611,12 @@ public final class RigServer {
         w.tickAnchor = anchor(player.level(), w.grips);
         w.realMove = still(carried ? carriedMove(w, d) : d);
         if (!carried) Arrays.fill(w.carryWindow, Vec3.ZERO);
+        long nanos = System.nanoTime();
         w.window[w.windowAt] = d.length();
+        w.packetWindow[w.windowAt] = w.packets;
+        w.timeWindow[w.windowAt] = w.tickNanos == 0 ? 1 : (nanos - w.tickNanos) / NANOS_PER_TICK;
+        w.packets = 0;
+        w.tickNanos = nanos;
         w.windowAt = (w.windowAt + 1) % SPEED_WINDOW;
         if (!w.state.carries() || w.speedGrace > 0) {
             if (w.speedGrace > 0) w.speedGrace--;
@@ -601,8 +624,15 @@ public final class RigServer {
             return;
         }
         double sum = 0;
-        for (double v : w.window) sum += v;
-        if (sum > maxStep(player) * SPEED_WINDOW * SPEED_SLACK + SPEED_EXTRA) w.overSpeed++;
+        int packets = 0;
+        double time = 0;
+        for (int i = 0; i < SPEED_WINDOW; i++) {
+            sum += w.window[i];
+            packets += w.packetWindow[i];
+            time += w.timeWindow[i];
+        }
+        double steps = Math.max(SPEED_WINDOW, Math.min(packets, time));
+        if (sum > maxStep(player) * steps * SPEED_SLACK + SPEED_EXTRA) w.overSpeed++;
         else w.overSpeed = 0;
     }
 

@@ -156,6 +156,8 @@
   "tentaworks.configuration.ships.grip": "Gli apparati si aggrappano alle navi",
   "tentaworks.configuration.ships.grip.tooltip": "Gli apparati si aggrappano alle navi di Sable come ai blocchi del mondo. Ignorato senza Sable",
   "tentaworks.configuration.speed": "Velocità",
+  "tentaworks.configuration.speed.check": "Controllo velocità",
+  "tentaworks.configuration.speed.check.tooltip": "Ritira un apparato che si muove più veloce della sua velocità massima (anti-cheat). Disattivato: il server si fida della velocità di chi lo indossa, per server in lag",
   "tentaworks.configuration.speed.max": "Velocità max",
   "tentaworks.configuration.speed.max.tooltip": "Velocità massima dell'apparato, blocchi al secondo. Limita la velocità nelle impostazioni dell'apparato di ogni giocatore; Rapidità le alza entrambe sul suo apparato",
   "tentaworks.configuration.title": "Octo Arms: Configurazione",

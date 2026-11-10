@@ -156,6 +156,8 @@
   "tentaworks.configuration.ships.grip": "Les appareils s'agrippent aux navires",
   "tentaworks.configuration.ships.grip.tooltip": "Les appareils s'agrippent aux navires Sable comme aux blocs du monde. Ignoré sans Sable",
   "tentaworks.configuration.speed": "Vitesse",
+  "tentaworks.configuration.speed.check": "Contrôle de vitesse",
+  "tentaworks.configuration.speed.check.tooltip": "Range un appareil qui va plus vite que sa vitesse maximale (anti-triche). Désactivé : le serveur fait confiance à la vitesse du porteur, pour les serveurs qui laguent",
   "tentaworks.configuration.speed.max": "Vitesse maximale",
   "tentaworks.configuration.speed.max.tooltip": "Vitesse maximale de l'appareil, blocs par seconde. Plafonne la vitesse dans les réglages de l'appareil de chaque joueur ; Célérité relève les deux sur son appareil",
   "tentaworks.configuration.title": "Octo Arms : Configuration",

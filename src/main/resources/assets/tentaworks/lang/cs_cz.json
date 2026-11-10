@@ -156,6 +156,8 @@
   "tentaworks.configuration.ships.grip": "Soupravy se chytají lodí",
   "tentaworks.configuration.ships.grip.tooltip": "Soupravy se chytají lodí ze Sable stejně jako bloků světa. Bez Sable se ignoruje",
   "tentaworks.configuration.speed": "Rychlost",
+  "tentaworks.configuration.speed.check": "Kontrola rychlosti",
+  "tentaworks.configuration.speed.check.tooltip": "Složí soupravu, která se pohybuje rychleji než její max. rychlost (anti-cheat). Vypnuto: server věří rychlosti nositele, pro servery, které se zasekávají",
   "tentaworks.configuration.speed.max": "Max. rychlost",
   "tentaworks.configuration.speed.max.tooltip": "Maximální rychlost soupravy, bloky za sekundu. Omezuje rychlost v nastavení soupravy každého hráče; Hbitost na své soupravě zvyšuje obojí",
   "tentaworks.configuration.title": "Octo Arms: Konfigurace",
