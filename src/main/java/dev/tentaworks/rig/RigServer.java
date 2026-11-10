@@ -66,8 +66,6 @@ public final class RigServer {
     private static final double REAL_STILL = 0.01;
     private static final double SPEED_SLACK = 1.25;
     private static final double SPEED_EXTRA = 1.0;
-    /** Move packets the speed check accepts beyond the real time of its window, in ticks (network jitter). */
-    private static final double PACKET_SLACK = 2.0;
     private static final double NANOS_PER_TICK = 50_000_000.0;
     private static final int LOG_QUIET_TICKS = 200;
     private static final Map<UUID, Wearer> WEARERS = new HashMap<>();
@@ -547,8 +545,9 @@ public final class RigServer {
      * (never below what the real move costs) and the speed check (a {@value #SPEED_WINDOW}-tick window, so bursty move
      * packets after lag do not count as speeding). Like vanilla's move check, the allowed distance follows the wearer's move
      * packets (one per client tick), not server ticks: a server below 20 TPS, or one catching up after a stall, gets
-     * several client ticks of move per server tick. The packets count only up to the real time of the window (plus
-     * {@value #PACKET_SLACK} ticks), so sending extra packets buys no speed, and never below {@value #SPEED_WINDOW}. The carry Ship's move since the last tick is not the wearer's.
+     * several client ticks of move per server tick. The packets count only up to the real time of the window, so sending
+     * extra packets buys no speed (on a server at 20 TPS the allowance stays the old {@value #SPEED_WINDOW} steps), and
+     * never below {@value #SPEED_WINDOW}. The carry Ship's move since the last tick is not the wearer's.
      */
     private static void trackRealMove(ServerPlayer player, Wearer w) {
         Vec3 pos = player.position();
@@ -577,7 +576,7 @@ public final class RigServer {
             packets += w.packetWindow[i];
             time += w.timeWindow[i];
         }
-        double steps = Math.max(SPEED_WINDOW, Math.min(packets, time + PACKET_SLACK));
+        double steps = Math.max(SPEED_WINDOW, Math.min(packets, time));
         if (sum > maxStep(player) * steps * SPEED_SLACK + SPEED_EXTRA) w.overSpeed++;
         else w.overSpeed = 0;
     }
