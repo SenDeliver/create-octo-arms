@@ -219,7 +219,7 @@
   "tentaworks.refusal.grab.no_air": "圧縮空気なし：アクチュエーターが垂れ下がっています",
   "tentaworks.refusal.grab.no_sight": "見えません",
   "tentaworks.refusal.grab.not_living": "つかめるのは生きているモブだけです",
-  "tentaworks.refusal.grab.own": "そのシップがあなたを支えています",
+  "tentaworks.refusal.grab.own": "そのシップの上に立っていて、ほかに支えがありません",
   "tentaworks.refusal.grab.owned": "それは他人の動物です",
   "tentaworks.refusal.grab.player": "プレイヤーはつかめません",
   "tentaworks.refusal.grab.riding": "乗っている、または乗られているものはつかめません",

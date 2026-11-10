@@ -219,7 +219,7 @@
   "tentaworks.refusal.grab.no_air": "공기 없음: 액추에이터가 축 늘어졌습니다",
   "tentaworks.refusal.grab.no_sight": "보이지 않음",
   "tentaworks.refusal.grab.not_living": "살아 있는 몹만 움켜쥘 수 있습니다",
-  "tentaworks.refusal.grab.own": "그 배가 당신을 받치고 있습니다",
+  "tentaworks.refusal.grab.own": "그 배 위에 서 있고 달리 받쳐 주는 것이 없습니다",
   "tentaworks.refusal.grab.owned": "다른 사람의 동물입니다",
   "tentaworks.refusal.grab.player": "플레이어는 움켜쥘 수 없습니다",
   "tentaworks.refusal.grab.riding": "타고 있거나 누가 탄 것은 움켜쥘 수 없습니다",

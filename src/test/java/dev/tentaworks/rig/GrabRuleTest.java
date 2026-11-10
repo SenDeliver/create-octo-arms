@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -44,6 +46,23 @@ class GrabRuleTest {
             assertEquals(v.ok(), v == Verdict.LIGHT || v == Verdict.HEAVY, v.name());
             assertEquals(v.ok() ? v == Verdict.HEAVY ? 2 : 1 : 0, v.actuators(), v.name());
         }
+    }
+
+    @Test
+    void aShipThatIsAllThatHoldsTheWearerUpIsNotGrabbed() {
+        String ship = "deck", other = "raft";
+        assertTrue(GrabRule.holdsUp(ship, true, false, List.of(ship, ship, ship, ship)), "every Grip on it");
+        assertTrue(GrabRule.holdsUp(ship, true, false, List.of(ship, ship)), "two Grips, both on it");
+        assertFalse(GrabRule.holdsUp(ship, true, false, Arrays.asList(ship, ship, ship, null)), "one Grip on a world block is enough");
+        assertFalse(GrabRule.holdsUp(ship, true, false, List.of(ship, ship, other)), "one Grip on another Ship is enough");
+        assertFalse(GrabRule.holdsUp(ship, true, true, Arrays.asList(ship, null)), "the Rig carries: feet on its deck do not count");
+        assertFalse(GrabRule.holdsUp(ship, true, false, Arrays.asList(null, null)), "no Grip on it");
+        assertTrue(GrabRule.holdsUp(ship, false, true, List.of()), "Stowed, feet on it");
+        assertFalse(GrabRule.holdsUp(ship, false, false, List.of()), "Stowed on the ground");
+        assertTrue(GrabRule.holdsUp(ship, false, true, Arrays.asList(null, null)), "Falling: Grips no longer hold, the feet decide");
+        assertTrue(GrabRule.holdsUp(ship, true, true, List.of()), "a carrying Rig with no Grip: the feet decide");
+        assertFalse(GrabRule.holdsUp(ship, true, false, List.of()));
+        assertEquals("OWN", Verdict.OWN.name(), "its lower-case name is the refusal key own");
     }
 
     @Test

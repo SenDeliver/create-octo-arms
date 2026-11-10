@@ -1,5 +1,6 @@
 package dev.tentaworks.rig;
 
+import java.util.List;
 import java.util.function.BooleanSupplier;
 
 /**
@@ -8,7 +9,7 @@ import java.util.function.BooleanSupplier;
  * by another wearer, another player's tamed, owned or leashed animal only with {@code grab.tamedOthers}; some point of its box
  * within Reach + {@value #SLACK} of the body ({@link ActuatorReach}) and in sight of it. A light target ({@link #light}) takes
  * one free Actuator ({@link #arm}: the off-hand one first), a heavy one or a Ship both, and both hands must then be empty. A claim
- * or protection mod may still say no ({@link #claimed}).
+ * or protection mod may still say no ({@link #claimed}). A Ship that is all that holds the wearer up is refused ({@link #holdsUp}).
  */
 public final class GrabRule {
     public static final double LIGHT_WIDTH = 1.5;
@@ -30,7 +31,7 @@ public final class GrabRule {
 
     /** Lower-case names are the refusal keys ({@code tentaworks.refusal.grab.<name>}). */
     public enum Verdict {
-        LIGHT, HEAVY, NOT_LIVING, GONE, PLAYER, RIDING, HELD, BOSS, OWNED, TOO_FAR, NO_SIGHT, HANDS_FULL, TWO_HANDS;
+        LIGHT, HEAVY, NOT_LIVING, GONE, PLAYER, RIDING, HELD, BOSS, OWNED, TOO_FAR, NO_SIGHT, HANDS_FULL, TWO_HANDS, OWN;
 
         public boolean ok() {
             return this == LIGHT || this == HEAVY;
@@ -86,6 +87,17 @@ public final class GrabRule {
      */
     public static boolean claimed(boolean mayInteract, BooleanSupplier cancelled) {
         return !mayInteract || cancelled.getAsBoolean();
+    }
+
+    /**
+     * The Ship {@code ship} is all that holds the wearer up (CONTEXT: Ship Grab), so it is not Grabbed, and a held one is let go.
+     * While the Rig carries and has Grips: every Grip is on that Ship ({@code gripShips}, per Grip the id of its Ship, null for a
+     * world block); one Grip on anything else is enough. Otherwise (Stowed, Falling, no Grip): the feet rest on it.
+     */
+    public static boolean holdsUp(Object ship, boolean carries, boolean feetOn, List<?> gripShips) {
+        if (!carries || gripShips.isEmpty()) return feetOn;
+        for (Object g : gripShips) if (!ship.equals(g)) return false;
+        return true;
     }
 
     public static boolean light(double width, double height) {

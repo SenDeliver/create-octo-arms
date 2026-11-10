@@ -219,7 +219,7 @@
   "tentaworks.refusal.grab.no_air": "Немає повітря: маніпулятори безсило обвисли",
   "tentaworks.refusal.grab.no_sight": "Поза полем зору",
   "tentaworks.refusal.grab.not_living": "Схопити можна лише живих мобів",
-  "tentaworks.refusal.grab.own": "Цей корабель тримає вас",
+  "tentaworks.refusal.grab.own": "Ви стоїте на цьому кораблі, і більше ніщо вас не тримає",
   "tentaworks.refusal.grab.owned": "Це чужа тварина",
   "tentaworks.refusal.grab.player": "Гравців не можна схопити",
   "tentaworks.refusal.grab.riding": "Не можна схопити того, хто їде верхи чи на кому їдуть",

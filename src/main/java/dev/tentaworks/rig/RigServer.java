@@ -223,11 +223,26 @@ public final class RigServer {
         return TentacleRigItem.reach(player);
     }
 
-    /** The id of the wearer's Carry Ship (the Ship holding most of their valid Grips, at least two), or null. */
-    public static Object carryShip(ServerPlayer player) {
+    /**
+     * A Ship Grab just took a Ship: the wearer's Grips on it let go now, so it stops being their Carry Ship on this tick and
+     * watchers see those Tentacles leave it. Their client drops them too and grips what is left ({@code RigClient}).
+     */
+    public static void letGo(ServerPlayer player) {
         Wearer w = WEARERS.get(player.getUUID());
-        Anchor a = w == null ? null : anchor(player.level(), w.grips);
-        return a == null ? null : a.id();
+        if (w == null) return;
+        Grip[] kept = w.tentacles.grips().clone();
+        boolean any = false;
+        for (int i = 0; i < kept.length; i++) {
+            if (kept[i] == null || !Grab.onHeldShip(player, kept[i])) continue;
+            kept[i] = null;
+            any = true;
+        }
+        if (!any) return;
+        w.tentacles = w.tentacles.only(kept);
+        w.grips = w.tentacles.list();
+        w.posAnchor = anchor(player.level(), w.grips);
+        w.tickAnchor = anchor(player.level(), w.grips);
+        relay(player, w);
     }
 
     /**

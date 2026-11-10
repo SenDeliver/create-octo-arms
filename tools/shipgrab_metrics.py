@@ -133,6 +133,107 @@ check('W releasing the key after the wheel keeps the Ship; a tap releases it (wh
 t = kind('refuse', 'two_hands')
 check('T an item in the main hand: a Ship refused (two_hands)', t and noted('Needs both Actuators: empty both hands', t[0]['gt']), f'{t[:1]}')
 
+print('== O own Ship (Copper Rig on the deck sd)')
+OWN = 'You stand on that Ship and nothing else holds you'
+strace = [(mm.start(), int(mm[1]), vec(mm[2]), mm[3], int(mm[4]), int(mm[5]), mm[6])
+          for mm in re.finditer(r'STRACE gt=(\d+) Dev pos=(\S+) v=\S+ state=(\w+) grips=(\d+) .*? sgrips=(\d+) carry=(\S+)', s)]
+srv = {x[1]: dict(pos=x[2], state=x[3], grips=x[4], sgrips=x[5], carry=x[6]) for x in strace}
+mk = {mm[1]: dict(gt=int(mm[2]), state=mm[3], grips=int(mm[4]), sgrips=int(mm[5]), carry=mm[6])
+      for mm in re.finditer(r'SPOS (\S+) gt=(\d+) Dev pos=\S+ v=\S+ state=(\w+) grips=(\d+) .*? sgrips=(\d+) carry=(\S+)', s)}
+ctr = {int(mm[1]): dict(pos=vec(mm[2]), d=vec(mm[3]), state=mm[4], sheld=int(mm[5]), carry=mm[6], aff=mm[7])
+       for mm in re.finditer(r'TRACE t=\d+ gt=(\d+) pos=(\S+) d=(\S+) cmd=\S+ held=\d+ state=(\w+) .*? sheld=(\d+) carry=(\S+) .*? aff=(\w+)', c)}
+cmk = {mm[1]: int(mm[2]) for mm in re.finditer(r'CPOS (\S+) gt=(\d+)', c)}
+obs = {int(g): int(n) for g, n in re.findall(r'RWALK gt=(\d+) name=Dev .*? rsgrips=(\d+)', c2)}
+sgl = [(mm.start(), int(mm[1]), mm[2], mm[3], float(mm[4])) for mm in re.finditer(r'SGRAB gt=(\d+) Dev kind=(\w+) target=-1 type=ship why=(\S+) actuators=\d+ speed=\S+ mass=(\S+)', s)]
+def aff(tag):
+    g = cmk.get(tag)
+    return ctr.get(g, {}).get('aff') if g is not None else None
+def after(tag, k, why=None):
+    g = mk.get(tag, {}).get('gt', 1 << 60)
+    return [x for x in sgl if x[1] >= g and x[2] == k and (why is None or x[3] == why)]
+if 'o1' not in mk or 'sd' not in ships:
+    check('O section ran', False, f"marks {sorted(mk)} ships {sorted(ships)}")
+else:
+    o1, o2, o3 = mk['o1'], mk.get('o2', {}), mk.get('o3', {})
+    r1 = after('o1', 'refuse')
+    check('O1 Stowed, feet on the deck: refused (own), the crosshair cue said so first', o1['state'] == 'STOWED' and r1 and r1[0][3] == 'own'
+          and noted(OWN, r1[0][1]) and aff('o1') == 'REFUSED', f"state {o1['state']} {r1[:1]} cue {aff('o1')}")
+    r2 = after('o2', 'refuse')
+    check('O2 Active, every Grip on the deck: refused (own), cue REFUSED', o2.get('state') == 'ACTIVE' and o2.get('grips', 0) >= 2
+          and o2.get('sgrips') == o2.get('grips') and r2 and r2[0][3] == 'own' and noted(OWN, r2[0][1]) and aff('o2') == 'REFUSED',
+          f"{o2} {r2[:1]} cue {aff('o2')}")
+    st3 = after('o3', 'start')
+    check('O3 Active, Grips on the wall and on the deck: Grabbed (mass 162), cue GRAB', o3.get('state') == 'ACTIVE' and o3.get('sgrips', 0) >= 1
+          and o3.get('grips', 0) - o3.get('sgrips', 0) >= 1 and st3 and abs(st3[0][4] - 162) < 0.5 and aff('o3') == 'GRAB',
+          f"{o3} start {st3[:1]} cue {aff('o3')}")
+    if st3:
+        g0, at0 = st3[0][1], st3[0][0]
+        nxt = next((x for x in strace if x[0] > at0), None)
+        check('O3 the deck Grips let go on the Grab tick (server): next STRACE sgrips=0, carry -, off-deck Grips kept',
+              nxt and nxt[5] == 0 and nxt[6] == '-' and nxt[4] >= o3['grips'] - o3['sgrips'], f"{nxt and nxt[1:]}")
+        g1 = mk.get('o4b', {}).get('gt', g0)
+        sw = [srv[g] for g in range(g0 + 1, g1 + 1) if g in srv]
+        cw = [ctr[g] for g in range(g0 + 3, g1 + 1) if g in ctr]
+        ow = [obs[g] for g in range(g0 + 3, g1 + 1) if g in obs]
+        check('O4 while held: no Grip on the held deck, no Carry Ship, still Active (server, wearer, observer)',
+              len(sw) > 30 and all(x['sgrips'] == 0 and x['carry'] == '-' and x['state'] == 'ACTIVE' for x in sw)
+              and len(cw) > 30 and all(x['sheld'] == 0 and x['carry'] == '-' and x['state'] == 'ACTIVE' for x in cw)
+              and len(ow) > 20 and max(ow) == 0 and obs.get(cmk.get('o3'), 0) >= 1,
+              f"server {len(sw)} ticks states {sorted({x['state'] for x in sw})} sgrips max {max((x['sgrips'] for x in sw), default=-1)}; "
+              f"wearer {len(cw)} states {sorted({x['state'] for x in cw})} sheld max {max((x['sheld'] for x in cw), default=-1)}; "
+              f"observer before {obs.get(cmk.get('o3'))} during max {max(ow, default=-1)}")
+        jump = max((math.hypot(*ctr[g]['d']) for g in range(g0 - 1, g1 + 1) if g in ctr), default=9)
+        agree = max((math.dist(ctr[g]['pos'], srv[g]['pos']) for g in range(g0, g0 + 6) if g in ctr and g in srv), default=9)
+        check('O3 client and server agree on the wearer through the Grab (g0..g0+5 within 0.1)', agree < 0.1, f"max gap {agree:.3f}")
+        warn = re.findall(r'Tentacle Rig of Dev [^\n]*|[^\n]*(?:moved too quickly|moved wrongly|moves faster than|kicked)[^\n]*', s[at0:next((x[0] for x in strace if x[1] > g1 + 20), len(s))])
+        check('O4 a clean moment: no step over 0.25 on the wearer, no forced Falling, Stow or moved wrongly', jump < 0.25 and not warn,
+              f"max step {jump:.3f}, warnings {warn[:2]}")
+        a4, b4 = mk.get('o4a', {}).get('gt'), mk.get('o4b', {}).get('gt')
+        sa, sb = at('sd', a4 or 0), at('sd', b4 or 0)
+        rise = sb['pos'][1] - sa['pos'][1] if sa and sb else 0
+        dy = srv[b4]['pos'][1] - srv[a4]['pos'][1] if a4 in srv and b4 in srv else 9
+        check('O4 2 notches nearer lift the held deck, the wearer is not carried', rise >= 0.6 and abs(dy) < 0.1, f"deck rise {rise:.3f}, wearer dy {dy:.3f}")
+    rl5 = after('o4b', 'release')
+    rel = rl5[0] if rl5 else None
+    stow = next((g for g in sorted(srv) if b4 and g > b4 and srv[g]['state'] == 'STOWED'), None) if st3 else None
+    check('O5 Set Down onto the held deck: let go (underfoot) once the feet rest on it', rel and rel[3] == 'underfoot' and stow is not None and 0 <= rel[1] - stow <= 10,
+          f"release {rel and rel[1:4]} Stowed at {stow}")
+    if rel:
+        dk = [at('sd', g)['pos'][1] for g in range(rel[1] + 5, rel[1] + 21) if at('sd', g)]
+        dw = [srv[g]['pos'][1] for g in range(rel[1] + 5, rel[1] + 21) if g in srv]
+        on = dk and dw and all(abs(w - k - 0.5) < 0.05 for w, k in zip(dw, dk))
+        check('O5 after it the deck settles and the wearer stands on it, nothing lifts (rel+5..+20)', len(dk) > 10 and len(dw) > 10
+              and max(dk) - min(dk) < 0.1 and max(dw) - min(dw) < 0.1 and on,
+              f"deck y {min(dk, default=0):.3f}..{max(dk, default=0):.3f} wearer y {min(dw, default=0):.3f}..{max(dw, default=0):.3f} on deck {on}")
+    o6 = mk.get('o6', {})
+    g6 = cmk.get('o6')
+    check('O6 after the release the deck is a place to stand again: Grips on it (server, observer)', o6.get('state') == 'ACTIVE' and o6.get('sgrips', 0) >= 1
+          and obs.get(g6, 0) >= 1, f"{o6} observer {obs.get(g6)}")
+
+    o7 = mk.get('o7', {})
+    st7 = after('o7', 'start')
+    check('O7 Active 4 from the wall, one Grip on it and three on the deck: Grabbed, cue GRAB', o7.get('state') == 'ACTIVE' and o7.get('grips') == 4
+          and o7.get('sgrips') == 3 and st7 and abs(st7[0][4] - 162) < 0.5 and aff('o7') == 'GRAB', f"{o7} start {st7[:1]} cue {aff('o7')}")
+    if st7:
+        g7, at7 = st7[0][1], st7[0][0]
+        nxt = next((x for x in strace if x[0] > at7), None)
+        check('O7 the deck Grips let go on the Grab tick: next STRACE sgrips=0, carry -', nxt and nxt[5] == 0 and nxt[6] == '-', f"{nxt and nxt[1:]}")
+        rl7 = [x for x in sgl if x[1] >= g7 and x[2] == 'release']
+        e7 = rl7[0][1] if rl7 else g7 + 60
+        sw = [srv[g] for g in range(g7 + 2, e7) if g in srv]
+        cw = [ctr[g] for g in range(g7 + 3, e7) if g in ctr]
+        check('O7 re-Gripped off the deck at once (server from the next packet): Active, 2+ Grips, none on the deck, no Carry Ship (server, wearer)',
+              len(sw) > 30 and all(x['state'] == 'ACTIVE' and x['grips'] >= 2 and x['sgrips'] == 0 and x['carry'] == '-' for x in sw)
+              and len(cw) > 30 and all(x['state'] == 'ACTIVE' and x['sheld'] == 0 and x['carry'] == '-' for x in cw),
+              f"server {len(sw)} ticks states {sorted({x['state'] for x in sw})} grips min {min((x['grips'] for x in sw), default=-1)}; wearer {len(cw)} states {sorted({x['state'] for x in cw})}")
+        jump = max((math.hypot(*ctr[g]['d']) for g in range(g7 - 1, e7 + 1) if g in ctr), default=9)
+        agree = max((math.dist(ctr[g]['pos'], srv[g]['pos']) for g in range(g7, g7 + 6) if g in ctr and g in srv), default=9)
+        warn = re.findall(r'Tentacle Rig of Dev [^\n]*|[^\n]*(?:moved too quickly|moved wrongly|moves faster than|kicked)[^\n]*',
+                          s[at7:next((x[0] for x in strace if x[1] > e7 + 20), len(s))])
+        check('O7 a clean moment: no client step over 0.25, client and server within 0.1, no Rig WARN or kick', jump < 0.25 and agree < 0.1 and not warn,
+              f"max step {jump:.3f}, gap {agree:.3f}, warnings {warn[:2]}")
+        check('O7 a tap lets the deck go (why=release)', rl7 and rl7[0][3] == 'release', f"{rl7[:1]}")
+
 exc = [l for l in (c + c2 + s).splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'authlib' not in l and 'neoforge-client.new.tmp.toml' not in l
        and 'Error loading class: net/irisshaders/' not in l and 'org.gradle.' not in l and 'MessageIOException' not in l
        and 'sun.nio.fs.UnixException' not in l]

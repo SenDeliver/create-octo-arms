@@ -219,7 +219,7 @@
   "tentaworks.refusal.grab.no_air": "No Air: the Actuators hang limp",
   "tentaworks.refusal.grab.no_sight": "Out of sight",
   "tentaworks.refusal.grab.not_living": "Only living mobs can be Grabbed",
-  "tentaworks.refusal.grab.own": "That Ship is holding you up",
+  "tentaworks.refusal.grab.own": "You stand on that Ship and nothing else holds you",
   "tentaworks.refusal.grab.owned": "That's someone else's animal",
   "tentaworks.refusal.grab.player": "Players can't be Grabbed",
   "tentaworks.refusal.grab.riding": "Can't Grab something riding or ridden",

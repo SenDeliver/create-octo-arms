@@ -219,7 +219,7 @@
   "tentaworks.refusal.grab.no_air": "Sin aire: los actuadores cuelgan sin fuerza",
   "tentaworks.refusal.grab.no_sight": "Fuera de la vista",
   "tentaworks.refusal.grab.not_living": "Solo se pueden atrapar criaturas vivas",
-  "tentaworks.refusal.grab.own": "Esa nave te está sosteniendo",
+  "tentaworks.refusal.grab.own": "Estás sobre esa nave y nada más te sostiene",
   "tentaworks.refusal.grab.owned": "Ese animal es de otro jugador",
   "tentaworks.refusal.grab.player": "No se puede atrapar a los jugadores",
   "tentaworks.refusal.grab.riding": "No puedes atrapar algo que monta o que está montado",

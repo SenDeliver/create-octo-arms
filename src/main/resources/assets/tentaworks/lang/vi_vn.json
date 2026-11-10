@@ -219,7 +219,7 @@
   "tentaworks.refusal.grab.no_air": "Hết Khí nén: các Tay máy rũ xuống",
   "tentaworks.refusal.grab.no_sight": "Khuất tầm nhìn",
   "tentaworks.refusal.grab.not_living": "Chỉ có thể Tóm sinh vật sống",
-  "tentaworks.refusal.grab.own": "Chính Tàu đó đang đỡ bạn",
+  "tentaworks.refusal.grab.own": "Bạn đang đứng trên Tàu đó và không có gì khác giữ bạn",
   "tentaworks.refusal.grab.owned": "Đó là con vật của người khác",
   "tentaworks.refusal.grab.player": "Không thể Tóm người chơi",
   "tentaworks.refusal.grab.riding": "Không thể Tóm thứ đang cưỡi hoặc đang bị cưỡi",

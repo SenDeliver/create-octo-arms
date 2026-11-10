@@ -5,7 +5,10 @@ import dev.tentaworks.client.ActuatorClient;
 import dev.tentaworks.client.ActuatorHud;
 import dev.tentaworks.client.RigClient;
 import dev.tentaworks.rig.Actuators;
+import dev.tentaworks.compat.ShipFrames;
+import dev.tentaworks.rig.Grip;
 import dev.tentaworks.rig.Grips;
+import dev.tentaworks.rig.Tentacles;
 import dev.tentaworks.rig.Hold;
 import dev.tentaworks.rig.SetDown;
 import dev.tentaworks.client.RigVisuals;
@@ -846,6 +849,17 @@ public final class DevScript {
         }
     }
 
+    /** Grips on a Ship of another player's Rig as this client renders them (the Tentacles' targets). */
+    private static int shipGrips(Minecraft mc, RigVisuals.Visual v) {
+        if (v == null) return 0;
+        int n = 0;
+        for (int i = 0; i < Tentacles.SLOTS; i++) {
+            Grip g = v.slot(i).target();
+            if (g != null && ShipFrames.get().isPlot(mc.level, g.block()) && ShipFrames.get().containing(mc.level, g.block()) != null) n++;
+        }
+        return n;
+    }
+
     private static void trace(Minecraft mc, LocalPlayer p) {
         Vec3 pos = p.position();
         Vec3 d = lastPos == null ? Vec3.ZERO : pos.subtract(lastPos);
@@ -864,10 +878,10 @@ public final class DevScript {
             if (other == p) continue;
             RigVisuals.Visual v = RigVisuals.get(other);
             ActuatorClient.State s = ActuatorClient.get(other);
-            LOG.info("RWALK gt={} name={} state={} wa={} sneak={} crouch={} pose={} gheld={} gship={} hmob={} far={}", mc.level.getGameTime(), other.getGameProfile().getName(),
+            LOG.info("RWALK gt={} name={} state={} wa={} sneak={} crouch={} pose={} gheld={} gship={} hmob={} far={} rsgrips={}", mc.level.getGameTime(), other.getGameProfile().getName(),
                     v == null ? "-" : v.state(), String.format(Locale.ROOT, "%.4f", other.walkAnimation.speed()),
                     other.isShiftKeyDown(), other.isCrouching(), other.getPose(), s.heldId(), s.ship() == null ? "-" : s.ship().toShortString().replace(" ", ""),
-                    heldCentre(mc, s), s.farTtl());
+                    heldCentre(mc, s), s.farTtl(), shipGrips(mc, v));
         }
         if (!SABLE) return;
         List<String> poses = shipPoses != null ? shipPoses : DevShipsClient.poses(mc.level);

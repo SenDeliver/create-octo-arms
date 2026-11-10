@@ -94,7 +94,7 @@ public final class TentaworksLang {
         refusal(GRAB, "claimed", "Protected: you can't Grab that here");
         refusal(GRAB, "ships_off", "Ship Grab is off on this server");
         refusal(GRAB, "scale", "Can't Grab a scaled Ship");
-        refusal(GRAB, "own", "That Ship is holding you up");
+        refusal(GRAB, "own", "You stand on that Ship and nothing else holds you");
         refusal(GRAB, "mass", "Too heavy for this Rig");
         refusal(GRAB, "crewed", "Someone is on board");
         REGISTRATE.addRawLang("tentaworks.rig.deft_idle", "Deft does nothing until Actuators are fitted");

@@ -374,12 +374,13 @@ public final class Grips {
 
     /**
      * First point along this tick's fall step where the body is Held, so a fast fall cannot step over a thin Held band.
+     * The Ship whose id is {@code skipShip} (the one the Actuators hold) does not catch.
      */
-    public static Vec3 firstHeld(Level level, Entity entity, Vec3 motion, double reach) {
+    public static Vec3 firstHeld(Level level, Entity entity, Vec3 motion, double reach, Object skipShip) {
         double len = motion.length();
         if (len < 1.0E-4) return null;
         Vec3 centre = body(entity);
-        List<Face> faces = faces(level, centre.add(motion.scale(0.5)), reach + len / 2 + 0.5);
+        List<Face> faces = faces(level, centre.add(motion.scale(0.5)), reach + len / 2 + 0.5, skipShip);
         int n = Mth.ceil(len / 0.1);
         for (int k = 1; k <= n; k++) {
             Vec3 moved = collide(level, entity, motion.scale((double) k / n));
