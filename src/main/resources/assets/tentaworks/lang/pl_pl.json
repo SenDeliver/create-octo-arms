@@ -80,7 +80,7 @@
   "tentaworks.configuration.speed.check": "Kontrola prędkości",
   "tentaworks.configuration.speed.check.tooltip": "Chowa zestaw, który porusza się szybciej niż jego maks. prędkość (anty-cheat). Wył.: serwer ufa prędkości noszącego, dla serwerów z lagiem",
   "tentaworks.configuration.speed.max": "Maks. prędkość",
-  "tentaworks.configuration.speed.max.tooltip": "Maksymalna prędkość zestawu w blokach na sekundę. Ogranicza prędkość w ustawieniach zestawu każdego gracza; Zwinność podnosi obie wartości na swoim zestawie",
+  "tentaworks.configuration.speed.max.tooltip": "Bazowa maksymalna prędkość zestawu, bez Zwinności, w blokach na sekundę: najwyższa prędkość, jaką gracz ustawi w ustawieniach zestawu. Zwinność mnoży ją na swoim zestawie",
   "tentaworks.configuration.title": "Octo Arms: konfiguracja",
   "tentaworks.display_source.rig_air": "Powietrze zestawu",
   "tentaworks.display_source.rig_air.air": "Powietrze",

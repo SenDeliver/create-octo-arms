@@ -8,6 +8,7 @@ import com.simibubi.create.foundation.gui.widget.SelectionScrollInput;
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.network.RigSettingsPacket;
 import dev.tentaworks.registry.TentaworksDataComponents;
+import dev.tentaworks.rig.RigEnchants;
 import dev.tentaworks.rig.RigSettings;
 import dev.tentaworks.rig.RigSettings.ActivationMode;
 import dev.tentaworks.rig.RigSlot;
@@ -75,6 +76,18 @@ public class RigSettingsScreen extends AbstractSimiScreen {
         return String.format(Locale.ROOT, "%.1f", v / 10.0);
     }
 
+    /**
+     * The Speed row: the Speed the Rig really carries you at, the setting times this Rig's Swift (as {@code RigClient} moves),
+     * so the top of the slider reads the same as the top Speed in {@link #limits()}. The setting itself is stored without Swift.
+     */
+    public Component speedValue() {
+        return Component.translatable(key("blocks_per_second"), tenths((int) Math.round(speed * RigEnchants.swift(rig))));
+    }
+
+    public Component limits() {
+        return Component.translatable(key("limits"), tenths((int) Math.floor(reach * 10)), tenths((int) Math.round(TentacleRigItem.topSpeed(rig) * 10)));
+    }
+
     public RigSettings settings() {
         return new RigSettings(height / 10.0F, speed / 10.0F, mode).clamped(reach);
     }
@@ -124,13 +137,11 @@ public class RigSettingsScreen extends AbstractSimiScreen {
 
         row(g, x, y, 0, AllIcons.I_TOOL_MOVE_Y, Component.translatable(key("standing_height")),
                 Component.translatable(key("blocks"), tenths(height)));
-        row(g, x, y, 1, AllIcons.I_PRIORITY_VERY_HIGH, Component.translatable(key("speed")),
-                Component.translatable(key("blocks_per_second"), tenths(speed)));
+        row(g, x, y, 1, AllIcons.I_PRIORITY_VERY_HIGH, Component.translatable(key("speed")), speedValue());
         row(g, x, y, 2, AllIcons.I_ACTIVE, Component.translatable(key("activation")), modeName(mode));
 
         int hintColor = AllGuiTextures.FONT_COLOR;
-        g.drawString(font, Component.translatable(key("limits"), tenths((int) Math.floor(reach * 10)), tenths((int) Math.round(TentacleRigItem.topSpeed(rig) * 10))),
-                x + 8, y + 102, hintColor, false);
+        g.drawString(font, limits(), x + 8, y + 102, hintColor, false);
         Component second = mode == ActivationMode.KEY
                 ? (TentaworksKeys.TOGGLE.isUnbound() ? Component.translatable(key("toggle_unbound"))
                 : Component.translatable(key("toggle_key"), TentaworksKeys.TOGGLE.getTranslatedKeyMessage()))

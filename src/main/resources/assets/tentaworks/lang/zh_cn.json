@@ -80,7 +80,7 @@
   "tentaworks.configuration.speed.check": "速度检查",
   "tentaworks.configuration.speed.check.tooltip": "收起移动速度超过其最高速度的装置（反作弊）。关闭：服务器信任佩戴者的速度，适用于卡顿的服务器",
   "tentaworks.configuration.speed.max": "最高速度",
-  "tentaworks.configuration.speed.max.tooltip": "装置的最高速度，单位：格/秒。限制每位玩家装置设置中的速度；疾行会同时提高其所在装置的这两项数值",
+  "tentaworks.configuration.speed.max.tooltip": "装置的基础最高速度，不含疾行，单位：格/秒：玩家在装置设置中能选的最高速度。疾行会在其所在装置上将其倍增",
   "tentaworks.configuration.title": "Octo Arms：配置",
   "tentaworks.display_source.rig_air": "装置空气",
   "tentaworks.display_source.rig_air.air": "空气",

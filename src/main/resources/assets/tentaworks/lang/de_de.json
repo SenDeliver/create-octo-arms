@@ -80,7 +80,7 @@
   "tentaworks.configuration.speed.check": "Tempoprüfung",
   "tentaworks.configuration.speed.check.tooltip": "Verstaut ein Rig, das sich schneller als sein Höchsttempo bewegt (Anti-Cheat). Aus: Der Server vertraut dem Tempo des Trägers, für Server mit Lag",
   "tentaworks.configuration.speed.max": "Höchsttempo",
-  "tentaworks.configuration.speed.max.tooltip": "Höchsttempo des Rigs, Blöcke pro Sekunde. Begrenzt das Tempo in den Rig-Einstellungen jedes Spielers; Flinkheit erhöht beides bei ihrem Rig",
+  "tentaworks.configuration.speed.max.tooltip": "Grund-Höchsttempo des Rigs, ohne Flinkheit, in Blöcken pro Sekunde: das höchste Tempo, das ein Spieler in den Rig-Einstellungen einstellen kann. Flinkheit vervielfacht es bei ihrem Rig",
   "tentaworks.configuration.title": "Octo Arms: Konfiguration",
   "tentaworks.display_source.rig_air": "Rig-Luft",
   "tentaworks.display_source.rig_air.air": "Luft",
