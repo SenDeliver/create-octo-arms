@@ -219,7 +219,7 @@
   "tentaworks.refusal.grab.no_air": "Brak powietrza: siłowniki zwisają bezwładnie",
   "tentaworks.refusal.grab.no_sight": "Poza zasięgiem wzroku",
   "tentaworks.refusal.grab.not_living": "Złapać można tylko żywe stworzenia",
-  "tentaworks.refusal.grab.own": "Ten statek cię utrzymuje",
+  "tentaworks.refusal.grab.own": "Stoisz na tym statku i nic innego cię nie trzyma",
   "tentaworks.refusal.grab.owned": "To cudze zwierzę",
   "tentaworks.refusal.grab.player": "Graczy nie można złapać",
   "tentaworks.refusal.grab.riding": "Nie można złapać czegoś, co jedzie lub na czym ktoś jedzie",

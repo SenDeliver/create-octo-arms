@@ -219,7 +219,7 @@
   "tentaworks.refusal.grab.no_air": "沒有空氣：致動臂癱軟下垂",
   "tentaworks.refusal.grab.no_sight": "視線受阻",
   "tentaworks.refusal.grab.not_living": "只能抓取活著的生物",
-  "tentaworks.refusal.grab.own": "那艘船艦正撐著你",
+  "tentaworks.refusal.grab.own": "你正站在那艘船艦上，沒有其他東西撐著你",
   "tentaworks.refusal.grab.owned": "那是別人的動物",
   "tentaworks.refusal.grab.player": "無法抓取玩家",
   "tentaworks.refusal.grab.riding": "無法抓取正在騎乘或被騎乘的實體",

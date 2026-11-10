@@ -219,7 +219,7 @@
   "tentaworks.refusal.grab.no_air": "Plus d'air : les actionneurs pendent, inertes",
   "tentaworks.refusal.grab.no_sight": "Hors de vue",
   "tentaworks.refusal.grab.not_living": "Seules les créatures vivantes peuvent être saisies",
-  "tentaworks.refusal.grab.own": "Ce navire vous porte",
+  "tentaworks.refusal.grab.own": "Vous êtes sur ce navire et rien d'autre ne vous tient",
   "tentaworks.refusal.grab.owned": "C'est l'animal de quelqu'un d'autre",
   "tentaworks.refusal.grab.player": "Les joueurs ne peuvent pas être saisis",
   "tentaworks.refusal.grab.riding": "Impossible de saisir ce qui chevauche ou est chevauché",

@@ -219,7 +219,7 @@
   "tentaworks.refusal.grab.no_air": "Keine Luft: Die Aktuatoren hängen schlaff",
   "tentaworks.refusal.grab.no_sight": "Außer Sicht",
   "tentaworks.refusal.grab.not_living": "Nur lebende Kreaturen lassen sich packen",
-  "tentaworks.refusal.grab.own": "Dieses Schiff trägt dich gerade",
+  "tentaworks.refusal.grab.own": "Du stehst auf diesem Schiff und nichts anderes hält dich",
   "tentaworks.refusal.grab.owned": "Das ist das Tier eines anderen",
   "tentaworks.refusal.grab.player": "Spieler lassen sich nicht packen",
   "tentaworks.refusal.grab.riding": "Was reitet oder geritten wird, lässt sich nicht packen",

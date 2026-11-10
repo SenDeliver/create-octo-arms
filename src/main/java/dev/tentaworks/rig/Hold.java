@@ -45,10 +45,11 @@ public final class Hold {
 
     /**
      * What the server sees of a hold this tick; {@code farTicks} counts ticks in a row beyond Reach + {@value #FAR_SLACK},
-     * {@code handFull} an item is in the hand of a holding Actuator.
+     * {@code handFull} an item is in the hand of a holding Actuator, {@code underfoot} the held Ship is all that holds the wearer up
+     * ({@link GrabRule#holdsUp}: their feet rest on it).
      */
     public record Status(boolean wearerAlive, boolean fitted, boolean air, boolean crawl, boolean targetGone, boolean sameLevel, int farTicks,
-                         boolean handFull) {
+                         boolean handFull, boolean underfoot) {
     }
 
     private Hold() {
@@ -194,7 +195,8 @@ public final class Hold {
 
     /**
      * Why the hold ends now (the release reason), or null while it goes on: "hand" when an item lands in a holding Actuator's
-     * hand (pickup, swap, hotbar change). Stow, Setting Down, Rides, glides and Falling are not on the list.
+     * hand (pickup, swap, hotbar change), "underfoot" when the wearer stands on the Ship they hold (it would carry them, and they
+     * it). Stow, Setting Down, Rides, glides and Falling are not on the list.
      */
     public static @Nullable String ends(Status s) {
         if (!s.wearerAlive()) return "death";
@@ -205,6 +207,7 @@ public final class Hold {
         if (!s.sameLevel()) return "dimension";
         if (s.farTicks() >= FAR_TICKS) return "far";
         if (s.handFull()) return "hand";
+        if (s.underfoot()) return "underfoot";
         return null;
     }
 }

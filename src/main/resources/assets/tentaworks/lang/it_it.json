@@ -219,7 +219,7 @@
   "tentaworks.refusal.grab.no_air": "Niente aria: gli attuatori pendono inerti",
   "tentaworks.refusal.grab.no_sight": "Fuori vista",
   "tentaworks.refusal.grab.not_living": "Si possono afferrare solo creature vive",
-  "tentaworks.refusal.grab.own": "Quella nave ti sta sorreggendo",
+  "tentaworks.refusal.grab.own": "Sei su quella nave e nient'altro ti sorregge",
   "tentaworks.refusal.grab.owned": "È l'animale di qualcun altro",
   "tentaworks.refusal.grab.player": "I giocatori non si possono afferrare",
   "tentaworks.refusal.grab.riding": "Non puoi afferrare chi cavalca o è cavalcato",

@@ -57,6 +57,7 @@ import java.util.List;
  * for use and interaction ({@link #sneaking()}), without the crouch.
  * Air and the Rig Settings come from the synced Rig stack; the server has the last word and corrects the state with a RigStatePacket.
  * The on/off input is the Double Jump, or the toggle key when the Rig's Activation Mode is key only.
+ * The Ship the Actuators hold is no place to stand: no Grip on it, and the Tentacles on it let go the tick its Grab lands.
  * Riding a Ship: while carrying, the carry Ship (the one holding most current Grips, at least two, as on the server) moves
  * the wearer by its own move this tick on top of the Rig's motion, unless Sable already does (feet on its deck). Held is tested
  * where the body really ends up. The motion sent to the server and fed to the gait is the Rig's own, never the carry.
@@ -186,10 +187,12 @@ public final class RigClient {
         Level level = player.level();
         ShipFrames ships = ShipFrames.get();
         Vec3 body = Grips.body(player);
+        Object heldShip = ActuatorClient.heldShip(level);
+        if (heldShip != null) GAIT.letGo(g -> ships.isPlot(level, g.block()) && ships.containing(level, g.block()) instanceof Frame f && f.id().equals(heldShip));
         carryShip = carryShip(level, GAIT.grips());
         Vec3 shipMove = carryShip == null ? Vec3.ZERO : carryShip.carry(player.position());
         boolean tracked = carryShip != null && ships.tracking(player, carryShip);
-        List<Grips.Face> faces = Grips.faces(level, body, reach + Math.max(1.0, step + 0.5) + shipMove.length(), ActuatorClient.heldShip(level));
+        List<Grips.Face> faces = Grips.faces(level, body, reach + Math.max(1.0, step + 0.5) + shipMove.length(), heldShip);
         heldCount = Grips.count(faces, state.carries() ? body.add(shipMove) : body, reach);
         boolean held = heldCount >= Grips.HELD;
         boolean air = RigAir.has(player);
@@ -254,7 +257,7 @@ public final class RigClient {
             }
             case FALLING -> {
                 motion = player.getDeltaMovement();
-                Vec3 catchAt = noRegrab || worn ? null : Grips.firstHeld(level, player, motion, reach);
+                Vec3 catchAt = noRegrab || worn ? null : Grips.firstHeld(level, player, motion, reach, heldShip);
                 if (catchAt != null) {
                     motion = catchAt;
                     player.setDeltaMovement(motion);

@@ -64,6 +64,7 @@ import org.joml.Vector3dc;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
@@ -84,7 +85,9 @@ import java.util.function.Consumer;
  * where it was in the wearer's view at the start (no farther than Reach − {@value #SHIP_INSIDE} from the eye), so it swings
  * round the wearer as they look about, and turns its yaw with the wearer's ({@link Hold#shipPoint}, {@link Hold#shipTurn};
  * {@value #SHIP_GAIN}/s of the error plus the target's own move, which also cancels gravity). Sable collides it on the way.
- * Grips on it do not hold the wearer up while held.
+ * A Ship that is all that holds the wearer up is refused ({@link GrabRule#holdsUp}): one Grip off it is enough, the wearer's
+ * Grips on it let go at the Grab ({@link RigServer#letGo}) and none hold on to it or hold the wearer up while it is held. A
+ * held Ship the wearer comes to stand on is let go (underfoot).
  * Every hold ends in {@link #release}: set down where it is (calm for {@value #CALM_TICKS} ticks, onto a seat, boat or minecart
  * when one is under the crosshair or the target) or thrown (awake at once, its Impact armed, {@link ActuatorFxPacket} THROW to
  * the clients). The automatic ends are
@@ -449,7 +452,7 @@ public final class Grab {
         Vec3 body = Grips.body(wearer);
         if (why == null && !frame.unitScale()) why = "scale";
         if (why == null && shipHeldByAnyone(ship.id())) why = "held";
-        if (why == null && own(wearer, frame)) why = "own";
+        if (why == null && own(wearer, frame)) why = key(GrabRule.Verdict.OWN);
         if (why == null && !(mass >= 0 && mass <= TentacleRigItem.wornTier(wearer).massCap())) why = "mass";
         if (why == null && body.distanceTo(frame.toWorld(local)) > TentacleRigItem.reach(wearer) + GrabRule.SLACK) why = "too_far";
         if (why == null && !Grips.visible(level, frame.toLocal(body), local, face, true)) why = "no_sight";
@@ -478,6 +481,7 @@ public final class Grab {
         heavySpeed(wearer, true);
         listener.accept(new Event(wearer, "start", null, "ship", 2, 0, mass));
         changed(wearer);
+        RigServer.letGo(wearer);
     }
 
     /** Another player is on board (Sable tracks them on it): a Ship with people on it is never moved. */
@@ -486,9 +490,21 @@ public final class Grab {
         return false;
     }
 
-    /** The wearer stands on that Ship or it is their Carry Ship: it is what holds them up. */
+    /** That Ship is all that holds the wearer up, as the server sees the Rig and its valid Grips. */
     private static boolean own(ServerPlayer wearer, Frame frame) {
-        return ShipFrames.get().tracking(wearer, frame) || frame.id().equals(RigServer.carryShip(wearer));
+        return holdsUp(wearer, frame, RigServer.state(wearer).carries(), RigServer.grips(wearer));
+    }
+
+    /** {@link GrabRule#holdsUp} for {@code wearer} and the Ship of {@code frame}: the feet rest on it when Sable tracks them on it. */
+    public static boolean holdsUp(Player wearer, Frame frame, boolean carries, Iterable<Grip> grips) {
+        ShipFrames ships = ShipFrames.get();
+        List<Object> on = new ArrayList<>(Grips.SLOTS);
+        for (Grip g : grips) {
+            if (g == null) continue;
+            Frame f = ships.isPlot(wearer.level(), g.block()) ? ships.containing(wearer.level(), g.block()) : null;
+            on.add(f == null ? null : f.id());
+        }
+        return GrabRule.holdsUp(frame.id(), carries, ships.tracking(wearer, frame), on);
     }
 
     private static Vec3 vec(Vector3dc v) {
@@ -672,8 +688,9 @@ public final class Grab {
         Level level = h.ship != null ? h.level : h.target.level();
         boolean full = h.arm.uses(InteractionHand.MAIN_HAND) && !wearer.getMainHandItem().isEmpty()
                 || h.arm.uses(InteractionHand.OFF_HAND) && !wearer.getOffhandItem().isEmpty();
+        boolean underfoot = h.ship != null && !gone && level == wearer.level() && holdsUp(wearer, h.ship.frame(), RigServer.state(wearer).carries(), RigServer.grips(wearer));
         return new Hold.Status(wearer.isAlive(), Actuators.fitted(wearer), RigAir.has(wearer), RigServer.state(wearer) == RigState.CRAWL, gone,
-                level == wearer.level(), h.far, full);
+                level == wearer.level(), h.far, full, underfoot);
     }
 
     private static void holdMob(ServerPlayer wearer, Held h) {

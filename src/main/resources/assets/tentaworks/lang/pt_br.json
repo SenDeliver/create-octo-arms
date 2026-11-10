@@ -219,7 +219,7 @@
   "tentaworks.refusal.grab.no_air": "Sem Ar: os Atuadores ficam pendurados sem força",
   "tentaworks.refusal.grab.no_sight": "Fora de vista",
   "tentaworks.refusal.grab.not_living": "Só criaturas vivas podem ser Capturadas",
-  "tentaworks.refusal.grab.own": "Essa Nave está segurando você",
+  "tentaworks.refusal.grab.own": "Você está sobre essa Nave e nada mais te segura",
   "tentaworks.refusal.grab.owned": "Esse animal é de outra pessoa",
   "tentaworks.refusal.grab.player": "Jogadores não podem ser Capturados",
   "tentaworks.refusal.grab.riding": "Não dá para Capturar algo montando ou montado",

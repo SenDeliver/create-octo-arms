@@ -48,6 +48,8 @@ import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
+
 /**
  * Client side of the Actuators: what each player's Actuators hold and where a Far Use reaches (from the server), and the
  * wearer's Grab key ({@link GrabKeyState}). A press asks for a Grab of the mob or Ship block under the crosshair within Reach
@@ -357,6 +359,8 @@ public final class ActuatorClient {
             Frame frame = ShipFrames.get().containing(player.level(), b.getBlockPos());
             if (frame == null || !TentaworksConfig.value(TentaworksConfig.GRAB_SHIPS) || !ShipFrames.enabled()) return Affordance.NONE;
             affordanceAt = frame.toWorld(b.getLocation());
+            if (Grab.holdsUp(player, frame, RigClient.state().carries(), Arrays.asList(RigClient.grips())))
+                return new Affordance(Affordance.Kind.REFUSED, HoldArm.NONE, GrabRule.Verdict.OWN);
             if (!ActuatorReach.within(Grips.body(player), affordanceAt, reach + GrabRule.SLACK))
                 return new Affordance(Affordance.Kind.OUT_OF_REACH, HoldArm.NONE, GrabRule.Verdict.TOO_FAR);
             return arms(2, main, off);

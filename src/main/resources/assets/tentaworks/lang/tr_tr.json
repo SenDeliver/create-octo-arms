@@ -219,7 +219,7 @@
   "tentaworks.refusal.grab.no_air": "Hava yok: Aktüatörler gevşekçe sarkıyor",
   "tentaworks.refusal.grab.no_sight": "Görüş dışında",
   "tentaworks.refusal.grab.not_living": "Yalnızca canlı yaratıklar yakalanabilir",
-  "tentaworks.refusal.grab.own": "O Gemi sizi ayakta tutuyor",
+  "tentaworks.refusal.grab.own": "O Geminin üzerinde duruyorsunuz ve sizi başka hiçbir şey tutmuyor",
   "tentaworks.refusal.grab.owned": "O, başkasının hayvanı",
   "tentaworks.refusal.grab.player": "Oyuncular yakalanamaz",
   "tentaworks.refusal.grab.riding": "Binen veya binilen bir şey yakalanamaz",

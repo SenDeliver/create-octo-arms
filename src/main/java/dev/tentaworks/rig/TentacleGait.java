@@ -9,6 +9,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Which Grip each Tentacle holds, and when it Steps (client side; the server only validates the Grips).
@@ -94,6 +95,15 @@ public final class TentacleGait {
             grips[i] = null;
             phase[i] = 1;
             planted[i] = lifted[i] = false;
+        }
+    }
+
+    /** The Tentacles whose Grip {@code which} names let go at once (hanging free); the next tick they Step to new Grips. */
+    public void letGo(Predicate<Grip> which) {
+        for (int i = 0; i < SLOTS; i++) {
+            if (grips[i] == null || !which.test(grips[i])) continue;
+            grips[i] = null;
+            phase[i] = 1;
         }
     }
 
