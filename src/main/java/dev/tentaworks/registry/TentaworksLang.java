@@ -160,13 +160,9 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(hud + "ship", "Ship");
         REGISTRATE.addRawLang(hud + "heavy", "heavy");
         REGISTRATE.addRawLang(hud + "no_air", "No Air: Actuators limp");
-        REGISTRATE.addRawLang(hud + "grab", "Grab");
         REGISTRATE.addRawLang(hud + "set_down", "Set Down");
         REGISTRATE.addRawLang(hud + "throw", "Throw");
         REGISTRATE.addRawLang(hud + "distance", "Distance");
-        REGISTRATE.addRawLang(hud + "two_hands", "Needs both Actuators");
-        REGISTRATE.addRawLang(hud + "hands_full", "Hands full");
-        REGISTRATE.addRawLang(hud + "out_of_reach", "Out of Reach");
 
         String cfg = TentaworksIds.MOD_ID + ".configuration.";
         REGISTRATE.addRawLang(cfg + "title", "Octo Arms: Config");
@@ -182,6 +178,7 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(cfg + "firstPerson.limbOpacity", "Limb opacity");
         REGISTRATE.addRawLang(cfg + "hud", "HUD");
         REGISTRATE.addRawLang(cfg + "hud.crosshair", "Actuator crosshair marks");
+        REGISTRATE.addRawLang(cfg + "hud.hints", "Key hints");
         REGISTRATE.addRawLang(cfg + "reach", "Reach");
         REGISTRATE.addRawLang(cfg + "reach.copper", "Copper Reach");
         REGISTRATE.addRawLang(cfg + "reach.netherite", "Netherite Reach");
@@ -251,7 +248,8 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(cfg + "impact.damagePerSpeed.tooltip", "Impact damage per block per tick of speed above the minimum, dealt once per Throw");
         REGISTRATE.addRawLang(cfg + "impact.minSpeed.tooltip", "Slowest Thrown speed that deals Impact damage, blocks per tick");
         REGISTRATE.addRawLang(cfg + "impact.cap.tooltip", "Most Impact damage one Throw can deal");
-        REGISTRATE.addRawLang(cfg + "hud.crosshair.tooltip", "Marks around the crosshair: what the Actuators reach, Grab and Set Down hints, Dual Wield");
+        REGISTRATE.addRawLang(cfg + "hud.crosshair.tooltip", "Marks around the crosshair: what the Actuators reach and hold, the Grab cue, Dual Wield");
+        REGISTRATE.addRawLang(cfg + "hud.hints.tooltip", "Key hints for the first two holds of a game session: the Grab key beside the crosshair and, after a Grab, the keys for Set Down, Throw and Distance above the hotbar");
         REGISTRATE.addRawLang(cfg + "firstPerson.limbOpacity.tooltip", "Opacity of every Limb (Tentacles and Actuators) in first person: 1.0 solid, 0.1 faint");
         REGISTRATE.addRawLang(cfg + "crawl.speed.tooltip", "Descent speed with no Air left (Crawl), blocks per second");
         REGISTRATE.addRawLang(cfg + "enchant.farReachPerLevel.tooltip", "Far Reach: extra Reach per level, blocks");

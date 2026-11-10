@@ -17,6 +17,7 @@ public final class TentaworksClientConfig {
     public static final ModConfigSpec.EnumValue<ForwardMode> FORWARD;
     public static final ModConfigSpec.DoubleValue LIMB_OPACITY;
     public static final ModConfigSpec.BooleanValue CROSSHAIR;
+    public static final ModConfigSpec.BooleanValue HINTS;
 
     /** What {@code W}/{@code S} follow while the Rig carries you. */
     public enum ForwardMode implements TranslatableEnum {
@@ -47,8 +48,10 @@ public final class TentaworksClientConfig {
                 .translation(t + "firstPerson.limbOpacity").defineInRange("limbOpacity", 1.0, 0.1, 1.0);
         b.pop();
         b.translation(t + "hud").push("hud");
-        CROSSHAIR = b.comment("Actuator marks around the crosshair: what an Actuator can reach, the Grab cue and the hints while holding")
+        CROSSHAIR = b.comment("Actuator marks around the crosshair: what the Actuators reach and hold, the Grab cue, Dual Wield")
                 .translation(t + "hud.crosshair").define("crosshair", true);
+        HINTS = b.comment("Key hints for the first two holds of a game session: the Grab key beside the crosshair and, after a Grab, the keys for Set Down, Throw and Distance above the hotbar")
+                .translation(t + "hud.hints").define("hints", true);
         b.pop();
         SPEC = b.build();
     }
@@ -70,5 +73,9 @@ public final class TentaworksClientConfig {
 
     public static boolean crosshair() {
         return TentaworksConfig.value(CROSSHAIR);
+    }
+
+    public static boolean hints() {
+        return TentaworksConfig.value(HINTS);
     }
 }

@@ -1,5 +1,6 @@
 """Crosshair HUD sprites of the Actuators (GUI atlas, own pixels): claw brackets left and right of the crosshair (solid and
-hollow), the Grab claws (open: free to take; closed: the open claw shut around a block), the reason glyphs, the set-down marker and the scroll wheel.
+hollow), their grip form (a bracket shut to a small solid pad: that Actuator holds), the open Grab claw, the reason glyphs; and the
+mouse wheel as a font glyph (font tentaworks:hud, for the action-bar hint).
 Shapes are drawn as ASCII grids: W white, L light grey, A amber, R red, G grey; every shape gets a dark one-pixel rim so it reads
 on any background. White and light grey take the tint ActuatorHud draws them with (tier, red when limp).
 usage: python3 tools/gen_hud.py"""
@@ -7,6 +8,7 @@ import os
 from PIL import Image
 
 OUT = 'src/main/resources/assets/tentaworks/textures/gui/sprites/hud/'
+FONT = 'src/main/resources/assets/tentaworks/textures/font/'
 INK = {'W': (255, 255, 255, 255), 'L': (196, 196, 196, 255), 'A': (255, 196, 70, 255), 'a': (214, 150, 40, 255),
        'R': (255, 72, 72, 255), 'G': (200, 200, 200, 255), 'g': (150, 150, 150, 255)}
 RIM = (18, 16, 18, 235)
@@ -24,6 +26,15 @@ WW...
 .WL..
 ..LLL
 """
+GRIP = """
+.WWW
+WWWW
+WWLL
+WLLL
+WWLL
+WLLL
+.LLL
+"""
 CLAW_OPEN = """
 ...WWW...
 ...WLW...
@@ -32,16 +43,6 @@ CLAW_OPEN = """
 .W..W..W.
 WW..L..WW
 W.......W
-"""
-CLAW_CLOSED = """
-...WWW...
-...WLW...
-..WWWWW..
-.WW.W.WW.
-WW.LLL.WW
-W..LLL..W
-WW.LLL.WW
-.W.....W.
 """
 TWO_HANDS = """
 .AAA...AAA.
@@ -69,14 +70,6 @@ REFUSED = """
 GG.RR..GG
 G.RR....G
 .RR......
-"""
-SET_DOWN = """
-W...W
-WW.WW
-.WWW.
-..W..
-.....
-LLLLL
 """
 SCROLL = """
 ..W..
@@ -124,15 +117,19 @@ def sprite(text, flip=False, hollow=False):
 
 def main():
     os.makedirs(OUT, exist_ok=True)
+    os.makedirs(FONT, exist_ok=True)
     out = {
         'mark_left': sprite(MARK), 'mark_right': sprite(MARK, flip=True),
         'mark_left_hollow': sprite(MARK, hollow=True), 'mark_right_hollow': sprite(MARK, flip=True, hollow=True),
-        'claw_open': sprite(CLAW_OPEN), 'claw_closed': sprite(CLAW_CLOSED), 'two_hands': sprite(TWO_HANDS),
-        'hands_full': sprite(HANDS_FULL), 'refused': sprite(REFUSED), 'set_down': sprite(SET_DOWN), 'scroll': sprite(SCROLL),
+        'grip_left': sprite(GRIP), 'grip_right': sprite(GRIP, flip=True),
+        'claw_open': sprite(CLAW_OPEN), 'two_hands': sprite(TWO_HANDS), 'hands_full': sprite(HANDS_FULL), 'refused': sprite(REFUSED),
     }
     for name, im in out.items():
         im.save(f'{OUT}{name}.png')
         print(name, im.size)
+    wheel = sprite(SCROLL)
+    wheel.save(f'{FONT}wheel.png')
+    print('font/wheel', wheel.size)
 
 
 if __name__ == '__main__':

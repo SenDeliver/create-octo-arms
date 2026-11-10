@@ -105,7 +105,12 @@ public final class ActuatorSight {
         return player.tickCount - fired + pt;
     }
 
-    /** Ticks since a click landed on nothing because its target was out of Reach. */
+    /** A click or a Grab key press went to a target out of Reach: the hollow marks flash. */
+    static void missed(LocalPlayer player) {
+        missed = player.tickCount;
+    }
+
+    /** Ticks since a click or a Grab key press went to a target out of Reach. */
     static float missedAge(LocalPlayer player, float pt) {
         return player.tickCount - missed + pt;
     }
@@ -170,7 +175,7 @@ public final class ActuatorSight {
     @SubscribeEvent
     static void onInteraction(InputEvent.InteractionKeyMappingTriggered event) {
         LocalPlayer player = Minecraft.getInstance().player;
-        if (player != null && beyond && !ActuatorClient.get(player).holding() && (event.isAttack() || event.isUseItem())) missed = player.tickCount;
+        if (player != null && beyond && !ActuatorClient.get(player).holding() && (event.isAttack() || event.isUseItem())) missed(player);
     }
 
     /** An interaction range of the wearer without the Far Use lift: arm's length. */

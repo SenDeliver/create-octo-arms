@@ -97,7 +97,7 @@ public final class Grab {
     public static final TagKey<EntityType<?>> BOSSES = TagKey.create(Registries.ENTITY_TYPE, TentaworksIds.id(TentaworksIds.BOSSES));
     static final double SHIP_GAIN = 10.0;
     static final double SHIP_MAX_SPEED = 30.0;
-    static final double SHIP_INSIDE = 0.5;
+    public static final double SHIP_INSIDE = 0.5;
     private static final ResourceLocation HEAVY_ID = TentaworksIds.id(TentaworksIds.ACTUATOR_HEAVY);
     private static final Map<UUID, Held> HOLDS = new HashMap<>();
     private static final Map<UUID, Integer> STARTED = new HashMap<>();

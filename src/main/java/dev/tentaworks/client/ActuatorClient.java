@@ -28,6 +28,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.ClipContext;
@@ -50,7 +51,8 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Client side of the Actuators: what each player's Actuators hold and where a Far Use reaches (from the server), and the
  * wearer's Grab key ({@link GrabKeyState}). A press asks for a Grab of the mob or Ship block under the crosshair within Reach
- * of the body, with whichever Actuator is free ({@link GrabRule#arm}); a tap while holding sets the mob down at the looked spot
+ * of the body, with whichever Actuator is free ({@link GrabRule#arm}); every press on a target gets an answer, the server's
+ * refusal line or, for a mob the pick does not reach, the out-of-Reach line; a tap while holding sets the mob down at the looked spot
  * ({@link SetDown}) or releases a Ship; the key held with the wheel moves the hold nearer or farther (the hotbar does not
  * scroll then). Attack while holding Throws when the main hand is empty or the Grab key is down; with an item in the main hand
  * (the off-hand Actuator holds) a plain attack is the item's. The wearer's own Far Use reach comes from the server's
@@ -69,6 +71,7 @@ public final class ActuatorClient {
     private static @Nullable SetDown.Spot spot;
     private static Affordance affordance = Affordance.NONE;
     private static @Nullable Vec3 affordanceAt;
+    private static int heldSince = Integer.MIN_VALUE / 2, gaugeAt = Integer.MIN_VALUE / 2, downTicks;
 
     static {
         DualWield.clientSide(ActuatorClient::holdArm);
@@ -154,6 +157,19 @@ public final class ActuatorClient {
         return TentaworksKeys.GRAB.isDown();
     }
 
+    /** Ticks since the local wearer's Grab landed. */
+    public static float heldAge(LocalPlayer player, float pt) {
+        return player.tickCount - heldSince + pt;
+    }
+
+    /**
+     * Ticks since the hold distance was last in the wearer's hands: the Grab key down for more than {@link ActuatorHud#GAUGE_DELAY}
+     * ticks of a hold (a tap is a Set Down), or the wheel moving it.
+     */
+    public static float gaugeAge(LocalPlayer player, float pt) {
+        return player.tickCount - gaugeAt + pt;
+    }
+
     /** Dual Wield applies to the block or entity under the local crosshair: the off-hand item would help break or hit it. */
     public static boolean dualWield() {
         Minecraft mc = Minecraft.getInstance();
@@ -200,11 +216,25 @@ public final class ActuatorClient {
     }
 
     public static void onState(ActuatorStatePacket packet) {
-        put(packet.entityId(), STATES.getOrDefault(packet.entityId(), State.NONE).held(packet));
         LocalPlayer player = Minecraft.getInstance().player;
-        if (player != null && packet.entityId() == player.getId() && !get(player).holding()) throwSent = Integer.MIN_VALUE / 2;
-        if (player != null && packet.entityId() == player.getId() && !packet.refusal().isEmpty())
-            player.displayClientMessage(Component.translatable(packet.refusal()).withStyle(ChatFormatting.RED), true);
+        boolean own = player != null && packet.entityId() == player.getId();
+        boolean was = own && get(player).holding();
+        put(packet.entityId(), STATES.getOrDefault(packet.entityId(), State.NONE).held(packet));
+        if (!own) return;
+        boolean holding = get(player).holding();
+        if (!holding) throwSent = Integer.MIN_VALUE / 2;
+        if (!packet.refusal().isEmpty()) refused(player, packet.refusal());
+        if (holding && !was) {
+            heldSince = player.tickCount;
+            gaugeAt = Integer.MIN_VALUE / 2;
+            ActuatorHud.grabbed(player);
+        }
+    }
+
+    /** A refused Grab says why on the action bar; out of Reach also flashes the hollow marks. */
+    private static void refused(LocalPlayer player, String key) {
+        player.displayClientMessage(Component.translatable(key).withStyle(ChatFormatting.RED), true);
+        if (key.equals(Grab.refusalKey(GrabRule.Verdict.TOO_FAR))) ActuatorSight.missed(player);
     }
 
     public static void onFarUse(FarUsePacket packet) {
@@ -269,8 +299,11 @@ public final class ActuatorClient {
         affordance = s.holding() ? Affordance.NONE : affordance(player);
         if (mc.screen != null) {
             KEY.reset();
+            downTicks = 0;
             return;
         }
+        downTicks = s.holding() && TentaworksKeys.GRAB.isDown() ? downTicks + 1 : 0;
+        if (downTicks > ActuatorHud.GAUGE_DELAY) gaugeAt = player.tickCount;
         switch (KEY.tick(clicks, TentaworksKeys.GRAB.isDown(), s.holding())) {
             case GRAB -> grab(player);
             case SET_DOWN -> setDown(s);
@@ -279,12 +312,20 @@ public final class ActuatorClient {
         }
     }
 
+    /**
+     * A Grab key press with nothing held. The server answers every request, limp Actuators included; a mob the pick does not
+     * reach but lying within {@link ActuatorSight#MISS_PAST} past it gets the out-of-Reach line here.
+     */
     private static void grab(LocalPlayer player) {
-        if (!Actuators.ready(player)) return;
+        if (!Actuators.fitted(player) || player.isSpectator()) return;
         HitResult aim = target(player);
         if (aim instanceof EntityHitResult e) PacketDistributor.sendToServer(RigGrabPacket.start(e.getEntity().getId()));
-        else if (aim instanceof BlockHitResult b && b.getType() == HitResult.Type.BLOCK && ShipFrames.get().isPlot(player.level(), b.getBlockPos()))
-            PacketDistributor.sendToServer(RigGrabPacket.ship(b.getBlockPos(), b.getDirection()));
+        else if (aim instanceof BlockHitResult b && b.getType() == HitResult.Type.BLOCK) {
+            if (ShipFrames.get().isPlot(player.level(), b.getBlockPos())) PacketDistributor.sendToServer(RigGrabPacket.ship(b.getBlockPos(), b.getDirection()));
+        } else if (Actuators.ready(player) && aim(player, ActuatorReach.pickRange(TentacleRigItem.reach(player)) + ActuatorSight.MISS_PAST) instanceof EntityHitResult e
+                && e.getEntity() instanceof LivingEntity && !(e.getEntity() instanceof Player)) {
+            refused(player, Grab.refusalKey(GrabRule.Verdict.TOO_FAR));
+        }
     }
 
     /** A tap while holding: a mob to the looked spot (the server checks it again), else where it hangs; a Ship is let go. */
@@ -348,6 +389,7 @@ public final class ActuatorClient {
         if (n == 0) n = (int) Math.signum(dy);
         if (n == 0) return;
         KEY.scrolled();
+        gaugeAt = mc.player.tickCount;
         PacketDistributor.sendToServer(RigGrabPacket.distance(n));
     }
 
@@ -393,12 +435,12 @@ public final class ActuatorClient {
         KEY.reset();
         spot = null;
         affordance = Affordance.NONE;
-        throwSent = Integer.MIN_VALUE / 2;
+        throwSent = heldSince = gaugeAt = Integer.MIN_VALUE / 2;
     }
 
     @SubscribeEvent
     static void onClone(ClientPlayerNetworkEvent.Clone event) {
         STATES.clear();
-        throwSent = Integer.MIN_VALUE / 2;
+        throwSent = heldSince = gaugeAt = Integer.MIN_VALUE / 2;
     }
 }

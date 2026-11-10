@@ -1,0 +1,11 @@
+{
+  "providers": [
+    {
+      "type": "bitmap",
+      "file": "tentaworks:font/wheel.png",
+      "ascent": 9,
+      "height": 11,
+      "chars": [""]
+    }
+  ]
+}
