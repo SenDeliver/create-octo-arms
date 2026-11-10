@@ -9,8 +9,13 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ## [Unreleased]
 
+### Added
+
+- Server config `speed.check` (default on): off, the server no longer Stows a Rig for moving faster than its top Speed, for servers that lag badly.
+
 ### Fixed
 
+- A Rig moving at its top Speed was Stowed on a lagging server ("moves faster than its top Speed: stowing"), dropping the wearer: the speed check counted server ticks, so below about 13 TPS, or when the server caught up after a stall, a legal move read as too fast. The allowed distance now follows the wearer's move packets, like vanilla's move check, counted only up to the real time that passed, so extra packets buy no speed. Thanks @snipernumber3.
 - Rig Settings: with Swift, the Speed slider stopped below the top Speed named under it. The Speed row now shows the Speed the Rig really carries you at (the setting times Swift), so a full slider reads the top Speed. The stored setting is unchanged. The server config `speed.max` now says it is the base top Speed, before Swift. Thanks @snipernumber3.
 
 ## [1.8.0] - 2026-11-08

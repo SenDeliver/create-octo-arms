@@ -77,6 +77,8 @@
   "tentaworks.configuration.ships.grip": "Rigs grip Ships",
   "tentaworks.configuration.ships.grip.tooltip": "Rigs grip Sable Ships like world blocks. Ignored without Sable",
   "tentaworks.configuration.speed": "Speed",
+  "tentaworks.configuration.speed.check": "Speed check",
+  "tentaworks.configuration.speed.check.tooltip": "Stow a Rig that moves faster than its top Speed (anti-cheat). Off: the server trusts the wearer's speed, for servers that lag",
   "tentaworks.configuration.speed.max": "Top Speed",
   "tentaworks.configuration.speed.max.tooltip": "Base top Rig speed, before Swift, in blocks per second: the highest Speed a player can set in Rig Settings. Swift multiplies it on its own Rig",
   "tentaworks.configuration.title": "Octo Arms: Config",

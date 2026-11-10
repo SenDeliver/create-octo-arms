@@ -1,0 +1,46 @@
+# lag-swift2: Swift II + Far Reach III (the survival max of both; Reach 7, top Speed 10.4 b/s), else the same as lag-client.txt. lag: a wearer at top Speed on a lagging server keeps the Rig (2026-11-10 report: "moves faster than its top Speed: stowing" under lag).
+# W0 walk, no lag (control). W1 walk through sustained lag (130 ms ticks, about 7.7 TPS, 70 ticks). W2 walk through three 1.5 s stalls.
+# A anti-cheat: Rig Set Down and folded, the timeline forges a 20 b/s server-side slide with 5 packets per tick (must still stow, unless speed.check=false).
+# Flat superflat ground at y -60, nothing around x 8500. TIMELINE lag-timeline.txt
+wait 40
+trace on
+hud off
+view third
+cmd tp @s 8500.5 -60 0.5 0 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[enchantments={levels:{"tentaworks:swift":2,"tentaworks:far_reach":3}},create:banktank_air=900]
+wait 10
+rawsettings chest 1.5 8 double_jump
+reach rig
+wait 10
+doublejump
+wait 40
+look 0 0
+mark w0a
+hold up on
+wait 100
+mark w0b
+signal w1
+await w1lag
+look 0 0
+mark w1a
+wait 200
+mark w1b
+signal w1end
+await w1off
+look 0 0
+mark w2a
+signal w2
+await w2done
+mark w2b
+hold up off
+wait 10
+doublejump
+wait 60
+mark aa
+signal a
+await adone
+mark ab
+wait 20
+quit

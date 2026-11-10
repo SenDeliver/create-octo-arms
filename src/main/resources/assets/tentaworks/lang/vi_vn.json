@@ -77,6 +77,8 @@
   "tentaworks.configuration.ships.grip": "Giàn bám vào Tàu",
   "tentaworks.configuration.ships.grip.tooltip": "Giàn bám vào Tàu của Sable như các khối trong thế giới. Bị bỏ qua nếu không có Sable",
   "tentaworks.configuration.speed": "Tốc độ",
+  "tentaworks.configuration.speed.check": "Kiểm tra tốc độ",
+  "tentaworks.configuration.speed.check.tooltip": "Thu Giàn di chuyển nhanh hơn tốc độ tối đa của nó (chống gian lận). Tắt: máy chủ tin tốc độ của người đeo, cho máy chủ bị lag",
   "tentaworks.configuration.speed.max": "Tốc độ tối đa",
   "tentaworks.configuration.speed.max.tooltip": "Tốc độ tối đa cơ bản của Giàn, chưa tính Thần tốc, khối/giây: Tốc độ cao nhất người chơi chọn được trong Cài đặt Giàn. Thần tốc nhân nó trên Giàn mang phù phép đó",
   "tentaworks.configuration.title": "Octo Arms: Cấu hình",

@@ -1,0 +1,24 @@
+op Dev
+tentaworks trace on
+#await w1
+tentaworks lag 80 70
+#signal w1lag
+#await w1end
+#sleep 0.5
+#signal w1off
+#await w2
+tentaworks lag 1500 1
+#sleep 2
+tentaworks lag 1500 1
+#sleep 2
+tentaworks lag 1500 1
+#sleep 3
+#signal w2done
+#await a
+tentaworks pos fa
+tentaworks burst 5
+tentaworks fake slide20 40
+#sleep 3
+tentaworks burst 1
+tentaworks pos fb
+#signal adone

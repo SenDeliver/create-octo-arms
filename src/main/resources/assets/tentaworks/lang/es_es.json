@@ -77,6 +77,8 @@
   "tentaworks.configuration.ships.grip": "Los equipos se agarran a las naves",
   "tentaworks.configuration.ships.grip.tooltip": "Los equipos se agarran a las naves de Sable como a los bloques del mundo. Se ignora sin Sable",
   "tentaworks.configuration.speed": "Velocidad",
+  "tentaworks.configuration.speed.check": "Control de velocidad",
+  "tentaworks.configuration.speed.check.tooltip": "Recoge un equipo que se mueve más rápido que su velocidad máxima (anti-trampas). Desactivado: el servidor confía en la velocidad del portador, para servidores con lag",
   "tentaworks.configuration.speed.max": "Velocidad máxima",
   "tentaworks.configuration.speed.max.tooltip": "Velocidad máxima base del equipo, sin Rapidez, en bloques por segundo: la mayor velocidad que un jugador puede elegir en los ajustes del equipo. Rapidez la multiplica en su equipo",
   "tentaworks.configuration.title": "Octo Arms: configuración",
