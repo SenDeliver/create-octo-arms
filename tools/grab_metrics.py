@@ -63,7 +63,8 @@ def paid(a, b):
 print('== Setup')
 want = {'s1': (11204.5, 0.5), 'p1': (11202.5, 12.5), 'h1': (11203.5, 36.5), 'w1': (11203.5, 40.5), 'g1': (11203.5, 48.5),
         'boss': (11205.5, 60.5), 'wolf': (11203.5, 68.5), 's2': (11203.5, 72.5), 'p4': (11203.5, 84.5),
-        'p5': (11203.5, 96.5), 'w2': (11203.5, 100.5), 'h2': (11203.5, 104.5), 'p6': (11203.5, 108.5), 'p7': (11203.5, 112.5), 'p8': (11203.5, 116.5)}
+        'p5': (11203.5, 96.5), 'w2': (11203.5, 100.5), 'h2': (11203.5, 104.5), 'p6': (11203.5, 108.5), 'p7': (11203.5, 112.5), 'p8': (11203.5, 116.5),
+        'p9': (11203.5, 120.5), 'w9': (11203.5, 124.5)}
 ids = {k: mob(*v) for k, v in want.items()}
 for k, i in ids.items():
     check(f'[setup] {k} spawned', i is not None, f"id {i} {first[i]['type'] if i else '-'}")
@@ -206,6 +207,39 @@ check('G8f the Grab key held + 2 notches: the hold 1.0 farther, the hotbar does 
 check('G8f releasing the key after the wheel sets nothing down; the wheel alone scrolls the hotbar; a tap sets down',
       spos['g8f2']['held'] == int(p8) and w1 and not w1[0]['canceled'] and w0 and w1[0]['slot'] != w0[0]['slot'] and grabs('release', p8),
       f"held {spos['g8f2']['held']} wheel {w1[:1]} release {grabs('release', p8)[:1]}")
+
+print('== G9 inventory screen (creative, survival)')
+srig = {int(g): dict(state=st_, air=int(a), dmg=int(d), held=int(h)) for g, st_, a, d, h in
+        re.findall(r'STRACE gt=(\d+) Dev pos=\S+ v=\S+ state=(\w+) .*? air=(\d+) .*? rigdmg=(\d+) .*? gheld=(-?\d+)', s)}
+cstate = {int(g): st_ for g, st_ in re.findall(r'TRACE t=\d+ gt=(\d+) pos=\S+ d=\S+ cmd=\S+ held=\d+ state=(\w+)', c)}
+screens = re.findall(r'SCREEN (\S+)', c)
+p9, w9 = ids['p9'], ids['w9']
+
+def window(a, b):
+    ga, gb = spos.get(a, {}).get('gt'), spos.get(b, {}).get('gt')
+    if ga is None or gb is None: return [], []
+    return [srig[g] for g in range(ga, gb + 1) if g in srig], [cstate[g] for g in range(ga, gb + 1) if g in cstate]
+
+sw, cw = window('g9held', 'g9closed')
+check('[bug] G9 creative: the inventory key opens the creative inventory and the Rig stays Active on the server and the client',
+      any(x.endswith('CreativeModeInventoryScreen') for x in screens) and len(sw) > 30 and all(x['state'] == 'ACTIVE' for x in sw)
+      and cw and all(x == 'ACTIVE' for x in cw),
+      f"screens {screens}, server {sorted(set(x['state'] for x in sw))} over {len(sw)}, client {sorted(set(cw))} over {len(cw)}")
+rl = grabs('release', w9)
+check('[guard] G9 creative: Throw, hit and Grab done; the cow stays held through the screen',
+      grabs('throw', p9) and any(h['id'] == w9 and h['by'] == 'Dev' for h in hurt) and sw and all(x['held'] == int(w9) for x in sw),
+      f"throw {grabs('throw', p9)[:1]} hits {[h['amount'] for h in hurt if h['id'] == w9]} held {sorted(set(x['held'] for x in sw))} release {rl[:1]}")
+a0, a1 = spos.get('g9a', {}), spos.get('g9closed', {})
+d0, d1 = srig.get(a0.get('gt'), {}), srig.get(a1.get('gt'), {})
+check('[guard] G9 creative: no Air paid and no wear on the Rig (Throw, hit, hold)',
+      a0 and a1 and a0['air'] == a1['air'] and a0['debt'] == a1['debt'] and d0 and d1 and d0['dmg'] == d1['dmg'],
+      f"air {a0.get('air')} -> {a1.get('air')}, debt {a0.get('debt')} -> {a1.get('debt')}, damage {d0.get('dmg')} -> {d1.get('dmg')}")
+sw, cw = window('g9held', 'g9sclosed')
+end = spos.get('g9sclosed', {}).get('gt', 0)
+check('[guard] G9s survival: the inventory key opens the survival inventory; Active and the hold go on until the tap',
+      any(x.endswith('.InventoryScreen') for x in screens) and sw and all(x['state'] == 'ACTIVE' and x['held'] == int(w9) for x in sw)
+      and cw and all(x == 'ACTIVE' for x in cw) and rl and rl[0]['gt'] > end and rl[0]['why'] == 'release',
+      f"screens {screens}, server {sorted(set(x['state'] for x in sw))}, client {sorted(set(cw))}, release {rl[:1]} after {end}")
 
 exc = [l for l in (c + c2 + s).splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'authlib' not in l and 'neoforge-client.new.tmp.toml' not in l
        and 'Error loading class: net/irisshaders/' not in l and 'org.gradle.' not in l and 'MessageIOException' not in l

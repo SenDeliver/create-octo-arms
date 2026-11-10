@@ -128,4 +128,14 @@ tp Dev 11200.5 -60 116.5 -90 0
 #sleep 0.5
 #signal g8f
 #await g8fdone
+# G9 creative: Active, a Throw, a hit and a Grab, then the inventory key: the Rig stays Active, the hold goes on; then the survival inventory
+tp Dev 11200.5 -60 122.5 -90 0
+gamemode creative Dev
+#sleep 0.5
+#signal g9
+#await g9done
+gamemode survival Dev
+#sleep 0.5
+#signal g9s
+#await g9sdone
 #signal end

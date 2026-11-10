@@ -34,6 +34,9 @@ summon horse 11203.5 -60 104.5 {Tags:["tw","h2"],PersistenceRequired:1b,Silent:1
 summon pig 11203.5 -60 108.5 {Tags:["tw","p6"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
 summon pig 11203.5 -60 112.5 {Tags:["tw","p7"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
 summon pig 11203.5 -60 116.5 {Tags:["tw","p8"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
+# G9 creative: a pig to Throw, a cow to hit and hold through the inventory screen (z 120..125)
+summon pig 11203.5 -60 120.5 {Tags:["tw","p9"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
+summon cow 11203.5 -60 124.5 {Tags:["tw","w9"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
 op Dev
 op Dev2
 tentaworks trace on
