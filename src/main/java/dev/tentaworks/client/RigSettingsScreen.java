@@ -8,6 +8,7 @@ import com.simibubi.create.foundation.gui.widget.SelectionScrollInput;
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.network.RigSettingsPacket;
 import dev.tentaworks.registry.TentaworksDataComponents;
+import dev.tentaworks.rig.RigEnchants;
 import dev.tentaworks.rig.RigSettings;
 import dev.tentaworks.rig.RigSettings.ActivationMode;
 import dev.tentaworks.rig.RigSlot;
@@ -124,8 +125,10 @@ public class RigSettingsScreen extends AbstractSimiScreen {
 
         row(g, x, y, 0, AllIcons.I_TOOL_MOVE_Y, Component.translatable(key("standing_height")),
                 Component.translatable(key("blocks"), tenths(height)));
+        // the Speed the Rig really carries you at: the setting times this Rig's Swift (RigClient's step), so the top of the
+        // slider reads the same as the top Speed in the limits line below
         row(g, x, y, 1, AllIcons.I_PRIORITY_VERY_HIGH, Component.translatable(key("speed")),
-                Component.translatable(key("blocks_per_second"), tenths(speed)));
+                Component.translatable(key("blocks_per_second"), tenths((int) Math.round(speed * RigEnchants.swift(rig)))));
         row(g, x, y, 2, AllIcons.I_ACTIVE, Component.translatable(key("activation")), modeName(mode));
 
         int hintColor = AllGuiTextures.FONT_COLOR;
