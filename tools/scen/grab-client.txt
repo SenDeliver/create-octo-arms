@@ -283,6 +283,56 @@ wait 3
 key key.keyboard.v
 awaitheld off 20
 signal g8fdone
+# G8g a looked spot nearer than the hold distance: the mob hangs over it, a tap lowers it there without moving away
+await g8g1
+lookate minecraft:pig 5
+wait 3
+key key.keyboard.v
+awaitheld on 20
+holdkey key.tentaworks.grab on
+wait 3
+wheel 6
+wait 3
+holdkey key.tentaworks.grab off
+lookat 11202.5 -60.0 132.5
+wait 15
+mark g8g1spot
+key key.keyboard.v
+awaitheld off 20
+wait 30
+mark g8g1down
+signal g8g1done
+await g8g2
+lookate minecraft:pig 5
+wait 3
+key key.keyboard.v
+awaitheld on 20
+holdkey key.tentaworks.grab on
+wait 3
+wheel 4
+wait 3
+holdkey key.tentaworks.grab off
+lookat 11202.4 -58.5 138.5
+wait 15
+mark g8g2spot
+key key.keyboard.v
+awaitheld off 20
+wait 30
+mark g8g2down
+signal g8g2done
+await g8g3
+lookate minecraft:horse 6
+wait 3
+key key.keyboard.v
+awaitheld on 20
+lookat 11201.5 -58.5 145.5
+wait 15
+mark g8g3spot
+key key.keyboard.v
+awaitheld off 20
+wait 30
+mark g8g3down
+signal g8g3done
 # G9 creative (must stay the first inventory screen of the client session: vanilla echoes every slot to the server then): Active, Throw the pig, hit and Grab the cow, open the inventory with its key
 await g9
 doublejump

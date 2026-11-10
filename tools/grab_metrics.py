@@ -42,6 +42,11 @@ far = [dict(gt=int(m[0]), at=m[1], far=m[2], asking=m[3] == 'true') for m in re.
 ctr = {}
 for m in re.finditer(r'TRACE t=\d+ gt=(\d+) .*? gheld=(-?\d+) gheavy=\w+ gship=\S+ far=(\d+) xh=(\S+) hmob=(\S+) hpt=(\S+) xd=(\S+) limp=(\w+)', c):
     ctr[int(m[1])] = dict(held=int(m[2]), far=int(m[3]), xh=m[4], hmob=vec(m[5]), hpt=vec(m[6]), xd=None if m[7] == '-' else float(m[7]))
+lmob = {}
+for m in re.finditer(r'TRACE t=\d+ gt=(\d+) .*? lmob=(\S+)', c):
+    if m[2] != '-':
+        a, b = m[2].split(';')
+        lmob[int(m[1])] = (vec(a), vec(b))
 rwalk = {int(g): dict(held=int(h), hmob=vec(p)) for g, h, p in re.findall(r'RWALK gt=(\d+) name=Dev .*? gheld=(-?\d+) gship=\S+ hmob=(\S+)', c2)}
 cpos = {m[0]: dict(gt=int(m[1]), pos=vec(m[2])) for m in re.findall(r"CPOS (\S+) gt=(\d+) pos=(\S+)", c)}
 cact = {m[0]: dict(held=int(m[1]), heavy=m[2] == 'true', hud=m[3], limp=m[4] == 'true', speed=float(m[5]))
@@ -64,7 +69,7 @@ print('== Setup')
 want = {'s1': (11204.5, 0.5), 'p1': (11202.5, 12.5), 'h1': (11203.5, 36.5), 'w1': (11203.5, 40.5), 'g1': (11203.5, 48.5),
         'boss': (11205.5, 60.5), 'wolf': (11203.5, 68.5), 's2': (11203.5, 72.5), 'p4': (11203.5, 84.5),
         'p5': (11203.5, 96.5), 'w2': (11203.5, 100.5), 'h2': (11203.5, 104.5), 'p6': (11203.5, 108.5), 'p7': (11203.5, 112.5), 'p8': (11203.5, 116.5),
-        'p9': (11203.5, 120.5), 'w9': (11203.5, 124.5)}
+        'p9': (11203.5, 120.5), 'w9': (11203.5, 124.5), 'p10': (11202.5, 132.5), 'p11': (11202.5, 134.5), 'h3': (11199.5, 142.0)}
 ids = {k: mob(*v) for k, v in want.items()}
 for k, i in ids.items():
     check(f'[setup] {k} spawned', i is not None, f"id {i} {first[i]['type'] if i else '-'}")
@@ -207,6 +212,43 @@ check('G8f the Grab key held + 2 notches: the hold 1.0 farther, the hotbar does 
 check('G8f releasing the key after the wheel sets nothing down; the wheel alone scrolls the hotbar; a tap sets down',
       spos['g8f2']['held'] == int(p8) and w1 and not w1[0]['canceled'] and w0 and w1[0]['slot'] != w0[0]['slot'] and grabs('release', p8),
       f"held {spos['g8f2']['held']} wheel {w1[:1]} release {grabs('release', p8)[:1]}")
+
+print('== G8g Set Down: what you see is where it lands')
+
+def setdown(i, tap):
+    """The client's spot at the tap, the server feet at the tap, and the wearer's client view of the mob (feet and lerp target) to rest."""
+    sp = next((cspot[g][0] for g in range(tap, tap - 4, -1) if g in cspot and cspot[g][1] and cspot[g][0]), None)
+    rl = [g['gt'] for g in grab if g['kind'] == 'release' and g['target'] == i and g['gt'] >= tap]
+    m0 = smob.get((tap, i))
+    if not sp or not rl or not m0:
+        return None
+    half = m0['box'][1] - m0['pos'][1]
+    path = [(g, (lmob[g][0][0], lmob[g][0][1] - half, lmob[g][0][2]), lmob[g][1]) for g in range(tap + 1, rl[0] + 12) if g in lmob]
+    return sp, dist(m0['pos'], sp), path
+
+def away(path, sp):
+    """The most the wearer's client view of the mob moves away from the spot in one tick (feet, lerp target), and where it ends."""
+    worst = 0.0
+    for k in (1, 2):
+        d = [dist(p[k], sp) for p in path]
+        worst = max([worst] + [b - a for a, b in zip(d, d[1:])])
+    return worst, dist(path[-1][1], sp) if path else 99
+
+for tag, key, near in (('G3 creeper', 'c1', False), ('G4 horse', 'h1', False), ('G4 cow', 'w1', False), ('G8e pig, floor 3.5 ahead', 'p7', False),
+                       ('G8g1 pig, wheel +3, floor 2 ahead', 'p10', True), ('G8g2 pig, wheel +2, slab top near eye level', 'p11', True),
+                       ('G8g3 heavy horse, slab top 1.5 ahead', 'h3', True)):
+    i = ids.get(key) if key != 'c1' else next((g['target'] for g in grab if g['kind'] == 'place' and g['type'] == 'minecraft:creeper'), None)
+    pl = grabs('place', i) if i else []
+    r = setdown(i, pl[0]['gt']) if pl else None
+    if not r:
+        check(f'[bug] {tag}: Set Down at the looked spot', False, f'no place/spot/trace ({pl[:1]})')
+        continue
+    sp, gap0, path = r
+    worst, end = away(path, sp)
+    if near:
+        check(f'[bug] {tag}: at the tap the mob hangs at the looked spot (server feet within 0.5)', gap0 <= 0.5, f'spot {sp} gap {gap0:.3f}')
+    check(f'[bug] {tag}: on the wearer\'s client the mob never moves away from the spot after the tap, ends on it', len(path) >= 8 and worst <= 0.05 and end <= 0.1,
+          f'{len(path)} ticks, worst step away {worst:.3f}, end {end:.3f}, tap gap {gap0:.3f}')
 
 print('== G9 inventory screen (creative, survival)')
 srig = {int(g): dict(state=st_, air=int(a), dmg=int(d), held=int(h)) for g, st_, a, d, h in

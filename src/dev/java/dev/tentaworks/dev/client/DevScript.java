@@ -153,6 +153,8 @@ public final class DevScript {
     private static boolean trace;
     private static long clientTicks;
     private static Vec3 lastPos;
+    private static int lastHeldId = -1;
+    private static long lastHeldTick;
     private static int rejoinTicks;
     private static String rejoinAddress;
     private static boolean inWorld;
@@ -908,8 +910,8 @@ public final class DevScript {
 
     /**
      * TRACE fields (end of line): own Actuator state (held id, heavy, Ship block, Far Use ttl), the crosshair entity, the held
-     * mob's box centre, the hold point for it from this camera ({@link Hold#point}), the closest the crosshair ray passes to the
-     * held box within 6 blocks, limp, the first-person Limb opacity.
+     * mob's box centre, the hold point for it from this camera ({@link Hold#point}, over a nearer spot by {@link Hold#over}), the closest the crosshair ray passes to the
+     * held box within 6 blocks, limp, the first-person Limb opacity; last: the last held mob's box centre and lerp target up to 40 ticks after the hold (lmob).
      */
     private static String actuatorFields(Minecraft mc, LocalPlayer p) {
         ActuatorClient.State s = ActuatorClient.get(p);
@@ -920,16 +922,26 @@ public final class DevScript {
             int side = Hold.side(s.arm().side(p.getMainArm()));
             double d = Hold.fit(eye, look, p.getYRot(), held.getBbWidth(), held.getBbHeight(), side, s.distance() > 0 ? s.distance() : Double.NaN,
                     Grips.body(p), TentacleRigItem.reach(p));
-            point = fmt(Hold.point(eye, look, p.getYRot(), held.getBbWidth(), held.getBbHeight(), side, d));
+            Vec3 hp = Hold.point(eye, look, p.getYRot(), held.getBbWidth(), held.getBbHeight(), side, d);
+            SetDown.Spot near = ActuatorClient.setDownSpot();
+            if (near != null && near.valid())
+                hp = Hold.over(hp.subtract(0, held.getBbHeight() / 2, 0), near.feet(), Hold.over(d, near.along())).add(0, held.getBbHeight() / 2, 0);
+            point = fmt(hp);
         }
         SetDown.Spot spot = ActuatorClient.setDownSpot();
         ActuatorClient.Affordance aff = ActuatorClient.affordance();
-        return String.format(Locale.ROOT, " gheld=%d gheavy=%b gship=%s far=%d xh=%s hmob=%s hpt=%s xd=%s limp=%b opa=%.2f harm=%s hdist=%.2f spot=%s spotok=%b aff=%s affarm=%s dual=%b gkey=%b farhand=%s",
+        if (s.heldId() >= 0) {
+            lastHeldId = s.heldId();
+            lastHeldTick = clientTicks;
+        }
+        Entity last = lastHeldId < 0 || clientTicks - lastHeldTick > 40 ? null : mc.level.getEntity(lastHeldId);
+        String lmob = last == null ? "-" : fmt(last.getBoundingBox().getCenter()) + ";" + fmt(new Vec3(last.lerpTargetX(), last.lerpTargetY(), last.lerpTargetZ()));
+        return String.format(Locale.ROOT, " gheld=%d gheavy=%b gship=%s far=%d xh=%s hmob=%s hpt=%s xd=%s limp=%b opa=%.2f harm=%s hdist=%.2f spot=%s spotok=%b aff=%s affarm=%s dual=%b gkey=%b farhand=%s lmob=%s",
                 s.heldId(), s.heavy(),
                 s.ship() == null ? "-" : s.ship().toShortString().replace(" ", ""), s.farTtl(), crosshair(mc), heldCentre(mc, s), point,
                 held == null ? "-" : String.format(Locale.ROOT, "%.3f", rayGap(p.getEyePosition(), p.getViewVector(1.0F), held.getBoundingBox())),
                 Actuators.limp(p), TentaworksClientConfig.limbOpacity(), s.arm(), s.distance(), spot == null ? "-" : fmt(spot.feet()), spot != null && spot.valid(),
-                aff.kind(), aff.arm(), ActuatorClient.dualWield(), ActuatorClient.grabKeyDown(), s.farHand() == net.minecraft.world.InteractionHand.OFF_HAND ? "off" : "main");
+                aff.kind(), aff.arm(), ActuatorClient.dualWield(), ActuatorClient.grabKeyDown(), s.farHand() == net.minecraft.world.InteractionHand.OFF_HAND ? "off" : "main", lmob);
     }
 
     private static double rayGap(Vec3 eye, Vec3 look, net.minecraft.world.phys.AABB box) {

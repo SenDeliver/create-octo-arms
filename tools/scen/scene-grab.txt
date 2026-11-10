@@ -37,6 +37,15 @@ summon pig 11203.5 -60 116.5 {Tags:["tw","p8"],PersistenceRequired:1b,Silent:1b,
 # G9 creative: a pig to Throw, a cow to hit and hold through the inventory screen (z 120..125)
 summon pig 11203.5 -60 120.5 {Tags:["tw","p9"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
 summon cow 11203.5 -60 124.5 {Tags:["tw","w9"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
+# G8g a looked spot nearer than the hold distance (z 130..148): pig, pig by a slab platform (top -58.5, near eye level), heavy horse by one
+forceload add 11170 128 11220 150
+summon pig 11202.5 -60 132.5 {Tags:["tw","p10"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
+fill 11202 -60 136 11204 -60 141 stone
+fill 11202 -59 136 11204 -59 141 smooth_stone_slab[type=bottom]
+summon pig 11202.5 -60 134.5 {Tags:["tw","p11"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
+fill 11201 -60 143 11205 -60 148 stone
+fill 11201 -59 143 11205 -59 148 smooth_stone_slab[type=bottom]
+summon horse 11199.5 -60 142.0 {Tags:["tw","h3"],PersistenceRequired:1b,Silent:1b,attributes:[{id:"minecraft:generic.movement_speed",base:0.0}]}
 op Dev
 op Dev2
 tentaworks trace on
