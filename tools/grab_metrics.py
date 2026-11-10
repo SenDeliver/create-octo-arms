@@ -213,10 +213,10 @@ check('G8f releasing the key after the wheel sets nothing down; the wheel alone 
       spos['g8f2']['held'] == int(p8) and w1 and not w1[0]['canceled'] and w0 and w1[0]['slot'] != w0[0]['slot'] and grabs('release', p8),
       f"held {spos['g8f2']['held']} wheel {w1[:1]} release {grabs('release', p8)[:1]}")
 
-print('== G8g Set Down: what you see is where it lands')
+print('== G8g Set Down: the mob never shows past the spot')
 
 def setdown(i, tap):
-    """The client's spot at the tap, the server feet at the tap, and the wearer's client view of the mob (feet and lerp target) to rest."""
+    """The client's spot at the tap, the server feet's gap to it at the tap, and the wearer's client view of the mob (feet and lerp target) to rest."""
     sp = next((cspot[g][0] for g in range(tap, tap - 4, -1) if g in cspot and cspot[g][1] and cspot[g][0]), None)
     rl = [g['gt'] for g in grab if g['kind'] == 'release' and g['target'] == i and g['gt'] >= tap]
     m0 = smob.get((tap, i))
@@ -234,9 +234,9 @@ def away(path, sp):
         worst = max([worst] + [b - a for a, b in zip(d, d[1:])])
     return worst, dist(path[-1][1], sp) if path else 99
 
-for tag, key, near in (('G3 creeper', 'c1', False), ('G4 horse', 'h1', False), ('G4 cow', 'w1', False), ('G8e pig, floor 3.5 ahead', 'p7', False),
-                       ('G8g1 pig, wheel +3, floor 2 ahead', 'p10', True), ('G8g2 pig, wheel +2, slab top near eye level', 'p11', True),
-                       ('G8g3 heavy horse, slab top 1.5 ahead', 'h3', True)):
+for tag, key in (('G3 creeper', 'c1'), ('G4 horse', 'h1'), ('G4 cow', 'w1'), ('G8e pig, floor 3.5 ahead', 'p7'),
+                 ('G8g1 pig, wheel +3, floor 2 ahead', 'p10'), ('G8g2 pig, wheel +2, slab top near eye level', 'p11'),
+                 ('G8g3 heavy horse, slab top 1.5 ahead', 'h3')):
     i = ids.get(key) if key != 'c1' else next((g['target'] for g in grab if g['kind'] == 'place' and g['type'] == 'minecraft:creeper'), None)
     pl = grabs('place', i) if i else []
     r = setdown(i, pl[0]['gt']) if pl else None
@@ -245,8 +245,6 @@ for tag, key, near in (('G3 creeper', 'c1', False), ('G4 horse', 'h1', False), (
         continue
     sp, gap0, path = r
     worst, end = away(path, sp)
-    if near:
-        check(f'[bug] {tag}: at the tap the mob hangs at the looked spot (server feet within 0.5)', gap0 <= 0.5, f'spot {sp} gap {gap0:.3f}')
     check(f'[bug] {tag}: on the wearer\'s client the mob never moves away from the spot after the tap, ends on it', len(path) >= 8 and worst <= 0.05 and end <= 0.1,
           f'{len(path)} ticks, worst step away {worst:.3f}, end {end:.3f}, tap gap {gap0:.3f}')
 

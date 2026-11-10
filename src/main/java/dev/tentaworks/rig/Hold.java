@@ -20,8 +20,7 @@ import java.util.function.DoublePredicate;
  * so it stays low on that side and out of the crosshair. r = w/2 · (|sin yaw| + |cos yaw|) is the half-width of the axis-aligned
  * box across the turned view (w/2 facing along an axis, up to w/√2 at a diagonal). The Grab key held with the mouse wheel moves
  * it along the look ({@link #distance}), {@value #NOTCH} per notch, from {@value #MIN_AHEAD} + r out to Reach of the body
- * ({@link #fit}). A valid Set Down spot under the crosshair nearer than that caps it for the moment ({@link #over}): the mob
- * hangs {@value #HOVER} over the spot, so what the wearer sees is where it lands; the chosen distance stays. The mob never goes into a block:
+ * ({@link #fit}). The mob never goes into a block:
  * where its box does not fit it is lifted in steps of {@value #LIFT_STEP} up to its own height (a tall mob held by a wearer on
  * the floor), else it stays where it is. Nor through one: it is swept from where it is toward that point and stops at the first
  * block in the way. A hold ends ({@link #ends}) on Crawl, the wearer's death, the Rig off or unfitted, no Air, the target gone or
@@ -43,12 +42,6 @@ public final class Hold {
     public static final double SHIP_MIN = 1.0;
     /** Camera side of a hold: left (+1) or right (−1). */
     public static final int LEFT_SIDE = 1, RIGHT_SIDE = -1;
-    /** How high over a looked Set Down spot a held mob hangs, blocks. */
-    public static final double HOVER = 0.25;
-    /** Farther than the hold distance by this much, a looked surface starts to draw the hold over its spot, blocks. */
-    public static final double OVER_BAND = 0.5;
-    /** Most the hold moves between its point and a looked spot per tick, as a share of the way. */
-    public static final double OVER_RATE = 0.25;
 
     /**
      * What the server sees of a hold this tick; {@code farTicks} counts ticks in a row beyond Reach + {@value #FAR_SLACK},
@@ -127,27 +120,6 @@ public final class Hold {
             else hi = mid;
         }
         return lo;
-    }
-
-    /**
-     * How far the hold goes over the looked Set Down spot (0: at its point, 1: over the spot), for a hold {@code hold} along the
-     * look and a valid spot whose surface the crosshair meets {@code along} from the eye (NaN: none). A surface nearer than the
-     * hold caps it: the mob hangs over the spot; from {@value #OVER_BAND} farther it eases in, so the cap never snaps on.
-     */
-    public static double over(double hold, double along) {
-        if (!Double.isFinite(along) || !Double.isFinite(hold)) return 0;
-        double x = Mth.clamp((hold + OVER_BAND - along) / OVER_BAND, 0, 1);
-        return x * x * (3 - 2 * x);
-    }
-
-    /** {@code k} ({@link #over}) one tick on toward {@code want}, at most {@value #OVER_RATE}: a spot that comes and goes never flicks the mob. */
-    public static double ease(double k, double want) {
-        return k + Mth.clamp(want - k, -OVER_RATE, OVER_RATE);
-    }
-
-    /** The held feet {@code k} of the way from the hold's own {@code feet} to {@value #HOVER} over the spot's {@code spot}. */
-    public static Vec3 over(Vec3 feet, Vec3 spot, double k) {
-        return k <= 0 ? feet : feet.lerp(spot.add(0, HOVER, 0), Math.min(1, k));
     }
 
     /**

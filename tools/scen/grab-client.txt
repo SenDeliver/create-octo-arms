@@ -283,7 +283,7 @@ wait 3
 key key.keyboard.v
 awaitheld off 20
 signal g8fdone
-# G8g a looked spot nearer than the hold distance: the mob hangs over it, a tap lowers it there without moving away
+# G8g a looked spot nearer than the hold distance: a tap carries the mob there and it never shows past the spot
 await g8g1
 lookate minecraft:pig 5
 wait 3

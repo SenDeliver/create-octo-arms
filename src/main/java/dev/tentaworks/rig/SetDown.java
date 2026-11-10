@@ -30,11 +30,8 @@ public final class SetDown {
     private static final double GAP = 0.01;
     private static final double STEP = 0.25;
 
-    /**
-     * A spot: the feet (bottom centre) of the held box there, the box, whether the mob may be set down there, and how far from
-     * the eye the crosshair meets the surface ({@code along}, NaN for a spot the client sent).
-     */
-    public record Spot(Vec3 feet, AABB box, boolean valid, double along) {
+    /** A spot: the feet (bottom centre) of the held box there, the box, and whether the mob may be set down there. */
+    public record Spot(Vec3 feet, AABB box, boolean valid) {
     }
 
     private SetDown() {
@@ -84,13 +81,13 @@ public final class SetDown {
         Vec3 feet = feet(hit.getLocation(), hit.getDirection(), held.getBbWidth(), held.getBbHeight(), free);
         if (feet == null) return null;
         AABB box = box(held, feet);
-        return new Spot(feet, box, valid(level, wearer, box, free, reach + slack), hit.getLocation().distanceTo(eye));
+        return new Spot(feet, box, valid(level, wearer, box, free, reach + slack));
     }
 
     /** {@code feet} as a spot for {@code held} (a client's), checked as {@link #spot} checks its own. */
     public static Spot check(Level level, Player wearer, Entity held, Vec3 feet, double reach) {
         AABB box = box(held, feet);
-        return new Spot(feet, box, valid(level, wearer, box, b -> level.noCollision(held, b), reach), Double.NaN);
+        return new Spot(feet, box, valid(level, wearer, box, b -> level.noCollision(held, b), reach));
     }
 
     private static boolean valid(Level level, Player wearer, AABB box, Predicate<AABB> free, double reach) {

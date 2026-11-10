@@ -910,7 +910,7 @@ public final class DevScript {
 
     /**
      * TRACE fields (end of line): own Actuator state (held id, heavy, Ship block, Far Use ttl), the crosshair entity, the held
-     * mob's box centre, the hold point for it from this camera ({@link Hold#point}, over a nearer spot by {@link Hold#over}), the closest the crosshair ray passes to the
+     * mob's box centre, the hold point for it from this camera ({@link Hold#point}), the closest the crosshair ray passes to the
      * held box within 6 blocks, limp, the first-person Limb opacity; last: the last held mob's box centre and lerp target up to 40 ticks after the hold (lmob).
      */
     private static String actuatorFields(Minecraft mc, LocalPlayer p) {
@@ -922,11 +922,7 @@ public final class DevScript {
             int side = Hold.side(s.arm().side(p.getMainArm()));
             double d = Hold.fit(eye, look, p.getYRot(), held.getBbWidth(), held.getBbHeight(), side, s.distance() > 0 ? s.distance() : Double.NaN,
                     Grips.body(p), TentacleRigItem.reach(p));
-            Vec3 hp = Hold.point(eye, look, p.getYRot(), held.getBbWidth(), held.getBbHeight(), side, d);
-            SetDown.Spot near = ActuatorClient.setDownSpot();
-            if (near != null && near.valid())
-                hp = Hold.over(hp.subtract(0, held.getBbHeight() / 2, 0), near.feet(), Hold.over(d, near.along())).add(0, held.getBbHeight() / 2, 0);
-            point = fmt(hp);
+            point = fmt(Hold.point(eye, look, p.getYRot(), held.getBbWidth(), held.getBbHeight(), side, d));
         }
         SetDown.Spot spot = ActuatorClient.setDownSpot();
         ActuatorClient.Affordance aff = ActuatorClient.affordance();
