@@ -4,7 +4,7 @@
 
 # Create: Octo Arms
 
-Fit four pneumatic Tentacles to a Create Backtank and let them carry you over floors, walls and ceilings. Fit two Actuators on top and it also mines, builds, fights, grabs and throws at a distance. Doc Ock style.
+A Create Backtank with four pneumatic **Tentacles** that carry you over floors, walls and ceilings. Fit two **Actuators** on top and it also mines, builds, fights, grabs and throws at a distance.
 
 For Minecraft **1.21.1** (NeoForge) and **1.20.1** (Forge), see [Downloads](#downloads).
 
@@ -13,223 +13,270 @@ For Minecraft **1.21.1** (NeoForge) and **1.20.1** (Forge), see [Downloads](#dow
 [![NeoForge](https://img.shields.io/badge/Mod%20Loader-NeoForge-E04E14.svg)](https://neoforged.net/)
 [![Create 6.0](https://img.shields.io/badge/Create-6.0.4%2B-B8860B.svg)](https://github.com/Creators-of-Create/Create)
 
-![A player lifted off the ground by four copper Tentacles of a Tentacle Rig](docs/images/hero-carried-on-tentacles.png)
+![A player carried by the four Tentacles of a Copper Octo Rig under cherry trees. One Actuator carries an iron sword, the other holds a Creeper.](docs/images/hero-carried-on-tentacles.png)
 
-## What it does
+**Contents:** [Walk](#walk-four-tentacles) · [Work](#work-two-actuators) · [Controls](#controls) · [On screen](#on-screen) · [Crafting](#crafting-and-fitting) · [Air, tiers, enchantments](#air-tiers-and-enchantments) · [Ships](#ships-sable--create-aeronautics) · [Compatibility](#compatibility) · [Install](#requirements) · [Config](#config) · [Limits](#known-limitations) · [FAQ](#faq)
 
-Craft a **Tentacle Rig**: a Backtank with four **Tentacles** and a Precision Mechanism. Wear it in the chest slot and **Double Jump**. The Tentacles grab nearby block faces and carry you where you look: across the floor, up a wall, under a ledge or a ceiling. Your hands stay free, so you can mine, build and fight while you hang.
+## In short
 
-The Rig runs on the Backtank's **Air**. Holding still uses a trickle, moving uses more, climbing the most. Place the Rig as a block under a spinning shaft to refill it, like any Backtank. Double Jump again and the Rig **Sets you Down** on the floor.
-
-New in 2.0: fit two **Actuators** to the Rig. Each one stands in for a hand and does whatever that hand does, farther (**Far Use**); with a tool in each they work together (**Dual Wield**); a free one **Grabs** a mob, holds it out of your way, sets it down where you look or **Throws** it. See [Actuators](#actuators).
-
-The only required dependency is Create. With Sable (optional) the Rig also grips and rides Ships. The terms used here (Tentacle Rig, Grip, Reach, Air, Crawl, ...) are explained in the [glossary](docs/CONTEXT.md).
-
-## Features
-
-- **Climb anything solid**: Tentacles grip any full block face: floor, wall, ceiling, the underside of a ledge, also underwater.
-- **Ride Ships**: with Sable (or Create Aeronautics) installed, Tentacles grip Ship blocks too and the Rig carries you along with a moving, turning Ship. See [Ships](#ships-sable--create-aeronautics).
-- **Move where you look**: forward follows the camera (also up and down), `Space` goes up, `Shift` goes down. You can't walk off an edge: the Rig only moves you where at least two Tentacles can hold.
-- **Hang** under ledges and ceilings, as long as you like.
-- **Double Jump** to activate, also in mid-air: the Rig catches you as soon as a Grip is in Reach, with no fall damage.
-- **Setting Down**: Double Jump again and the Rig lowers you to the floor and folds up. With no floor in Reach, it lets go at the lowest point it can hold.
-- **Crawl**: out of Air, the Rig does not drop you. It slowly lowers you to the nearest floor, then folds up.
-- **Hands free**: mining, placing, fighting and using items all work while the Rig carries you. `Shift` also sneaks, so sneak + right click works, without the crouch.
-- **Actuators** (2.0): two extra arms above the Tentacles, fitted at a crafting table. **Far Use** mines, places, hits and uses out to the Rig's Reach; **Dual Wield** adds the off-hand tool or weapon; **Grab** (`V`) takes a mob with any free Actuator, **Throw** flings it with Impact damage. With Sable, **Ship Grab** lifts a whole Ship. See [Actuators](#actuators).
-- **Still a Backtank**: it holds Air (twice as much as the Backtank it was made from), feeds a Diving Helmet, takes Capacity and refills under a shaft.
-- **Keep your chestplate**: with [Curios](https://www.curseforge.com/minecraft/mc-mods/curios-continuation) installed the Rig also fits the back slot. There it is a Rig and not armor: everything works, it gives no armor value and armor enchantments on it are idle. See [Curios](#curios-back-slot).
-- **Two tiers**: Copper (Reach 5) and Netherite (Reach 7, half the Air use, fire resistant).
-- **Five own enchantments**: Far Reach, Thrift, Swift, Silent Step and Deft, plus vanilla chest armor enchantments and Create's Capacity.
-- **Never breaks**: like an Elytra, a worn-out Rig stops working at 1 durability until you repair it. Air, enchantments and settings are kept.
-- **Rig Settings** screen: Standing Height, Speed, Activation Mode (Double Jump or a key) and, on a fitted Rig, Far Use.
-- A stepping gait everyone on the server sees, with Sticker and piston sounds.
-- Create-style tooltips, a Ponder scene, Engineer's Goggles info, a Display Link source and JEI recipes.
-
-| Climbing a wall | Hanging under a ceiling |
-|---|---|
-| ![A player climbing a stone wall on four Tentacles](docs/images/climbing-a-wall.png) | ![A player hanging under a ceiling, all four Tentacles gripping above](docs/images/hanging-under-a-ceiling.png) |
-
-## Items and blocks
-
-| Item / block | What it is | How to get it |
+| | What | How |
 |---|---|---|
-| **Tentacle** | One pneumatic arm. Four go into every Rig. Tier-less. | Sequenced Assembly on a Piston Extension Pole: deploy Sticker, press, deploy Andesite Casing, 2 loops |
-| **Incomplete Tentacle** | Transitional item of the Tentacle sequence | — |
-| **Copper Tentacle Rig** | Worn Rig, Reach 5 blocks, normal Air use, 112 durability | Mechanical Crafting (see below) with a Copper Backtank |
-| **Netherite Tentacle Rig** | Worn Rig, Reach 7 blocks, half the Air use, 592 durability, fire resistant | Mechanical Crafting with a Netherite Backtank, or Smithing: Copper Tentacle Rig + Netherite Upgrade + Netherite Ingot (keeps Air) |
-| **Actuator** | One pneumatic arm that acts instead of walking. Two fit on a Rig. Tier-less. | Sequenced Assembly on a Piston Extension Pole: deploy Brass Casing, press, deploy Sticker, 2 loops |
-| **Incomplete Actuator** | Transitional item of the Actuator sequence | — |
-| **Fitted Rig** (Copper / Netherite) | The same Rig with two Actuators. Not a separate item: the tooltip says "Actuators fitted". | A Rig between two Actuators in one row of a crafting table (keeps Air, enchantments, settings and damage), or the fitted Mechanical Crafting recipe |
-| **Rig Block** (Copper / Netherite) | A Rig placed in the world. Refills under a spinning shaft, like a Backtank. Not a separate item: place the Rig, pick it up again. | Use a Rig on a block |
+| **Walk** | A **Tentacle Rig** carries you where you look: over the floor, up a wall, under a ceiling. Your hands stay free. | Wear it, **Double Jump** |
+| **Work** | Two **Actuators** make it an **Octo Rig**. Each one is a hand: it carries that hand's item and does what the hand does, out to the Rig's **Reach**. A free one **Grabs** a mob. | Fit them at a crafting table, then just play. Grab is `V` |
+| **Power** | The Rig runs on the Backtank's **Air**. | Place it under a spinning shaft to refill |
 
-Mechanical Crafting pattern for both Rigs (3×3): Tentacles in the four corners, Precision Mechanism top centre, Brass Casing left and right, the Backtank in the centre, a Copper Sheet bottom centre. The fitted variant is the same pattern 5 wide, with an Actuator at each end of the middle row. Check JEI for the exact recipes.
+The only required dependency is Create. The terms used here are explained in the [glossary](docs/CONTEXT.md).
 
-Advancements, all under Create's Backtank advancement:
+## Walk: four Tentacles
 
-| Advancement | How |
+- **Double Jump** to activate, also in mid-air. The Rig catches you as soon as a Grip is in Reach, with no fall damage.
+- **Move where you look.** Forward follows the camera, `Space` goes up, `Shift` goes down. Walk into a wall to climb it, walk under a ledge to hang.
+- **Grips** are solid block surfaces: floors, walls, ceilings, slabs and stairs at their real height, also underwater. Nothing narrower than half a block.
+- **You can't walk off an edge.** The Rig only moves you where at least two Tentacles can hold.
+- **Hang** as long as you like. Holding still uses very little Air.
+- **Double Jump again** and the Rig **Sets you Down** on the floor and folds up.
+- **Out of Air** the Rig does not drop you. It **Crawls** you down to the nearest floor, then folds up.
+- **Hands free.** Mining, placing, fighting and using items all work while the Rig carries you.
+- Everyone on the server sees the stepping gait and hears the Stickers and pistons.
+
+| Climbing a wall | Hanging under a bridge |
 |---|---|
-| **Doc's Rig** | Get your first Rig |
-| **Fitted** | Fit two Actuators to a Rig |
-| **Hang In There** | Hang under a ceiling for a whole minute |
-| **Spider, Man** | Kill a spider with the Rig out |
-| **Intelligence Is a Privilege** | Put Far Reach, Thrift, Swift, Silent Step and Deft on one Rig |
-| **The Power of the Sun** | Grab a Blaze |
-| **Special Delivery** | Throw a mob so it lands 20 blocks or more away |
-| **Fridge Mover** | Grab a Ship and set it down 50 blocks from where you took it (1.21.1 with Sable only) |
+| ![A player climbing the dirt and stone wall of a ravine on four Tentacles](docs/images/climbing-a-wall.png) | ![A player hanging under a stone brick bridge, Tentacles gripping its underside and the ravine wall](docs/images/hanging-under-a-ceiling.png) |
 
-| Tooltips | Sequenced Assembly in JEI |
+If the blocks under your Grips are broken and no new Grip is in Reach, you fall with normal fall damage until the Rig finds a Grip again.
+
+## Work: two Actuators
+
+New in 2.0. Two Actuators sit above the Tentacles, one for each hand. The main-hand Actuator carries your main-hand item, the off-hand Actuator the off-hand item. They work wherever your hands work: Rig out or folded, on a Ride, gliding, falling. Fitting is optional: a Rig without Actuators is a complete Rig that only walks.
+
+### Far Use
+
+Whatever a hand does, its Actuator does farther: mine, place, hit and use, on blocks, mobs and players, out to the Rig's Reach (Copper 5 blocks, Netherite 7). Never through a wall. Drops and XP of a block mined this way fly to you.
+
+### Dual Wield
+
+Put a tool in each hand and both Actuators work at once. Two pickaxes mine at the sum of their speeds, two axes fell a tree twice as fast, an off-hand sword adds its damage to your hit.
+
+| Far Use | Dual Wield |
 |---|---|
-| ![Copper and Netherite Tentacle Rig tooltips with the Create-style summary](docs/images/rig-tooltips.png) | ![JEI showing the Tentacle Sequenced Assembly: deploy Sticker, press, deploy Andesite Casing, 2 loops](docs/images/jei-tentacle-sequenced-assembly.png) |
+| ![First person: an Actuator carries a pickaxe out to a coal ore several blocks away, a bracket beside the crosshair](docs/images/far-use-mining.png) | ![First person, animated: two Actuators with pickaxes reach out and break one coal ore together](docs/images/dual-wield.gif) |
 
-## How to use
+### Grab, Set Down, Throw
 
-1. **Craft Tentacles** on a Sequenced Assembly line, then the **Rig** on Mechanical Crafters. A new Rig starts with **no Air**.
-2. **Fill it**: use the Rig on a block to place it (Rig Block), put a spinning shaft above it and wait. Use it with an empty hand to pick it up again; Air, enchantments and settings stay on the item.
-3. **Wear it** in the chest slot (it replaces your chestplate, like a Backtank), or with Curios in the back slot and keep your chestplate (use the Rig while wearing a chestplate and it goes there). One Rig at a time.
-4. **Double Jump** (press jump twice quickly) to activate. The Rig lifts you to your Standing Height.
-5. **Move**: look where you want to go and walk. `Space` = up, `Shift` = down. Look up at a wall and walk into it to climb it. Walk under a ledge to hang under it.
-6. **Double Jump again** to be Set Down.
-7. **Watch your Air**. Copper Rig: about 1 Air per 4 s holding still, 1 per second moving, 2 per second climbing. The Netherite Rig uses half. A Backtank holds 900 Air and a Rig twice its Backtank (1800), more with Capacity. A Rig from before 2.0 shows its Air bar half full until it is refilled once. At 0 Air the Rig **Crawls** you down to the floor.
-8. **Rig Settings**: sneak + use the Rig in the air, or bind the **Rig Settings** key (unbound by default) to open them while wearing it. Set Standing Height (0 to Reach, default 1.5 blocks), Speed (walk speed up to the server's top Speed, default the top Speed) and Activation Mode; a fitted Rig adds Far Use. In "key only" mode, bind **Toggle Tentacle Rig** in Controls and use it instead of the Double Jump.
-9. **Enchant** it at an enchanting table or anvil:
-   - **Far Reach** I–III: +1 block of Reach per level.
-   - **Thrift** I–III: −15 % Air use per level.
-   - **Swift** I–II: +15 % Speed and top Speed per level.
-   - **Silent Step**: with the Rig out, Sculk Sensors, Shriekers and Wardens do not hear you (steps, blocks, items) and the Rig makes no sound.
-   - **Deft**: the Actuators use no Air. Does nothing on a Rig without Actuators.
-   - Also Protection (all kinds), Unbreaking, Mending, Thorns and Create's Capacity.
-10. **Repair** a worn-out Rig at an anvil with a Copper Ingot (Copper Rig) or Netherite Ingot (Netherite Rig), or with Mending. The tooltip turns red when it is worn out.
+- **Grab** (`V`): look at a mob in Reach. An Actuator with an empty hand takes it and holds it at your side. The mob is **Pinned**: no attacks, no Creeper fuse. Your other hand keeps working.
+- **Set Down**: tap `V` and the mob is put where you look. An outline shows the spot. Hold `V` and turn the mouse wheel to move it nearer or farther.
+- **Throw**: attack while holding. The mob flies along your view and takes **Impact** damage when it hits a block or another mob.
+- Big mobs (Iron Golem, Ravager, Horse, Enderman, Ghast) take both Actuators and both empty hands. Players and bosses can't be Grabbed.
 
-**Creative mode**: a worn Rig uses no Air. The Double Jump goes to the Rig; press jump a third time while Active, or use the fly key, to switch to creative flight.
+| Grab | Set Down |
+|---|---|
+| ![A Copper Octo Rig holds a sheep in one Actuator and a pickaxe in the other](docs/images/grab-mob.png) | ![First person: a held sheep at the left, a white outline on the grass shows where it will be set down](docs/images/set-down-outline.png) |
 
-**Falling**: if the blocks under your Grips are broken and no new Grip is in Reach, you fall with normal fall damage until the Rig finds a Grip again. Taking the Rig off, logging out or changing dimension folds it at once.
+| Throw | Ship Grab (1.21.1 with Sable) |
+|---|---|
+| ![Animated: an Octo Rig throws a Creeper off a hill toward the sea](docs/images/throw.gif) | ![An Octo Rig holds a small sailboat in the air with both Actuators at the shore](docs/images/ship-grab.png) |
 
-![Ponder scene for the Tentacle Rig: a player hangs under a ledge](docs/images/ponder-tentacle-rig.png)
-
-Ponder (hold `W` over a Rig or Tentacle) shows all of this step by step.
-
-## Actuators
-
-New in 2.0. Two Actuators sit on the Rig above the Tentacles, one for each hand: the one on your main-arm side is the main-hand Actuator, the other the off-hand Actuator (left-handed players get them the other way round). Each carries its hand's item, in first and third person, and does everything that hand does while your own arms stay still. The Tentacles keep walking exactly as before; the Actuators act on the world. They work wherever your hands work: Stowed or Active, on a Ride, gliding, Falling. Fitting is optional and permanent: a Rig without Actuators is a complete Rig that only walks, and a Rig from before 2.0 is one of those until you fit a pair.
-
-**Getting them**
-
-1. **Craft Actuators** on a Sequenced Assembly line: Piston Extension Pole, deploy Brass Casing, press, deploy Sticker, 2 loops. One kind for both tiers.
-2. **Fit two** to a finished Rig: Actuator, Rig, Actuator in one row of a crafting table. The Rig keeps its Air, enchantments, Rig Settings and damage. Or build a fitted Rig in one go on Mechanical Crafters (the Rig recipe with an Actuator added on each side).
-3. A fitted Rig is named **Copper Octo Rig** or **Netherite Octo Rig**. Smithing a fitted Copper Rig to Netherite keeps the Actuators. The first time you wear a freshly fitted Rig, both Actuators unfold and flex.
+<details>
+<summary><b>All Actuator rules</b></summary>
 
 **Far Use**
 
-- Whatever either hand does, farther: mining, placing, hitting and using items. The hand's Actuator does it at its tip, with the item in that hand, near or far.
-- Blocks, mobs and players: out to the Rig's Reach (Copper 5, Netherite 7, Far Reach adds), with any item, weapon or tool. Reach is measured from the Rig body, like a Tentacle's Grip: what a Tentacle can hold on to, an Actuator can work on, the floor around you included.
+- Reach is measured from the Rig body, like a Tentacle's Grip. Far Reach adds to it.
 - Past arm's length the server checks the target is in sight of your eye: nothing is reached through a wall, a pane or the floor.
-- Only an action past arm's length that does something costs Air: a lever flipped, a block placed, a mob hurt, a block that starts to break. An empty hand on stone does nothing, as it would by hand.
-- Drops and XP of a block mined by Far Use fly to you.
-- With an Extendo Grip in hand the Rig adds no reach.
+- Only an action past arm's length that does something costs Air: a lever flipped, a block placed, a mob hurt, a block that starts to break.
+- With an Extendo Grip in hand the Rig adds no reach. Far Use leaves Ship blocks to your own reach.
 - Rig Settings row **Far Use**: Always (default), Rig out only, or Off.
 
 **Dual Wield**
 
-- With both Actuators free, the off-hand item works along with the main-hand one.
-- Mining: two tools that both suit the block (two axes on a log, two pickaxes on stone) break it at the sum of their speeds, each with its own Efficiency, and both wear. An off-hand tool alone does the work, gets its drops and takes the wear; the main-hand item takes none. Fortune and Silk Touch stay the main hand's.
-- Melee: the off-hand weapon or tool adds its damage and its damage enchantments to the hit, scaled by your attack strength, and wears.
-- Each block broken or hit landed this way costs 0.5 Air on a Copper Rig. Item use is not sped up.
-- Not while the off-hand Actuator holds a mob, during a heavy hold, or without Air. Server config `actuators.dualWield` turns it off.
+- Needs both Actuators free. Mining: both tools must suit the block; each uses its own Efficiency and both wear. An off-hand tool alone does the work, gets its drops and takes the wear. Fortune and Silk Touch stay the main hand's.
+- Melee: the off-hand weapon or tool adds its damage and damage enchantments, scaled by your attack strength, and wears.
+- Item use is not sped up. Not while the off-hand Actuator holds a mob, during a heavy hold, or without Air. Server config `actuators.dualWield` turns it off.
 
-**Grab and Throw**
+**Grab**
 
-- Press **Grab** (`V`, rebindable; Curios keeps `G`) while looking at a mob within Reach and in sight. A free Actuator takes it: the off-hand one if your off hand is empty, else the main-hand one if your main hand is empty. It holds the mob low on its side, out of the crosshair. While you look at something grabbable, the Actuator that would take it points at it.
-- Your other hand keeps working while one Actuator holds: mine, fight, place, open doors. An item that lands in the holding Actuator's hand sets the mob down.
-- The held mob is **Pinned**: no attacks, no Creeper fuse, no spells or shots. You can still shear, milk, name, saddle or leash it.
-- **Tap `V`** to set it down where you look: on top of the block under the crosshair, or beside its side and down to the floor. An outline shows the spot, red when the mob does not fit there or the spot is out of Reach or out of sight; with no valid spot it is set down where it hangs. It stays calm for one second; looking at a seat, boat or minecart puts it in.
-- **Hold `V` and turn the mouse wheel** to move it nearer or farther, half a block a notch, out to Reach. The hotbar does not scroll meanwhile.
-- **Attack** while holding **Throws** it along your view (Netherite faster). With an item in the main hand a plain attack uses the item, so hold `V` and attack to Throw. A thrown mob takes fall damage and **Impact** damage when it slams into a block or another mob, which is hurt too. Impact counts as your damage (loot, XP and protection rules see you) and hurts players only where PvP allows.
-- Light mobs (up to 1.5 blocks wide and 2 tall: zombie, villager, cow, spider) take one Actuator. Heavy ones (Iron Golem, Ravager, Horse, Enderman, Ghast) take both and need both hands empty: Far Use pauses and you move at 60% speed while you hold them (Rides and glides unaffected).
-- Never: players, bosses (Ender Dragon, Wither, Warden, anything over 100 max health, the `tentaworks:bosses` entity tag), anything riding or ridden, anything another wearer holds or another player has on a lead, or another player's pet unless the server allows it. Claim and protection mods are asked first. A refused Grab says why in the action bar (hands full, needs both Actuators, boss, owned, out of sight, out of Reach, no Air).
+- The off-hand Actuator takes the mob if your off hand is empty, else the main-hand one if your main hand is empty. An item that lands in the holding Actuator's hand sets the mob down.
+- You can shear, milk, name, saddle or leash a held mob.
+- Light mobs (up to 1.5 blocks wide and 2 tall: zombie, villager, cow, spider) take one Actuator. Heavy ones take both: Far Use pauses and you move at 60% speed.
+- Never: players, bosses (Ender Dragon, Wither, Warden, anything over 100 max health, the `tentaworks:bosses` entity tag), anything riding or ridden, anything another wearer holds or another player has on a lead, or another player's pet unless the server allows it. Claim and protection mods are asked first. A refused Grab says why on the action bar.
 - The hold lasts through Stowing, Setting Down, Rides, gliding and Falling. It ends on Crawl, death, logout, taking the Rig off, a dimension change, the target gone or out of Reach, or no Air left: the target is set down where it is.
 
-**On screen**
+**Set Down and Throw**
 
-- Crosshair marks (first person): a claw mark beside the crosshair when an Actuator will reach what you look at, on the acting side, in the tier's colour (copper or netherite purple); both sides when Dual Wield applies; a hollow pair when the target is just out of Reach, flashing when a click or a Grab lands on nothing for that reason; red when the Actuators are out of Air. The marks pulse with every strike.
-- Each bracket is one Actuator (the left bracket is the left one). While an Actuator holds, its bracket is shut tight against the crosshair, both for a heavy hold; it goes pale over a spot the mob cannot be set down on. With `V` down a small column of ticks beside it shows the hold distance, the lit tick moving with the wheel.
-- Above the crosshair: an open claw over a mob a free Actuator can take, or a glyph for why not (needs both Actuators, hands full, refused). No words at the crosshair: press `V` anyway and the action bar says why.
-- Key hints, for the first two holds of a game session: the Grab key beside the open claw, and after a Grab one action-bar line with your keys for Set Down, Throw and the hold distance. Client config `hud.hints` turns them off.
-- A small HUD line by the hotbar shows what you hold (and "heavy") and when the Actuators are out of Air.
-- Hidden with F1 and in third person; client config `hud.crosshair` turns the crosshair marks and cues off.
+- The spot is on top of the block under the crosshair, or beside its side and down to the floor. The outline is red when the mob does not fit, or the spot is out of Reach or out of sight; then it is set down where it hangs. Looking at a seat, boat or minecart puts it in. A mob that was set down stays calm for one second.
+- With an item in the main hand a plain attack uses the item, so hold `V` and attack to Throw. Netherite throws faster.
+- A thrown mob takes fall damage and Impact damage, and what it hits is hurt too. Impact counts as your damage (loot, XP, protection rules) and hurts players only where PvP allows.
 
-**Ship Grab** (1.21.1 with Sable only): `V` on a block of a Ship, with both hands empty, takes the whole Ship in both Actuators. It stays where it was in your view: look around and it swings round you, turn and it turns with you (its tilt stays); `V` with the wheel moves it nearer or farther, a tap of `V` lets it go, attack throws it. Needs a Ship of scale 1 within the tier's mass cap (Copper 2000, Netherite 6000 Sable mass), nobody else on board, and not the Ship you stand on or hang from. Server config `grab.ships` (and `ships.grip`) turn it off.
+**Ship Grab** (1.21.1 with Sable)
 
-**Air and Deft**
-
-The Actuators drink lightly from the Rig's Air. Copper Rig: 0.5 Air per Far Use action, 0.5 per Dual Wield block or hit, 1 Air per 2 s of holding, 10 Air per Throw; Netherite half, Thrift less. With no Air left the Actuators hang limp and a held target is set down. The **Deft** enchantment makes them free. Creative players use no Air.
+- `V` on a block of a Ship, with both hands empty, takes the whole Ship in both Actuators. It follows your view; `V` with the wheel moves it nearer or farther, a tap of `V` lets it go, attack throws it.
+- Needs a Ship of scale 1 within the tier's mass cap (Copper 2000, Netherite 6000 Sable mass), nobody else on board, and not the Ship you stand on or hang from. Server config `grab.ships` turns it off.
 
 **Look**
 
-At rest the Actuators curl up above your head, wider than your body, so they frame you without blocking the third-person view, breathing with small idle gestures; the acting one leans toward a far target before you click. Work shows at the tip, in step with your swing: strikes that follow the crosshair from block to block, both Actuators in turn for Dual Wield, a thrust for placing and using, held items raised as you use them (eating, a shield, a bow). In first person they enter from the edge of the view and stand in for both hands. Client config `firstPerson.limbOpacity` draws every Limb (Tentacles and Actuators) in first person from solid (1.0, default) down to faint (0.1). A Throw kicks the camera, an Impact clanks.
+- At rest the Actuators curl up above your head. In first person they enter from the edge of the view and stand in for both hands.
+- Client config `firstPerson.limbOpacity` draws every Limb (Tentacles and Actuators) in first person from solid (1.0) down to faint (0.1).
 
-## Compatibility
+</details>
 
-- **Ponder** (comes with Create): one scene, "Tentacle Rig", in the "Tentacle Rigs" tag: crafting, refilling, Double Jump, walking, climbing, hanging, Setting Down and Crawl.
-- **Engineer's Goggles**: on a Rig Block they show Air, the fill rate (or "needs a turning shaft above"), Reach, Top Speed and Air use. The Rig item tooltip shows the same stats.
-- **Create Display Link**: a Rig Block is a Display Link source, "Rig Air" (Air number, percent or progress bar). Works with Display Boards and Nixie Tubes.
-- **JEI** (optional): all recipes show up in Create's own categories (Sequenced Assembly, Mechanical Crafting), in vanilla Smithing and, for Fitting, in vanilla Crafting.
-- **Claim and protection mods**: a Grab asks the loader's entity-interaction event first, so they can refuse it. Far Use goes through the vanilla block and entity events, which they already guard.
-- **Jade**: no special support.
-- **Sable / Create Aeronautics** (optional, not needed): Ship blocks are Grips and the Rig rides moving Ships. See [Ships](#ships-sable--create-aeronautics).
-- **Curios** (optional): the Rig fits the back slot. See [Curios](#curios-back-slot).
-- Tested together with Elytra Slot, Sophisticated Backpacks and Carry On.
+## Controls
 
-![Engineer's Goggles on a placed Rig Block: Air, filling rate, Reach and Top Speed](docs/images/goggles-rig-block.png)
+| Input | When | What it does |
+|---|---|---|
+| **Double Jump** (jump twice quickly) | Rig worn | Activates the Rig. Again: Sets you Down |
+| `W` `A` `S` `D` | Rig out | Move where you look |
+| `Space` / `Shift` | Rig out | Up / down. `Shift` also sneaks, without the crouch |
+| Attack, Use | Octo Rig | The hand's Actuator does it, out to Reach (Far Use) |
+| `V` (**Grab**) | Looking at a mob in Reach, a hand empty | Grab it |
+| Tap `V` | Holding | Set Down where you look |
+| Hold `V` + mouse wheel | Holding | Move it nearer or farther |
+| Attack | Holding | Throw. With an item in the main hand: hold `V` + attack |
+| Sneak + Use the Rig item, not aimed at a block | Rig in hand | Opens the **Rig Settings** |
+| Use the Rig item on a block | Rig in hand | Places it as a **Rig Block** |
+| Use with an empty hand | On a Rig Block | Picks it up, with its Air and settings |
+| Hold `W` | Mouse over a Rig or Tentacle in the inventory | Ponder |
 
-## Curios back slot
+Key binds (Controls > Octo Arms): **Grab (Actuators)** is `V`. **Rig Settings (worn Rig)** and **Toggle Tentacle Rig (key-only mode)** are unbound by default. With Curios installed its own key stays on `G`.
 
-With Curios installed (1.21.1: Curios 9.2.0 or newer; 1.20.1: Curios 5.3.0 or newer) both Rigs fit the `back` slot and players get that slot from this mod. A Rig in the back slot is a Rig, not armor:
+**Rig Settings**: Standing Height (0 to Reach, default 1.5 blocks), Speed, Activation Mode (Double Jump or key only) and, on an Octo Rig, Far Use.
 
-- Works: Air (also for a Diving Helmet and the air HUD), Reach, Far Reach, Thrift, Swift, Silent Step, Capacity, Rig Settings, the Rig Settings key, Mending, repair at an anvil. Hits wear it like chest armor, it never breaks.
-- Does nothing: armor value, armor toughness, knockback resistance, Protection and its kinds, Thorns. The tooltip says so.
-- One Rig at a time. The back slot refuses a Rig while the chest slot holds one and the chest slot refuses a Rig while the back slot holds one. If both end up with a Rig anyway, the chest Rig wins and the other does nothing (red tooltip).
-- Using a Rig from the hand: empty chest slot, it is worn as armor as before; a chestplate on and a free back slot, it goes to the back slot; otherwise the usual armor swap.
-- Elytra in the chest slot and the Rig in the back slot: the Elytra never opens while the Rig is out; Set Down, then jump and glide.
-- Server owners who want to keep the chestplate trade-off set `curios.backSlot = false` in the server config.
+**Creative mode**: a worn Rig uses no Air. The Double Jump goes to the Rig; press jump a third time while it is out, or use the fly key, for creative flight.
+
+## On screen
+
+In first person the crosshair shows what the Actuators will do before you click. No words at the crosshair. Each bracket is one Actuator: the left bracket is the left one.
+
+| Mark | Meaning |
+|---|---|
+| <img src="docs/images/hud/reach.png" width="170" alt="A bracket at the right of the crosshair"> | This Actuator reaches what you look at |
+| <img src="docs/images/hud/dual-wield.png" width="170" alt="Brackets on both sides of the crosshair"> | Both work together: Dual Wield |
+| <img src="docs/images/hud/grab-cue.png" width="170" alt="An open claw above the crosshair with a V key hint"> | Open claw: a free Actuator can Grab this mob. The key hint shows for the first two holds of a session |
+| <img src="docs/images/hud/holding.png" width="170" alt="A bracket shut tight against the left of the crosshair"> | Shut bracket: this Actuator holds something |
+| <img src="docs/images/hud/distance.png" width="170" alt="A column of ticks beside the shut bracket"> | With `V` down: the hold distance, changed with the mouse wheel |
+
+Also: a hollow pair when the target is just out of Reach, red marks when the Actuators have no Air, a glyph above the crosshair when a Grab is not possible (press `V` anyway and the action bar says why). A small line by the hotbar names what you hold. All of it hides with F1 and in third person. Client config `hud.crosshair` and `hud.hints` turn the marks and the key hints off.
+
+## Crafting and Fitting
+
+| Item | What it is | How to get it |
+|---|---|---|
+| **Tentacle** | One walking arm. Four go into every Rig | Sequenced Assembly on a Piston Extension Pole: deploy Sticker, press, deploy Andesite Casing, 2 loops |
+| **Copper Tentacle Rig** | Reach 5, 112 durability | Mechanical Crafting with a Copper Backtank |
+| **Netherite Tentacle Rig** | Reach 7, half the Air use, 592 durability, fire resistant | Mechanical Crafting with a Netherite Backtank, or Smithing: Copper Rig + Netherite Upgrade + Netherite Ingot (keeps Air and Actuators) |
+| **Actuator** | One working arm. Two fit on a Rig | Sequenced Assembly on a Piston Extension Pole: deploy Brass Casing, press, deploy Sticker, 2 loops |
+| **Copper / Netherite Octo Rig** | A Rig with two Actuators. Same item, new name; the tooltip says "Actuators fitted" | **Fitting**: Actuator, Rig, Actuator in one row of a crafting table |
+| **Rig Block** | A Rig placed in the world. Refills under a spinning shaft | Use a Rig on a block |
+
+Mechanical Crafting pattern for a Rig (3×3): Tentacles in the four corners, Precision Mechanism top centre, Brass Casing left and right, the Backtank in the centre, a Copper Sheet bottom centre. Add an Actuator at each end of the middle row to build an Octo Rig in one go.
+
+Fitting keeps the Rig's Air, enchantments, Rig Settings and damage. It is permanent. A new Rig starts with **no Air**: Mechanical Crafting does not copy the Backtank's Air.
+
+| Tentacle | Actuator |
+|---|---|
+| <img src="docs/images/jei-tentacle-sequenced-assembly.png" width="330" alt="JEI: Tentacle Sequenced Assembly, deploy Sticker, press, deploy Andesite Casing, 2 loops"> | <img src="docs/images/jei-actuator-sequenced-assembly.png" width="330" alt="JEI: Actuator Sequenced Assembly, deploy Brass Casing, press, deploy Sticker, 2 loops"> |
+
+| Rig and Octo Rig on Mechanical Crafters | Fitting at a crafting table |
+|---|---|
+| <img src="docs/images/jei-rig-mechanical-crafting.png" width="330" alt="JEI Mechanical Crafting: the 3 by 3 Rig pattern and the same pattern with an Actuator at each end of the middle row"> | <img src="docs/images/jei-actuator-fitting.png" width="330" alt="JEI Crafting: Actuator, Rig, Actuator in one row gives an Octo Rig"><br><br><img src="docs/images/octo-rig-tooltip.png" width="330" alt="Tooltip of a Copper Octo Rig: Air 1800 / 1800, Reach 5.0 blocks, Top Speed 8.0 b/s, Actuators fitted, +4 Armor"> |
+
+<details>
+<summary><b>Item tooltips</b></summary>
+
+![Copper and Netherite Tentacle Rig tooltips with the Create-style summary](docs/images/rig-tooltips.png)
+
+<img src="docs/images/actuator-tooltip.png" width="420" alt="Actuator tooltip: fit two to a finished Tentacle Rig; each does what its hand does, farther; the Grab key">
+
+</details>
+
+## Air, tiers and enchantments
+
+A Rig holds twice the Air of the Backtank it was made from: 1800, more with Capacity. To refill, place it as a Rig Block under a spinning shaft. It still feeds a Diving Helmet.
+
+| Air use, Copper Rig | Amount |
+|---|---|
+| Holding still or hanging | 1 Air per 4 s |
+| Moving | 1 Air per second |
+| Climbing | 2 Air per second |
+| Far Use or Dual Wield action | 0.5 Air each |
+| Holding a Grab | 1 Air per 2 s |
+| Throw | 10 Air |
+
+A Netherite Rig uses half. Without Air the Rig Crawls you down, the Actuators hang limp and let go.
+
+| Tier | Reach | Air use | Durability | Extra |
+|---|---|---|---|---|
+| Copper | 5 blocks | normal | 112 | |
+| Netherite | 7 blocks | half | 592 | Fire resistant, faster Throws, lifts heavier Ships |
+
+A Rig never breaks. Like an Elytra it stops working at 1 durability until you repair it at an anvil (Copper Ingot or Netherite Ingot) or with Mending.
+
+| Enchantment | Levels | Effect |
+|---|---|---|
+| **Far Reach** | I–III | +1 block of Reach per level |
+| **Thrift** | I–III | −15 % Air use per level |
+| **Swift** | I–II | +15 % Speed per level |
+| **Silent Step** | I | With the Rig out, Sculk Sensors, Shriekers and Wardens do not hear you, and the Rig makes no sound |
+| **Deft** | I | The Actuators use no Air |
+
+Also Protection (all kinds), Unbreaking, Mending, Thorns and Create's Capacity.
 
 ## Ships (Sable / Create Aeronautics)
 
-New in 1.1.0. With Sable installed, blocks of a Ship are Grips like world blocks. Create Aeronautics is not needed, but Aeronautics Ships are Sable Ships, so they work too. Without Sable nothing changes.
+With Sable installed (1.21.1 only), blocks of a Ship are Grips like world blocks. Create Aeronautics is not needed, but its Ships are Sable Ships, so they work too. Without Sable nothing changes.
 
-- Grip a Ship's floor, walls, hull or underside, parked or moving.
-- A Held wearer is carried with the Ship, also around its turns. The Ship that holds most of your Grips carries you.
-- Move freely between world blocks and a Ship, both ways.
-- Air use counts only your own move, not the Ship's.
-- Standing on the deck works as before: Sable moves you, the Rig adds nothing on top.
-- If the Ship is removed while you hang on it, you fall, as when blocks under your Grips break.
-- With Actuators fitted, Grab a whole Ship and carry or throw it: [Ship Grab](#actuators).
-- Server admins can turn it off: `ships.grip = false` (see [Config](#config)).
+- Grip a Ship's floor, walls, hull or underside, parked or moving. A Held wearer is carried with the Ship, also around its turns.
+- Move freely between world blocks and a Ship, both ways. Air use counts only your own move.
+- With Actuators fitted, [Ship Grab](#grab-set-down-throw) lifts a whole Ship.
+- Server admins can turn it off: `ships.grip = false`, and `grab.ships = false` for Ship Grab.
 
-Tested: parked and turned 30°, moving at 4 and 15 blocks/s, turning at 20°/s while rolling 10°/s, moving between world and Ship, Ship removed mid-hang, standing on the deck.
+![A player hangs under the hull of a small airship above a bay, Tentacles gripping the keel](docs/images/ship-moving.png)
 
-| Holding on to a parked, turned Ship | Riding a Ship moving at 4 blocks/s |
+Limits: Ships with a scale other than 1 are ignored. Other players on a fast Ship are drawn about 1.5 ticks behind it. When a Ship speeds up or slows down, the Rig may use a little extra Air. Tested over localhost only, with Ships moving at up to 15 blocks/s and turning at 20°/s.
+
+## Compatibility
+
+| Mod | What works |
 |---|---|
-| ![A player holding on to the edge of a parked Ship turned by 30 degrees](docs/images/ship-parked.png) | ![A player gripping the side of a Ship moving at 4 blocks per second](docs/images/ship-moving.png) |
+| **Ponder** (comes with Create) | One scene, "Tentacle Rig": crafting, refilling, Double Jump, walking, climbing, hanging, Setting Down and Crawl |
+| **Engineer's Goggles** | On a Rig Block: Air, the fill rate (or "needs a turning shaft above"), Reach, Top Speed, and Air use when it is not 100 % |
+| **Create Display Link** | A Rig Block is a "Rig Air" source (number, percent or progress bar) for Display Boards and Nixie Tubes |
+| **JEI** (optional) | All recipes: Sequenced Assembly, Mechanical Crafting, Smithing and, for Fitting, Crafting |
+| **Sable / Create Aeronautics** (optional) | Grip, ride and Grab Ships. See [Ships](#ships-sable--create-aeronautics) |
+| **Curios** (optional) | The Rig fits the back slot, so a chestplate stays on |
+| **Claim and protection mods** | A Grab asks the loader's entity-interaction event first. Far Use goes through the vanilla block and entity events |
 
-Limits:
+Tested together with Elytra Slot, Sophisticated Backpacks and Carry On. Jade: no special support.
 
-- Ships with a scale other than 1 are ignored.
-- Other players on a fast Ship are drawn about 1.5 ticks behind it.
-- When a Ship speeds up or slows down, the Rig may use a little extra Air.
-- The Rig's own path check does not see Ship hulls; your real move still collides with them.
-- Tested over localhost only. The server accepts Grips from the Ship's last 10 poses, which leaves room for about 400 ms ping, but real latency is not tested yet.
+| Engineer's Goggles on a Rig Block | Ponder |
+|---|---|
+| ![Engineer's Goggles on a Rig Block under a spinning motor: Air 975 / 1800, filling +20 Air/s, Reach 7.0 blocks, Top Speed 9.2 b/s](docs/images/goggles-rig-block.png) | ![Ponder scene for the Tentacle Rig: a player hangs under a ledge](docs/images/ponder-tentacle-rig.png) |
+
+<details>
+<summary><b>Curios back slot rules</b></summary>
+
+With Curios (1.21.1: 9.2.0 or newer; 1.20.1: 5.3.0 or newer) both Rigs fit the `back` slot. A Rig there is a Rig, not armor:
+
+- Works: Air (also for a Diving Helmet), Reach, the Actuators, all five Rig enchantments, Capacity, Rig Settings, Mending, repair at an anvil. Hits wear it like chest armor.
+- Does nothing: armor value, armor toughness, knockback resistance, Protection and its kinds, Thorns. The tooltip says so.
+- One Rig at a time. With a Rig in both slots, the chest Rig wins and the other does nothing (red tooltip).
+- Using a Rig from the hand: empty chest slot, it is worn as armor; a chestplate on and a free back slot, it goes to the back slot.
+- Elytra in the chest slot and the Rig in the back slot: the Elytra never opens while the Rig is out. Set Down, then jump and glide.
+- Server config `curios.backSlot = false` turns the back slot off for Rigs.
+
+</details>
 
 ## Requirements
 
-| Mod | Version |
+| Mod | Version (1.21.1 build) |
 |---|---|
 | Minecraft | 1.21.1 |
 | NeoForge | 21.1.228 or newer |
 | Create | 6.0.4 or newer, below 6.1.0 |
-| JEI | optional |
 | Sable | optional, 2.0.0 or newer, below 2.1 (for Ships) |
+| Curios | optional, 9.2.0 or newer, below 10 (Rig in the back slot) |
+| JEI | optional |
 
-Built and tested with NeoForge 21.1.250 and Create 6.0.10; Ships with Sable 2.0.6 and Create Aeronautics 1.3.2.
+Built and tested with NeoForge 21.1.250 and Create 6.0.10; Ships with Sable 2.0.6 and Create Aeronautics 1.3.2; the back slot with Curios 9.5.1.
 
 ## Downloads
 
@@ -248,91 +295,119 @@ Two builds share one version number and the same gameplay. Ships (Sable), Ship G
 
 1. Install NeoForge and Create.
 2. Drop the `octo-arms-<version>+mc1.21.1.jar` file into your `mods/` folder.
-3. Install it on **both** the client and the server. Clients and server must use the same Octo Arms version: 1.8 clients cannot join a 2.0 server.
-4. Optional: install Sable on both sides (Create Aeronautics needs it anyway) to grip Ships.
+3. Install it on **both** the client and the server, same Octo Arms version on both: a 1.8 client cannot join a 2.0 server.
+4. Optional: Sable on both sides for Ships, Curios on both sides for the back slot.
 
-The server does not need `allow-flight=true`. The Rig works with either setting.
+The server does not need `allow-flight=true`.
+
+**Updating from 1.x**: your Rigs keep working and can be fitted later. The Air cap doubled, so an old Rig shows its Air bar half full until you refill it once. A server config file written by 1.x keeps `reach.copper = 4.0`; set it to 5.0 by hand for the new default. See the [changelog](CHANGELOG.md).
 
 ## Config
 
-Server config: `serverconfig/tentaworks-server.toml` inside the world folder (put a copy in `defaultconfigs/` to use it for new worlds). These are caps set by the server admin; each player's Rig Settings are clamped to them.
+Server config: `serverconfig/tentaworks-server.toml` inside the world folder (put a copy in `defaultconfigs/` to use it for new worlds). Client config: `config/tentaworks-client.toml`, or in game under Mods > Octo Arms > Config.
+
+<details>
+<summary><b>Server config keys</b></summary>
 
 | Section | Key | Default | What it does |
 |---|---|---|---|
 | `reach` | `copper` | 5.0 | Reach of a Copper Rig, blocks (1–16). Far Reach adds to it, up to 16 in total |
 | `reach` | `netherite` | 7.0 | Reach of a Netherite Rig, blocks (1–16) |
 | `speed` | `max` | 8.0 | Top Rig speed, blocks per second (1–20). Caps every player's Speed setting; Swift raises both |
+| `air` | `capacityFactor` | 2.0 | Max Air of a Rig relative to a Backtank of the same Capacity (1–8) |
 | `air` | `idle` | 80.0 | Copper Rig holding still (Idle, Hang): ticks per 1 Air |
 | `air` | `move` | 20.0 | Copper Rig moving level or down: ticks per 1 Air |
 | `air` | `climb` | 10.0 | Copper Rig climbing: ticks per 1 Air |
+| `air` | `farUse` | 0.5 | Copper Rig: Air per Far Use action (0–50) |
+| `air` | `dualWield` | 0.5 | Copper Rig: Air per Dual Wield action, a block broken or a hit the off-hand item helped with (0–50) |
+| `air` | `grab` | 40.0 | Copper Rig holding a Grab: ticks per 1 Air |
+| `air` | `throw` | 10.0 | Copper Rig: Air per Throw (0–500) |
 | `air` | `netheriteFactor` | 0.5 | Air use of a Netherite Rig relative to Copper (0–4) |
 | `crawl` | `speed` | 1.0 | Descent speed with no Air left (Crawl), blocks per second |
 | `enchant` | `farReachPerLevel` | 1.0 | Far Reach: extra Reach per level, blocks |
 | `enchant` | `thriftPerLevel` | 0.15 | Thrift: Air use cut per level (0.15 = −15 %, max 0.3) |
 | `enchant` | `swiftPerLevel` | 0.15 | Swift: extra Speed per level (0.15 = +15 %) |
-| `ships` | `grip` | true | Rigs grip Sable Ships. Off: Ship blocks are never Grips. No effect without Sable |
-| `air` | `capacityFactor` | 2.0 | Max Air of a Rig relative to a Backtank of the same Capacity (1–8) |
-| `air` | `farUse` | 0.5 | Copper Rig: Air per Far Use action (0–50) |
-| `air` | `grab` | 40.0 | Copper Rig holding a Grab: ticks per 1 Air |
-| `air` | `throw` | 10.0 | Copper Rig: Air per Throw (0–500) |
-| `air` | `dualWield` | 0.5 | Copper Rig: Air per Dual Wield action, a block broken or a hit the off-hand item helped with (0–50) |
 | `farUse` | `players` | true | Far Use may hit and use on players (the PvP rule still applies) |
-| `actuators` | `dualWield` | true | Dual Wield: with both Actuators free, the off-hand item works along with the main-hand one (mining speed, melee damage) |
+| `actuators` | `dualWield` | true | Dual Wield on or off |
 | `grab` | `tamedOthers` | false | Grab may take another player's tamed, owned or leashed animal |
-| `grab` | `ships` | true | Ship Grab (1.21.1). Also needs `ships.grip`. No effect without Sable |
-| `grab.massCap` | `copper` | 2000.0 | Heaviest Ship a Copper Rig can Grab, Sable mass |
-| `grab.massCap` | `netherite` | 6000.0 | Heaviest Ship a Netherite Rig can Grab, Sable mass |
+| `grab` | `heavySpeedFactor` | 0.6 | Walking and Rig Speed while both Actuators hold a heavy target, relative to normal |
 | `grab.throwSpeed` | `copper` | 0.8 | Throw speed of a Copper Rig, blocks per tick (0.1–5) |
 | `grab.throwSpeed` | `netherite` | 1.2 | Throw speed of a Netherite Rig, blocks per tick (0.1–5) |
-| `grab` | `heavySpeedFactor` | 0.6 | Walking and Rig Speed while both Actuators hold a heavy target, relative to normal |
 | `impact` | `damagePerSpeed` | 12.0 | Impact damage per block per tick of speed above `minSpeed`, dealt once per Throw |
 | `impact` | `minSpeed` | 0.3 | Slowest Thrown speed that deals Impact damage, blocks per tick |
 | `impact` | `cap` | 20.0 | Most Impact damage one Throw can deal |
-| `curios` | `backSlot` | true | A Rig in the Curios back slot works (Air, Reach, Rig Settings) but is not armor. Off: the back slot refuses Rigs and one already there does nothing. No effect without Curios |
+| `ships` | `grip` | true | Rigs grip Sable Ships. No effect without Sable |
+| `grab` | `ships` | true | Ship Grab (1.21.1). Also needs `ships.grip`. No effect without Sable |
+| `grab.massCap` | `copper` | 2000.0 | Heaviest Ship a Copper Rig can Grab, Sable mass |
+| `grab.massCap` | `netherite` | 6000.0 | Heaviest Ship a Netherite Rig can Grab, Sable mass |
+| `curios` | `backSlot` | true | A Rig in the Curios back slot works but is not armor. Off: the back slot refuses Rigs. No effect without Curios |
 
-Client config: `config/tentaworks-client.toml`, or in game under Mods > Octo Arms > Config (looks and controls only; the server does not read it).
+</details>
+
+<details>
+<summary><b>Client config keys</b></summary>
 
 | Section | Key | Default | What it does |
 |---|---|---|---|
-| `animation` | `walkWhileHeld` | false | Vanilla walk animation (swinging arms and legs) while the Rig or a Ship carries you. Off: the body hangs still |
-| `movement` | `forward` | look | What `W`/`S` follow while the Rig carries you. `look`: the camera, look down and `W` takes you down. `flat`: level only, like walking or creative flight; `Space`/`Shift` change the height |
+| `animation` | `walkWhileHeld` | false | Vanilla walk animation while the Rig or a Ship carries you. Off: the body hangs still |
+| `movement` | `forward` | look | What `W`/`S` follow while the Rig carries you. `look`: the camera. `flat`: level only; `Space`/`Shift` change the height |
 | `firstPerson` | `limbOpacity` | 1.0 | How solid every Limb (Tentacles and Actuators) is drawn in first person: 1.0 solid, down to 0.1 faint |
-| `hud` | `crosshair` | true | Actuator marks and Grab cues around the crosshair (first person). Off: a plain crosshair |
-| `hud` | `hints` | true | Key hints for the first two holds of a game session: the Grab key beside the crosshair, and the keys for Set Down, Throw and the hold distance on the action bar after a Grab |
+| `hud` | `crosshair` | true | Actuator marks and Grab cues around the crosshair |
+| `hud` | `hints` | true | Key hints for the first two holds of a game session |
 
-Key binds (client): **Grab (Actuators)** (`V`), **Rig Settings (worn Rig)** and **Toggle Tentacle Rig (key-only mode)** (both unbound by default).
+</details>
+
+<details>
+<summary><b>Advancements</b></summary>
+
+All under Create's Backtank advancement.
+
+| Advancement | How |
+|---|---|
+| **Doc's Rig** | Get your first Rig |
+| **Fitted** | Fit two Actuators to a Rig |
+| **Hang In There** | Hang under a ceiling for a whole minute |
+| **Spider, Man** | Kill a spider with the Rig out |
+| **Intelligence Is a Privilege** | Put Far Reach, Thrift, Swift, Silent Step and Deft on one Rig |
+| **The Power of the Sun** | Grab a Blaze |
+| **Special Delivery** | Throw a mob so it lands 20 blocks or more away |
+| **Fridge Mover** | Grab a Ship and set it down 50 blocks from where you took it (1.21.1 with Sable only) |
+
+</details>
 
 ## Known limitations
 
 - **Narrow blocks**: nothing narrower than half a block (fence posts, chains, rail sides) and nothing with a hole under the tip (hopper and cauldron rims, scaffolding sides) is a Grip.
-- **Actuators**: a placed Rig Block does not show them. Far Use leaves Ship blocks to your own reach. The Ponder scene does not cover them yet.
-- **Ships**: see the limits under [Ships](#ships-sable--create-aeronautics).
+- **Actuators**: a placed Rig Block does not show them. The Ponder scene does not cover them yet.
+- **New Rigs start empty**: Mechanical Crafting does not copy the Backtank's Air. Smithing Copper to Netherite keeps it.
 - **Client-driven movement**: the wearer's client moves the player; the server checks Grips, Reach, Air use, speed and direction. Not tested with server anti-cheat plugins.
-- **Crafting resets Air**: Mechanical Crafting does not copy the Backtank's Air, so a Rig made from a full Backtank starts empty. (Smithing Copper → Netherite keeps it.)
 - **Network tests**: tested with up to two players over localhost. Real latency and many players at once are not tested yet.
+- **Ships**: see the limits under [Ships](#ships-sable--create-aeronautics).
 - The player preview in the creative inventory always shows the Rig folded.
-- Tentacle parts are lit by the light at their centre, so a part crossing a dark block edge can look one shade off.
-- In the Ponder scene the hang is shown at the ledge's front edge, and the Air number does not rise during the refill step.
+- Limb parts are lit by the light at their centre, so a part crossing a dark block edge can look one shade off.
 
 ## FAQ
 
-**Why is the mod id `tentaworks`?**
-That was the working name. The mod id stays `tentaworks` so worlds keep their Rigs, Rig Blocks, enchantments and settings. Don't rename it in forks if you want save compatibility.
+**Do my old Rigs still work?**
+Yes. A Rig from before 2.0 walks as before and can be fitted with Actuators at any time. Nothing on it is lost.
 
-**Does it need Create Aeronautics?**
-No. Octo Arms depends only on Create. With Sable (Create Aeronautics runs on it) the Rig also grips and rides Ships.
+**Does it need Create Aeronautics or Sable?**
+No. Octo Arms depends only on Create. With Sable the Rig also grips, rides and Grabs Ships.
 
 **Is the Rig still a Backtank?**
-Yes. It holds Backtank Air, feeds a Diving Helmet underwater, takes Capacity, and refills under a spinning shaft when placed. The Rig and a Diving Helmet share the same Air.
-
-**Can I refill it any other way?**
-No. Placing it as a Rig Block under a shaft is the only refill.
+Yes. It holds Backtank Air, feeds a Diving Helmet underwater, takes Capacity, and refills under a spinning shaft when placed. Placing it is the only way to refill it.
 
 **Can the Tentacles attack mobs or push blocks?**
-No. Tentacles only hold on. They never push, hit or damage anything. That is the Actuators' job: fit two and they mine, place, hit, grab and throw.
+No. Tentacles only hold on. Working is the Actuators' job: fit two and they mine, place, hit, Grab and Throw.
+
+**Can I Grab another player, or a boss?**
+No. Players and bosses are never Grabbed. Another player's pet only if the server allows it.
 
 **What happens when the Rig runs out of durability?**
-It never breaks. At 1 durability it can't be activated (an Active one Sets you Down) until you repair it.
+It never breaks. At 1 durability it can't be activated until you repair it.
+
+**Why is the mod id `tentaworks`?**
+That was the working name. The id stays so worlds keep their Rigs, Rig Blocks, enchantments and settings. Don't rename it in forks if you want save compatibility.
 
 ## Building from source
 
