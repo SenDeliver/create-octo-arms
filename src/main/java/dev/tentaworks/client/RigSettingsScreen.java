@@ -6,6 +6,8 @@ import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.gui.widget.SelectionScrollInput;
 import dev.tentaworks.TentaworksIds;
+import dev.tentaworks.config.TentaworksClientConfig;
+import dev.tentaworks.config.TentaworksClientConfig.ForwardMode;
 import dev.tentaworks.network.RigSettingsPacket;
 import dev.tentaworks.registry.TentaworksDataComponents;
 import dev.tentaworks.rig.RigSettings;
@@ -28,13 +30,14 @@ import java.util.Locale;
 
 /**
  * Rig Settings (design §7), Create symmetry-wand style: scroll the rows, the values are written to the Rig on close.
- * The panel is Create's wand panel, stretched to three rows and a wider field.
+ * The panel is Create's wand panel, stretched to four rows and a wider field. The fourth row, Movement mode, is the player's
+ * client config {@code movement.forward} (every Rig, this computer), written to the config on close.
  */
 public class RigSettingsScreen extends AbstractSimiScreen {
     private static final AllGuiTextures PANEL = AllGuiTextures.WAND_OF_SYMMETRY;
     private static final int EXTRA = 56;
     private static final int W = 188 + EXTRA;
-    private static final int H = 127;
+    private static final int H = 149;
     private static final int ROW = 22;
     private static final int TITLE_COLOR = 0x592424;
 
@@ -44,6 +47,7 @@ public class RigSettingsScreen extends AbstractSimiScreen {
     private int height;
     private int speed;
     private ActivationMode mode;
+    private ForwardMode movement;
 
     public RigSettingsScreen(RigSlot slot, ItemStack rig) {
         super(Component.translatable(key("title"), rig.getHoverName()));
@@ -54,6 +58,7 @@ public class RigSettingsScreen extends AbstractSimiScreen {
         height = Math.round(s.standingHeight() * 10);
         speed = Math.round(s.speed() * 10);
         mode = s.activation();
+        movement = TentaworksClientConfig.forward();
     }
 
     public static void openInHand(InteractionHand hand) {
@@ -104,9 +109,18 @@ public class RigSettingsScreen extends AbstractSimiScreen {
                 .titled(Component.translatable(key("activation")))
                 .calling(v -> mode = ActivationMode.values()[v])
                 .setState(mode.ordinal()));
+        addRenderableWidget(new SelectionScrollInput(x + 43, y + 23 + 3 * ROW, 111 + EXTRA, 18)
+                .forOptions(List.of(movementName(ForwardMode.LOOK), movementName(ForwardMode.FLAT)))
+                .titled(Component.translatable(key("movement")))
+                .calling(v -> movement = ForwardMode.values()[v])
+                .setState(movement.ordinal()));
         IconButton confirm = new IconButton(x + W - 33, y + H - 24, AllIcons.I_CONFIRM);
         confirm.withCallback(this::onClose);
         addRenderableWidget(confirm);
+    }
+
+    private static MutableComponent movementName(ForwardMode m) {
+        return Component.translatable(key("movement." + m.name().toLowerCase(Locale.ROOT)));
     }
 
     private static MutableComponent modeName(ActivationMode m) {
@@ -119,7 +133,8 @@ public class RigSettingsScreen extends AbstractSimiScreen {
         band(g, x, y, 0, 45, 0);
         band(g, x, y, 23, 45, 45);
         band(g, x, y, 23, 45, 67);
-        band(g, x, y, 63, 101, 89);
+        band(g, x, y, 23, 45, 89);
+        band(g, x, y, 63, 101, 111);
         g.drawString(font, title, x + (W - font.width(title)) / 2, y + 4, TITLE_COLOR, false);
 
         row(g, x, y, 0, AllIcons.I_TOOL_MOVE_Y, Component.translatable(key("standing_height")),
@@ -127,15 +142,16 @@ public class RigSettingsScreen extends AbstractSimiScreen {
         row(g, x, y, 1, AllIcons.I_PRIORITY_VERY_HIGH, Component.translatable(key("speed")),
                 Component.translatable(key("blocks_per_second"), tenths(speed)));
         row(g, x, y, 2, AllIcons.I_ACTIVE, Component.translatable(key("activation")), modeName(mode));
+        row(g, x, y, 3, AllIcons.I_TOOL_MOVE_XZ, Component.translatable(key("movement")), movementName(movement));
 
         int hintColor = AllGuiTextures.FONT_COLOR;
         g.drawString(font, Component.translatable(key("limits"), tenths((int) Math.floor(reach * 10)), tenths((int) Math.round(TentacleRigItem.topSpeed(rig) * 10))),
-                x + 8, y + 102, hintColor, false);
+                x + 8, y + 124, hintColor, false);
         Component second = mode == ActivationMode.KEY
                 ? (TentaworksKeys.TOGGLE.isUnbound() ? Component.translatable(key("toggle_unbound"))
                 : Component.translatable(key("toggle_key"), TentaworksKeys.TOGGLE.getTranslatedKeyMessage()))
                 : Component.translatable(key("double_jump_hint"));
-        g.drawString(font, second, x + 8, y + 113, hintColor, false);
+        g.drawString(font, second, x + 8, y + 135, hintColor, false);
 
         GuiGameElement.of(rig).<GuiGameElement.GuiRenderBuilder>at(x + W + 6, y + H - 56, 100).scale(5).render(g);
     }
@@ -159,5 +175,13 @@ public class RigSettingsScreen extends AbstractSimiScreen {
         RigSettings s = settings();
         rig.set(TentaworksDataComponents.RIG_SETTINGS.get(), s);
         PacketDistributor.sendToServer(new RigSettingsPacket(slot, s));
+        if (movement != TentaworksClientConfig.forward()) {
+            TentaworksClientConfig.FORWARD.set(movement);
+            TentaworksClientConfig.FORWARD.save();
+        }
+    }
+
+    public ForwardMode movement() {
+        return movement;
     }
 }
