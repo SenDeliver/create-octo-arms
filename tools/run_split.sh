@@ -2,7 +2,7 @@
 # Dedicated server + client(s) over localhost. Fresh world each run.
 # GRADLE_ARGS (e.g. -PnoJei) go to every gradle run.
 # Clients boot while the server boots and join once the scene is done (signal/_connect, DevScript); TW_PREBOOT=0: old flow (client started after the scene, 2 s polls).
-# usage: [TW_SPEED_MAX=20] [TW_SPEED_CHECK=false] [TW_REACH_COPPER=N] [TW_REACH_NETHERITE=N] [TW_BACK_SLOT=false] [TW_CLIENT_WALK=true] [TW_CLIENT_FORWARD=flat] [TIMELINE=<rcon file run after Dev joins>] [SCRIPT2=<client script for Dev2>] [GAMEMODE=creative] [ANIMALS=true] tools/run_split.sh <rcon scene> <client script> <log prefix>
+# usage: [TW_SPEED_MAX=20] [TW_SPEED_CHECK=false] [TW_SWIFT_PER_LEVEL=N] [TW_FAR_REACH_PER_LEVEL=N] [TW_REACH_COPPER=N] [TW_REACH_NETHERITE=N] [TW_BACK_SLOT=false] [TW_CLIENT_WALK=true] [TW_CLIENT_FORWARD=flat] [TIMELINE=<rcon file run after Dev joins>] [SCRIPT2=<client script for Dev2>] [GAMEMODE=creative] [ANIMALS=true] tools/run_split.sh <rcon scene> <client script> <log prefix>
 cd "$(dirname "$0")/.."
 SCENE=$1; SCRIPT=$2; OUT=$3
 mkdir -p "$(dirname "$OUT")"
@@ -10,13 +10,15 @@ for i in $(seq 1 480); do pgrep -f "bootstraplauncher.*$PWD/build/moddev" > /dev
 if pgrep -f "bootstraplauncher.*$PWD/build/moddev" > /dev/null; then echo "a dev Minecraft of this repo is already running; not starting"; exit 1; fi
 tools/setup_run.sh > /dev/null
 rm -rf run/server/world run/signal run2/signal
-# TW_SPEED_MAX (e.g. 20), TW_SPEED_CHECK (true|false), TW_REACH_COPPER / TW_REACH_NETHERITE, TW_BACK_SLOT (true|false): this run's world overrides those keys (world/serverconfig beats config/).
+# TW_SPEED_MAX (e.g. 20), TW_SPEED_CHECK (true|false), TW_SWIFT_PER_LEVEL / TW_FAR_REACH_PER_LEVEL (a level past the max: levels are capped at max_level), TW_REACH_COPPER / TW_REACH_NETHERITE, TW_BACK_SLOT (true|false): this run's world overrides those keys (world/serverconfig beats config/).
 # A [curios] section missing from an older config/ copy is appended (NeoForge fills the other keys with defaults).
-if [ -n "$TW_SPEED_MAX$TW_SPEED_CHECK$TW_REACH_COPPER$TW_REACH_NETHERITE$TW_BACK_SLOT" ] && [ -f run/server/config/tentaworks-server.toml ]; then
+if [ -n "$TW_SPEED_MAX$TW_SPEED_CHECK$TW_SWIFT_PER_LEVEL$TW_FAR_REACH_PER_LEVEL$TW_REACH_COPPER$TW_REACH_NETHERITE$TW_BACK_SLOT" ] && [ -f run/server/config/tentaworks-server.toml ]; then
   mkdir -p run/server/world/serverconfig
-  awk -v sp="$TW_SPEED_MAX" -v sc="$TW_SPEED_CHECK" -v rc="$TW_REACH_COPPER" -v rn="$TW_REACH_NETHERITE" -v bs="$TW_BACK_SLOT" '/^\[/{sec=$0}
+  awk -v sp="$TW_SPEED_MAX" -v sc="$TW_SPEED_CHECK" -v sw="$TW_SWIFT_PER_LEVEL" -v fr="$TW_FAR_REACH_PER_LEVEL" -v rc="$TW_REACH_COPPER" -v rn="$TW_REACH_NETHERITE" -v bs="$TW_BACK_SLOT" '/^\[/{sec=$0}
     sec=="[speed]" && $1=="max" && sp!="" {sub(/=.*/, "= " sp)}
     sec=="[speed]" && $1=="check" && sc!="" {sub(/=.*/, "= " sc)}
+    sec=="[enchant]" && $1=="swiftPerLevel" && sw!="" {sub(/=.*/, "= " sw)}
+    sec=="[enchant]" && $1=="farReachPerLevel" && fr!="" {sub(/=.*/, "= " fr)}
     sec=="[reach]" && $1=="copper" && rc!="" {sub(/=.*/, "= " rc)}
     sec=="[reach]" && $1=="netherite" && rn!="" {sub(/=.*/, "= " rn)}
     sec=="[curios]" && $1=="backSlot" && bs!="" {sub(/=.*/, "= " bs); seen=1} {print}
@@ -30,6 +32,8 @@ for d in run run2; do
   [ -n "$TW_CLIENT_FORWARD" ] && printf '[movement]\n\tforward = "%s"\n' "$TW_CLIENT_FORWARD" >> $d/config/tentaworks-client.toml
 done
 [ -f tools/local.env ] && . tools/local.env
+# TW_MINIMIZED=1: the clients open minimized (WSLg stacks new windows on top of everything; no stray mouse turns the camera). Not for suites that take screenshots.
+TW_MIN_ARG=; [ "$TW_MINIMIZED" = 1 ] && TW_MIN_ARG=-Ptentaworks.minimized=1
 # the clients open without taking the focus (-Ptentaworks.nofocus=1 below); tools/keep_focus.sh is an opt-in fallback (macOS, TW_KEEP_FOCUS=1)
 rm -f run/signal/_focus_done
 tools/keep_focus.sh run/signal/_focus_done 600 &
@@ -39,11 +43,11 @@ SPID=$!
 if [ "${TW_PREBOOT:-1}" = 0 ]; then
 for i in $(seq 1 150); do grep -q 'RCON running' "$OUT-server.log" && break; grep -qE 'BUILD FAILED' "$OUT-server.log" && break; sleep 2; done
 python3 tools/rcon.py < "$SCENE" > "$OUT-rcon.txt"
-./gradlew runClient $GRADLE_ARGS -Ptentaworks.nofocus=1 -Pconnect=localhost:25609 -Ptentaworks.script="$PWD/$SCRIPT" > "$OUT-client.log" 2>&1 &
+./gradlew runClient $GRADLE_ARGS -Ptentaworks.nofocus=1 $TW_MIN_ARG -Pconnect=localhost:25609 -Ptentaworks.script="$PWD/$SCRIPT" > "$OUT-client.log" 2>&1 &
 CPID=$!
 for i in $(seq 1 150); do grep -q 'Dev joined the game' "$OUT-server.log" && break; kill -0 $CPID 2>/dev/null || break; sleep 2; done
 if [ -n "$SCRIPT2" ]; then
-  ./gradlew runClient2 $GRADLE_ARGS -Ptentaworks.nofocus=1 -Pconnect=localhost:25609 -Ptentaworks.script2="$PWD/$SCRIPT2" > "$OUT-client2.log" 2>&1 &
+  ./gradlew runClient2 $GRADLE_ARGS -Ptentaworks.nofocus=1 $TW_MIN_ARG -Pconnect=localhost:25609 -Ptentaworks.script2="$PWD/$SCRIPT2" > "$OUT-client2.log" 2>&1 &
   C2PID=$!
   for i in $(seq 1 150); do grep -q 'Dev2 joined the game' "$OUT-server.log" && break; kill -0 $C2PID 2>/dev/null || break; sleep 2; done
 fi
@@ -55,12 +59,12 @@ printf 'tentaworks trace off\nstop\n' | python3 tools/rcon.py >> "$OUT-rcon.txt"
 for i in $(seq 1 60); do kill -0 $SPID 2>/dev/null || break; sleep 2; done
 else
 for i in $(seq 1 1200); do grep -q '> Task :runServer' "$OUT-server.log" && break; grep -qE 'BUILD FAILED' "$OUT-server.log" && break; sleep 0.25; done
-./gradlew runClient $GRADLE_ARGS -Ptentaworks.nofocus=1 -Ptentaworks.connect=localhost:25609 -Ptentaworks.script="$PWD/$SCRIPT" > "$OUT-client.log" 2>&1 &
+./gradlew runClient $GRADLE_ARGS -Ptentaworks.nofocus=1 $TW_MIN_ARG -Ptentaworks.connect=localhost:25609 -Ptentaworks.script="$PWD/$SCRIPT" > "$OUT-client.log" 2>&1 &
 CPID=$!
 if [ -n "$SCRIPT2" ]; then
   # Dev2 starts once Dev's window exists, so Dev2's window still opens last
   for i in $(seq 1 1200); do grep -q 'Backend library' "$OUT-client.log" && break; kill -0 $CPID 2>/dev/null || break; sleep 0.25; done
-  ./gradlew runClient2 $GRADLE_ARGS -Ptentaworks.nofocus=1 -Ptentaworks.connect=localhost:25609 -Ptentaworks.script2="$PWD/$SCRIPT2" > "$OUT-client2.log" 2>&1 &
+  ./gradlew runClient2 $GRADLE_ARGS -Ptentaworks.nofocus=1 $TW_MIN_ARG -Ptentaworks.connect=localhost:25609 -Ptentaworks.script2="$PWD/$SCRIPT2" > "$OUT-client2.log" 2>&1 &
   C2PID=$!
 fi
 for i in $(seq 1 1200); do grep -q 'RCON running' "$OUT-server.log" && break; grep -qE 'BUILD FAILED' "$OUT-server.log" && break; sleep 0.25; done

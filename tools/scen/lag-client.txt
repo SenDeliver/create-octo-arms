@@ -12,6 +12,7 @@ wait 5
 cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
 wait 10
 rawsettings chest 1.5 8 double_jump
+reach rig
 wait 10
 doublejump
 wait 40
@@ -22,11 +23,13 @@ wait 100
 mark w0b
 signal w1
 await w1lag
+look 0 0
 mark w1a
 wait 200
 mark w1b
 signal w1end
 await w1off
+look 0 0
 mark w2a
 signal w2
 await w2done

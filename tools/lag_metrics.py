@@ -10,6 +10,16 @@ def check(name, ok, detail):
     checks.append(ok)
     print(('PASS ' if ok else 'FAIL ') + name + ': ' + detail)
 marks = {m[0]: (int(m[1]), m[2]) for m in re.findall(r'CPOS (\S+) gt=(\d+) pos=\S+ state=(\S+)', client)}
+zs = {m[0]: float(m[1]) for m in re.findall(r'CPOS (\S+) gt=\d+ pos=-?[\d.]+,-?[\d.]+,(-?[\d.]+) ', client)}
+cr = re.search(r'CREACH rig reach=(\S+) top=(\S+) thrift=\S+ swift=(\S+)', client)
+if cr and 'w0a' in marks and 'w0b' in marks:
+    top = float(cr[2])
+    secs = (marks['w0b'][0] - marks['w0a'][0]) / 20.0
+    v = (zs['w0b'] - zs['w0a']) / secs
+    check('R the worn Rig really runs at its top Speed (W0, no lag)', 0.9 * top <= v <= 1.1 * top,
+          f'Reach {cr[1]}, top Speed {top} b/s (Swift x{cr[3]}), measured {v:.2f} b/s over {secs:.1f} s')
+else:
+    check('R the worn Rig really runs at its top Speed (W0, no lag)', False, 'CREACH rig line or W0 marks missing')
 lag_on = server.find('LAG on ms=80')
 burst = server.find('burst 5')
 walk = server[lag_on:burst] if lag_on >= 0 and burst >= 0 else ''
@@ -26,6 +36,8 @@ for a, b, what in (('w0a', 'w0b', 'W0 no lag'), ('w1a', 'w1b', 'W1 sustained lag
     else:
         detail = f"marks {a}/{b}: {marks.get(a)} {marks.get(b)}"
     check(what + ': Rig stays Active walking at top Speed', ok, detail)
+    dz = zs.get(b, 0) - zs.get(a, 0)
+    check(what + ': really walked (a moved mouse turns the camera)', dz >= 15, f'z {zs.get(a)} -> {zs.get(b)}, {dz:.1f} blocks (>= 15)')
 n_walk = walk.count('faster than its top Speed')
 check('S no speed stow while walking (W1, W2)', n_walk == 0 and 'faster than its top Speed' not in server[:max(lag_on, 0)], f'{n_walk} "faster than" lines during the lag phases')
 n_forged = forged.count('faster than its top Speed')
