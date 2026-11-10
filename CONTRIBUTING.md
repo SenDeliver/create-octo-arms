@@ -6,7 +6,7 @@ Thanks for helping with Create: Octo Arms. This page explains how to build the m
 
 - **Small fix?** Open a pull request.
 - **Big feature or behaviour change?** Open an issue first, so we can agree on the design before you write code.
-- Read the [glossary](docs/CONTEXT.md). Code, comments, lang text and issues use its terms (Tentacle Rig, Tentacle, Grip, Held, Reach, Air, Active, Stowed, Double Jump, Setting Down, Crawl, Rig Block, ...).
+- Read the [glossary](docs/CONTEXT.md). Code, comments, lang text and issues use its terms (Tentacle Rig, Octo Rig, Tentacle, Actuator, Grip, Held, Reach, Air, Active, Stowed, Double Jump, Setting Down, Crawl, Far Use, Dual Wield, Grab, Set Down, Throw, Rig Block, ...).
 
 ## Ground rules
 

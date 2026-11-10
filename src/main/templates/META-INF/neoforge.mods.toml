@@ -17,7 +17,7 @@ description='''Octo Arms, a Create addon: the Tentacle Rig, a Backtank fitted wi
 Worn in the chest slot (or the Curios back slot, as a Rig that is not armor), it carries you over floors, walls and ceilings and lets you hang under ledges, powered by the Backtank's Air.
 Double Jump to activate, Double Jump again to be set down. Copper and Netherite tiers, five enchantments (Far Reach, Thrift, Swift, Silent Step, Deft),
 Sequenced Assembly and Mechanical Crafting recipes, goggles info, a Display Link source and a Ponder scene.
-Fit two Actuators to the Rig: the Right one mines, places, hits and uses farther (Far Use), the Left one Grabs a mob (key V), sets it down or Throws it.
+Fit two Actuators and it is an Octo Rig: each Actuator is a hand that mines, places, hits and uses out to the Rig's Reach (Far Use), two tools work at once (Dual Wield), and a free Actuator Grabs a mob (key V), sets it down or Throws it.
 Works fully with Sable Ships (Create Aeronautics compatible): grip and ride a parked or moving Ship, or Grab a whole Ship with the Actuators.'''
 
 [[dependencies.${mod_id}]]
