@@ -9,6 +9,10 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ## [Unreleased]
 
+### Added
+
+- Rig Settings: a fourth row, Movement mode, switches between Default (W and S follow the camera) and Creative flight (W and S stay level, jump and sneak change the height) without leaving the game. It is the client config `movement.forward`, so it applies to all your Rigs on this computer and the config file follows it. Thanks @snipernumber3.
+
 ## [1.8.0] - 2026-11-08
 
 ### Added

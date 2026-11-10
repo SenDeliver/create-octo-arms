@@ -1,0 +1,67 @@
+# movemode: the Rig Settings row "Movement mode" (Default / Creative flight) writes the client config movement.forward.
+# Selection rows step forward on scroll -1 (as p3 picks Key only with scroll 2 -1).
+# Flat superflat ground at y -60, nothing around x 8800. The Rig Settings key is bound to O. Starts in Default (look).
+# M1 open with the key: the row shows Default, config LOOK; scroll to Creative flight, close: config FLAT.
+# F 60 down + W stays level (Creative flight). M2 back to Default: config LOOK. L 60 down + W goes down.
+# M3 Creative flight again and quit: the saved tentaworks-client.toml says FLAT.
+wait 40
+trace on
+hud off
+view third
+cmd tp @s 8800.5 -60 0.5 0 0
+cmd item replace entity @s armor.chest with air
+wait 5
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+bind key.tentaworks.settings key.keyboard.o
+wait 10
+rigs m0
+doublejump
+wait 40
+look 0 0
+key key.keyboard.o
+wait 10
+screen
+rigs m1open
+scroll 3 -1
+wait 2
+rigs m1edit
+# shot for the PR: cursor on the Movement mode row (GUI coords at the harness window size, gui scale 3), its tooltip lists both modes
+mouse 160 143
+wait 5
+shot movemode_row_creative_flight
+close
+wait 10
+rigs m1closed
+look 0 60
+mark fa
+hold up on
+wait 20
+hold up off
+mark fb
+wait 5
+look 0 0
+key key.keyboard.o
+wait 10
+rigs m2open
+scroll 3 1
+wait 2
+close
+wait 10
+rigs m2closed
+look 0 60
+mark la
+hold up on
+wait 20
+hold up off
+mark lb
+wait 5
+look 0 0
+key key.keyboard.o
+wait 10
+scroll 3 -1
+wait 2
+close
+wait 10
+rigs m3closed
+wait 5
+quit
