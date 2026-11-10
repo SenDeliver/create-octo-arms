@@ -103,6 +103,75 @@ key key.keyboard.v
 wait 10
 actuators t
 signal tdone
+# O own Ship, Copper Rig: O1 Stowed on the deck sd refused (own), O2 Active with every Grip on it refused; O3 Active against the
+# world wall (Grips on it and on the deck): Grabbed, the deck Grips let go; O4 held 20 ticks, then 2 notches nearer lifts it, the
+# wearer stays; O5 Set Down onto the held deck: let go (underfoot); O6 activated again on it, Grips on it again
+await o
+wait 20
+look -90 85
+wait 5
+mark o1
+key key.keyboard.v
+wait 10
+doublejump
+wait 40
+look -90 85
+wait 5
+mark o2
+key key.keyboard.v
+wait 10
+doublejump
+wait 40
+mark o2s
+signal o2done
+await o3
+wait 20
+look 90 0
+doublejump
+wait 40
+look 90 89
+wait 5
+mark o3
+key key.keyboard.v
+awaitheld on 20
+mark o3h
+wait 20
+mark o4a
+holdkey key.tentaworks.grab on
+wait 3
+wheel -2
+wait 20
+holdkey key.tentaworks.grab off
+wait 5
+mark o4b
+doublejump
+awaitheld off 100
+wait 5
+mark o5
+wait 20
+look 90 0
+doublejump
+wait 40
+mark o6
+doublejump
+wait 40
+signal odone
+# O7 Active 4 from the wall: one Grip on it, three on the deck; at the Grab the deck Grips let go and the Tentacles re-Grip off the deck at once; a tap lets go
+await o7
+wait 20
+doublejump
+wait 40
+look 90 89
+wait 5
+mark o7
+key key.keyboard.v
+awaitheld on 20
+wait 40
+mark o7e
+key key.keyboard.v
+awaitheld off 20
+wait 5
+signal o7done
 await end
 wait 10
 quit

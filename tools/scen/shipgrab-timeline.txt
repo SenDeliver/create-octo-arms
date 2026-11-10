@@ -32,4 +32,19 @@ item replace entity Dev weapon.mainhand with stick
 #signal t
 #await tdone
 item replace entity Dev weapon.mainhand with air
+# O own Ship: a Copper Rig (Reach 4) on the deck sd, Dev2 watches from the south
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900,tentaworks:actuators={}]
+tp Dev2 11470.5 -60 12.5 180 0
+tp Dev 11472.5 -59 0.5 -90 0
+#sleep 1.5
+#signal o
+#await o2done
+tp Dev 11467.0 -59 0.5 90 0
+#sleep 1.5
+#signal o3
+#await odone
+tp Dev 11470.0 -59 0.5 90 0
+#sleep 1.5
+#signal o7
+#await o7done
 #signal end
