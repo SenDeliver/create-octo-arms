@@ -32,7 +32,7 @@
 # shipgrab suite (Sable: small Ship held and followed, Set Down, Throw, mass cap and crew refusals; SKIP without Sable).
 # every other suite runs without Sable, and every suite but curios, curiosoff and look without Curios (no-Sable / no-Curios regression path).
 # p9, rideaero and shipgrab keep the old join (TW_PREBOOT=0, see run_split.sh): a join right after the scene assembles a Ship failed p9 moving-ship checks (B b4 Air, G g15 server ride) in 2 of 3 runs, 0 of 7 with the old join or a 10 s later join.
-# usage: tools/run_all.sh <tag>   logs land in tools/logs/<tag>-{main,life,creative,p1,p2,p3,p4,p5,p6,p6walk,p6fast,p7,p8,p8r16,pole,tank,cave,sneak,sneak2,flat,ride,spec,dig,sculk,curios,curiosoff,lag,lagneth,lagoff,p9,rideaero,faruse,grab,look,shipgrab}-*
+# usage: tools/run_all.sh <tag>   logs land in tools/logs/<tag>-{main,life,creative,p1,p2,p3,p4,p5,p6,p6walk,p6fast,p7,p8,p8r16,pole,tank,cave,sneak,sneak2,flat,ride,spec,dig,sculk,curios,curiosoff,lag,lagneth,lagoff,slider,p9,rideaero,faruse,grab,look,shipgrab}-*
 cd "$(dirname "$0")/.."
 TAG=${1:-reg}
 S=tools/scen
@@ -69,11 +69,12 @@ TW_REACH_COPPER=5 GRADLE_ARGS="$GRADLE_ARGS -PwithCurios" ANIMALS=true TIMELINE=
 TIMELINE=$S/lag-timeline.txt tools/run_split.sh $S/empty.txt $S/lag-client.txt tools/logs/$TAG-lag
 TW_SWIFT_PER_LEVEL=0.225 TW_FAR_REACH_PER_LEVEL=1.334 TIMELINE=$S/lag-timeline.txt tools/run_split.sh $S/empty.txt $S/lag-stress-client.txt tools/logs/$TAG-lagneth
 TW_SPEED_CHECK=false TIMELINE=$S/lag-timeline.txt tools/run_split.sh $S/empty.txt $S/lag-client.txt tools/logs/$TAG-lagoff
+tools/run_split.sh $S/empty.txt $S/slider-client.txt tools/logs/$TAG-slider
 TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/p9-timeline.txt tools/run_split.sh $S/scene-p9.txt $S/p9-client.txt tools/logs/$TAG-p9
 TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/rideaero-timeline.txt tools/run_split.sh $S/scene-rideaero.txt $S/rideaero-client.txt tools/logs/$TAG-rideaero
 TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/shipgrab-timeline.txt SCRIPT2=$S/shipgrab-watch.txt tools/run_split.sh $S/scene-shipgrab.txt $S/shipgrab-client.txt tools/logs/$TAG-shipgrab
 mkdir -p tools/shots && cp run/screenshots/*.png run2/screenshots/*.png tools/shots/ 2>/dev/null
-for r in main life creative p1 p2 p3 p4 p5 p6 p6walk p6fast p7 p8 p8r16 pole tank cave sneak sneak2 flat ride spec dig sculk curios curiosoff lag lagneth lagoff faruse grab look p9 rideaero shipgrab; do echo "== $r"; python3 tools/analyze.py tools/logs/$TAG-$r | grep -v '^mark'; done
+for r in main life creative p1 p2 p3 p4 p5 p6 p6walk p6fast p7 p8 p8r16 pole tank cave sneak sneak2 flat ride spec dig sculk curios curiosoff lag lagneth lagoff slider faruse grab look p9 rideaero shipgrab; do echo "== $r"; python3 tools/analyze.py tools/logs/$TAG-$r | grep -v '^mark'; done
 python3 tools/spike_metrics.py tools/logs/$TAG
 python3 tools/p1_metrics.py tools/logs/$TAG-p1
 python3 tools/p2_metrics.py tools/logs/$TAG-p2
@@ -103,6 +104,7 @@ python3 tools/look_metrics.py tools/logs/$TAG-look
 python3 tools/lag_metrics.py tools/logs/$TAG-lag
 python3 tools/lag_metrics.py tools/logs/$TAG-lagneth
 python3 tools/lag_metrics.py tools/logs/$TAG-lagoff check-off
+python3 tools/slider_metrics.py tools/logs/$TAG-slider
 python3 tools/p9_metrics.py tools/logs/$TAG-p9
 python3 tools/rideaero_metrics.py tools/logs/$TAG-rideaero
 python3 tools/shipgrab_metrics.py tools/logs/$TAG-shipgrab

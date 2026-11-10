@@ -16,6 +16,7 @@ Platforms: the same version number ships for every supported Minecraft version (
 ### Fixed
 
 - A Rig moving at its top Speed was Stowed on a lagging server ("moves faster than its top Speed: stowing"), dropping the wearer: the speed check counted server ticks, so below about 13 TPS, or when the server caught up after a stall, a legal move read as too fast. The allowed distance now follows the wearer's move packets, like vanilla's move check, counted only up to the real time that passed, so extra packets buy no speed. Thanks @snipernumber3.
+- Rig Settings: with Swift, the Speed slider stopped below the top Speed named under it. The Speed row now shows the Speed the Rig really carries you at (the setting times Swift), so a full slider reads the top Speed. The stored setting is unchanged. The server config `speed.max` now says it is the base top Speed, before Swift. Thanks @snipernumber3.
 
 ## [2.0.0] - 2026-11-09
 
@@ -65,6 +66,10 @@ Actuators: two more arms for the Rig, one for each hand. The four Tentacles carr
 - New server config keys (defaults): `air.capacityFactor` 2.0, `air.farUse` 0.5, `air.dualWield` 0.5, `air.grab` 40 (ticks per Air), `air.throw` 10, `farUse.players` true, `actuators.dualWield` true, `grab.tamedOthers` false, `grab.throwSpeed.copper` 0.8, `grab.throwSpeed.netherite` 1.2 (blocks per tick), `grab.heavySpeedFactor` 0.6, `impact.damagePerSpeed` 12, `impact.minSpeed` 0.3, `impact.cap` 20.
 - New client config keys (defaults): `firstPerson.limbOpacity` 1.0, `hud.crosshair` true, `hud.hints` true.
 - **1.21.1 only:** New server config keys for Ship Grab: `grab.ships` true (also needs `ships.grip`), `grab.massCap.copper` 2000, `grab.massCap.netherite` 6000 (Sable mass). Checked on Sable 2.0.0 to 2.0.6. Without Sable, or if a later Sable changes the parts it uses, Ship Grab does nothing and the rest of the mod works.
+
+### Fixed
+
+- A Rig moving at its top Speed was Stowed on a lagging server ("moves faster than its top Speed: stowing"), dropping the wearer: the speed check counted server ticks, so below about 13 TPS, or when the server caught up after a stall, a legal move read as too fast. The allowed distance now follows the wearer's move packets, like vanilla's move check, counted only up to the real time that passed, so extra packets buy no speed. Thanks @snipernumber3.
 
 ## [1.8.0] - 2026-11-08
 

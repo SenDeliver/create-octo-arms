@@ -159,7 +159,7 @@
   "tentaworks.configuration.speed.check": "Kiểm tra tốc độ",
   "tentaworks.configuration.speed.check.tooltip": "Thu Giàn di chuyển nhanh hơn tốc độ tối đa của nó (chống gian lận). Tắt: máy chủ tin tốc độ của người đeo, cho máy chủ bị lag",
   "tentaworks.configuration.speed.max": "Tốc độ tối đa",
-  "tentaworks.configuration.speed.max.tooltip": "Tốc độ tối đa của Giàn, khối/giây. Giới hạn Tốc độ trong Cài đặt Giàn của mọi người chơi; Thần tốc nâng cả hai trên Giàn mang phù phép đó",
+  "tentaworks.configuration.speed.max.tooltip": "Tốc độ tối đa cơ bản của Giàn, chưa tính Thần tốc, khối/giây: Tốc độ cao nhất người chơi chọn được trong Cài đặt Giàn. Thần tốc nhân nó trên Giàn mang phù phép đó",
   "tentaworks.configuration.title": "Octo Arms: Cấu hình",
   "tentaworks.display_source.rig_air": "Khí nén của Giàn",
   "tentaworks.display_source.rig_air.air": "Khí nén",

@@ -159,7 +159,7 @@
   "tentaworks.configuration.speed.check": "速度檢查",
   "tentaworks.configuration.speed.check.tooltip": "收起移動速度超過其最高速度的背架（反作弊）。關閉：伺服器信任穿戴者的速度，適用於延遲的伺服器",
   "tentaworks.configuration.speed.max": "最高速度",
-  "tentaworks.configuration.speed.max.tooltip": "背架的最高速度，單位為格/秒。限制每位玩家背架設定中的速度；迅捷會同時提高該背架的這兩項數值",
+  "tentaworks.configuration.speed.max.tooltip": "背架的基礎最高速度，不含迅捷，單位為格/秒：玩家在背架設定中能選的最高速度。迅捷會在該背架上將其倍增",
   "tentaworks.configuration.title": "Octo Arms：設定",
   "tentaworks.display_source.rig_air": "背架空氣",
   "tentaworks.display_source.rig_air.air": "空氣",

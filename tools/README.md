@@ -269,3 +269,12 @@ The speed check on a lagging server: a wearer at top Speed was Stowed with "move
 `TIMELINE=tools/scen/lag-timeline.txt tools/run_split.sh tools/scen/empty.txt tools/scen/lag-client.txt tools/logs/x-lag && python3 tools/lag_metrics.py tools/logs/x-lag`
 
 `TW_MINIMIZED=1` on `run_split.sh` opens the clients minimized (WSLg ignores the focus hints and stacks new windows on top). Not for suites that take screenshots.
+
+## Slider suite (slider)
+
+The Rig Settings Speed row. The slider stops at `speed.max`, but the Rig moves at the setting times Swift and the limits line shows the top Speed with Swift, so with Swift the row could never reach the top Speed it named. Scene `empty.txt` (x 8700). The client opens Rig Settings with sneak + use in the air for Rigs in the main hand: Copper c0 (none), c1 (Swift I), c2 (Swift II + Far Reach III), Netherite n0 (none), n2 (Swift II + Far Reach III); the Speed slider (ScrollInput 1) goes all the way up and down, `rigs` logs `CSPEED tag row= limits=` (the row and the limits line as the screen draws them).
+
+- `slider_metrics.py <log prefix> [swiftPerLevel] [speed.max]`: per case a full slider row equals the top Speed line and `speed.max` x Swift, an empty slider row is walk Speed x Swift, and the saved setting stays without Swift (S).
+- Past the max: `TW_SWIFT_PER_LEVEL=0.225 tools/run_split.sh ... tools/logs/x-slider-over && python3 tools/slider_metrics.py tools/logs/x-slider-over 0.225`.
+
+`tools/run_split.sh tools/scen/empty.txt tools/scen/slider-client.txt tools/logs/x-slider && python3 tools/slider_metrics.py tools/logs/x-slider`

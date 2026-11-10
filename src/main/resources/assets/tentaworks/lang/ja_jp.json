@@ -159,7 +159,7 @@
   "tentaworks.configuration.speed.check": "速度チェック",
   "tentaworks.configuration.speed.check.tooltip": "最高速度より速く動くリグを収納する（チート対策）。オフ：サーバーは装着者の速度を信用する（ラグのあるサーバー向け）",
   "tentaworks.configuration.speed.max": "最高速度",
-  "tentaworks.configuration.speed.max.tooltip": "リグの最高速度、ブロック/秒。全プレイヤーのリグ設定の速度の上限になります。高速移動はそのリグで両方を上げます",
+  "tentaworks.configuration.speed.max.tooltip": "高速移動を含まないリグの基本最高速度、ブロック/秒。プレイヤーがリグ設定で選べる最高の速度です。高速移動はそのリグでこれを倍増させます",
   "tentaworks.configuration.title": "Octo Arms：設定",
   "tentaworks.display_source.rig_air": "リグの圧縮空気",
   "tentaworks.display_source.rig_air.air": "圧縮空気",

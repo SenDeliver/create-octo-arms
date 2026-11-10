@@ -159,7 +159,7 @@
   "tentaworks.configuration.speed.check": "Перевірка швидкості",
   "tentaworks.configuration.speed.check.tooltip": "Складає апарат, що рухається швидше за свою максимальну швидкість (античит). Вимкнено: сервер довіряє швидкості власника, для серверів із лагами",
   "tentaworks.configuration.speed.max": "Максимальна швидкість",
-  "tentaworks.configuration.speed.max.tooltip": "Максимальна швидкість апарата, блоків за секунду. Обмежує швидкість у параметрах апарата кожного гравця; Прудкість підвищує обидві на своєму апараті",
+  "tentaworks.configuration.speed.max.tooltip": "Базова максимальна швидкість апарата, без Прудкості, блоків за секунду: найвища швидкість, яку гравець може обрати в параметрах апарата. Прудкість множить її на своєму апараті",
   "tentaworks.configuration.title": "Octo Arms: Налаштування",
   "tentaworks.display_source.rig_air": "Повітря апарата",
   "tentaworks.display_source.rig_air.air": "Повітря",

@@ -159,7 +159,7 @@
   "tentaworks.configuration.speed.check": "속도 검사",
   "tentaworks.configuration.speed.check.tooltip": "최고 속도보다 빠르게 움직이는 장비를 접습니다 (치트 방지). 끄기: 서버가 착용자의 속도를 믿습니다 (렉이 있는 서버용)",
   "tentaworks.configuration.speed.max": "최고 속도",
-  "tentaworks.configuration.speed.max.tooltip": "장비의 최고 속도, 블록/초. 모든 플레이어의 장비 설정에 있는 속도의 상한입니다. 신속은 해당 장비에서 둘 다 올립니다",
+  "tentaworks.configuration.speed.max.tooltip": "신속을 제외한 장비의 기본 최고 속도, 블록/초. 플레이어가 장비 설정에서 고를 수 있는 가장 높은 속도입니다. 신속은 해당 장비에서 이 값을 곱합니다",
   "tentaworks.configuration.title": "Octo Arms: 설정",
   "tentaworks.display_source.rig_air": "장비 공기량",
   "tentaworks.display_source.rig_air.air": "공기",

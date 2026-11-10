@@ -159,7 +159,7 @@
   "tentaworks.configuration.speed.check": "Contrôle de vitesse",
   "tentaworks.configuration.speed.check.tooltip": "Range un appareil qui va plus vite que sa vitesse maximale (anti-triche). Désactivé : le serveur fait confiance à la vitesse du porteur, pour les serveurs qui laguent",
   "tentaworks.configuration.speed.max": "Vitesse maximale",
-  "tentaworks.configuration.speed.max.tooltip": "Vitesse maximale de l'appareil, blocs par seconde. Plafonne la vitesse dans les réglages de l'appareil de chaque joueur ; Célérité relève les deux sur son appareil",
+  "tentaworks.configuration.speed.max.tooltip": "Vitesse maximale de base de l'appareil, hors Célérité, en blocs par seconde : la plus haute vitesse qu'un joueur peut régler dans les réglages de l'appareil. Célérité la multiplie sur son appareil",
   "tentaworks.configuration.title": "Octo Arms : Configuration",
   "tentaworks.display_source.rig_air": "Air de l'appareil",
   "tentaworks.display_source.rig_air.air": "Air",

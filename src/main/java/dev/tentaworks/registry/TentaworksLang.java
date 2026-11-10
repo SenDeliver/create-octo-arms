@@ -227,7 +227,7 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(cfg + "movement.forward.tooltip", "What W and S follow while the Rig carries you. Look: the camera, look down and W takes you down. Flat: level only, like walking or creative flight; jump and sneak change the height");
         REGISTRATE.addRawLang(cfg + "reach.copper.tooltip", "Grip Reach of a Copper Rig, blocks. Far Reach adds to it, up to 16 in total");
         REGISTRATE.addRawLang(cfg + "reach.netherite.tooltip", "Grip Reach of a Netherite Rig, blocks. Far Reach adds to it, up to 16 in total");
-        REGISTRATE.addRawLang(cfg + "speed.max.tooltip", "Top Rig speed, blocks per second. Caps the Speed in every player's Rig Settings; Swift raises both on its Rig");
+        REGISTRATE.addRawLang(cfg + "speed.max.tooltip", "Base top Rig speed, before Swift, in blocks per second: the highest Speed a player can set in Rig Settings. Swift multiplies it on its own Rig");
         REGISTRATE.addRawLang(cfg + "speed.check.tooltip", "Stow a Rig that moves faster than its top Speed (anti-cheat). Off: the server trusts the wearer's speed, for servers that lag");
         REGISTRATE.addRawLang(cfg + "air.idle.tooltip", "Copper Rig held still (Idle, Hang): ticks per 1 Air");
         REGISTRATE.addRawLang(cfg + "air.move.tooltip", "Copper Rig moving level or down: ticks per 1 Air");
