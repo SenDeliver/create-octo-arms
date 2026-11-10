@@ -1,0 +1,94 @@
+# slider: the Rig Settings Speed row shows the Speed with Swift, so a full slider reads the top Speed of the limits line.
+# Per case: a Rig in the main hand, sneak + use in the air opens Rig Settings, the Speed slider (ScrollInput 1) goes all the way up
+# (CSPEED max) and all the way down (CSPEED min), then the screen closes and saves. Copper (c0 none, c1 Swift I, c2 Swift II + Far Reach III),
+# Netherite (n0 none, n2 Swift II + Far Reach III). Run with TW_SWIFT_PER_LEVEL=0.225 TW_FAR_REACH_PER_LEVEL=1.334 for the past-max case (tag prefix unchanged).
+wait 40
+trace on
+hud off
+view first
+cmd tp @s 8700.5 -60 0.5 0 0
+cmd item replace entity @s armor.chest with air
+look -90 -90
+cmd item replace entity @s weapon.mainhand with tentaworks:copper_tentacle_rig
+wait 10
+hold shift on
+wait 5
+key key.mouse.right
+wait 10
+hold shift off
+scroll 1 200
+wait 2
+rigs c0max
+scroll 1 -200
+wait 2
+rigs c0min
+scroll 1 200
+wait 2
+close
+wait 10
+rigs c0saved
+cmd item replace entity @s weapon.mainhand with tentaworks:copper_tentacle_rig[enchantments={levels:{"tentaworks:swift":1}}]
+wait 10
+hold shift on
+wait 5
+key key.mouse.right
+wait 10
+hold shift off
+scroll 1 200
+wait 2
+rigs c1max
+scroll 1 -200
+wait 2
+rigs c1min
+close
+wait 10
+cmd item replace entity @s weapon.mainhand with tentaworks:copper_tentacle_rig[enchantments={levels:{"tentaworks:swift":2,"tentaworks:far_reach":3}}]
+wait 10
+hold shift on
+wait 5
+key key.mouse.right
+wait 10
+hold shift off
+scroll 1 200
+wait 2
+rigs c2max
+scroll 1 -200
+wait 2
+rigs c2min
+scroll 1 200
+wait 2
+close
+wait 10
+rigs c2saved
+cmd item replace entity @s weapon.mainhand with tentaworks:netherite_tentacle_rig
+wait 10
+hold shift on
+wait 5
+key key.mouse.right
+wait 10
+hold shift off
+scroll 1 200
+wait 2
+rigs n0max
+scroll 1 -200
+wait 2
+rigs n0min
+close
+wait 10
+cmd item replace entity @s weapon.mainhand with tentaworks:netherite_tentacle_rig[enchantments={levels:{"tentaworks:swift":2,"tentaworks:far_reach":3}}]
+wait 10
+hold shift on
+wait 5
+key key.mouse.right
+wait 10
+hold shift off
+scroll 1 200
+wait 2
+rigs n2max
+scroll 1 -200
+wait 2
+rigs n2min
+close
+wait 10
+reach slider
+quit

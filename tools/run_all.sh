@@ -24,7 +24,7 @@
 # a Rig forced into the chest mid-use Sets Down and wins, Elytra in the chest never opens while deployed and glides after Set Down, Dev2 shots);
 # curiosoff suite (same scene with the server config curios.backSlot = false: a Rig placed in the back slot is inert, the slot refuses Rigs, use swaps into the chest as vanilla does).
 # 1.20.1 branch: no Sable Ships, so no p9, rideaero, obs* or listship suites; every suite but curios and curiosoff runs without Curios (no-Curios regression path).
-# usage: tools/run_all.sh <tag>   logs land in tools/logs/<tag>-{main,life,creative,p1,p2,p3,p4,p5,p6,p6walk,p6fast,p7,p8,p8r16,pole,tank,cave,sneak,sneak2,flat,ride,spec,dig,sculk,curios,curiosoff,lag,lagneth,lagoff}-*
+# usage: tools/run_all.sh <tag>   logs land in tools/logs/<tag>-{main,life,creative,p1,p2,p3,p4,p5,p6,p6walk,p6fast,p7,p8,p8r16,pole,tank,cave,sneak,sneak2,flat,ride,spec,dig,sculk,curios,curiosoff,lag,lagneth,lagoff,slider}-*
 cd "$(dirname "$0")/.."
 TAG=${1:-reg}
 S=tools/scen
@@ -58,8 +58,9 @@ GRADLE_ARGS="$GRADLE_ARGS -PwithCurios" TW_BACK_SLOT=false tools/run_split.sh $S
 TIMELINE=$S/lag-timeline.txt tools/run_split.sh $S/empty.txt $S/lag-client.txt tools/logs/$TAG-lag
 TW_SWIFT_PER_LEVEL=0.225 TW_FAR_REACH_PER_LEVEL=1.334 TIMELINE=$S/lag-timeline.txt tools/run_split.sh $S/empty.txt $S/lag-stress-client.txt tools/logs/$TAG-lagneth
 TW_SPEED_CHECK=false TIMELINE=$S/lag-timeline.txt tools/run_split.sh $S/empty.txt $S/lag-client.txt tools/logs/$TAG-lagoff
+tools/run_split.sh $S/empty.txt $S/slider-client.txt tools/logs/$TAG-slider
 mkdir -p tools/shots && cp run/screenshots/*.png run2/screenshots/*.png tools/shots/ 2>/dev/null
-for r in main life creative p1 p2 p3 p4 p5 p6 p6walk p6fast p7 p8 p8r16 pole tank cave sneak sneak2 flat ride spec dig sculk curios curiosoff lag lagneth lagoff; do echo "== $r"; python3 tools/analyze.py tools/logs/$TAG-$r | grep -v '^mark'; done
+for r in main life creative p1 p2 p3 p4 p5 p6 p6walk p6fast p7 p8 p8r16 pole tank cave sneak sneak2 flat ride spec dig sculk curios curiosoff lag lagneth lagoff slider; do echo "== $r"; python3 tools/analyze.py tools/logs/$TAG-$r | grep -v '^mark'; done
 python3 tools/spike_metrics.py tools/logs/$TAG
 python3 tools/p1_metrics.py tools/logs/$TAG-p1
 python3 tools/p2_metrics.py tools/logs/$TAG-p2
@@ -86,3 +87,4 @@ python3 tools/curiosoff_metrics.py tools/logs/$TAG-curiosoff
 python3 tools/lag_metrics.py tools/logs/$TAG-lag
 python3 tools/lag_metrics.py tools/logs/$TAG-lagneth
 python3 tools/lag_metrics.py tools/logs/$TAG-lagoff check-off
+python3 tools/slider_metrics.py tools/logs/$TAG-slider
