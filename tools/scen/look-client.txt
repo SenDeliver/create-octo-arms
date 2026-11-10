@@ -575,6 +575,131 @@ cmd item replace entity @s weapon.mainhand with minecraft:air
 cmd item replace entity @s armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900,tentaworks:actuators={}]
 wait 10
 signal marksdone
+# K clearance: no Actuator part, claw or carried item inside a block. Dual Wield diamond shovels digging the grass 3 ahead looking down (the owner's report), the block 1 ahead at the feet standing, crouched and Active, a 2-high gap under a ceiling (Rest Pose Stowed and Active, its floor and its ceiling), a step at the feet (its face, then over its edge to its top). Mining Fatigue keeps every block whole.
+await clip
+view first
+hud on
+looktrace on
+cmd effect give @s minecraft:mining_fatigue infinite 3 true
+cmd item replace entity @s weapon.mainhand with minecraft:diamond_shovel
+cmd item replace entity @s weapon.offhand with minecraft:diamond_shovel
+wait 12
+lookat 11625.5 -60 0.5
+wait 4
+mark k_dig
+holdkey key.attack on
+wait 6
+clearchat
+burst look_k_dig_fp 8
+view third
+wait 4
+burst look_k_dig_third 4
+view front
+wait 4
+clearchat
+shot look_k_dig_front
+holdkey key.attack off
+view first
+wait 8
+cmd tp @s 11622.5 -60 6.5 -90 0
+wait 8
+lookat 11623.5 -60 6.5
+wait 4
+mark k_feet
+holdkey key.attack on
+wait 6
+burst look_k_feet_fp 4
+holdkey key.attack off
+holdkey key.sneak on
+wait 6
+lookat 11623.5 -60 6.5
+wait 3
+mark k_crouch
+holdkey key.attack on
+wait 6
+burst look_k_feet_crouch_fp 4
+holdkey key.attack off
+holdkey key.sneak off
+wait 6
+view third
+lookat 11624.5 -60 6.5
+wait 3
+mark k_feet_third
+holdkey key.attack on
+wait 6
+burst look_k_feet_third 3
+holdkey key.attack off
+view first
+look -90 0
+doublejump
+wait 40
+lookat 11623.5 -60 6.5
+wait 4
+mark k_active
+holdkey key.attack on
+wait 6
+burst look_k_feet_active_fp 4
+holdkey key.attack off
+look -90 0
+doublejump
+wait 60
+cmd tp @s 11630.5 -60 13.5 -90 0
+wait 10
+mark k_ceiling
+view third
+look -90 10
+wait 12
+clearchat
+shot look_k_ceiling_rest_third
+view first
+lookat 11632.5 -60 13.5
+wait 4
+holdkey key.attack on
+wait 6
+burst look_k_ceiling_floor_fp 4
+holdkey key.attack off
+lookat 11632.5 -58 13.5
+wait 4
+holdkey key.attack on
+wait 6
+burst look_k_ceiling_up_fp 4
+view third
+wait 4
+burst look_k_ceiling_up_third 3
+holdkey key.attack off
+look -90 10
+mark k_ceiling_active
+doublejump
+wait 40
+doublejump
+wait 60
+view first
+wait 6
+cmd tp @s 11622.5 -60 20.5 -90 0
+wait 8
+lookat 11624.0 -59.5 20.5
+wait 4
+mark k_step
+holdkey key.attack on
+wait 6
+burst look_k_step_fp 4
+lookat 11624.5 -59 20.5
+burst look_k_step_retarget_fp 4
+lookat 11624.0 -59.5 20.5
+wait 6
+view third
+lookat 11624.5 -59 20.5
+burst look_k_step_retarget_third 4
+holdkey key.attack off
+view first
+mark k_end
+wait 4
+looktrace off
+cmd effect clear @s
+cmd item replace entity @s weapon.mainhand with minecraft:air
+cmd item replace entity @s weapon.offhand with minecraft:air
+wait 6
+signal clipdone
 # B Back Slot (Curios): a fitted Netherite Rig in the back slot over an iron chestplate
 await back
 ifmod curios

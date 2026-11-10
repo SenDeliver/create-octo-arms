@@ -12,6 +12,9 @@ summon iron_golem 11603.5 -60 10.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tag
 summon husk 11605.3 -60 20.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","lh"],Rotation:[90f,0f]}
 summon pig 11603.5 -60 15.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","lr"],Passengers:[{id:"minecraft:chicken",NoAI:1b,Silent:1b,PersistenceRequired:1b,Tags:["tw"]}]}
 fill 11603 -60 -9 11603 -57 -4 minecraft:deepslate
+forceload add 11618 -4 11640 24
+fill 11628 -58 10 11638 -58 16 minecraft:dirt
+fill 11624 -60 18 11624 -60 22 minecraft:dirt
 op Dev
 tentaworks trace on
 gamemode survival Dev

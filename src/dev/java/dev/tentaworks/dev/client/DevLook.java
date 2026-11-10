@@ -10,9 +10,15 @@ import dev.tentaworks.rig.GrabRule;
 import dev.tentaworks.rig.SetDown;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -23,7 +29,9 @@ import net.neoforged.neoforge.client.event.RenderHandEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Dev-only tools of the look suite, DevScript lines: burst NAME N [bg] (a shot per tick, NAME_00..; bg: the script goes on
@@ -32,7 +40,8 @@ import java.util.Locale;
  * holding pads, the gauge's lit notch of how many, the Grab key beside the cue, hints shown this session, the action-bar line),
  * hints on|off (client hud.hints in memory; on also starts the session's hints over), looktrace on|off (CLOOK
  * line per tick: what vanilla and the Actuators drew of each hand in first person, the frames with a hand drawn twice, the
- * crosshair mark, the Grab cue and how far the acting Actuator is from its target).
+ * crosshair mark, the Grab cue and how far the acting Actuator is from its target, the most drawn points of each Actuator inside
+ * a solid block in one frame of the tick; and a CCLIP line per other wearer with the same count).
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public final class DevLook {
@@ -43,6 +52,9 @@ public final class DevLook {
     private static final boolean[] vanilla = new boolean[2];
     private static final int[] before = new int[2], vanillaFrames = new int[2], actuatorFrames = new int[2], doubled = new int[2];
     private static int frames;
+    /** Most drawn points inside a block in one frame this tick and the deepest of them, per player id: main, off. */
+    private static final Map<Integer, double[]> CLIP = new HashMap<>();
+    private static final double CLIP_DEPTH = 0.04;
 
     private DevLook() {
     }
@@ -115,6 +127,22 @@ public final class DevLook {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
         frames++;
+        if (trace && mc.level != null) {
+            for (AbstractClientPlayer p : mc.level.players()) {
+                double[] c = CLIP.computeIfAbsent(p.getId(), id -> new double[4]);
+                for (int h = 0; h < 2; h++) {
+                    int n = 0;
+                    for (Vec3 v : ActuatorRenderer.probe(p, h == 0)) {
+                        double d = depth(mc.level, v);
+                        if (d > CLIP_DEPTH) {
+                            n++;
+                            c[2 + h] = Math.max(c[2 + h], d);
+                        }
+                    }
+                    c[h] = Math.max(c[h], n);
+                }
+            }
+        }
         for (int h = 0; h < 2; h++) {
             boolean actuator = ActuatorRenderer.HAND_DRAWS[h] != before[h];
             if (vanilla[h]) vanillaFrames[h]++;
@@ -132,10 +160,35 @@ public final class DevLook {
             Screenshot.grab(mc.gameDirectory, name, mc.getMainRenderTarget(), msg -> LOG.info("screenshot {}: {}", name, msg.getString()));
             burstLeft--;
         }
-        if (trace) LOG.info("CLOOK gt={} first={} frames={} vhand={},{} ahand={},{} dbl={},{} mark={} cue={} lag={}", mc.level.getGameTime(),
-                mc.options.getCameraType().isFirstPerson(), frames, vanillaFrames[0], vanillaFrames[1], actuatorFrames[0], actuatorFrames[1], doubled[0],
-                doubled[1], ActuatorSight.mark(), ActuatorSight.cue().kind(), String.format(Locale.ROOT, "%.2f", ActuatorRenderer.lag(mc.player)));
+        if (trace) {
+            double[] own = CLIP.getOrDefault(mc.player.getId(), new double[4]);
+            LOG.info("CLOOK gt={} first={} frames={} vhand={},{} ahand={},{} dbl={},{} mark={} cue={} lag={} clip={},{} cdepth={}", mc.level.getGameTime(),
+                    mc.options.getCameraType().isFirstPerson(), frames, vanillaFrames[0], vanillaFrames[1], actuatorFrames[0], actuatorFrames[1], doubled[0],
+                    doubled[1], ActuatorSight.mark(), ActuatorSight.cue().kind(), String.format(Locale.ROOT, "%.2f", ActuatorRenderer.lag(mc.player)),
+                    (int) own[0], (int) own[1], String.format(Locale.ROOT, "%.2f", Math.max(own[2], own[3])));
+            for (AbstractClientPlayer p : mc.level.players()) {
+                if (p == mc.player) continue;
+                double[] c = CLIP.getOrDefault(p.getId(), new double[4]);
+                LOG.info("CCLIP gt={} name={} clip={},{} cdepth={}", mc.level.getGameTime(), p.getGameProfile().getName(), (int) c[0], (int) c[1],
+                        String.format(Locale.ROOT, "%.2f", Math.max(c[2], c[3])));
+            }
+        }
+        CLIP.clear();
         frames = 0;
         for (int h = 0; h < 2; h++) vanillaFrames[h] = actuatorFrames[h] = doubled[h] = 0;
+    }
+
+    /** How deep {@code p} is inside the collision shape of its block (0 outside). */
+    private static double depth(Level level, Vec3 p) {
+        BlockPos pos = BlockPos.containing(p);
+        VoxelShape shape = level.getBlockState(pos).getCollisionShape(level, pos);
+        if (shape.isEmpty()) return 0;
+        double best = 0;
+        for (AABB box : shape.toAabbs()) {
+            AABB b = box.move(pos);
+            if (!b.contains(p)) continue;
+            best = Math.max(best, Math.min(Math.min(Math.min(p.x - b.minX, b.maxX - p.x), Math.min(p.y - b.minY, b.maxY - p.y)), Math.min(p.z - b.minZ, b.maxZ - p.z)));
+        }
+        return best;
     }
 }

@@ -1,4 +1,4 @@
-# Look timeline: Netherite Rig with Actuators; stations rest and carry (z 5), pig (z 0), iron golem (z 10), ridden pig (z 15), husk (z 20), wall (z -9..-4).
+# Look timeline: Netherite Rig with Actuators; stations rest and carry (z 5), pig (z 0), iron golem (z 10), ridden pig (z 15), husk (z 20), wall (z -9..-4); clearance x 11622..11638 (ground, ceiling at z 10..16, step at z 18..22).
 tp Dev 11597.5 -60 5.5 -90 0
 clear Dev
 item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900,tentaworks:actuators={}]
@@ -31,6 +31,10 @@ tp Dev 11597.5 -60 -6.5 -90 0
 #sleep 0.5
 #signal marks
 #await marksdone
+tp Dev 11622.5 -60 0.5 -90 0
+#sleep 0.5
+#signal clip
+#await clipdone
 #sleep 0.5
 #signal back
 #await end
