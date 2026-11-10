@@ -79,26 +79,25 @@ check('D no hand or item drawn twice in first person (vanilla hand and Actuator 
       and tot('a', 0) > 100, text)
 check('D the Actuators stand in for both hands: vanilla draws no hand, arm or item in any state of the work section (idle, far mining, '
       'retarget, Dual Wield, eating, off hand alone, left-handed)', len(fp) > 100 and tot('v', 0) == 0 and tot('v', 1) == 0 and tot('a', 1) > 20, text)
-kstart = re.search(r'CPOS k_dig gt=(\d+)', c)
-work = [l for l in fp if not kstart or l['gt'] < int(kstart.group(1))]
-run = worst = 0
-for l in work:
-    run = run + 1 if l['lag'] > 0.1 else 0
-    worst = max(worst, run)
-acting = [l['lag'] for l in work if l['lag'] >= 0]
-check('R retarget (work section): the acting Actuator is on its new target within 3 ticks (ticks in a row more than 0.1 block off)', len(acting) > 30 and worst <= 3
-      and max(acting, default=0) > 0.1, f"{len(acting)} acting ticks, worst run {worst}, largest lag {max(acting, default=0):.2f}")
-
-print('== Clearance')
 marks = {m[0]: int(m[1]) for m in re.findall(r'CPOS (k_\w+) gt=(\d+)', c)}
-clip = [(int(m[0]), m[1] == 'true', int(m[2]), int(m[3]), float(m[4]))
-        for m in re.findall(r'CLOOK gt=(\d+) first=(\w+) .*? clip=(\d+),(\d+) cdepth=(\S+)', c)]
 order = sorted(marks.items(), key=lambda kv: kv[1])
 def part(gt):
     name = 'w'
     for k, g in order:
         if gt >= g: name = k
     return name
+work = [l for l in fp if part(l['gt']) not in ('k_feet_third', 'k_active')]
+run = worst = 0
+for l in work:
+    run = run + 1 if l['lag'] > 0.1 else 0
+    worst = max(worst, run)
+acting = [l['lag'] for l in work if l['lag'] >= 0]
+check('R retarget (work section and K, but the Rig rising to Active at the feet, which the target chase trails): the acting Actuator is on its new target within 3 ticks (ticks in a row more than 0.1 block off)', len(acting) > 30 and worst <= 3
+      and max(acting, default=0) > 0.1, f"{len(acting)} acting ticks, worst run {worst}, largest lag {max(acting, default=0):.2f}")
+
+print('== Clearance')
+clip = [(int(m[0]), m[1] == 'true', int(m[2]), int(m[3]), float(m[4]))
+        for m in re.findall(r'CLOOK gt=(\d+) first=(\w+) .*? clip=(\d+),(\d+) cdepth=(\S+)', c)]
 bad = [(part(g), g, 'fp' if f else 'third', a, b, d) for g, f, a, b, d in clip if a or b]
 parts = sorted({part(g) for g, *_ in clip})
 check('K no Actuator point (segments, gripper, carried item) inside a block on any traced tick: the work section (wall), Dual Wield shovels on the '

@@ -682,7 +682,7 @@ public final class ActuatorRenderer {
                 boolean clear = !inHand || arm.act > 0.05;
                 ItemStack stack = arm.carries ? player.getItemInHand(arm.main ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND) : ItemStack.EMPTY;
                 if (!inHand) {
-                    if (arm.bendTick != player.tickCount) arm.roomGoal = room(player.level(), s, aim.grip());
+                    if (arm.bendTick != player.tickCount) arm.roomGoal = arm.acting ? 1 : room(player.level(), s, aim.grip());
                     if (arm.room < 1) aim = aim.withGrip(s.add(aim.grip().subtract(s).scale(arm.room)));
                     if (!arm.acting && !stack.isEmpty()) aim = aim.withAxis(itemClear(player.level(), aim.grip(), aim.axis(), itemLength(stack, aim)));
                 } else {
