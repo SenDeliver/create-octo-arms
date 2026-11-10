@@ -74,9 +74,9 @@ def main(argv):
             break
 
     open(log_path, 'w', encoding='utf-8').write('\n'.join(lines))
-    open(props_path, 'w', encoding='utf-8').write(re.sub(r'^mod_version=.*$', f'mod_version={version}', props, flags=re.M))
+    open(props_path, 'w', encoding='utf-8').write(re.sub(r'^mod_stage=.*$', 'mod_stage=', re.sub(r'^mod_version=.*$', f'mod_version={version}', props, flags=re.M), flags=re.M))
 
-    print(f"""Prepared {version} (was {old}): gradle.properties mod_version, CHANGELOG.md [{version}].
+    print(f"""Prepared {version} (was {old}): gradle.properties mod_version (mod_stage emptied), CHANGELOG.md [{version}].
 Next, on branch {mc}:
   1. Review CHANGELOG.md [{version}]: short, user-facing, `**<mc> only:**` tags, packet changes under Compatibility.
   2. ./gradlew runData && python3 tools/lang_check.py

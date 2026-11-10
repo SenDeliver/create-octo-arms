@@ -48,6 +48,7 @@ jobs:
           prop() { sed -n "s/^$1=//p" gradle.properties; }
           v=$(prop mod_version); mc=$(prop minecraft_version); loader=$(prop mod_loader); java=$(prop java_version)
           [ "$VER" = "$v" ] || { echo "::error::tag $TAG is version $VER, gradle.properties mod_version is $v"; exit 1; }
+          [ -z "$(prop mod_stage)" ] || { echo "::error::gradle.properties mod_stage is '$(prop mod_stage)': a release has an empty mod_stage"; exit 1; }
           [ "$MC" = "$mc" ] || { echo "::error::tag $TAG is for Minecraft $MC, but it sits on a commit of the $mc line: tag branch $MC"; exit 1; }
           [ -n "$loader" ] && [ -n "$java" ] || { echo "::error::gradle.properties has no mod_loader or java_version"; exit 1; }
           python3 tools/release_notes.py "$v" "$mc" > /dev/null || { echo "::error::CHANGELOG.md has no [$v] section with entries for $mc"; exit 1; }

@@ -4,7 +4,22 @@ plugins {
     id 'idea'
 }
 
-version = "${mod_version}+mc${minecraft_version}"
+def git = { String... args ->
+    try {
+        return providers.exec { commandLine(['git'] + args.toList()); ignoreExitValue = true }.standardOutput.asText.get().trim()
+    } catch (Exception ignored) {
+        return ''
+    }
+}
+def stage = (findProperty('mod_stage') ?: '').toString().trim()
+ext.fullVersion = mod_version
+if (stage) {
+    def last = git('describe', '--tags', '--abbrev=0', '--match', "v*+mc${minecraft_version}")
+    def build = git('rev-list', '--count', last ? "${last}..HEAD" : 'HEAD')
+    ext.fullVersion = "${mod_version}-${stage}.${build ?: 0}"
+}
+
+version = "${fullVersion}+mc${minecraft_version}"
 group = mod_group_id
 
 base {
@@ -178,7 +193,7 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             mod_id                 : mod_id,
             mod_name               : mod_name,
             mod_license            : mod_license,
-            mod_version            : mod_version,
+            mod_version            : fullVersion,
             mod_authors            : mod_authors,
     ]
     inputs.properties replaceProperties

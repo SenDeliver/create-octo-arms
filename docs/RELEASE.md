@@ -18,6 +18,8 @@ Every release of Octo Arms follows these rules, on every Minecraft version. The 
 
 `mod_version` changes on every release, never ship two different jars under one version and Minecraft version.
 
+Builds before a release carry a stage and a build number: `mod_stage` in `gradle.properties` (`alpha`, `beta`, `rc`; empty on a release) gives `X.Y.Z-<stage>.<N>`, as in `octo-arms-2.0.0-alpha.106+mc1.21.1.jar`. `N` is the number of commits since the last release tag of that Minecraft version, so commit before building a jar to hand out. `release_prep.py` empties `mod_stage`; `publish.yml` refuses a tag while it is set.
+
 | Bump | When |
 |---|---|
 | **Patch** `x.y.Z` | Client-only bug fixes and small features: rendering, sounds, client config, Rig Settings screen, translations. No server code change, no packet change. |
