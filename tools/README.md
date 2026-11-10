@@ -217,3 +217,12 @@ Release jar inside a full modpack, as players run it. Build first: `./gradlew bu
 | `prod/scen/`, `prod/prod_metrics.py` | Prod-pack scenario and its checks. |
 
 `shots/` (gitignored) gets the screenshots of the last `run_all.sh`.
+
+## Movement mode suite (movemode)
+
+The Rig Settings row Movement mode (Default / Creative flight) is the client config `movement.forward` (`look` / `flat`, issue #18), for every Rig of the player on this computer; the screen writes and saves the config on close. Scene `empty.txt` (flat ground at x 8800), the Rig Settings key bound to O. `rigs` logs `CMOVE tag screen= config=` (the row's value, or `-` with no screen, and the config value).
+
+- `movemode_metrics.py <log prefix> [run dir]`: m0..m3 the row opens on the config value, editing it changes nothing until close, close writes it (Default -> Creative flight -> Default -> Creative flight). F with Creative flight, 60 down + W stays level; L back on Default, 60 down + W goes down; Active at every mark. S the saved `run/config/tentaworks-client.toml` says `FLAT` (`run_split.sh` deletes it before each run).
+- Shot `movemode_row_creative_flight`: the screen with the cursor on the new row (its tooltip lists both modes); needs visible windows (not `TW_MINIMIZED=1`).
+
+`tools/run_split.sh tools/scen/empty.txt tools/scen/movemode-client.txt tools/logs/x-movemode && python3 tools/movemode_metrics.py tools/logs/x-movemode`

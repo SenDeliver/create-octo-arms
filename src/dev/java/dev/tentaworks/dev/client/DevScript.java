@@ -110,7 +110,7 @@ import java.util.Set;
  * | doublejump (taps 2) | look yaw pitch | trace on|off (TRACE line per tick) | mark tag (CPOS line + /tentaworks pos tag)
  * | freeze ms (blocks the client thread: a real hitch, no packets) | TITLE lines whenever the on-screen subtitle changes (Create's backtank warnings), OVERLAY lines whenever the action-bar text changes
  * | bind key.tentaworks.toggle key.keyboard.r (rebinds a KeyMapping, not saved to options.txt) | scroll N delta (N-th ScrollInput of the open screen, delta steps)
- * | rigs tag (CRIG lines: open Rig Settings screen values + Rig Settings component per slot) | screen (SCREEN line: open screen class)
+ * | rigs tag (CRIG lines: open Rig Settings screen values + Rig Settings component per slot; CMOVE: the screen's Movement mode and the client config movement.forward) | screen (SCREEN line: open screen class)
  * | rawsettings mainhand|offhand|chest|back height speed double_jump|key (sends the settings packet as is, unclamped)
  * | tooltips shift|noshift ns:id... (Create ItemDescription of each item, as with/without Shift)
  * | slot N [quick|pickup] (real container click on menu slot N) | enchbutton N (enchanting table option N, 0-based) | menu tag (CMENU lines: menu, anvil cost,
@@ -343,6 +343,8 @@ public final class DevScript {
                 case "screen" -> LOG.info("SCREEN {}", mc.screen == null ? "none" : mc.screen.getClass().getName());
                 case "rigs" -> {
                     if (mc.screen instanceof RigSettingsScreen rs) LOG.info("CRIG {} screen settings={}", a[1], rs.settings());
+                    LOG.info("CMOVE {} screen={} config={}", a[1], mc.screen instanceof RigSettingsScreen rs ? rs.movement() : "-",
+                            dev.tentaworks.config.TentaworksClientConfig.forward());
                     for (RigSlot slot : RigSlot.values()) {
                         ItemStack st = slot.stack(mc.player);
                         if (!st.isEmpty()) LOG.info("CRIG {} slot={} item={} settings={}", a[1], slot.getName(), st.getItemHolder().getRegisteredName(),

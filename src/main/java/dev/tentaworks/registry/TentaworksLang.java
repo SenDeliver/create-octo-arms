@@ -85,6 +85,9 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(gui + "activation", "Activation");
         REGISTRATE.addRawLang(gui + "activation.double_jump", "Double Jump");
         REGISTRATE.addRawLang(gui + "activation.key", "Key only");
+        REGISTRATE.addRawLang(gui + "movement", "Movement mode");
+        REGISTRATE.addRawLang(gui + "movement.look", "Default");
+        REGISTRATE.addRawLang(gui + "movement.flat", "Creative flight");
         REGISTRATE.addRawLang(gui + "blocks", "%s blocks");
         REGISTRATE.addRawLang(gui + "blocks_per_second", "%s b/s");
         REGISTRATE.addRawLang(gui + "limits", "Reach %s, top Speed %s b/s");
