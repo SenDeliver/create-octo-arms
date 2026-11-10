@@ -78,7 +78,7 @@
   "tentaworks.configuration.ships.grip.tooltip": "Aparatos se agarram a Naves do Sable como a blocos do mundo. Ignorado sem o Sable",
   "tentaworks.configuration.speed": "Velocidade",
   "tentaworks.configuration.speed.max": "Velocidade máxima",
-  "tentaworks.configuration.speed.max.tooltip": "Velocidade máxima do Aparato, blocos por segundo. Limita a Velocidade nos Ajustes do Aparato de cada jogador; Rapidez aumenta as duas no seu Aparato",
+  "tentaworks.configuration.speed.max.tooltip": "Velocidade máxima base do Aparato, sem Rapidez, em blocos por segundo: a maior Velocidade que um jogador pode escolher nos Ajustes do Aparato. Rapidez a multiplica no seu Aparato",
   "tentaworks.configuration.title": "Octo Arms: Configuração",
   "tentaworks.display_source.rig_air": "Ar do Aparato",
   "tentaworks.display_source.rig_air.air": "Ar",

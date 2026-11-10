@@ -78,7 +78,7 @@
   "tentaworks.configuration.ships.grip.tooltip": "Soupravy se chytají lodí ze Sable stejně jako bloků světa. Bez Sable se ignoruje",
   "tentaworks.configuration.speed": "Rychlost",
   "tentaworks.configuration.speed.max": "Max. rychlost",
-  "tentaworks.configuration.speed.max.tooltip": "Maximální rychlost soupravy, bloky za sekundu. Omezuje rychlost v nastavení soupravy každého hráče; Hbitost na své soupravě zvyšuje obojí",
+  "tentaworks.configuration.speed.max.tooltip": "Základní maximální rychlost soupravy, bez Hbitosti, v blocích za sekundu: nejvyšší rychlost, kterou hráč nastaví v nastavení soupravy. Hbitost ji na své soupravě násobí",
   "tentaworks.configuration.title": "Octo Arms: Konfigurace",
   "tentaworks.display_source.rig_air": "Vzduch soupravy",
   "tentaworks.display_source.rig_air.air": "Vzduch",

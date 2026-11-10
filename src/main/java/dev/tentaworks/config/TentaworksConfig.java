@@ -27,7 +27,7 @@ public final class TentaworksConfig {
         REACH_NETHERITE = b.comment("Grip Reach of a Netherite Rig, blocks. Far Reach adds to it, up to 16 in total").translation(t + "reach.netherite").defineInRange("netherite", 7.0, 1.0, 16.0);
         b.pop();
         b.translation(t + "speed").push("speed");
-        SPEED_MAX = b.comment("Top Rig speed, blocks per second. Caps the Speed in every player's Rig Settings; Swift raises both on its Rig").translation(t + "speed.max").defineInRange("max", 8.0, 1.0, 20.0);
+        SPEED_MAX = b.comment("Base top Rig speed, before Swift, in blocks per second: the highest Speed a player can set in Rig Settings. Swift multiplies it on its own Rig").translation(t + "speed.max").defineInRange("max", 8.0, 1.0, 20.0);
         b.pop();
         b.translation(t + "air").push("air");
         AIR_IDLE = b.comment("Copper Rig held still (Idle, Hang): ticks per 1 Air").translation(t + "air.idle").defineInRange("idle", 80.0, 1.0, 72000.0);

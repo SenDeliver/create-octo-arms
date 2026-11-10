@@ -78,7 +78,7 @@
   "tentaworks.configuration.ships.grip.tooltip": "Teçhizatlar Sable Gemilerine dünya blokları gibi tutunur. Sable yoksa yok sayılır",
   "tentaworks.configuration.speed": "Hız",
   "tentaworks.configuration.speed.max": "Azami Hız",
-  "tentaworks.configuration.speed.max.tooltip": "Teçhizatın azami hızı, blok/sn. Her oyuncunun Teçhizat Ayarlarındaki Hızı sınırlar; Çeviklik kendi Teçhizatında ikisini de artırır",
+  "tentaworks.configuration.speed.max.tooltip": "Teçhizatın Çeviklik hariç temel azami hızı, blok/sn: bir oyuncunun Teçhizat Ayarlarında seçebileceği en yüksek Hız. Çeviklik bunu kendi Teçhizatında katlar",
   "tentaworks.configuration.title": "Octo Arms: Yapılandırma",
   "tentaworks.display_source.rig_air": "Teçhizat Havası",
   "tentaworks.display_source.rig_air.air": "Hava",
