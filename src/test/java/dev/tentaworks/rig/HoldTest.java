@@ -83,6 +83,80 @@ class HoldTest {
         assertTrue(Arrays.stream(creeper.getDeclaredMethods()).anyMatch(m -> m.getName().contains("setSwell")));
     }
 
+    /** ServerEntity loads with the sent-position hook merged in: the tracker's move base follows Grab's own teleports. */
+    @Test
+    void trackerBaseMixinApplied() throws ClassNotFoundException {
+        Class<?> tracker = Class.forName("net.minecraft.server.level.ServerEntity", false, getClass().getClassLoader());
+        assertTrue(Arrays.stream(tracker.getDeclaredMethods()).anyMatch(m -> m.getName().contains("sent")));
+    }
+
+    @Test
+    void aSurfaceNearerThanTheHoldDrawsItOverTheSpot() {
+        assertEquals(1.0, Hold.over(3.0, 2.0), 1e-9, "nearer: over the spot");
+        assertEquals(1.0, Hold.over(3.0, 3.0), 1e-9, "at the hold distance: over the spot");
+        assertEquals(0.0, Hold.over(3.0, 3.0 + Hold.OVER_BAND), 1e-9, "a band farther: at the hold point");
+        assertEquals(0.0, Hold.over(3.0, 6.0), 1e-9, "farther: the hold stays");
+        assertEquals(0.0, Hold.over(3.0, Double.NaN), 1e-9, "no surface: the hold stays");
+        double prev = 1;
+        for (double a = 3.0; a <= 3.0 + Hold.OVER_BAND; a += 0.01) {
+            double k = Hold.over(3.0, a);
+            assertTrue(k <= prev + 1e-12 && k >= 0 && k <= 1, "eases out as the surface goes farther, at " + a);
+            assertTrue(prev - k < 0.04, "no step at " + a);
+            prev = k;
+        }
+    }
+
+    @Test
+    void overTheSpotItHangsJustAboveIt() {
+        Vec3 feet = new Vec3(4, 60, -1), spot = new Vec3(2, 64, 0.5);
+        assertEquals(feet, Hold.over(feet, spot, 0));
+        Vec3 over = Hold.over(feet, spot, 1);
+        assertEquals(spot.x, over.x, 1e-9);
+        assertEquals(spot.z, over.z, 1e-9);
+        assertEquals(spot.y + Hold.HOVER, over.y, 1e-9, "a tap lowers it only " + Hold.HOVER);
+        assertTrue(Hold.HOVER <= 0.3);
+    }
+
+    @Test
+    void theHoldEasesOntoAndOffTheSpotInAFewTicks() {
+        double k = 0;
+        int ticks = 0;
+        while (k < 1) {
+            k = Hold.ease(k, 1);
+            ticks++;
+        }
+        assertEquals(Math.round(1 / Hold.OVER_RATE), ticks, "on in " + ticks + " ticks");
+        assertEquals(1.0, Hold.ease(1.0, 1.0), 1e-9, "stays");
+        assertEquals(1 - Hold.OVER_RATE, Hold.ease(1.0, 0), 1e-9, "off one step a tick");
+        double max = 0;
+        k = 0.5;
+        for (int i = 0; i < 20; i++) {
+            double next = Hold.ease(k, i % 2 == 0 ? 1 : 0);
+            max = Math.max(max, Math.abs(next - k));
+            k = next;
+        }
+        assertTrue(max <= Hold.OVER_RATE + 1e-9, "a spot that flickers on and off moves the mob at most a step a tick");
+    }
+
+    /** The bug: a hold pushed out with the wheel, looking at the floor nearer than it; the hold point lies under the floor, past the spot. */
+    @Test
+    void aFarHoldLookingAtANearFloorHangsOverTheLookedSpot() {
+        Vec3 eye = new Vec3(0.5, 61.62, 0.5);
+        Vec3 floorHit = new Vec3(2.5, 60, 0.5);
+        Vec3 look = floorHit.subtract(eye).normalize();
+        float yaw = -90;
+        double w = 0.9, h = 0.9, d = Hold.defaultDistance(w, yaw) + 3;
+        Vec3 point = Hold.point(eye, look, yaw, w, h, Hold.LEFT_SIDE, d);
+        assertTrue(point.y - h / 2 < 60, "the free hold point is in the floor");
+        double along = floorHit.distanceTo(eye);
+        assertTrue(along < d);
+        double k = 0;
+        for (int i = 0; i < 4; i++) k = Hold.ease(k, Hold.over(d, along));
+        Vec3 held = Hold.over(point.subtract(0, h / 2, 0), floorHit, k);
+        assertEquals(0, Math.hypot(held.x - floorHit.x, held.z - floorHit.z), 1e-9, "right over the spot");
+        assertEquals(Hold.HOVER, held.y - floorHit.y, 1e-9, "just above it");
+    }
+
     @Test
     void farRule() {
         assertFalse(Hold.far(5.0, 4.0));

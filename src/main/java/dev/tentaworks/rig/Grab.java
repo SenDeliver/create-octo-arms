@@ -68,6 +68,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.WeakHashMap;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
@@ -78,7 +79,8 @@ import java.util.function.Consumer;
  * Actuator for it ({@link GrabRule#arm}: a light mob the off-hand one, else the main-hand one, each needing its hand empty; a heavy
  * mob or a Ship both, with both hands empty) and then the loader's entity-interaction event, so claim and protection mods can
  * refuse. The mob is then Pinned ({@link #pinned}) and swept to the hold point ({@link Hold}) on the holding Actuator's side every
- * tick, at the hold distance the wheel sets (DISTANCE); a heavy one takes both Actuators and slows the
+ * tick, at the hold distance the wheel sets (DISTANCE), or over the looked Set Down spot while that is nearer ({@link Hold#over});
+ * the entity tracker is told each position sent ({@link #sent}); a heavy one takes both Actuators and slows the
  * wearer to {@code grab.heavySpeedFactor}. Holding pays {@code air.grab}, a Throw {@code air.throw}. PLACE carries a held mob to
  * the looked spot ({@link SetDown}, checked here again) and sets it down there.
  * Ship Grab (Sable): SHIP takes the Ship owning a plot block with both Actuators; its body velocity drives the held face to
@@ -104,6 +106,7 @@ public final class Grab {
     private static final ResourceLocation HEAVY_ID = TentaworksIds.id(TentaworksIds.ACTUATOR_HEAVY);
     private static final Map<UUID, Held> HOLDS = new HashMap<>();
     private static final Map<UUID, Integer> STARTED = new HashMap<>();
+    private static final Map<Entity, Vec3> SENT = new WeakHashMap<>();
     private static boolean asking;
     private static Consumer<Event> listener = e -> {
     };
@@ -120,6 +123,8 @@ public final class Grab {
         final boolean heavy;
         final HoldArm arm;
         double distance = Double.NaN;
+        double over;
+        @Nullable Vec3 overSpot;
         float told;
         @Nullable Vec3 placeFrom;
         @Nullable Vec3 placeTo;
@@ -179,6 +184,7 @@ public final class Grab {
         NeoForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> {
             HOLDS.clear();
             STARTED.clear();
+            SENT.clear();
         });
         Impact.init();
         RigEvents.init();
@@ -253,6 +259,14 @@ public final class Grab {
     public static @Nullable Vec3 centre(ServerPlayer wearer) {
         Held h = HOLDS.get(wearer.getUUID());
         return h == null ? null : h.centre;
+    }
+
+    /**
+     * Where Grab last put {@code e} for the clients, once ({@code ServerEntitySentMixin}): the entity tracker takes it as the base
+     * of its next move, as the clients did, so a move after a hold (Set Down, Throw) lands where the server has it.
+     */
+    public static @Nullable Vec3 sent(Entity e) {
+        return SENT.isEmpty() ? null : SENT.remove(e);
     }
 
     /**
@@ -706,15 +720,23 @@ public final class Grab {
             Vec3 eye = wearer.getEyePosition(), look = wearer.getViewVector(1.0F);
             float yaw = wearer.getYRot();
             int side = Hold.side(h.arm.side(wearer.getMainArm()));
-            double d = Hold.fit(eye, look, yaw, t.getBbWidth(), t.getBbHeight(), side, h.distance, Grips.body(wearer), TentacleRigItem.reach(wearer));
-            h.centre = Hold.point(eye, look, yaw, t.getBbWidth(), t.getBbHeight(), side, d);
-            to = Hold.sweep(level, t, Hold.place(level, t, h.centre.subtract(0, t.getBbHeight() / 2, 0)));
+            double reach = TentacleRigItem.reach(wearer);
+            double d = Hold.fit(eye, look, yaw, t.getBbWidth(), t.getBbHeight(), side, h.distance, Grips.body(wearer), reach);
+            Vec3 feet = Hold.place(level, t, Hold.point(eye, look, yaw, t.getBbWidth(), t.getBbHeight(), side, d).subtract(0, t.getBbHeight() / 2, 0));
+            SetDown.Spot spot = SetDown.spot(level, wearer, t, eye, look, reach, 0);
+            boolean valid = spot != null && spot.valid();
+            if (valid) h.overSpot = spot.feet();
+            h.over = Hold.ease(h.over, valid ? Hold.over(d, spot.along()) : 0);
+            Vec3 aim = h.overSpot == null ? feet : Hold.over(feet, h.overSpot, h.over);
+            h.centre = aim.add(0, t.getBbHeight() / 2, 0);
+            to = Hold.sweep(level, t, aim);
         }
         t.setPos(to.x, to.y, to.z);
         t.setDeltaMovement(Vec3.ZERO);
         t.resetFallDistance();
         if (t instanceof Mob mob) mob.getNavigation().stop();
         ((ServerLevel) level).getChunkSource().broadcast(t, new ClientboundTeleportEntityPacket(t));
+        SENT.put(t, t.position());
         far(wearer, h, t.getBoundingBox().getCenter());
         if (h.placeTo != null && h.placeTicks >= SetDown.CARRY_TICKS) release(wearer, "release", null);
     }
