@@ -217,3 +217,15 @@ Release jar inside a full modpack, as players run it. Build first: `./gradlew bu
 | `prod/scen/`, `prod/prod_metrics.py` | Prod-pack scenario and its checks. |
 
 `shots/` (gitignored) gets the screenshots of the last `run_all.sh`.
+
+## Lag suites (lag, lagneth, lagoff)
+
+The speed check on a lagging server: a wearer at top Speed was Stowed with "moves faster than its top Speed: stowing" when the server ran below about 13 TPS or caught up after a stall, because the check counted server ticks. Scene `empty.txt` (flat ground at x 8500); the dev command `tentaworks lag MS TICKS` makes the server thread sleep MS at the end of each of the next TICKS ticks (`LAG on` / `LAG off` lines). The client walks level at top Speed (Speed setting at `speed.max`, `reach rig` logs the real top Speed and Reach) through W0 no lag, W1 sustained lag (`lag 80 70`, about 7.7 TPS), W2 three 1.5 s stalls; then Sets Down and the timeline forges a 20 b/s server-side slide with 5 packets per tick (`burst 5`, `fake slide20`).
+
+- `lag_metrics.py <log prefix> [check-off]`: R the Rig walks at its top Speed in W0 (measured within 10 %), W0/W1/W2 Active on every client tick and really walked (>= 15 blocks: a stray mouse on a harness window turns the camera), S no speed stow during W1/W2, A the forged slide is still Stowed (with `check-off`: is not). Unmodified 1.8.0 fails W1 (Stowed 2 s into the lag).
+- lag: Copper, no enchantments. lagneth: `lag-stress-client.txt`, a Netherite Rig with Swift II + Far Reach III at Standing Height 8 and `TW_SWIFT_PER_LEVEL=0.225 TW_FAR_REACH_PER_LEVEL=1.334`, one level past each max (levels are capped at `max_level`, so the step per level is raised instead): Reach 11, top Speed 11.6 b/s. lagoff: `TW_SPEED_CHECK=false` (server config `speed.check`).
+- More cases in `tools/scen/lag-*-client.txt` (Copper and Netherite, none / Swift II + Far Reach III / past the max, stretched legs).
+
+`TIMELINE=tools/scen/lag-timeline.txt tools/run_split.sh tools/scen/empty.txt tools/scen/lag-client.txt tools/logs/x-lag && python3 tools/lag_metrics.py tools/logs/x-lag`
+
+`TW_MINIMIZED=1` on `run_split.sh` opens the clients minimized (WSLg ignores the focus hints and stacks new windows on top). Not for suites that take screenshots.
