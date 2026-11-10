@@ -1,5 +1,6 @@
 # Actuator look: Rest Pose, first-person side entry at limbOpacity 1.0 and 0.3, held mobs, HUD line, carried items, work in first person (no hand drawn twice, retarget), crosshair marks and Grab cues, Back Slot (Curios only). TIMELINE look-timeline.txt, ANIMALS=true
 trace on
+hints off
 hud off
 view third
 # R Rest Pose: Stowed (behind, front), Active
@@ -246,7 +247,7 @@ wait 12
 looktrace off
 cmd item replace entity @s weapon.mainhand with minecraft:air
 signal workdone
-# M crosshair marks, Grab cues, holds by either Actuator, set-down spot, hold distance (CHUD lines), at GUI scale 2 and 3
+# M crosshair marks, Grab cues, holding brackets of either and both Actuators, set-down spot, hold distance gauge, hints and refusal lines on the action bar (CHUD lines), at GUI scale 2 and 3
 await marks
 view first
 hud on
@@ -300,22 +301,58 @@ cmd tentaworks air 900
 cmd item replace entity @s weapon.mainhand with minecraft:air
 cmd tp @s 11600.5 -60 0.5 -90 0
 wait 20
-lookate minecraft:pig
+# the hints start over: the Grab key beside the open claw for the first second of a look, then the claw alone
+hints on
+look -90 -60
 wait 10
+lookate minecraft:pig
+wait 6
 hudstate cue_grab
 clearchat
 shot look_m_cue_grab
+wait 30
+hudstate cue_grab_late
+clearchat
+shot look_m_cue_grab_late
+# a Grab key press on a target always gets its answer on the action bar: limp, hands full, two hands, refused, out of Reach
+cmd tentaworks air 0
+wait 20
+key key.keyboard.v
+wait 6
+hudstate press_limp
+cmd tentaworks air 900
 cmd item replace entity @s weapon.mainhand with minecraft:wooden_pickaxe
 cmd item replace entity @s weapon.offhand with minecraft:wooden_pickaxe
-wait 12
+wait 20
 hudstate cue_full
+key key.keyboard.v
+wait 6
+hudstate press_full
 clearchat
 shot look_m_cue_full
+# a Grab that lands while the refusal line is still up: the hint does not cover it and is not spent
+cmd item replace entity @s weapon.mainhand with minecraft:air
+cmd item replace entity @s weapon.offhand with minecraft:air
+wait 8
+key key.keyboard.v
+awaitheld on 20
+wait 2
+hudstate hold_refused
+lookat 11603.5 -60 0.5
+wait 8
+key key.keyboard.v
+awaitheld off 40
+wait 30
+cmd item replace entity @s weapon.mainhand with minecraft:wooden_pickaxe
+cmd item replace entity @s weapon.offhand with minecraft:wooden_pickaxe
 cmd tp @s 11600.5 -60 10.5 -90 0
-wait 10
+wait 12
 lookate minecraft:iron_golem
 wait 10
 hudstate cue_two
+key key.keyboard.v
+wait 6
+hudstate press_two
 clearchat
 shot look_m_cue_two
 cmd item replace entity @s weapon.mainhand with minecraft:air
@@ -327,13 +364,44 @@ wait 10
 lookat 11603.5 -59.6 15.5
 wait 10
 hudstate cue_refused
+key key.keyboard.v
+wait 6
+hudstate press_refused
 clearchat
 shot look_m_cue_refused
-# empty hands: the off-hand Actuator holds; the set-down spot follows the look (floor: valid, own feet: not)
+# a pig 9 blocks away (Reach 7, the pick ends at 7.72): the press flashes the hollow marks and says Out of Reach
+cmd tp @s 11594.0 -60 0.5 -90 0
+wait 10
+lookate minecraft:pig
+wait 10
+hudstate far_mob
+key key.keyboard.v
+hudstate press_far
+clearchat
+shot look_m_press_far
+# empty hands on the iron golem: both Actuators hold, both brackets grip; the first hint of the session goes up
+cmd tp @s 11600.5 -60 10.5 -90 0
+wait 70
+lookate minecraft:iron_golem
+wait 6
+key key.keyboard.v
+awaitheld on 20
+look -90 0
+wait 8
+hudstate hold_both
+clearchat
+shot look_m_hold_both
+lookat 11603.5 -60 10.5
+wait 6
+key key.keyboard.v
+awaitheld off 40
+wait 70
+# empty hands: the off-hand Actuator holds, its bracket (left) grips; the second and last hint; the set-down spot follows the look (floor: valid, own feet: not)
 cmd tp @s 11600.5 -60 0.5 -90 0
 wait 10
 lookate minecraft:pig
 wait 5
+burst look_m_grab 14 bg
 key key.keyboard.v
 awaitheld on 20
 look -90 10
@@ -341,6 +409,10 @@ wait 8
 hudstate hold
 clearchat
 shot look_m_hold
+wait 110
+hudstate hold_quiet
+clearchat
+shot look_m_hold_quiet
 lookat 11603.5 -60 2.5
 wait 6
 hudstate spot_ok
@@ -356,20 +428,35 @@ wait 5
 clearchat
 shot look_m_spot_bad_g3
 guiscale 2
-# the Grab key held + the wheel: two notches farther, the distance on screen, no Set Down on release
+# the Grab key held: the gauge beside the gripping bracket; two notches of the wheel move the lit tick up two; no Set Down on release, the gauge fades
 look -90 5
 wait 8
 holdkey key.tentaworks.grab on
-wait 3
+wait 6
 hudstate wheel0
+clearchat
+shot look_m_gauge
 wheel 2
 wait 10
 hudstate wheel
 clearchat
 shot look_m_wheel
+guiscale 3
+wait 5
+clearchat
+shot look_m_wheel_g3
+guiscale 2
+look -90 -40
+wait 4
+clearchat
+shot look_m_gauge_sky
+look -90 5
+wait 3
 holdkey key.tentaworks.grab off
-wait 10
+wait 8
 hudstate wheel_kept
+wait 14
+hudstate gauge_gone
 view third
 wait 5
 hudstate third
@@ -391,7 +478,7 @@ burst look_m_setdown 8 bg
 key key.keyboard.v
 awaitheld off 40
 wait 30
-# a tool in the main hand: the off-hand Actuator Grabs, the Throw hint names the Grab key
+# a tool in the main hand: the off-hand Actuator Grabs; the third hold of the session: no hint, no Grab key beside the claw
 cmd item replace entity @s weapon.mainhand with minecraft:wooden_pickaxe
 wait 10
 lookate minecraft:pig
@@ -459,6 +546,30 @@ wait 5
 clearchat
 shot look_m_copper_dual_g3
 guiscale 2
+# a Copper Rig holding with a tool in the main hand (hints started over): the pad in copper, the hint names the Grab key for the Throw
+cmd item replace entity @s weapon.offhand with minecraft:air
+cmd tp @s 11600.5 -60 0.5 -90 0
+hints on
+wait 12
+lookate minecraft:pig
+wait 8
+key key.keyboard.v
+awaitheld on 20
+look -90 0
+wait 10
+hudstate copper_hold
+clearchat
+shot look_m_copper_hold_g2
+guiscale 3
+wait 5
+clearchat
+shot look_m_copper_hold_g3
+guiscale 2
+lookat 11603.5 -60 0.5
+wait 8
+key key.keyboard.v
+awaitheld off 40
+hints off
 cmd item replace entity @s weapon.offhand with minecraft:air
 cmd item replace entity @s weapon.mainhand with minecraft:air
 cmd item replace entity @s armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900,tentaworks:actuators={}]
