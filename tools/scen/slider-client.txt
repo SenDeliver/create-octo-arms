@@ -27,7 +27,7 @@ wait 2
 close
 wait 10
 rigs c0saved
-cmd item replace entity @s weapon.mainhand with tentaworks:copper_tentacle_rig[enchantments={levels:{"tentaworks:swift":1}}]
+cmd item replace entity @s weapon.mainhand with tentaworks:copper_tentacle_rig{Enchantments:[{id:"tentaworks:swift",lvl:1s}]}
 wait 10
 hold shift on
 wait 5
@@ -42,7 +42,7 @@ wait 2
 rigs c1min
 close
 wait 10
-cmd item replace entity @s weapon.mainhand with tentaworks:copper_tentacle_rig[enchantments={levels:{"tentaworks:swift":2,"tentaworks:far_reach":3}}]
+cmd item replace entity @s weapon.mainhand with tentaworks:copper_tentacle_rig{Enchantments:[{id:"tentaworks:swift",lvl:2s},{id:"tentaworks:far_reach",lvl:3s}]}
 wait 10
 hold shift on
 wait 5
@@ -75,7 +75,7 @@ wait 2
 rigs n0min
 close
 wait 10
-cmd item replace entity @s weapon.mainhand with tentaworks:netherite_tentacle_rig[enchantments={levels:{"tentaworks:swift":2,"tentaworks:far_reach":3}}]
+cmd item replace entity @s weapon.mainhand with tentaworks:netherite_tentacle_rig{Enchantments:[{id:"tentaworks:swift",lvl:2s},{id:"tentaworks:far_reach",lvl:3s}]}
 wait 10
 hold shift on
 wait 5

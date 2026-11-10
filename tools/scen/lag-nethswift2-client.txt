@@ -9,7 +9,7 @@ view third
 cmd tp @s 8500.5 -60 0.5 0 0
 cmd item replace entity @s armor.chest with air
 wait 5
-cmd item replace entity @s armor.chest with tentaworks:netherite_tentacle_rig[enchantments={levels:{"tentaworks:swift":2,"tentaworks:far_reach":3}},create:banktank_air=900]
+cmd item replace entity @s armor.chest with tentaworks:netherite_tentacle_rig{Enchantments:[{id:"tentaworks:swift",lvl:2s},{id:"tentaworks:far_reach",lvl:3s}],Air:900}
 wait 10
 rawsettings chest 1.5 8 double_jump
 reach rig
