@@ -1,8 +1,11 @@
 package dev.tentaworks.rig;
 
+import com.simibubi.create.AllDataComponents;
 import dev.tentaworks.compat.BackSlot;
 import dev.tentaworks.compat.NoBackSlot;
 import dev.tentaworks.config.TentaworksConfig;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -71,6 +74,23 @@ public record WornRig(ItemStack stack, @Nullable RigSlot slot) {
 
     public boolean worn() {
         return slot != null;
+    }
+
+    /**
+     * {@code now} is still the Rig {@code was} names: worn in the same slot, the same stack or an equal one. Equal is the same
+     * item and components but Air and damage, which are read live from the worn stack anyway; a creative client's slot echo
+     * (vanilla's creative inventory sends every slot it sees as changed, at the latest on its first screen) is such a copy.
+     * Another tier, enchantments, Rig Settings, name or Fitting is another Rig.
+     */
+    public static boolean same(WornRig was, WornRig now) {
+        if (was.slot == null || was.slot != now.slot) return false;
+        ItemStack a = was.stack, b = now.stack;
+        if (a == b) return true;
+        return a.is(b.getItem()) && a.getCount() == b.getCount() && withoutUse(a).equals(withoutUse(b));
+    }
+
+    private static DataComponentPatch withoutUse(ItemStack stack) {
+        return stack.getComponentsPatch().forget(t -> t == AllDataComponents.BACKTANK_AIR || t == DataComponents.DAMAGE);
     }
 
     public boolean inBack() {

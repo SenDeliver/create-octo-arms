@@ -79,8 +79,8 @@ public final class RigServer {
 
     private static final class Wearer {
         RigState state = RigState.STOWED;
-        /** The Rig stack this Wearer deployed from: another stack or slot taking over mid-use Sets Down (adr/0006). */
-        ItemStack rig = ItemStack.EMPTY;
+        /** The Rig this Wearer deployed from: another Rig or slot taking over mid-use Sets Down (adr/0006, {@link WornRig#same}). */
+        WornRig rig = WornRig.NONE;
         List<Grip> grips = List.of();
         Tentacles tentacles = Tentacles.NONE;
         int unheldTicks;
@@ -296,9 +296,9 @@ public final class RigServer {
         }
         if (w == null) {
             w = new Wearer();
-            w.rig = RigAir.worn(player);
+            w.rig = WornRig.of(player);
             WEARERS.put(player.getUUID(), w);
-        } else if (w.rig != RigAir.worn(player)) {
+        } else if (!sameRig(player, w)) {
             stow(player, true);
             return;
         }
@@ -383,6 +383,14 @@ public final class RigServer {
             setFloat(player, false);
         }
         relay(player, w);
+    }
+
+    /** The worn Rig is still the Wearer's ({@link WornRig#same}); an equal copy that took the slot is the Wearer's from now on. */
+    private static boolean sameRig(ServerPlayer player, Wearer w) {
+        WornRig now = WornRig.of(player);
+        if (!WornRig.same(w.rig, now)) return false;
+        w.rig = now;
+        return true;
     }
 
     /** A Ride carries the wearer: a vehicle, or Create's chain conveyor and Simulated's zipline (both use the chain's hanging list). */
@@ -520,7 +528,7 @@ public final class RigServer {
     private static void tick(ServerPlayer player) {
         Wearer w = WEARERS.get(player.getUUID());
         if (w == null) return;
-        if (!TentacleRigItem.isWorn(player) || riding(player) || player.isSpectator() || w.rig != RigAir.worn(player)) {
+        if (!TentacleRigItem.isWorn(player) || riding(player) || player.isSpectator() || !sameRig(player, w)) {
             stow(player, true);
             return;
         }

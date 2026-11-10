@@ -42,6 +42,7 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 - Going round an outside corner, or any diagonal move that grazes a block edge, above about 7 b/s no longer rubber-bands the wearer ("moved wrongly").
 - A Thrown mob no longer bounces off what it hits in a random direction; it lands where the Throw carried it.
+- In creative, opening the inventory no longer Stows an Active Rig (since 1.8.0). The creative inventory sends a copy of every slot back to the server, and the server took the copied Rig for a swapped one. A Rig swapped for another one (other tier, enchantments, Rig Settings or Fitting) or moved to another slot still Sets Down.
 
 ### Compatibility
 
