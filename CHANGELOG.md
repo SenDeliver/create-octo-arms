@@ -9,15 +9,6 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ## [Unreleased]
 
-### Added
-
-- Server config `speed.check` (default on): off, the server no longer Stows a Rig for moving faster than its top Speed, for servers that lag badly.
-
-### Fixed
-
-- A Rig moving at its top Speed was Stowed on a lagging server ("moves faster than its top Speed: stowing"), dropping the wearer: the speed check counted server ticks, so below about 13 TPS, or when the server caught up after a stall, a legal move read as too fast. The allowed distance now follows the wearer's move packets, like vanilla's move check, counted only up to the real time that passed, so extra packets buy no speed. Thanks @snipernumber3.
-- Rig Settings: with Swift, the Speed slider stopped below the top Speed named under it. The Speed row now shows the Speed the Rig really carries you at (the setting times Swift), so a full slider reads the top Speed. The stored setting is unchanged. The server config `speed.max` now says it is the base top Speed, before Swift. Thanks @snipernumber3.
-
 ## [2.0.0] - 2026-11-09
 
 Actuators: two more arms for the Rig, one for each hand. The four Tentacles carry you as before; the Actuators mine, build, fight, Grab and Throw out to the Rig's Reach.
@@ -43,6 +34,7 @@ Actuators: two more arms for the Rig, one for each hand. The four Tentacles carr
 - Advancements: Fitted, Special Delivery, Hang In There, Spider, Man, The Power of the Sun, Intelligence Is a Privilege.
 - **1.21.1 only:** Advancement Fridge Mover (Grab a Ship and set it down 50 blocks away), shown only with Sable.
 - Client config: `firstPerson.limbOpacity` (how solid Tentacles and Actuators are drawn in first person, 1.0 down to 0.1), `hud.crosshair` and `hud.hints` (turn the marks and the key hints off).
+- Server config `speed.check` (default on): off, the server never Stows a Rig for moving faster than its top Speed.
 
 ### Changed
 
@@ -55,6 +47,8 @@ Actuators: two more arms for the Rig, one for each hand. The four Tentacles carr
 
 - No more rubber-banding ("moved wrongly") when going round an outside corner at about 7 blocks/s or faster.
 - In creative, opening the inventory no longer Stows an Active Rig (since 1.8.0).
+- A Rig at its top Speed is no longer Stowed on a lagging server.
+- Rig Settings: with Swift, the Speed slider now reaches the top Speed named under it.
 
 ### Compatibility
 
@@ -63,13 +57,9 @@ Actuators: two more arms for the Rig, one for each hand. The four Tentacles carr
 - Existing Rigs keep their Air while the cap doubles, so the Air bar shows half until the Rig is refilled once.
 - A server config file written by an older version keeps `reach.copper = 4.0`. Set it to 5.0 by hand to get the new default.
 - A Rig with no saved Speed now moves at the server's top Speed (`speed.max`), see Changed.
-- New server config keys (defaults): `air.capacityFactor` 2.0, `air.farUse` 0.5, `air.dualWield` 0.5, `air.grab` 40 (ticks per Air), `air.throw` 10, `farUse.players` true, `actuators.dualWield` true, `grab.tamedOthers` false, `grab.throwSpeed.copper` 0.8, `grab.throwSpeed.netherite` 1.2 (blocks per tick), `grab.heavySpeedFactor` 0.6, `impact.damagePerSpeed` 12, `impact.minSpeed` 0.3, `impact.cap` 20.
+- New server config keys (defaults): `speed.check` true, `air.capacityFactor` 2.0, `air.farUse` 0.5, `air.dualWield` 0.5, `air.grab` 40 (ticks per Air), `air.throw` 10, `farUse.players` true, `actuators.dualWield` true, `grab.tamedOthers` false, `grab.throwSpeed.copper` 0.8, `grab.throwSpeed.netherite` 1.2 (blocks per tick), `grab.heavySpeedFactor` 0.6, `impact.damagePerSpeed` 12, `impact.minSpeed` 0.3, `impact.cap` 20.
 - New client config keys (defaults): `firstPerson.limbOpacity` 1.0, `hud.crosshair` true, `hud.hints` true.
 - **1.21.1 only:** New server config keys for Ship Grab: `grab.ships` true (also needs `ships.grip`), `grab.massCap.copper` 2000, `grab.massCap.netherite` 6000 (Sable mass). Checked on Sable 2.0.0 to 2.0.6. Without Sable, or if a later Sable changes the parts it uses, Ship Grab does nothing and the rest of the mod works.
-
-### Fixed
-
-- A Rig moving at its top Speed was Stowed on a lagging server ("moves faster than its top Speed: stowing"), dropping the wearer: the speed check counted server ticks, so below about 13 TPS, or when the server caught up after a stall, a legal move read as too fast. The allowed distance now follows the wearer's move packets, like vanilla's move check, counted only up to the real time that passed, so extra packets buy no speed. Thanks @snipernumber3.
 
 ## [1.8.0] - 2026-11-08
 
