@@ -258,5 +258,113 @@ hit n15
 key key.mouse.left
 wait 10
 signal n15done
+# D continuous digging, Copper Rig, two shovels (Dual Wield), the real crosshair and a held attack while the look sweeps (each tick before the
+# crosshair pick, so the server's look is one tick behind, as with a mouse). No "Out of sight" may show. Active stands at Standing Height 1.5.
+# D1 Active, diamond shovels (a start every tick): along the far strip of the trench floor, a block a tick, then slower
+await d1
+doublejump
+wait 30
+mark d1a
+holdkey key.attack on
+sweepat 11203.9 -57 1.5 11203.9 -57 7.5 6 4
+sweepat 11203.85 -57 1.5 11203.85 -57 7.5 12 2
+sweepat 11203.95 -57.3 1.5 11203.95 -57.3 7.5 6 4
+holdkey key.attack off
+wait 5
+mark d1b
+doublejump
+wait 60
+signal d1done
+# D2 Stowed (the eye 1.62 over the ground), diamond shovels: the 2 wide trench, from half a block farther back
+await d2
+wait 5
+mark d2a
+holdkey key.attack on
+sweepat 11204.92 -57 9.5 11204.92 -57 15.5 6 4
+sweepat 11204.9 -57 9.5 11204.9 -57 15.5 12 2
+sweepat 11204.95 -57 9.5 11204.95 -57 15.5 6 4
+holdkey key.attack off
+wait 5
+mark d2b
+wait 60
+signal d2done
+# D3 Active, stone shovels (2 ticks a block, the fast sweeps move on before most are done): the 1 wide trench
+await d3
+doublejump
+wait 30
+mark d3a
+holdkey key.attack on
+sweepat 11203.9 -57 17.5 11203.9 -57 23.5 6 4
+sweepat 11203.85 -57 17.5 11203.85 -57 23.5 12 2
+sweepat 11203.9 -57 17.5 11203.9 -57 23.5 24 2
+holdkey key.attack off
+wait 5
+mark d3b
+doublejump
+wait 60
+signal d3done
+# D4 Active, diamond shovels: the open floor 3.4..5.4 ahead, fast rasters there and back aimed at two depths (pits form under them)
+await d4
+doublejump
+wait 30
+mark d4a
+holdkey key.attack on
+sweepat 11203.9 -56 25.9 11203.9 -56 31.1 4 2
+sweepat 11204.4 -56 25.9 11204.4 -56 31.1 4 2
+sweepat 11204.9 -56 25.9 11204.9 -56 31.1 4 2
+sweepat 11205.4 -56 25.9 11205.4 -56 31.1 4 2
+sweepat 11205.9 -56 25.9 11205.9 -56 31.1 4 2
+sweepat 11205.9 -56 25.9 11205.9 -56 31.1 8 2
+sweepat 11205.4 -56 25.9 11205.4 -56 31.1 8 2
+sweepat 11204.9 -56 25.9 11204.9 -56 31.1 8 2
+sweepat 11204.4 -56 25.9 11204.4 -56 31.1 8 2
+sweepat 11203.9 -56 25.9 11203.9 -56 31.1 8 2
+sweepat 11203.9 -57.5 25.9 11203.9 -57.5 31.1 4 2
+sweepat 11204.4 -57.5 25.9 11204.4 -57.5 31.1 4 2
+sweepat 11204.9 -57.5 25.9 11204.9 -57.5 31.1 4 2
+sweepat 11205.4 -57.5 25.9 11205.4 -57.5 31.1 4 2
+sweepat 11205.9 -57.5 25.9 11205.9 -57.5 31.1 4 2
+sweepat 11205.9 -57.5 25.9 11205.9 -57.5 31.1 8 2
+sweepat 11205.4 -57.5 25.9 11205.4 -57.5 31.1 8 2
+sweepat 11204.9 -57.5 25.9 11204.9 -57.5 31.1 8 2
+sweepat 11204.4 -57.5 25.9 11204.4 -57.5 31.1 8 2
+sweepat 11203.9 -57.5 25.9 11203.9 -57.5 31.1 8 2
+holdkey key.attack off
+wait 5
+mark d4b
+doublejump
+wait 60
+signal d4done
+# D5 Active, diamond shovels: the dirt wall under the ledge, up and down
+await d5
+doublejump
+wait 30
+mark d5a
+holdkey key.attack on
+sweepat 11205 -55.8 34.7 11205 -53.2 34.7 4 4
+sweepat 11205 -55.8 35.5 11205 -53.2 35.5 4 4
+sweepat 11205 -55.8 36.5 11205 -53.2 36.5 4 4
+sweepat 11205 -55.8 37.5 11205 -53.2 37.5 4 4
+sweepat 11205 -55.8 38.3 11205 -53.2 38.3 4 4
+sweepat 11205 -55.8 37.0 11205 -53.2 37.0 4 4
+sweepat 11205 -55.8 36.0 11205 -53.2 36.0 4 4
+sweepat 11205 -55.8 35.0 11205 -53.2 35.0 4 4
+holdkey key.attack off
+wait 5
+mark d5b
+doublejump
+wait 60
+signal d5done
+# D6 Active: the floor behind the stone wall, the cheat path (dig sends the start with no crosshair): refused, the block stays
+await d6
+doublejump
+wait 30
+mark d6a
+dig 11205 -57 44 d6 20
+wait 10
+mark d6b
+doublejump
+wait 60
+signal d6done
 wait 10
 quit

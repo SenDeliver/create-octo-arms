@@ -190,6 +190,27 @@ check('N15 off-hand iron sword adds its damage to an empty-hand hit, wears, Air 
       and abs(u15[0]['gt'] - h15[0]['gt']) <= 1,
       f"hurt {h15} (empty hand {h3[:1]}) SDUAL {u15}")
 
+print('== Continuous digging (Copper, two shovels, the real crosshair, a held attack while the look sweeps)')
+for tag, st, what, n, m in (('d1', 'ACTIVE', 'diamond, the far strip of a 1 wide trench floor', 10, 10), ('d2', 'STOWED', 'diamond, a 2 wide trench floor', 9, 9),
+                            ('d3', 'ACTIVE', 'stone, the 1 wide trench floor', 25, 5), ('d4', 'ACTIVE', 'diamond, fast rasters over the open floor', 25, 25),
+                            ('d5', 'ACTIVE', 'diamond, the wall under a ledge', 13, 13)):
+    a, b = spos.get(tag + 'a'), spos.get(tag + 'b')
+    if not (a and b):
+        check(f'{tag.upper()} marks present', False, f"{[k for k in (tag + 'a', tag + 'b') if k not in spos]}")
+        continue
+    w = [f for f in far if a['gt'] <= f['gt'] <= b['gt'] and f['far'] == 'FAR']
+    starts = [f for f in w if f['kind'] == 'lclick']
+    breaks = [f for f in w if f['kind'] == 'break' and not f['canceled']]
+    bad = [f for f in starts if not f['sight'] or f['canceled']] + [f for f in w if f['kind'] == 'break' and f['canceled']]
+    notes = [g for g, t in overlay if t == NO_SIGHT and a['gt'] <= g <= b['gt'] + 5]
+    check(f'{tag.upper()} {st} {what}: at least {n} far starts and {m} far breaks, none refused, no "Out of sight"',
+          a['state'] == st and len(starts) >= n and len(breaks) >= m and not bad and not notes,
+          f"state {a['state']} far starts {len(starts)} breaks {len(breaks)} refused {len(bad)} {[(f['gt'], f['kind'], f['at']) for f in bad][:4]} notes {notes[:4]}")
+x = sfar('lclick', '11205,-57,44')
+check('D6 the floor behind a stone wall (cheat path): refused, the block stays', x and x[0]['far'] == 'FAR' and not x[0]['sight'] and x[0]['canceled']
+      and not [f for f in sfar('break', '11205,-57,44') if not f['canceled']] and last_probe('11205,-57,44') == 'minecraft:dirt' and refused_note(x[0]['gt']),
+      f"{x[:1]} probe {last_probe('11205,-57,44')} note {x and refused_note(x[0]['gt'])}")
+
 exc = [l for l in (c + s).splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'authlib' not in l and 'neoforge-client.new.tmp.toml' not in l
        and 'Error loading class: net/irisshaders/' not in l and 'org.gradle.' not in l and 'MessageIOException' not in l
        and 'sun.nio.fs.UnixException' not in l]

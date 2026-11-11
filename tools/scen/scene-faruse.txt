@@ -1,4 +1,4 @@
-# Far Use scenes (x 11000..11120). Flat world: ground top at y=-60. TW_REACH_COPPER=6: Copper Reach 6 (lift 2.22 over the 4.5 block range: Reach from the body + 0.72).
+# Far Use scenes (x 11000..11215). Flat world: ground top at y=-60. TW_REACH_COPPER=6: Copper Reach 6 (lift 2.22 over the 4.5 block range: Reach from the body + 0.72).
 # Netherite rows from x=11000.5 facing +x, Copper rows from x=11100.5. Mobs tagged tw (SMOB lines), NoAI, never despawn.
 gamerule doDaylightCycle false
 gamerule doWeatherCycle false
@@ -47,6 +47,17 @@ setblock 11106 -59 94 stone
 setblock 11106 -59 98 stone
 # N15 husk at 3.25 hit with an empty main hand and an iron sword in the off hand
 summon husk 11104.05 -60 102.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","z7"],Rotation:[90f,0f]}
+# D continuous digging (Copper, two shovels, the real crosshair): a dirt field 4 deep, top at y=-57 (stand at y=-56), a window every 8 blocks of z.
+# D1, D3 a trench 1 wide in the top layer at x 11203, D2 one 2 wide at x 11203..11204: their floor shows only as a strip at its far edge.
+# D5 a 1-thick dirt wall 3 high at x 11205 under a stone ledge (x 11204..11205, y -53); D6 a stone wall 4 high at x 11203 hides the floor behind it.
+forceload add 11190 -10 11230 60
+fill 11200 -60 0 11215 -57 48 dirt
+fill 11203 -57 1 11203 -57 8 air
+fill 11203 -57 9 11204 -57 16 air
+fill 11203 -57 17 11203 -57 24 air
+fill 11205 -56 34 11205 -54 39 dirt
+fill 11204 -53 34 11205 -53 39 stone
+fill 11203 -56 41 11203 -53 48 stone
 op Dev
 tentaworks trace on
 gamemode survival Dev

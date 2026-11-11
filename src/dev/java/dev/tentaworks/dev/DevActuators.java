@@ -16,7 +16,10 @@ import dev.tentaworks.rig.Pinned;
 import dev.tentaworks.rig.RigAir;
 import dev.tentaworks.rig.RigEnchants;
 import dev.tentaworks.rig.RigEvents;
+import dev.tentaworks.rig.RigHands;
 import dev.tentaworks.rig.RigSettings;
+import dev.tentaworks.rig.RigSide;
+import dev.tentaworks.rig.RigState;
 import dev.tentaworks.rig.WorkSight;
 import dev.tentaworks.rig.WornRig;
 import net.minecraft.commands.CommandSourceStack;
@@ -31,6 +34,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerPlayerGameMode;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -45,8 +49,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -76,7 +85,8 @@ import java.util.UUID;
  * farmode always|rig_out|off (Rig Settings Far Use of the worn Rig, SFARMODE), config PATH VALUE (a server config value until
  * restart, SCONFIG), tame TARGETS OWNER (TAME). Lines: SGRAB (every Grab start, refusal, release, throw; a release or throw ends with the hold summary: ticks held and Air paid), SRIGEVENT (every
  * Rig event), MHURT (damage to any living entity but a player), SFAR (every block click, break, entity use and attack after
- * Far Use decided: lift, where it lies (PLOT: a Ship block, left to Sable), sight, cancelled), SDROPS (where the drops of a player's block break end up), and with
+ * Far Use decided: lift, where it lies (PLOT: a Ship block, left to Sable), sight, cancelled; block lines end with the mining state, see
+ * {@link #mineFields}), SSIGHT (a far block out of sight: what the server's pick and each sight line met, {@link #sightLine}), SDROPS (where the drops of a player's block break end up), and with
  * trace on SMOB (every entity tagged {@code tw}) plus the STRACE fields of {@link #fields}.
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID)
@@ -84,6 +94,8 @@ public final class DevActuators {
     private static final Logger LOG = LoggerFactory.getLogger("tentaworks-dev");
     private static final Map<UUID, double[]> HOLDS = new HashMap<>();
     private static Field debtField;
+    private static final String[] GAME_MODE_FIELDS = {"isDestroyingBlock", "destroyPos", "destroyProgressStart", "gameTicks", "hasDelayedDestroy", "delayedDestroyPos"};
+    private static Field[] gameModeFields;
 
     private DevActuators() {
     }
@@ -201,10 +213,86 @@ public final class DevActuators {
         double d2 = new AABB(pos).distanceToSqr(eye);
         AttributeInstance range = p.getAttribute(Attributes.BLOCK_INTERACTION_RANGE);
         double lift = lift(range, FarUse.REACH_ID);
-        LOG.info("SFAR gt={} {} kind={} at={} type={} dist={} range={} lift={} far={} sight={} asking={} canceled={} bdist={}", p.level().getGameTime(), p.getName().getString(), kind,
+        boolean plot = ShipFrames.get().isPlot(p.level(), pos);
+        FarUse.Far far = plot ? FarUse.Far.NEAR : FarUse.blockFar(p, pos);
+        boolean sight = WorkSight.seesBlock(p, pos, face, point);
+        LOG.info("SFAR gt={} {} kind={} at={} type={} dist={} range={} lift={} far={} sight={} asking={} canceled={} bdist={}{}", p.level().getGameTime(), p.getName().getString(), kind,
                 pos.toShortString().replace(" ", ""), BuiltInRegistries.BLOCK.getKey(p.level().getBlockState(pos).getBlock()), f3(Math.sqrt(d2)), f3(range == null ? 0 : range.getValue()),
-                f3(lift), ShipFrames.get().isPlot(p.level(), pos) ? "PLOT" : FarUse.blockFar(p, pos),
-                WorkSight.seesBlock(p, pos, face, point), Grab.asking(), canceled, f3(Math.sqrt(new AABB(pos).distanceToSqr(Grips.body(p)))));
+                f3(lift), plot ? "PLOT" : far, sight, Grab.asking(), canceled, f3(Math.sqrt(new AABB(pos).distanceToSqr(Grips.body(p)))), mineFields(p, pos));
+        if (far == FarUse.Far.FAR && !sight && !Grab.asking()) sightLine(p, kind, pos, face, point);
+    }
+
+    /**
+     * SFAR tail fields for a block: the game mode's mining state before vanilla handles this action ({@code gm=} destroying,
+     * destroyPos, ticks since its start, its progress if a STOP came now; {@code dl=} delayed destroy, its pos), this block's
+     * destroy progress per tick on the server, Dual Wield on, its speed factor here, the Rig state and the onGround the
+     * dig speed sees.
+     */
+    private static String mineFields(ServerPlayer p, BlockPos pos) {
+        BlockState st = p.level().getBlockState(pos);
+        float prog = st.isAir() ? 0 : st.getDestroyProgress(p, p.level(), pos);
+        Object[] g = gameMode(p);
+        String gm = "-";
+        if (g != null) {
+            BlockPos dpos = (BlockPos) g[1];
+            int ticks = (Integer) g[3] - (Integer) g[2];
+            BlockState ds = p.level().getBlockState(dpos);
+            float stop = ds.isAir() ? 0 : ds.getDestroyProgress(p, p.level(), dpos) * (ticks + 1);
+            gm = String.format(Locale.ROOT, "%b,%s,%d,%.3f dl=%b,%s", g[0], shortPos(dpos), ticks, stop, g[4], shortPos((BlockPos) g[5]));
+        }
+        RigState state = RigSide.state(p);
+        return String.format(Locale.ROOT, " gm=%s sprog=%.4f dual=%b sfac=%.3f rstate=%s rground=%b", gm, prog, DualWield.on(p), DualWield.speedFactor(p, st), state,
+                RigHands.onGround(p.onGround(), state));
+    }
+
+    /**
+     * SSIGHT: a far block out of sight, what the server saw: eye, look, its pick (pos, state, face) and per spot line the first
+     * block in the way; {@code pending}/{@code ppending}: a line / the pick stopped at the block this player is breaking
+     * (destroyPos while destroying, delayedDestroyPos while delayed).
+     */
+    private static void sightLine(ServerPlayer p, String kind, BlockPos pos, @Nullable Direction face, @Nullable Vec3 point) {
+        Vec3 eye = p.getEyePosition(), look = p.getViewVector(1.0F);
+        BlockHitResult pick = p.level().clip(new ClipContext(eye, eye.add(look.scale(p.blockInteractionRange() + 1.0)), ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE,
+                CollisionContext.of(p)));
+        Object[] g = gameMode(p);
+        BlockPos dpos = g != null && (Boolean) g[0] ? (BlockPos) g[1] : null;
+        BlockPos lpos = g != null && (Boolean) g[4] ? (BlockPos) g[5] : null;
+        boolean pending = false;
+        List<String> lines = new ArrayList<>();
+        for (Vec3 to : WorkSight.spots(p.level(), pos, face, point, eye)) {
+            BlockPos b = WorkSight.blocker(p.level(), pos, eye, to);
+            if (b != null && (b.equals(dpos) || b.equals(lpos))) pending = true;
+            lines.add(vec(to) + ">" + (b == null ? "clear" : shortPos(b) + ":" + BuiltInRegistries.BLOCK.getKey(p.level().getBlockState(b).getBlock()).getPath()));
+        }
+        boolean hit = pick.getType() == HitResult.Type.BLOCK;
+        BlockPos pp = pick.getBlockPos();
+        LOG.info("SSIGHT gt={} {} kind={} at={} face={} point={} dist={} eye={} look={} pick={} pstate={} pface={} pending={} ppending={} lines={}", p.level().getGameTime(),
+                p.getName().getString(), kind, shortPos(pos), face == null ? "-" : face.getName(), vec(point), f3(Math.sqrt(new AABB(pos).distanceToSqr(eye))), vec(eye), vec(look),
+                hit ? shortPos(pp) : "-", hit ? BuiltInRegistries.BLOCK.getKey(p.level().getBlockState(pp).getBlock()).getPath() : "-", hit ? pick.getDirection().getName() : "-",
+                pending, hit && (pp.equals(dpos) || pp.equals(lpos)), String.join(";", lines));
+    }
+
+    /** ServerPlayerGameMode's mining state: isDestroyingBlock, destroyPos, destroyProgressStart, gameTicks, hasDelayedDestroy, delayedDestroyPos. */
+    private static Object @Nullable [] gameMode(ServerPlayer p) {
+        try {
+            if (gameModeFields == null) {
+                Field[] f = new Field[GAME_MODE_FIELDS.length];
+                for (int i = 0; i < f.length; i++) {
+                    f[i] = ServerPlayerGameMode.class.getDeclaredField(GAME_MODE_FIELDS[i]);
+                    f[i].setAccessible(true);
+                }
+                gameModeFields = f;
+            }
+            Object[] out = new Object[gameModeFields.length];
+            for (int i = 0; i < out.length; i++) out[i] = gameModeFields[i].get(p.gameMode);
+            return out;
+        } catch (ReflectiveOperationException e) {
+            return null;
+        }
+    }
+
+    private static String shortPos(BlockPos pos) {
+        return pos.toShortString().replace(" ", "");
     }
 
     private static void farEntity(ServerPlayer p, String kind, Entity target, boolean canceled) {

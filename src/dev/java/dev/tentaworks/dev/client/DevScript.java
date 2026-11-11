@@ -28,6 +28,12 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
+import dev.tentaworks.rig.DualWield;
+import dev.tentaworks.rig.RigHands;
+import dev.tentaworks.rig.RigSide;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -148,6 +154,11 @@ public final class DevScript {
     private static String digTag;
     private static long digStart;
     private static int digMax = 600;
+    private static Vec3 sweepFrom;
+    private static Vec3 sweepTo;
+    private static int sweepTicks;
+    private static int sweepPasses;
+    private static int sweepAt;
     private static Deque<String> lines;
     private static int waitTicks;
     private static boolean trace;
@@ -189,6 +200,46 @@ public final class DevScript {
         for (KeyMapping k : HELD) k.setDown(true);
         if (!JUMP_SEQ.isEmpty()) mc.options.keyJump.setDown(JUMP_SEQ.poll());
         if (digPos != null) dig(mc);
+        if (sweepTo != null) sweep(mc);
+    }
+
+    /** {@code sweepat}: each tick, before the crosshair pick, the look turns to the next point on the line (a pass each way in turn). */
+    private static void sweep(Minecraft mc) {
+        int pass = sweepAt / sweepTicks;
+        if (pass >= sweepPasses) {
+            sweepTo = null;
+            return;
+        }
+        double f = (sweepAt % sweepTicks) / (double) sweepTicks;
+        Vec3 d = sweepFrom.lerp(sweepTo, pass % 2 == 0 ? f : 1 - f).subtract(mc.player.getEyePosition());
+        float yaw = (float) Math.toDegrees(Math.atan2(-d.x, d.z));
+        float pitch = (float) Math.toDegrees(-Math.atan2(d.y, d.horizontalDistance()));
+        mc.player.setYRot(yaw);
+        mc.player.setXRot(pitch);
+        mc.player.yRotO = yaw;
+        mc.player.xRotO = pitch;
+        sweepAt++;
+    }
+
+    /**
+     * CSTART: every mining start the wearer's client sends, as the client saw it: the block and face, the crosshair hit point
+     * and block, the client eye and look, the client's destroy progress per tick, Dual Wield and its speed factor, the Rig state
+     * and the onGround the dig speed sees.
+     */
+    @SubscribeEvent
+    static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
+        if (!(event.getEntity() instanceof LocalPlayer p) || event.getAction() != PlayerInteractEvent.LeftClickBlock.Action.START
+                || System.getProperty("tentaworks.script") == null) return;
+        Minecraft mc = Minecraft.getInstance();
+        BlockPos pos = event.getPos();
+        BlockState st = p.level().getBlockState(pos);
+        String hit = mc.hitResult instanceof BlockHitResult b && b.getType() == HitResult.Type.BLOCK ? fmt(b.getLocation()) + " hpos=" + b.getBlockPos().toShortString().replace(" ", "")
+                : "- hpos=-";
+        RigState state = RigSide.state(p);
+        LOG.info("CSTART gt={} pos={} face={} hit={} eye={} look={} prog={} dual={} sfac={} state={} ground={}", mc.level.getGameTime(), pos.toShortString().replace(" ", ""),
+                event.getFace() == null ? "-" : event.getFace().getName(), hit, fmt(p.getEyePosition()), fmt(p.getViewVector(1.0F)),
+                String.format(Locale.ROOT, "%.4f", st.isAir() ? 0 : st.getDestroyProgress(p, p.level(), pos)), DualWield.on(p),
+                String.format(Locale.ROOT, "%.3f", DualWield.speedFactor(p, st)), state, RigHands.onGround(p.onGround(), state));
     }
 
     private static void dig(Minecraft mc) {
@@ -424,6 +475,14 @@ public final class DevScript {
                         km.setDown(false);
                     }
                 }
+                case "sweepat" -> {
+                    sweepFrom = new Vec3(Double.parseDouble(a[1]), Double.parseDouble(a[2]), Double.parseDouble(a[3]));
+                    sweepTo = new Vec3(Double.parseDouble(a[4]), Double.parseDouble(a[5]), Double.parseDouble(a[6]));
+                    sweepTicks = Math.max(1, Integer.parseInt(a[7]));
+                    sweepPasses = a.length > 8 ? Integer.parseInt(a[8]) : 1;
+                    sweepAt = 0;
+                    lines.addFirst("await _sweep");
+                }
                 case "dig" -> {
                     digPos = new BlockPos(Integer.parseInt(a[1]), Integer.parseInt(a[2]), Integer.parseInt(a[3]));
                     digTag = a[4];
@@ -432,8 +491,8 @@ public final class DevScript {
                     lines.addFirst("await _dig");
                 }
                 case "await" -> {
-                    if (a[1].equals("_dig")) {
-                        if (digPos != null) {
+                    if (a[1].equals("_dig") || a[1].equals("_sweep")) {
+                        if (a[1].equals("_dig") ? digPos != null : sweepTo != null) {
                             lines.addFirst(line);
                             waitTicks = 1;
                             return;

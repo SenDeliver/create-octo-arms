@@ -91,7 +91,7 @@ public final class WorkSight {
     }
 
     /** Visible points of the block to draw a line to, each stopped just short of the block so the line never dips into a neighbour. */
-    private static List<Vec3> spots(BlockGetter level, BlockPos pos, @Nullable Direction face, @Nullable Vec3 point, Vec3 eye) {
+    public static List<Vec3> spots(BlockGetter level, BlockPos pos, @Nullable Direction face, @Nullable Vec3 point, Vec3 eye) {
         List<Vec3> out = new ArrayList<>();
         if (point != null) out.add(point);
         Vec3 centre = Vec3.atCenterOf(pos);
@@ -114,14 +114,18 @@ public final class WorkSight {
     }
 
     private static boolean clear(BlockGetter level, BlockPos target, Vec3 from, Vec3 to) {
-        Boolean hit = BlockGetter.traverseBlocks(from, to, (Void) null, (c, p) -> {
+        return blocker(level, target, from, to) == null;
+    }
+
+    /** The first block other than {@code target} whose collision shape the line crosses (an unloaded one counts), null when none. */
+    public static @Nullable BlockPos blocker(BlockGetter level, BlockPos target, Vec3 from, Vec3 to) {
+        return BlockGetter.traverseBlocks(from, to, (Void) null, (c, p) -> {
             if (p.equals(target)) return null;
-            if (level instanceof Level l && !l.isLoaded(p)) return Boolean.TRUE;
+            if (level instanceof Level l && !l.isLoaded(p)) return p.immutable();
             BlockState s = level.getBlockState(p);
             if (s.isAir()) return null;
             VoxelShape shape = s.getCollisionShape(level, p);
-            return shape.isEmpty() || shape.clip(from, to, p) == null ? null : Boolean.TRUE;
+            return shape.isEmpty() || shape.clip(from, to, p) == null ? null : p.immutable();
         }, c -> null);
-        return hit == null;
     }
 }
