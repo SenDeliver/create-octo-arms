@@ -24,14 +24,15 @@ import java.util.Optional;
 /**
  * Far Use past arm's length must not pass through walls. The server picks again as the client did: from the eye along the
  * look, as far as the lifted range. The target is in sight when that pick finds it first. The client acts with this tick's
- * look and the server still has the last tick's, so a pick that finds another block (or nothing) falls back to a line from
- * the eye to a visible point of the target (the clicked spot, the clicked face, the nearest point): in sight when no
- * collision shape of another block crosses it.
+ * look and the server still has the last tick's, so a pick that finds another block (or nothing) falls back to lines from
+ * the eye to points of the target (the clicked spot, a grid over each face that faces the eye, the nearest point): in sight
+ * when no collision shape of another block crosses one of them.
  */
 public final class WorkSight {
     private static final double INSET = 0.01;
     private static final double SLACK = 1.0;
     private static final double EPS = 1.0E-3;
+    private static final double[] GRID = {0.5, 0.02, 0.98, 0.26, 0.74};
 
     private WorkSight() {
     }
@@ -90,19 +91,23 @@ public final class WorkSight {
         return hit.getType() == HitResult.Type.MISS || hit.getLocation().distanceToSqr(eye) >= entry.distanceToSqr(eye) - 1.0E-4;
     }
 
-    /** Visible points of the block to draw a line to, each stopped just short of the block so the line never dips into a neighbour. */
+    /**
+     * Points of the block's outline to draw a line to: the clicked spot, a grid over each face that faces the eye (the clicked
+     * face first, each from its centre out to near its edges: the floor of a trench may show only a strip at its far edge),
+     * the nearest point. Each is stopped just short of the block so the line never dips into a neighbour.
+     */
     public static List<Vec3> spots(BlockGetter level, BlockPos pos, @Nullable Direction face, @Nullable Vec3 point, Vec3 eye) {
         List<Vec3> out = new ArrayList<>();
         if (point != null) out.add(point);
-        Vec3 centre = Vec3.atCenterOf(pos);
-        if (face != null) out.add(centre.add(Vec3.atLowerCornerOf(face.getNormal()).scale(0.5)));
-        for (Direction d : Direction.values()) {
-            if (d == face) continue;
-            Vec3 n = Vec3.atLowerCornerOf(d.getNormal());
-            Vec3 c = centre.add(n.scale(0.5));
-            if (eye.subtract(c).dot(n) > 0) out.add(c);
+        VoxelShape shape = level.getBlockState(pos).getShape(level, pos);
+        AABB box = shape.isEmpty() ? new AABB(pos) : shape.bounds().move(pos);
+        if (face != null) {
+            if (facing(box, face, eye)) grid(out, box, face);
+            else out.add(on(box, face, 0.5, 0.5));
         }
-        AABB box = new AABB(pos);
+        for (Direction d : Direction.values()) {
+            if (d != face && facing(box, d, eye)) grid(out, box, d);
+        }
         out.add(new Vec3(Mth.clamp(eye.x, box.minX, box.maxX), Mth.clamp(eye.y, box.minY, box.maxY), Mth.clamp(eye.z, box.minZ, box.maxZ)));
         List<Vec3> spots = new ArrayList<>(out.size());
         for (Vec3 p : out) {
@@ -111,6 +116,26 @@ public final class WorkSight {
             spots.add(len <= INSET ? eye : p.add(back.scale(INSET / len)));
         }
         return spots;
+    }
+
+    private static boolean facing(AABB box, Direction d, Vec3 eye) {
+        Direction.Axis a = d.getAxis();
+        return d.getAxisDirection() == Direction.AxisDirection.POSITIVE ? eye.get(a) > box.max(a) : eye.get(a) < box.min(a);
+    }
+
+    private static void grid(List<Vec3> out, AABB box, Direction d) {
+        for (double u : GRID) {
+            for (double v : GRID) out.add(on(box, d, u, v));
+        }
+    }
+
+    /** The point at fractions {@code u}, {@code v} across face {@code d} of {@code box}. */
+    private static Vec3 on(AABB box, Direction d, double u, double v) {
+        Direction.Axis a = d.getAxis();
+        double plane = d.getAxisDirection() == Direction.AxisDirection.POSITIVE ? box.max(a) : box.min(a);
+        return new Vec3(a == Direction.Axis.X ? plane : Mth.lerp(u, box.minX, box.maxX),
+                a == Direction.Axis.Y ? plane : Mth.lerp(a == Direction.Axis.X ? u : v, box.minY, box.maxY),
+                a == Direction.Axis.Z ? plane : Mth.lerp(v, box.minZ, box.maxZ));
     }
 
     private static boolean clear(BlockGetter level, BlockPos target, Vec3 from, Vec3 to) {

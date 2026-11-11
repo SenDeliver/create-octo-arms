@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Far Use past arm's length needs sight: the server's own pick finds the target, or a line from the eye to a visible point of it crosses no block. */
 class WorkSightTest {
+    private static final BlockState AIR = Blocks.AIR.defaultBlockState();
     private static final BlockState STONE = Blocks.STONE.defaultBlockState();
     private static final BlockState GLASS = Blocks.GLASS.defaultBlockState();
     private static final BlockState GRASS = Blocks.SHORT_GRASS.defaultBlockState();
@@ -87,6 +88,29 @@ class WorkSightTest {
         assertFalse(sees(w, FLOOR5, Direction.UP, new Vec3(5.02, 1.0, 0.5), new Vec3(4.5, 1.5, 0.5)));
         assertFalse(sees(w, FLOOR5, null, null, new Vec3(5.5, 1.0, 0.5)));
         assertTrue(sees(w, new BlockPos(5, 0, 2), Direction.UP, new Vec3(5.5, 1.0, 2.5), new Vec3(4.5, 1.5, 0.5)));
+    }
+
+    @Test
+    void aTrenchFloorSeenOnlyNearItsFarEdgeIsSeenWhileTheLookLags() {
+        World w = trench();
+        BlockPos floor = new BlockPos(7, -1, 0);
+        Vec3 behind = new Vec3(6.5, 0.0, 0.5);
+        assertTrue(sees(w, floor, Direction.UP, null, new Vec3(7.9, 0.0, 0.5)));
+        assertTrue(sees(w, floor, Direction.UP, null, behind));
+        assertTrue(sees(w, floor, null, null, behind));
+        assertTrue(sees(w, floor, Direction.UP, null, new Vec3(7.9, 0.0, 2.5)));
+        assertFalse(sees(w, new BlockPos(6, -1, 0), Direction.UP, null, behind));
+        assertFalse(sees(w, new BlockPos(5, -1, 0), Direction.UP, null, new Vec3(5.5, 0.0, 0.5)));
+    }
+
+    /** The floor one layer down with a trench at x 5..7 in the top layer: from the eye its floor shows only past x 7.78. */
+    private static World trench() {
+        World w = floor();
+        for (int x = -2; x <= 12; x++)
+            for (int z = -3; z <= 3; z++) w.put(x, -1, z, STONE);
+        for (int x = 5; x <= 7; x++)
+            for (int z = -3; z <= 3; z++) w.put(x, 0, z, AIR);
+        return w;
     }
 
     @Test

@@ -92,7 +92,7 @@ public final class FarUse {
 
     /**
      * Server ticks of the wearer's last charge, packet and refusal (one click fires several events: both hands, interact-at and
-     * interact), the block being mined past arm's length (null none) and the last far block whose mining start was in sight.
+     * interact) and the block being mined past arm's length (null none).
      */
     private static final class Track {
         int charged = Integer.MIN_VALUE / 2;
@@ -100,7 +100,6 @@ public final class FarUse {
         int refused = Integer.MIN_VALUE / 2;
         String refusal = "";
         @Nullable BlockPos mining;
-        @Nullable BlockPos seen;
     }
 
     private FarUse() {
@@ -328,7 +327,6 @@ public final class FarUse {
         }
         if (block(p, e.getPos(), e.getFace(), null)) {
             BlockPos far = blockFar(p, e.getPos()) == Far.FAR ? e.getPos().immutable() : null;
-            if (far != null) TRACKS.computeIfAbsent(p.getUUID(), u -> new Track()).seen = far;
             boolean mines = far != null && mines(p, far);
             if (mines) act(p, Vec3.atCenterOf(far), FarUsePacket.Kind.BLOCK, InteractionHand.MAIN_HAND);
             mine(p, mines ? far : null);
@@ -339,16 +337,12 @@ public final class FarUse {
         p.connection.send(new ClientboundBlockUpdatePacket(p.level(), e.getPos()));
     }
 
-    /** A break whose mining start was in sight passes: the look may have moved off the block while it was mined. */
+    /**
+     * A break ends the far mining of its block. It needs no gate of its own: vanilla breaks a block only after a mining start on
+     * it, which the gate passed (an instant one at once, the rest on the stop or a tick later), while the look may have moved on.
+     */
     private static void onBreak(BlockEvent.BreakEvent e) {
-        if (!(e.getPlayer() instanceof ServerPlayer p)) return;
-        if (e.getPos().equals(mining(p))) mine(p, null);
-        Track t = TRACKS.get(p.getUUID());
-        if (t != null && e.getPos().equals(t.seen)) {
-            t.seen = null;
-            return;
-        }
-        if (!e.isCanceled() && !block(p, e.getPos(), null, null)) e.setCanceled(true);
+        if (e.getPlayer() instanceof ServerPlayer p && e.getPos().equals(mining(p))) mine(p, null);
     }
 
     private static @Nullable BlockPos mining(ServerPlayer player) {
