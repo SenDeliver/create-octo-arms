@@ -300,7 +300,14 @@ Two builds share one version number and the same gameplay. Ships (Sable), Ship G
 
 The server does not need `allow-flight=true`.
 
-**Updating from 1.x**: your Rigs keep working and can be fitted later. The Air cap doubled, so an old Rig shows its Air bar half full until you refill it once. A server config file written by 1.x keeps `reach.copper = 4.0`; set it to 5.0 by hand for the new default. See the [changelog](CHANGELOG.md).
+### Upgrading from 1.x to 2.0
+
+- Nothing breaks: your world and your Rigs keep working. Still, make a backup first.
+- Update the server and every client together.
+- An old Rig stays as it is. To get the new arms, craft it with two **Actuators**: it becomes an Octo Rig and keeps everything.
+- Grab is on `V`. Make sure no other mod uses that key.
+
+Everything that changed is in the [changelog](CHANGELOG.md).
 
 ## Config
 

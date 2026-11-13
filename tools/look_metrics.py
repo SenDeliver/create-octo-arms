@@ -105,9 +105,15 @@ check('K no Actuator point (segments, gripper, carried item) inside a block on a
       'a step (its face, then retargeted over its edge to its top, first and third person)', len(clip) > 200 and 'k_end' in marks and not bad,
       f'{len(clip)} ticks over {parts}, {len(bad)} with points inside' + (f', first {bad[:4]}' if bad else ''))
 
+def grab_key_as_v(bar):
+    # the key name follows the keyboard layout (V is "М" on a Cyrillic one)
+    m = re.match(r'(\S+) Set Down   ', bar)
+    return ' '.join('V' if w == m[1] else w for w in bar.split(' ')) if m else bar
+
+
 print('== Crosshair marks, Grab cues, holding brackets, gauge, action-bar lines')
 chud = {m[0]: dict(shown=m[1] == 'true', mark=m[2], cue=m[3], hold=m[4], spot=m[5], throwkey=m[6] == 'true', cuearm=m[7], dist=float(m[8]), miss=m[9] == 'true',
-                   grip=m[10], gauge=m[11], cap=m[12] == 'true', hints=int(m[13]), bar=m[14])
+                   grip=m[10], gauge=m[11], cap=m[12] == 'true', hints=int(m[13]), bar=grab_key_as_v(m[14]))
         for m in re.findall(r'CHUD (\S+) gt=\d+ shown=(\w+) mark=(\w+) cue=(\w+) hold=(\w+) spot=(\S+) throwkey=(\w+) cuearm=(\w+) dist=(\S+) miss=(\w+)'
                             r' grip=(\S+) gauge=(\S+) cap=(\w+) hints=(\d+) bar="([^"]*)"', c)}
 HINT, HINT_TOOL = 'V Set Down   Left Button Throw   V + ~ Distance', 'V Set Down   V + Left Button Throw   V + ~ Distance'

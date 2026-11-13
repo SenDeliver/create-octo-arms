@@ -107,7 +107,12 @@ Two builds, same version number, same gameplay. Pick the file for your Minecraft
 
 Install on **both** client and server, same Octo Arms version and same Minecraft version on both: a 1.8 client cannot join a 2.0 server. The 1.20.1 build has no in-game config screen (the config files work the same).
 
-**Updating from 1.x**: your Rigs keep working and can be fitted later. The Air cap doubled, so an old Rig shows its Air bar half full until you refill it once.
+## Upgrading from 1.x to 2.0
+
+- Nothing breaks: your world and your Rigs keep working. Still, make a backup first.
+- Update the server and every client together.
+- An old Rig stays as it is. To get the new arms, craft it with two **Actuators**: it becomes an Octo Rig and keeps everything.
+- Grab is on `V`. Make sure no other mod uses that key.
 
 ## Known limitations
 
