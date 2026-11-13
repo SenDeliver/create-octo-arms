@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag to (re)publish: v<mod_version>+mc<minecraft_version>, e.g. v1.6.0+mc1.21.1"
+        description: "Release tag to (re)publish: v<mod_version>+mc<minecraft_version>, e.g. v1.6.0+mc1.21.1; pre-release v2.0.0-beta.121+mc1.21.1"
         required: true
       targets:
         description: "Comma list of targets: github,curseforge (modrinth once its project is approved)"
@@ -28,27 +28,34 @@ jobs:
       - name: Parse tag
         id: tag
         run: |
-          if [[ ! "$TAG" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)\+mc([0-9]+(\.[0-9]+)+)$ ]]; then
-            echo "::error::tag '$TAG' is not v<mod_version>+mc<minecraft_version>, e.g. v1.6.0+mc1.21.1. Bare tags (v1.0.0 to v1.5.0) are not published by this workflow."
+          if [[ ! "$TAG" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)(-(alpha|beta|rc)\.([0-9]+))?\+mc([0-9]+(\.[0-9]+)+)$ ]]; then
+            echo "::error::tag '$TAG' is not v<mod_version>+mc<minecraft_version> (e.g. v1.6.0+mc1.21.1) or a pre-release v<mod_version>-<alpha|beta|rc>.<build>+mc<minecraft_version>. Bare tags (v1.0.0 to v1.5.0) are not published by this workflow."
             exit 1
           fi
           echo "version=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
-          echo "mc=${BASH_REMATCH[2]}" >> "$GITHUB_OUTPUT"
+          echo "stage=${BASH_REMATCH[3]}" >> "$GITHUB_OUTPUT"
+          echo "build=${BASH_REMATCH[4]}" >> "$GITHUB_OUTPUT"
+          echo "mc=${BASH_REMATCH[5]}" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ env.TAG }}
+          fetch-depth: 0
 
       - name: Metadata from gradle.properties
         id: meta
         env:
           VER: ${{ steps.tag.outputs.version }}
+          STAGE: ${{ steps.tag.outputs.stage }}
+          BUILD: ${{ steps.tag.outputs.build }}
           MC: ${{ steps.tag.outputs.mc }}
         run: |
           prop() { sed -n "s/^$1=//p" gradle.properties; }
           v=$(prop mod_version); mc=$(prop minecraft_version); loader=$(prop mod_loader); java=$(prop java_version)
           [ "$VER" = "$v" ] || { echo "::error::tag $TAG is version $VER, gradle.properties mod_version is $v"; exit 1; }
-          [ -z "$(prop mod_stage)" ] || { echo "::error::gradle.properties mod_stage is '$(prop mod_stage)': a release has an empty mod_stage"; exit 1; }
+          [ "$STAGE" = "$(prop mod_stage)" ] || { echo "::error::tag $TAG has stage '$STAGE', gradle.properties mod_stage is '$(prop mod_stage)': a release has an empty mod_stage, a pre-release tag names it"; exit 1; }
+          full="$v${STAGE:+-$STAGE.$BUILD}"
+          case "$STAGE" in "") type=release ;; alpha) type=alpha ;; *) type=beta ;; esac
           [ "$MC" = "$mc" ] || { echo "::error::tag $TAG is for Minecraft $MC, but it sits on a commit of the $mc line: tag branch $MC"; exit 1; }
           [ -n "$loader" ] && [ -n "$java" ] || { echo "::error::gradle.properties has no mod_loader or java_version"; exit 1; }
           python3 tools/release_notes.py "$v" "$mc" > /dev/null || { echo "::error::CHANGELOG.md has no [$v] section with entries for $mc"; exit 1; }
@@ -56,8 +63,10 @@ jobs:
             echo "loader=$loader"
             echo "java=$java"
             echo "game_version=$mc"
-            echo "version=$v+mc$mc"
-            echo "jar=octo-arms-$v+mc$mc.jar"
+            echo "full=$full"
+            echo "type=$type"
+            echo "version=$full+mc$mc"
+            echo "jar=octo-arms-$full+mc$mc.jar"
             echo "dependencies<<DEPS_EOF"
             echo "create(required)"
             echo "jei(optional)"
@@ -86,28 +95,38 @@ jobs:
           fi
 
       - if: steps.done.outputs.skip != 'true'
-        run: ./gradlew build --no-daemon
+        env:
+          JAR: ${{ steps.meta.outputs.jar }}
+        run: |
+          ./gradlew build --no-daemon
+          [ -f "build/libs/$JAR" ] || { echo "::error::expected build/libs/$JAR, built: $(ls build/libs). The build number in a pre-release tag is the number of commits since the last release tag of this Minecraft version."; exit 1; }
 
       - name: Release notes
         if: steps.done.outputs.skip != 'true'
         env:
           VER: ${{ steps.tag.outputs.version }}
+          STAGE: ${{ steps.tag.outputs.stage }}
+          BUILD: ${{ steps.tag.outputs.build }}
           MC: ${{ steps.tag.outputs.mc }}
         run: |
           for f in "publishing/release-notes-$VER+mc$MC.md" "publishing/release-notes-$VER.md"; do
             if [ -f "$f" ]; then cp "$f" release-notes.md; break; fi
           done
           [ -f release-notes.md ] || python3 tools/release_notes.py "$VER" "$MC" > release-notes.md
+          if [ -n "$STAGE" ]; then
+            { printf '**%s build %s of %s.** Not final: things can change or break before the release. Back up your world, and use the same build on client and server. Report problems at https://github.com/SenDeliver/create-octo-arms/issues\n\n' "$STAGE" "$BUILD" "$VER"; cat release-notes.md; } > notes.tmp
+            mv notes.tmp release-notes.md
+          fi
           cat release-notes.md
 
       - uses: Kir-Antipov/mc-publish@52307b03863581dec6b652b83e597aec02ebb075 # v3.3
         if: steps.done.outputs.skip != 'true'
         with:
           files: build/libs/!(*-sources|*-javadoc).jar
-          name: Octo Arms ${{ steps.tag.outputs.version }} for ${{ steps.meta.outputs.game_version }}
+          name: Octo Arms ${{ steps.meta.outputs.full }} for ${{ steps.meta.outputs.game_version }}
           version: ${{ steps.meta.outputs.version }}
           changelog-file: release-notes.md
-          version-type: release
+          version-type: ${{ steps.meta.outputs.type }}
           loaders: ${{ steps.meta.outputs.loader }}
           game-versions: ${{ steps.meta.outputs.game_version }}
           java: ${{ steps.meta.outputs.java }}
@@ -124,3 +143,4 @@ jobs:
           github-tag: ${{ env.TAG }}
           github-token: ${{ contains(env.TARGETS, 'github') && secrets.GITHUB_TOKEN || '' }}
           github-generate-changelog: false
+          github-prerelease: ${{ steps.meta.outputs.type != 'release' }}

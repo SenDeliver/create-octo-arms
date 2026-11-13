@@ -14,7 +14,7 @@ def git = { String... args ->
 def stage = (findProperty('mod_stage') ?: '').toString().trim()
 ext.fullVersion = mod_version
 if (stage) {
-    def last = git('describe', '--tags', '--abbrev=0', '--match', "v*+mc${minecraft_version}")
+    def last = git('describe', '--tags', '--abbrev=0', '--match', "v*+mc${minecraft_version}", '--exclude', 'v*-*')
     def build = git('rev-list', '--count', last ? "${last}..HEAD" : 'HEAD')
     ext.fullVersion = "${mod_version}-${stage}.${build ?: 0}"
 }

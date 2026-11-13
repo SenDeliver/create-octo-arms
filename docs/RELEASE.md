@@ -18,7 +18,7 @@ Every release of Octo Arms follows these rules, on every Minecraft version. The 
 
 `mod_version` changes on every release, never ship two different jars under one version and Minecraft version.
 
-Builds before a release carry a stage and a build number: `mod_stage` in `gradle.properties` (`alpha`, `beta`, `rc`; empty on a release) gives `X.Y.Z-<stage>.<N>`, as in `octo-arms-2.0.0-alpha.106+mc1.21.1.jar`. `N` is the number of commits since the last release tag of that Minecraft version, so commit before building a jar to hand out. `release_prep.py` empties `mod_stage`; `publish.yml` refuses a tag while it is set.
+Builds before a release carry a stage and a build number: `mod_stage` in `gradle.properties` (`alpha`, `beta`, `rc`; empty on a release) gives `X.Y.Z-<stage>.<N>`, as in `octo-arms-2.0.0-alpha.106+mc1.21.1.jar`. `N` is the number of commits since the last release tag of that Minecraft version, so commit before building a jar to hand out. Tags with a stage (`v*-*`) do not reset `N`. `release_prep.py` empties `mod_stage`; `publish.yml` refuses a release tag while it is set.
 
 | Bump | When |
 |---|---|
@@ -73,12 +73,25 @@ Shared release `X.Y.Z`:
 
 One-line release: steps 2 to 8 on that branch only, then bring `CHANGELOG.md` to the other branch unchanged (`git checkout <branch> -- CHANGELOG.md`, commit), without the `mod_version` bump.
 
-## 6. What publish.yml does
+## 6. Pre-release (alpha, beta, rc)
+
+A public test build before a release, on one line or both. The file is marked Beta (or Alpha) on CurseForge, the GitHub release is a pre-release.
+
+1. `mod_stage` in `gradle.properties` names the stage. The changelog section `## [X.Y.Z]` exists and has entries for that Minecraft version (the notes come from it, with a warning line on top).
+2. Translations, build and harness as in the checklist. Commit and push: the tag goes on the pushed head.
+3. `./gradlew build` prints the jar name, `octo-arms-X.Y.Z-<stage>.<N>+mc<mc>.jar`. The tag is `vX.Y.Z-<stage>.<N>+mc<mc>` with that same `N`; `publish.yml` fails when the tag and the built jar disagree.
+4. Owner tests in game, then, without attaching the jar:
+   `gh release create vX.Y.Z-<stage>.<N>+mc<mc> --target <branch> --prerelease --title "Octo Arms X.Y.Z-<stage>.<N> for <mc>" --notes-file notes.md`
+5. Store page while a beta is out: `publishing/curseforge-description-beta.html` (the stable text plus a beta section with the warning). At the release, paste `publishing/curseforge-description.html` again.
+
+`rc` is published as Beta. The network registrar version is not tied to the stage: say in the notes when a new beta cannot join the one before.
+
+## 7. What publish.yml does
 
 A published release (or a manual run) starts `.github/workflows/publish.yml`, the same file on both branches:
 
-1. Parses the tag as `v<ver>+mc<mc>`, fails otherwise.
-2. Checks out the tag and reads `gradle.properties`: fails unless `<ver>` is `mod_version` and `<mc>` is `minecraft_version` (the tag sits on the right branch) and the changelog section has entries for `<mc>`.
+1. Parses the tag as `v<ver>+mc<mc>` or `v<ver>-<stage>.<N>+mc<mc>`, fails otherwise.
+2. Checks out the tag and reads `gradle.properties`: fails unless `<ver>` is `mod_version`, the stage is `mod_stage` (empty for a release) and `<mc>` is `minecraft_version` (the tag sits on the right branch) and the changelog section has entries for `<mc>`.
 3. Builds with that branch's `java_version`. Skips everything when the release already carries the jar (an edited release fires again).
 4. Notes from `publishing/release-notes-<ver>+mc<mc>.md`, else `publishing/release-notes-<ver>.md`, else `tools/release_notes.py <ver> <mc>`.
 5. Uploads to the GitHub release and CurseForge (Modrinth once approved) as `Octo Arms <ver> for <mc>`, version `<ver>+mc<mc>`, with `mod_loader`, the Minecraft and Java version, and the dependencies: Create required, JEI optional, Sable optional on 1.21.1 only.
