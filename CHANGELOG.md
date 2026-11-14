@@ -11,7 +11,7 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ### Fixed
 
-- An enchanted (glinting) item in an Actuator no longer crashes the game when it is used out at Far Use range (#32).
+- An enchanted (glinting) item in an Actuator no longer crashes the game when it is used out at Far Use range (issue #32). Client only. Thanks @snipernumber3.
 
 ## [2.0.0] - 2026-11-09
 

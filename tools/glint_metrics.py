@@ -38,4 +38,8 @@ for name, tag, what, kinds, hand, pos, after in cases:
     check(name, ok, detail)
 bad = re.findall(r'Not building!|Exception in thread|---- Minecraft Crash Report ----', c)
 check('E client: no crash, no "Not building!"', not bad and 'quit' in c[-20000:].lower(), f'{len(bad)} hits')
+exc = [l for l in (c + s).splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'authlib' not in l and 'neoforge-client.new.tmp.toml' not in l
+       and 'Error loading class: net/irisshaders/' not in l and 'org.gradle.' not in l and 'MessageIOException' not in l
+       and 'sun.nio.fs.UnixException' not in l]
+check('E exceptions', not exc, f'{len(exc)} exception lines' + (f': {exc[0][:200]}' if exc else ''))
 print('RESULT ' + ('PASS' if not fails else 'FAIL ' + ' '.join(fails)))

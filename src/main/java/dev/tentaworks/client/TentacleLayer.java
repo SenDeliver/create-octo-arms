@@ -50,7 +50,7 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
     /** The first-person Rig's own buffer: ending a batch on the shared one mid-frame frees builders other layers still hold under batching mods. */
     private static final ByteBufferBuilder FIRST_PERSON_BUFFER = new ByteBufferBuilder(256 * 1024);
     /**
-     * Glint gets buffers of its own, as in vanilla's buffer source: a foil item asks for its glint and its own type at once, and on
+     * Glint gets buffers of its own, the glint types vanilla's buffer source keeps fixed: a foil item asks for its glint and its own type at once, and on
      * the shared buffer the second ends the first ("Not building!").
      */
     private static final SequencedMap<RenderType, ByteBufferBuilder> FIRST_PERSON_GLINT = glintBuffers();

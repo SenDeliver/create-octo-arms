@@ -26,10 +26,11 @@
 # phase-9 suite p9 (v1.1 Sable Ships: parked turned ship, moving 4/15 b/s, rotating, world <-> ship, ship removed mid-grip, deck ride). p9 and rideaero run last (then shipgrab), the
 # only suites built with -PwithSable (Sable runtime + Aeronautics bundle); rideaero: seat on a Ship, Control Hold on a Simulated steering wheel, Simulated handle;
 # 2.0 Actuators: faruse suite (Far Use lift Netherite and Copper at TW_REACH_COPPER=6: far mine/hit/place, sight through blocks and panes, Air paid,
-# drops and XP at the wearer, Rig Settings Far Use modes, Extendo, heavy hold pauses the lift); grab suite (light sheep off the crosshair as wearer and Dev2 see it,
+# drops and XP at the wearer, Rig Settings Far Use modes, Extendo, heavy hold pauses the lift);
+# glint suite (#32: Far Use with glinting items, Create wrench main and off hand, vanilla pickaxe; no "Not building!" crash);
+# grab suite (light sheep off the crosshair as wearer and Dev2 see it,
 # Throw Impact once, pinned creeper, heavy horse/iron golem x0.6 vs light cow, boss/player/owned refusals, seat, release reasons; needs ANIMALS=true);
 # look suite (Rest Pose, first-person limbOpacity 1.0 vs 0.3, held mobs, HUD lines; built with -PwithCurios for the Back Slot shot; needs ANIMALS=true);
-# glint suite (#32: Far Use with glinting items, Create wrench main and off hand, vanilla pickaxe; no "Not building!" crash).
 # shipgrab suite (Sable: small Ship held and followed, Set Down, Throw, mass cap and crew refusals; SKIP without Sable).
 # every other suite runs without Sable, and every suite but curios, curiosoff and look without Curios (no-Sable / no-Curios regression path).
 # p9, rideaero and shipgrab keep the old join (TW_PREBOOT=0, see run_split.sh): a join right after the scene assembles a Ship failed p9 moving-ship checks (B b4 Air, G g15 server ride) in 2 of 3 runs, 0 of 7 with the old join or a 10 s later join.
