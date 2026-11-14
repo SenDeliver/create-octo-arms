@@ -2,7 +2,7 @@
 # Columns, tab-separated (a run of tabs counts as one, so align freely; an empty field is -):
 #   name     log suffix: tools/logs/<tag>-<name>-*
 #   dep      plain | curios (built with -PwithCurios) | sable (-PwithSable); must match the GRADLE_ARGS in env
-#   quiet    1: timing-sensitive, with TW_SHARDS>1 it runs in the quiet lane (alone, serial, default shard); 0: may run next to other suites
+#   quiet    1: timing-sensitive, with TW_SHARDS>1 it runs in the quiet lane (serial on the default shard, or TW_QUIET_SHARDS wide); 2: alone always (the Sable suites: 2 of 3 runs failed two at a time); 0: may run next to other suites
 #   weight   seconds in the last full run, for the longest-first schedule (look, lag, lagneth, lagoff, slider, p9, rideaero, shipgrab: guessed from the client script's waits)
 #   scene    RCON scene in tools/scen
 #   client   client script in tools/scen
@@ -87,6 +87,6 @@ lag		plain	1	45	empty.txt		lag-client.txt		TIMELINE=$S/lag-timeline.txt
 lagneth		plain	1	45	empty.txt		lag-stress-client.txt	TW_SWIFT_PER_LEVEL=0.225 TW_FAR_REACH_PER_LEVEL=1.334 TIMELINE=$S/lag-timeline.txt
 lagoff		plain	1	45	empty.txt		lag-client.txt		TW_SPEED_CHECK=false TIMELINE=$S/lag-timeline.txt
 slider		plain	0	32	empty.txt		slider-client.txt	-
-p9		sable	1	179	scene-p9.txt		p9-client.txt		TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/p9-timeline.txt
-rideaero	sable	1	61	scene-rideaero.txt	rideaero-client.txt	TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/rideaero-timeline.txt
-shipgrab	sable	1	59	scene-shipgrab.txt	shipgrab-client.txt	TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/shipgrab-timeline.txt SCRIPT2=$S/shipgrab-watch.txt
+p9		sable	2	179	scene-p9.txt		p9-client.txt		TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/p9-timeline.txt
+rideaero	sable	2	61	scene-rideaero.txt	rideaero-client.txt	TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/rideaero-timeline.txt
+shipgrab	sable	2	59	scene-shipgrab.txt	shipgrab-client.txt	TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/shipgrab-timeline.txt SCRIPT2=$S/shipgrab-watch.txt

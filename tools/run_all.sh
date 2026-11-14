@@ -6,7 +6,7 @@
 # (plain, then curios, then sable) its non-quiet suites, longest weight first, each worker taking the next free one; then the
 # quiet lane: every quiet suite alone, serial, on the default shard, in table order, Sable suites last. run_split output of each
 # suite goes to tools/logs/<tag>-<suite>-run.txt. TW_QUIET=par: quiet suites run as the others (still per dep set).
-# TW_QUIET_SHARDS=M (1..N, default 1): the quiet lane M wide, per dep set, longest first.
+# TW_QUIET_SHARDS=M (1..N, default 1): the quiet 1 suites M wide, per dep set, longest first; the quiet 2 suites (alone always) follow, serial.
 # TW_SUITES=<file>: another suite table (a subset for a proof run; the metrics of absent suites fail, ignore them).
 # TW_DRY=1: print the command of each suite in schedule order (TW_SHARDS>1: the shard is a prediction from the weights), run nothing.
 # A suite with a non-zero exit (run_split.sh refused to start: shard busy, ports taken) in a parallel phase stops its worker for that phase.
@@ -31,7 +31,7 @@ while IFS=$'\t' read -r name dep quiet weight scene client env; do
   [ "$env" = - ] && env=
   bad=
   case $dep in plain) flag=;; curios) flag=-PwithCurios;; sable) flag=-PwithSable;; *) flag=; bad="$bad dep=$dep";; esac
-  case $quiet in 0|1) ;; *) bad="$bad quiet=$quiet";; esac
+  case $quiet in 0|1|2) ;; *) bad="$bad quiet=$quiet";; esac
   case $weight in ''|*[!0-9]*) bad="$bad weight=$weight";; esac
   for f in -PwithCurios -PwithSable; do
     case "$env" in *"$f"*) [ "$f" = "$flag" ] || bad="$bad env-has$f";; *) [ "$f" = "$flag" ] && bad="$bad env-lacks$f";; esac
@@ -52,11 +52,11 @@ cmd() {
   [ "$2" != - ] && p="TW_SHARD=$2 "
   echo "$p${e:+$e }$RUN_SPLIT \$S/${SCENES[$1]} \$S/${CLIENTS[$1]} tools/logs/\$TAG-${NAMES[$1]}"
 }
-isquiet() { [ "${QUIETS[$1]}" = 1 ] && [ "$TW_QUIET" != par ]; }
+isquiet() { [ "${QUIETS[$1]}" != 0 ] && [ "$TW_QUIET" != par ]; }
 bydep() {
   local i=0 q
   while [ $i -lt $N ]; do
-    q=0; isquiet $i && q=1
+    q=0; isquiet $i && q=${QUIETS[i]}
     [ "${DEPS[i]}" = "$1" ] && [ $q = "${2:-0}" ] && echo "${WEIGHTS[i]} $i"
     i=$((i+1))
   done | sort -s -k1,1nr | awk '{print $2}'
@@ -121,7 +121,7 @@ schedule() {
     phase all 1 $(i=0; while [ $i -lt $N ]; do echo $i; i=$((i+1)); done)
   else
     for d in plain curios sable; do phase $d $SHARDS $(bydep $d); done
-    if [ "$QW" = 1 ]; then phase quiet 1 $(lane); else for d in plain curios sable; do phase quiet-$d $QW $(bydep $d 1); done; fi
+    if [ "$QW" = 1 ]; then phase quiet 1 $(lane); else for d in plain curios sable; do phase quiet-$d $QW $(bydep $d 1); done; phase alone 1 $(for d in plain curios sable; do bydep $d 2; done); fi
   fi
 }
 
