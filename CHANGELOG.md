@@ -11,7 +11,7 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ### Added
 
-- Item tag `tentaworks:own_hand`: items in it stay in the wearer's own hand like a Potato Cannon or a map, so a mod that draws and animates them itself keeps its first-person view. TACZ guns are in it by default (#34).
+- Item tag `tentaworks:own_hand`: items in it stay in the wearer's own hand like a Potato Cannon or a map, so a mod that draws and animates them itself keeps its first-person view. TACZ guns are in it by default (issue #34). The tag is server data: the server needs this version for the default entry. Thanks @snipernumber3.
 
 ## [2.0.0] - 2026-11-09
 

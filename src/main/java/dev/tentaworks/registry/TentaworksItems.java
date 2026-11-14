@@ -21,6 +21,8 @@ import static dev.tentaworks.Tentaworks.REGISTRATE;
 public final class TentaworksItems {
     public static final TagKey<Item> RIG_ENCHANTABLE = TagKey.create(Registries.ITEM, TentaworksIds.id(TentaworksIds.RIG_ENCHANTABLE));
     /** Curios' back slot validator (plain data: harmless without Curios). Players get the slot from data/tentaworks/curios/entities/back.json. */
+    /** Items another mod draws and animates in the hand itself (TACZ guns): no Actuator carries them, the wearer's own hand does. */
+    public static final TagKey<Item> OWN_HAND = TagKey.create(Registries.ITEM, TentaworksIds.id(TentaworksIds.OWN_HAND));
     public static final TagKey<Item> CURIOS_BACK = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("curios", "back"));
 
     public static final ItemEntry<Item> TENTACLE = REGISTRATE.item(TentaworksIds.TENTACLE, Item::new)

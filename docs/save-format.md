@@ -28,6 +28,7 @@ Code constants: `src/main/java/dev/tentaworks/TentaworksIds.java`.
 | Criterion trigger | `tentaworks:rig_event` | 2.0. Conditions `event` (string) and optional `number` range; used by the 2.0 advancements. |
 | Damage type | `tentaworks:impact` | 2.0. `data/tentaworks/damage_type/impact.json` (`message_id` `tentaworks.impact`, scaling never). Saved only in death messages and stats by id. |
 | Entity type tag | `tentaworks:bosses` | 2.0. `#c:bosses` (optional) plus the Ender Dragon, the Wither and the Warden. Never Grabbed. Datapacks may add to it. |
+| Item tag | `tentaworks:own_hand` | 2.0. Items no Actuator carries: the wearer's own hand holds them, so a mod that draws and animates them in first person keeps doing it (`tacz:modern_kinetic_gun`, optional). Read by the client renderer only. Datapacks may add to it. |
 | Item tag | `tentaworks:enchantable/tentacle_rig` | phase 4. Both Rigs; `supported_items` and `primary_items` of the five enchantments. Datapacks may add to it. |
 
 The spike item `tentaworks:tentacle_rig` never shipped and is gone.

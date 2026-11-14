@@ -9,6 +9,7 @@ import com.simibubi.create.content.equipment.zapper.ZapperItem;
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.compat.Frame;
 import dev.tentaworks.compat.ShipFrames;
+import dev.tentaworks.registry.TentaworksItems;
 import dev.tentaworks.rig.ActuatorReach;
 import dev.tentaworks.rig.Actuators;
 import dev.tentaworks.rig.FarUse;
@@ -31,8 +32,6 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -273,12 +272,9 @@ public final class ActuatorRenderer {
         return arm == null || !arm.acting || arm.at == null || arm.to == null ? -1 : arm.at.distanceTo(arm.to);
     }
 
-    /** Items another mod draws and animates in the hand itself (TACZ guns): the item tag {@code tentaworks:own_hand}, read on the client. */
-    static final TagKey<Item> OWN_HAND = TagKey.create(Registries.ITEM, TentaworksIds.id(TentaworksIds.OWN_HAND));
-
     private static boolean excluded(ItemStack stack) {
         return stack.getItem() instanceof MapItem || stack.getItem() instanceof PotatoCannonItem || stack.getItem() instanceof ZapperItem
-                || stack.is(OWN_HAND);
+                || stack.is(TentaworksItems.OWN_HAND);
     }
 
     /** A tool or weapon strikes; anything else, and an empty gripper, thrusts. */
