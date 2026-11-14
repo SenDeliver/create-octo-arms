@@ -1,0 +1,54 @@
+# Glint: Far Use with glinting items in the Actuators, first person (#32: "Not building!" crash). TIMELINE glint-timeline.txt
+trace on
+hud on
+view first
+# G1 glinting Create wrench in the main hand mines dirt at 6.5 (held attack, real crosshair)
+await g1
+lookat 11707.5 -58.5 0.5
+wait 5
+mark g1a
+holdkey key.attack on
+wait 8
+shot glint_g1_mine_fp
+wait 40
+holdkey key.attack off
+wait 5
+mark g1b
+signal g1done
+# G2 the wrench used on a far shaft (main hand)
+await g2
+lookat 11707.5 -58.5 4.5
+wait 5
+mark g2a
+key key.mouse.right
+wait 2
+shot glint_g2_use_fp
+wait 12
+mark g2b
+signal g2done
+# G3 the same from the off hand (empty main hand)
+await g3
+lookat 11707.5 -58.5 8.5
+wait 5
+mark g3a
+key key.mouse.right
+wait 2
+shot glint_g3_offhand_fp
+wait 12
+mark g3b
+signal g3done
+# G4 glinting vanilla diamond pickaxe mines dirt at 6.5 (vanilla foil path)
+await g4
+lookat 11707.5 -58.5 12.5
+wait 5
+mark g4a
+holdkey key.attack on
+wait 4
+shot glint_g4_pick_fp
+wait 30
+holdkey key.attack off
+wait 5
+mark g4b
+signal g4done
+wait 10
+quit
