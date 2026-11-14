@@ -2,7 +2,7 @@
 # Columns, tab-separated (a run of tabs counts as one, so align freely; an empty field is -):
 #   name     log suffix: tools/logs/<tag>-<name>-*
 #   dep      plain | curios (built with -PwithCurios) | sable (-PwithSable); must match the GRADLE_ARGS in env
-#   quiet    1: timing-sensitive, with TW_SHARDS>1 it runs in the quiet lane (serial on the default shard, or TW_QUIET_SHARDS wide); 2: alone always (the Sable suites and p7: failed in some runs two at a time); 0: may run next to other suites
+#   quiet    1: timing-sensitive, with TW_SHARDS>1 it runs in the quiet lane (serial on the default shard, or TW_QUIET_SHARDS wide); 2: alone always (the Sable suites: failed in some runs two at a time); 0: may run next to other suites
 #   weight   seconds in the last full run, for the longest-first schedule (look, lag, lagneth, lagoff, slider, p9, rideaero, shipgrab: guessed from the client script's waits)
 #   scene    RCON scene in tools/scen
 #   client   client script in tools/scen
@@ -61,7 +61,7 @@ p5		plain	0	127	scene-p5.txt		p5-client.txt		TIMELINE=$S/p5-timeline.txt
 p6		plain	1	110	scene-p6.txt		p6-client.txt		TIMELINE=$S/p6-timeline.txt SCRIPT2=$S/p6-watch.txt
 p6walk		plain	1	106	scene-p6.txt		p6-client.txt		TW_CLIENT_WALK=true TIMELINE=$S/p6-timeline.txt SCRIPT2=$S/p6-watch.txt
 p6fast		plain	1	26	scene-p6.txt		p6fast-client.txt	TW_SPEED_MAX=20 TIMELINE=$S/p6fast-timeline.txt
-p7		plain	2	57	scene-p7.txt		p7-client.txt		TIMELINE=$S/p7-timeline.txt
+p7		plain	1	57	scene-p7.txt		p7-client.txt		TIMELINE=$S/p7-timeline.txt
 p8		plain	1	127	scene-p8.txt		p8-client.txt		TIMELINE=$S/p8-timeline.txt
 p8r16		plain	1	26	scene-p8.txt		p8r16-client.txt	TW_REACH_NETHERITE=13 TIMELINE=$S/p8r16-timeline.txt
 pole		plain	0	175	scene-pole.txt		pole-client.txt		-
@@ -82,7 +82,7 @@ airhud		plain	0	59	scene-airhud.txt	airhud-client.txt	TIMELINE=$S/airhud-timelin
 ownhand		plain	0	31	empty.txt		ownhand-client.txt	TW_DATAPACK=$S/ownhand-pack TIMELINE=$S/ownhand-timeline.txt
 fpview		plain	0	59	empty.txt		fpview-client.txt	TIMELINE=$S/fpview-timeline.txt
 grab		plain	0	140	scene-grab.txt		grab-client.txt		ANIMALS=true TIMELINE=$S/grab-timeline.txt SCRIPT2=$S/grab-watch.txt
-look		curios	0	122	scene-look.txt		look-client.txt		TW_REACH_COPPER=5 GRADLE_ARGS="$GRADLE_ARGS -PwithCurios" ANIMALS=true TIMELINE=$S/look-timeline.txt
+look		curios	1	122	scene-look.txt		look-client.txt		TW_REACH_COPPER=5 GRADLE_ARGS="$GRADLE_ARGS -PwithCurios" ANIMALS=true TIMELINE=$S/look-timeline.txt
 lag		plain	1	45	empty.txt		lag-client.txt		TIMELINE=$S/lag-timeline.txt
 lagneth		plain	1	45	empty.txt		lag-stress-client.txt	TW_SWIFT_PER_LEVEL=0.225 TW_FAR_REACH_PER_LEVEL=1.334 TIMELINE=$S/lag-timeline.txt
 lagoff		plain	1	45	empty.txt		lag-client.txt		TW_SPEED_CHECK=false TIMELINE=$S/lag-timeline.txt
