@@ -17,6 +17,7 @@ Platforms: the same version number ships for every supported Minecraft version (
 ### Fixed
 
 - An enchanted (glinting) item in an Actuator no longer crashes the game when it is used out at Far Use range (issue #32). Client only. Thanks @snipernumber3.
+- With Sable, looking at a Ship no longer logs "Aborting entity get for abnormally large AABB" from the Actuators' crosshair pick, and a Ship block no longer gets the Far Use crosshair marks (Far Use leaves Ship blocks to Sable) (issue #38). Client only. Thanks @snipernumber3.
 
 ## [2.0.0] - 2026-11-09
 

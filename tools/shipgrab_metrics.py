@@ -237,5 +237,7 @@ else:
 exc = [l for l in (c + c2 + s).splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'authlib' not in l and 'neoforge-client.new.tmp.toml' not in l
        and 'Error loading class: net/irisshaders/' not in l and 'org.gradle.' not in l and 'MessageIOException' not in l
        and 'sun.nio.fs.UnixException' not in l]
+big = c.count('abnormally large AABB') + c2.count('abnormally large AABB')
+check('E no Sable "abnormally large AABB" (#38: a Ship hit measured in plot space)', not big, f'{big} hits')
 check('E exceptions', not exc, f'{len(exc)} exception lines' + (f': {exc[0][:200]}' if exc else ''))
 print('RESULT', 'PASS' if not fails else 'FAIL ' + ', '.join(fails))

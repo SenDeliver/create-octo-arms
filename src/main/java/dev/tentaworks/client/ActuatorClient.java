@@ -402,11 +402,17 @@ public final class ActuatorClient {
         Vec3 eye = player.getEyePosition();
         Vec3 look = player.getViewVector(1.0F);
         BlockHitResult block = player.level().clip(new ClipContext(eye, eye.add(look.scale(reach)), ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
-        double range = block.getType() == HitResult.Type.MISS ? reach : block.getLocation().distanceTo(eye);
+        double range = block.getType() == HitResult.Type.MISS ? reach : Math.min(reach, worldAt(player.level(), block).distanceTo(eye));
         Vec3 end = eye.add(look.scale(range));
         AABB sweep = player.getBoundingBox().expandTowards(look.scale(range)).inflate(1.0);
         EntityHitResult entity = ProjectileUtil.getEntityHitResult(player, eye, end, sweep, ActuatorClient::grabbable, range * range);
         return entity != null ? entity : block;
+    }
+
+    /** Where a hit lies in the world: a Ship block's hit comes in its plot's coordinates. */
+    static Vec3 worldAt(Level level, HitResult hit) {
+        return hit instanceof BlockHitResult b && b.getType() == HitResult.Type.BLOCK ? ShipFrames.get().toWorld(level, b.getBlockPos(), b.getLocation())
+                : hit.getLocation();
     }
 
     private static boolean grabbable(Entity e) {

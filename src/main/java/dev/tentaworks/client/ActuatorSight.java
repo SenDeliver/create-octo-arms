@@ -2,6 +2,7 @@ package dev.tentaworks.client;
 
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.client.ActuatorClient.Affordance;
+import dev.tentaworks.compat.ShipFrames;
 import dev.tentaworks.rig.ActuatorReach;
 import dev.tentaworks.rig.Actuators;
 import dev.tentaworks.rig.FarUse;
@@ -21,6 +22,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -156,20 +158,23 @@ public final class ActuatorSight {
         boolean picked = vanilla != null && vanilla.getType() != HitResult.Type.MISS;
         HitResult hit = picked ? vanilla : ActuatorClient.aim(player, ActuatorReach.pickRange(reach) + MISS_PAST);
         if (hit.getType() == HitResult.Type.MISS) return;
+        boolean ship = hit instanceof BlockHitResult b && ShipFrames.get().isPlot(player.level(), b.getBlockPos());
+        Vec3 at = ActuatorClient.worldAt(player.level(), hit);
         Vec3 eye = player.getEyePosition();
         boolean entity = hit instanceof EntityHitResult;
         double base = entity ? base(player, Attributes.ENTITY_INTERACTION_RANGE, FarUse.ENTITY_ID)
                 : base(player, Attributes.BLOCK_INTERACTION_RANGE, FarUse.REACH_ID);
-        double dist = hit.getLocation().distanceTo(eye);
+        double dist = at.distanceTo(eye);
         boolean limp = Actuators.limp(player);
         boolean allowed = FarUse.lifts(true, RigSettings.of(WornRig.of(player).stack()).farUse(), RigSide.deployed(player), FarUse.extendo(player),
                 ActuatorClient.holdArm(player) == HoldArm.BOTH, false);
-        boolean inReach = picked || ActuatorClient.reaches(player, hit.getLocation());
-        double past = hit.getLocation().distanceTo(Grips.body(player)) - reach;
-        mark = mark(true, limp, allowed, true, dist > base, inReach, past, picked && ActuatorClient.dualWield(player, hit));
-        beyond = misses(allowed, picked, true, past);
-        point = hit.getLocation();
-        far = (mark == Mark.REACH || mark == Mark.DUAL) && dist > base;
+        boolean inReach = picked || ActuatorClient.reaches(player, at);
+        double past = at.distanceTo(Grips.body(player)) - reach;
+        boolean beyondArm = !ship && dist > base;
+        mark = mark(true, limp, allowed, true, beyondArm, inReach, past, picked && ActuatorClient.dualWield(player, hit));
+        beyond = !ship && misses(allowed, picked, true, past);
+        point = at;
+        far = (mark == Mark.REACH || mark == Mark.DUAL) && beyondArm;
     }
 
     @SubscribeEvent
