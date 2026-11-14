@@ -11,7 +11,7 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ### Added
 
-- Create's remaining-Air timer beside the hotbar now shows for the Rig whenever it uses Air (Active, Setting Down, holding a Grab, and for 2 seconds after Far Use, Dual Wield or a Throw), not only with a Diving Helmet under water. Never drawn twice: under water with a helmet Create's own timer shows. Client only.
+- Create's remaining-Air timer beside the hotbar now shows for the Rig whenever it uses Air (Active, Setting Down, holding a Grab unless Deft, during Far Use, and for 2 seconds after the Rig's Air goes down, as with Dual Wield, a Throw or a Create tool drawing on it), not only with a Diving Helmet under water. Never drawn twice: under water with a helmet Create's own timer shows. Client only (issue #36). Thanks @snipernumber3.
 
 ## [2.0.0] - 2026-11-09
 

@@ -973,7 +973,7 @@ public final class DevScript {
     /**
      * TRACE fields (end of line): own Actuator state (held id, heavy, Ship block, Far Use ttl), the crosshair entity, the held
      * mob's box centre, the hold point for it from this camera ({@link Hold#point}), the closest the crosshair ray passes to the
-     * held box within 6 blocks, limp, the first-person Limb opacity; last: the last held mob's box centre and lerp target up to 40 ticks after the hold (lmob).
+     * held box within 6 blocks, limp, the first-person Limb opacity; last: the last held mob's box centre and lerp target up to 40 ticks after the hold (lmob); last: the Rig Air timer shown (airhud).
      */
     private static String actuatorFields(Minecraft mc, LocalPlayer p) {
         ActuatorClient.State s = ActuatorClient.get(p);

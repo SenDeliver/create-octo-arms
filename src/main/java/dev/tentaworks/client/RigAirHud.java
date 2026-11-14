@@ -3,7 +3,6 @@ package dev.tentaworks.client;
 import com.simibubi.create.content.equipment.armor.BacktankUtil;
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.rig.RigEnchants;
-import dev.tentaworks.rig.TentacleRigItem;
 import dev.tentaworks.rig.WornRig;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -25,16 +24,21 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 /**
  * Create's remaining-Air timer (Backtank icon and time beside the hotbar) for the worn Rig while it uses Air: Active or Setting Down,
- * an Actuator holding a Grab, or Air taken in the last {@value #RECENT} ticks (Far Use, Dual Wield, Throw; not a Diving Helmet's breath). Create's own overlay
+ * an Actuator holding a Grab (not with Deft), a Far Use reach, or Air taken in the last {@value #RECENT} ticks (Dual Wield, Throw, Create tools that draw
+ * Air from the Rig; not a Diving Helmet's breath). Create's own overlay
  * shows it only for a Diving Helmet under water or in lava; then this one stays hidden, so it is never drawn twice.
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public final class RigAirHud {
     /** Ticks the timer stays after the Rig's Air last went down, so a sip shows and slow drains do not blink. */
     static final int RECENT = 40;
+    /** Ticks after a Diving Helmet last breathed in which a drop is still its breath (the server's sip can land after the eyes leave the water). */
+    static final int HELMET_GRACE = 20;
     private static final String CREATE_VISUAL_AIR = "VisualBacktankAir";
+    private static WornRig lastRig = WornRig.NONE;
     private static int lastAir = -1;
     private static long lastDrop = Long.MIN_VALUE / 2;
+    private static long lastHelmet = Long.MIN_VALUE / 2;
     private static long ticks;
 
     private RigAirHud() {
@@ -42,16 +46,21 @@ public final class RigAirHud {
 
     @SubscribeEvent
     static void register(RegisterGuiLayersEvent event) {
-        event.registerAbove(VanillaGuiLayers.HOTBAR, TentaworksIds.id("rig_air"), RigAirHud::render);
+        event.registerAbove(VanillaGuiLayers.AIR_LEVEL, TentaworksIds.id("rig_air"), RigAirHud::render);
     }
 
     @SubscribeEvent
     static void onTick(ClientTickEvent.Post event) {
         ticks++;
         LocalPlayer player = Minecraft.getInstance().player;
-        ItemStack rig = player == null ? ItemStack.EMPTY : WornRig.of(player).stack();
+        WornRig worn = player == null ? WornRig.NONE : WornRig.of(player);
+        ItemStack rig = worn.stack();
         int air = rig.isEmpty() ? -1 : BacktankUtil.getAir(rig);
-        if (air >= 0 && lastAir >= 0 && air < lastAir && !player.getPersistentData().contains(CREATE_VISUAL_AIR)) lastDrop = ticks;
+        if (player != null && player.getPersistentData().contains(CREATE_VISUAL_AIR)) lastHelmet = ticks;
+        boolean sameRig = WornRig.same(lastRig, worn);
+        if (sameRig && air >= 0 && lastAir >= 0 && air < lastAir && ticks - lastHelmet > HELMET_GRACE) lastDrop = ticks;
+        if (!rig.isEmpty() && ActuatorClient.local().farTtl() > 0 && !RigEnchants.deft(rig)) lastDrop = ticks;
+        lastRig = worn;
         lastAir = air;
     }
 
@@ -59,14 +68,14 @@ public final class RigAirHud {
     public static boolean shown(LocalPlayer player) {
         if (player.isCreative() || player.isSpectator()) return false;
         ItemStack rig = WornRig.of(player).stack();
-        if (!(rig.getItem() instanceof TentacleRigItem) || createShows(player)) return false;
+        if (rig.isEmpty() || createShows(player)) return false;
         return draining(player, rig);
     }
 
     private static boolean draining(LocalPlayer player, ItemStack rig) {
         if (RigClient.state().drains()) return true;
         ActuatorClient.State hold = ActuatorClient.local();
-        if ((hold.heldId() >= 0 || hold.ship() != null) && !RigEnchants.deft(rig)) return true;
+        if (hold.holding() && !RigEnchants.deft(rig)) return true;
         return ticks - lastDrop <= RECENT;
     }
 
