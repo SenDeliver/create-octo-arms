@@ -1,0 +1,30 @@
+# Glint timeline. Netherite Rig with Actuators, Stowed. Each case: a Far Use action with a glinting item, which the Actuator draws in the first-person world pass.
+op Dev
+tentaworks pos t0
+tp Dev 11700.5 -60 0.5 -90 0
+clear Dev
+item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900,tentaworks:actuators={}]
+item replace entity Dev weapon.mainhand with create:wrench[enchantment_glint_override=true]
+#sleep 1
+#signal g1
+#await g1done
+tentaworks probe 11707 -59 0
+tp Dev 11700.5 -60 4.5 -90 0
+#sleep 0.5
+#signal g2
+#await g2done
+tentaworks probe 11707 -59 4
+item replace entity Dev weapon.mainhand with air
+item replace entity Dev weapon.offhand with create:wrench[enchantment_glint_override=true]
+tp Dev 11700.5 -60 8.5 -90 0
+#sleep 0.5
+#signal g3
+#await g3done
+tentaworks probe 11707 -59 8
+item replace entity Dev weapon.offhand with air
+item replace entity Dev weapon.mainhand with diamond_pickaxe[enchantment_glint_override=true]
+tp Dev 11700.5 -60 12.5 -90 0
+#sleep 0.5
+#signal g4
+#await g4done
+tentaworks probe 11707 -59 12
