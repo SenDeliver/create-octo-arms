@@ -6,6 +6,8 @@
 # (plain, then curios, then sable) its non-quiet suites, longest weight first, each worker taking the next free one; then the
 # quiet lane: every quiet suite alone, serial, on the default shard, in table order, Sable suites last. run_split output of each
 # suite goes to tools/logs/<tag>-<suite>-run.txt. TW_QUIET=par: quiet suites run as the others (still per dep set).
+# TW_QUIET_SHARDS=M (1..N, default 1): the quiet lane M wide, per dep set, longest first.
+# TW_SUITES=<file>: another suite table (a subset for a proof run; the metrics of absent suites fail, ignore them).
 # TW_DRY=1: print the command of each suite in schedule order (TW_SHARDS>1: the shard is a prediction from the weights), run nothing.
 # A suite with a non-zero exit (run_split.sh refused to start: shard busy, ports taken) in a parallel phase stops its worker for that phase.
 # TW_RUN_SPLIT=<script>: a stand-in for tools/run_split.sh (scheduler tests). Ctrl-C: no new suite starts (serial: the running suite dies, parallel: running ones finish), then exit 130 without metrics.
@@ -18,7 +20,10 @@ SHARDS=${TW_SHARDS:-1}
 RUN_SPLIT=${TW_RUN_SPLIT:-tools/run_split.sh}
 LETTER=(x - B C D E F)
 unset TW_SHARD
+QW=${TW_QUIET_SHARDS:-1}
+TABLE=${TW_SUITES:-tools/suites.tsv}
 case $SHARDS in [1-6]) ;; *) echo "TW_SHARDS must be 1..6" >&2; exit 2;; esac
+case $QW in [1-6]) [ "$QW" -le "$SHARDS" ] || { echo "TW_QUIET_SHARDS must be 1..TW_SHARDS" >&2; exit 2; };; *) echo "TW_QUIET_SHARDS must be 1..TW_SHARDS" >&2; exit 2;; esac
 
 N=0
 while IFS=$'\t' read -r name dep quiet weight scene client env; do
@@ -34,10 +39,10 @@ while IFS=$'\t' read -r name dep quiet weight scene client env; do
   [ -f "$S/$scene" ] || bad="$bad scene=$scene"
   [ -f "$S/$client" ] || bad="$bad client=$client"
   j=0; while [ $j -lt $N ]; do [ "${NAMES[j]}" = "$name" ] && bad="$bad duplicate"; j=$((j+1)); done
-  if [ -n "$bad" ]; then echo "tools/suites.tsv: $name:$bad" >&2; exit 2; fi
+  if [ -n "$bad" ]; then echo "$TABLE: $name:$bad" >&2; exit 2; fi
   NAMES[N]=$name; DEPS[N]=$dep; QUIETS[N]=$quiet; WEIGHTS[N]=$weight; SCENES[N]=$scene; CLIENTS[N]=$client; ENVS[N]=$env
   N=$((N+1))
-done < tools/suites.tsv
+done < "$TABLE"
 
 sname() { if [ "$1" = - ]; then echo default; else echo "$1"; fi; }
 cdir() { if [ "$1" = - ]; then echo run; else echo "runs/$1/client"; fi; }
@@ -49,9 +54,10 @@ cmd() {
 }
 isquiet() { [ "${QUIETS[$1]}" = 1 ] && [ "$TW_QUIET" != par ]; }
 bydep() {
-  local i=0
+  local i=0 q
   while [ $i -lt $N ]; do
-    [ "${DEPS[i]}" = "$1" ] && ! isquiet $i && echo "${WEIGHTS[i]} $i"
+    q=0; isquiet $i && q=1
+    [ "${DEPS[i]}" = "$1" ] && [ $q = "${2:-0}" ] && echo "${WEIGHTS[i]} $i"
     i=$((i+1))
   done | sort -s -k1,1nr | awk '{print $2}'
 }
@@ -115,7 +121,7 @@ schedule() {
     phase all 1 $(i=0; while [ $i -lt $N ]; do echo $i; i=$((i+1)); done)
   else
     for d in plain curios sable; do phase $d $SHARDS $(bydep $d); done
-    phase quiet 1 $(lane)
+    if [ "$QW" = 1 ]; then phase quiet 1 $(lane); else for d in plain curios sable; do phase quiet-$d $QW $(bydep $d 1); done; fi
   fi
 }
 
