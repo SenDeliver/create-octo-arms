@@ -3,11 +3,13 @@ package dev.tentaworks.dev.client;
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.client.ActuatorClient;
 import dev.tentaworks.client.ActuatorHud;
+import dev.tentaworks.client.ActuatorPose;
 import dev.tentaworks.client.ActuatorRenderer;
 import dev.tentaworks.client.ActuatorSight;
 import dev.tentaworks.config.TentaworksClientConfig;
 import dev.tentaworks.rig.GrabRule;
 import dev.tentaworks.rig.SetDown;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -41,7 +43,8 @@ import java.util.Map;
  * hints on|off (client hud.hints in memory; on also starts the session's hints over), looktrace on|off (CLOOK
  * line per tick: what vanilla and the Actuators drew of each hand in first person, the frames with a hand drawn twice, the
  * crosshair mark, the Grab cue and how far the acting Actuator is from its target, the most drawn points of each Actuator inside
- * a solid block in one frame of the tick; and a CCLIP line per other wearer with the same count).
+ * a solid block in one frame of the tick, the frames each own Actuator was drawn in the first-person world pass and the frames
+ * it was at rest with a part on screen; and a CCLIP line per other wearer with the same count), fov N (the field of view option).
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public final class DevLook {
@@ -50,7 +53,8 @@ public final class DevLook {
     private static String burst;
     private static int burstLeft, burstCount;
     private static final boolean[] vanilla = new boolean[2];
-    private static final int[] before = new int[2], vanillaFrames = new int[2], actuatorFrames = new int[2], doubled = new int[2];
+    private static final int[] before = new int[2], vanillaFrames = new int[2], actuatorFrames = new int[2], doubled = new int[2], worldFrames = new int[2],
+            restInView = new int[2];
     private static int frames;
     /** Most drawn points inside a block in one frame this tick and the deepest of them, per player id: main, off. */
     private static final Map<Integer, double[]> CLIP = new HashMap<>();
@@ -97,6 +101,10 @@ public final class DevLook {
                 mc.options.broadcastOptions();
                 return 2;
             }
+            case "fov" -> {
+                mc.options.fov().set(Integer.parseInt(a[1]));
+                return 2;
+            }
             case "looktrace" -> {
                 trace = a[1].equals("on");
                 return 0;
@@ -119,6 +127,7 @@ public final class DevLook {
         for (int h = 0; h < 2; h++) {
             vanilla[h] = false;
             before[h] = ActuatorRenderer.HAND_DRAWS[h];
+            ActuatorRenderer.SEEN[h] = null;
         }
     }
 
@@ -144,6 +153,9 @@ public final class DevLook {
             }
         }
         for (int h = 0; h < 2; h++) {
+            ActuatorRenderer.Seen seen = ActuatorRenderer.SEEN[h];
+            if (seen != null && seen.world()) worldFrames[h]++;
+            if (seen != null && seen.rest() && inView(mc, seen)) restInView[h]++;
             boolean actuator = ActuatorRenderer.HAND_DRAWS[h] != before[h];
             if (vanilla[h]) vanillaFrames[h]++;
             if (actuator) actuatorFrames[h]++;
@@ -162,10 +174,11 @@ public final class DevLook {
         }
         if (trace) {
             double[] own = CLIP.getOrDefault(mc.player.getId(), new double[4]);
-            LOG.info("CLOOK gt={} first={} frames={} vhand={},{} ahand={},{} dbl={},{} mark={} cue={} lag={} clip={},{} cdepth={}", mc.level.getGameTime(),
+            LOG.info("CLOOK gt={} first={} frames={} vhand={},{} ahand={},{} dbl={},{} mark={} cue={} lag={} clip={},{} cdepth={} wpass={},{} rview={},{}", mc.level.getGameTime(),
                     mc.options.getCameraType().isFirstPerson(), frames, vanillaFrames[0], vanillaFrames[1], actuatorFrames[0], actuatorFrames[1], doubled[0],
                     doubled[1], ActuatorSight.mark(), ActuatorSight.cue().kind(), String.format(Locale.ROOT, "%.2f", ActuatorRenderer.lag(mc.player)),
-                    (int) own[0], (int) own[1], String.format(Locale.ROOT, "%.2f", Math.max(own[2], own[3])));
+                    (int) own[0], (int) own[1], String.format(Locale.ROOT, "%.2f", Math.max(own[2], own[3])), worldFrames[0], worldFrames[1], restInView[0],
+                    restInView[1]);
             for (AbstractClientPlayer p : mc.level.players()) {
                 if (p == mc.player) continue;
                 double[] c = CLIP.getOrDefault(p.getId(), new double[4]);
@@ -175,7 +188,7 @@ public final class DevLook {
         }
         CLIP.clear();
         frames = 0;
-        for (int h = 0; h < 2; h++) vanillaFrames[h] = actuatorFrames[h] = doubled[h] = 0;
+        for (int h = 0; h < 2; h++) vanillaFrames[h] = actuatorFrames[h] = doubled[h] = worldFrames[h] = restInView[h] = 0;
     }
 
     /** How deep {@code p} is inside the collision shape of its block (0 outside). */
@@ -190,5 +203,23 @@ public final class DevLook {
             best = Math.max(best, Math.min(Math.min(Math.min(p.x - b.minX, b.maxX - p.x), Math.min(p.y - b.minY, b.maxY - p.y)), Math.min(p.z - b.minZ, b.maxZ - p.z)));
         }
         return best;
+    }
+
+    /** Any point of a drawn chain (joints, segment quarters, tip) inside this frame's view. */
+    private static boolean inView(Minecraft mc, ActuatorRenderer.Seen seen) {
+        Camera cam = mc.gameRenderer.getMainCamera();
+        Vec3 c = cam.getPosition(), look = new Vec3(cam.getLookVector()), up = new Vec3(cam.getUpVector()), right = new Vec3(cam.getLeftVector()).scale(-1);
+        double fov = ActuatorRenderer.worldFov();
+        double aspect = mc.getWindow().getHeight() == 0 ? 16 / 9.0 : (double) mc.getWindow().getWidth() / mc.getWindow().getHeight();
+        Vec3[] j = seen.joints();
+        for (int i = 0; i < j.length; i++) {
+            Vec3 next = i + 1 < j.length ? j[i + 1] : seen.tip();
+            for (int k = 0; k < 4; k++) {
+                Vec3 d = j[i].lerp(next, k / 4.0).subtract(c);
+                if (ActuatorPose.inFrame(new Vec3(d.dot(right), d.dot(up), d.dot(look)), fov, aspect)) return true;
+            }
+        }
+        Vec3 d = seen.tip().subtract(c);
+        return ActuatorPose.inFrame(new Vec3(d.dot(right), d.dot(up), d.dot(look)), fov, aspect);
     }
 }

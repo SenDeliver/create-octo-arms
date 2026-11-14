@@ -105,6 +105,8 @@ public final class ActuatorRenderer {
     private static final double HAND_ITEM_SCALE = 0.6, FAR_ITEM_SCALE = 1.6, NEAR_TIP = 1.2, FAR_TIP = 6;
     /** First person: an arm whose tip is farther than this from the eye goes to the world pass, and comes back nearer than the second, blocks. */
     private static final double WORLD_PASS_OUT = 1.9, WORLD_PASS_IN = 1.6;
+    /** Below this every pose level (carry, act, hold, point) counts as the Rest Pose. */
+    private static final double REST_LEVEL = 0.05;
     /** Vertical field of view of the hand pass, degrees. */
     private static final double HAND_FOV = 70;
     /** An arm stays on its target this many ticks after its swing ends; a swing at nothing strikes this far ahead, blocks. */
@@ -135,6 +137,11 @@ public final class ActuatorRenderer {
     private static long frame, handFrame = -1;
     /** First-person draws of an Actuator standing in for a hand, per hand (main, off): the harness checks no hand is drawn twice in a frame. */
     public static final int[] HAND_DRAWS = new int[2];
+    /** The wearer's own Actuators as last drawn in first person, per hand (main, off), for the harness: chain and tip (world), at rest, in the world pass. */
+    public static final Seen[] SEEN = new Seen[2];
+
+    public record Seen(Vec3[] joints, Vec3 tip, boolean rest, boolean world) {
+    }
 
     /** Which Actuators a draw call is for: all of them, or in first person those of the world pass or of the hand pass. */
     enum Pass {
@@ -311,6 +318,11 @@ public final class ActuatorRenderer {
     /** The world pass's projection this frame, so the hand pass can match where things land on screen. */
     static void worldProjection(Matrix4f projection) {
         if (Float.isFinite(projection.m11()) && projection.m11() > 0) worldM11 = projection.m11();
+    }
+
+    /** The world pass's vertical field of view this frame (degrees). */
+    public static double worldFov() {
+        return Math.toDegrees(2 * Math.atan(1 / worldM11));
     }
 
     /** Hand pass over world pass size of the same camera-space offset on screen (1 at a 70 degree view). */
@@ -706,6 +718,9 @@ public final class ActuatorRenderer {
                 ActuatorPose.Chain chain = ActuatorClearance.chain(s, hand.wrist(), aim.bulge(), fallback, seg, arm.bend);
                 Vec3 d = handDir(chain, aim);
                 arm.probe = probe(chain, d, aim, stack);
+                if (space.firstPerson())
+                    SEEN[arm.main ? 0 : 1] = new Seen(chain.joints(), aim.grip(), arm.carry < REST_LEVEL && arm.act < REST_LEVEL && arm.hold < REST_LEVEL
+                            && arm.point < REST_LEVEL, pass == Pass.WORLD);
                 arms[i] = toTank(toTank, space, chain, aim, d, arm.side);
             }
         }
@@ -760,6 +775,20 @@ public final class ActuatorRenderer {
 
         Vec3 out(int side) {
             return rightDir.scale(side);
+        }
+
+        /** A tank-space point of a body-held pose (Rest, folded, limp) in the world: on the body; in first person held to the view ({@link ActuatorPose#eyeView}). */
+        Vec3 held(TentacleRenderer.Space space, Vec3 tank) {
+            if (!first) return world(space, tank);
+            Vec3 p = ActuatorPose.eyeView(tank);
+            return eye.add(headRight.scale(p.x)).add(headUp.scale(p.y)).add(look.scale(p.z));
+        }
+
+        /** A tank-space direction of a body-held pose in the world, as {@link #held}. */
+        Vec3 heldDir(TentacleRenderer.Space space, Vec3 tank) {
+            if (!first) return vec(space.direction(vec3f(tank)));
+            Vec3 d = ActuatorPose.eyeDirection(tank);
+            return headRight.scale(d.x).add(headUp.scale(d.y)).add(look.scale(d.z));
         }
 
         /** A view-space spot of an Actuator on {@code side} (x toward its own side, y up, z ahead) in the world. */
@@ -968,10 +997,10 @@ public final class ActuatorRenderer {
     private static Aim rest(Arm arm, Anim a, Player player, Body b, TentacleRenderer.Space space, float time) {
         int side = arm.side;
         Vec3 s = b.shoulder(side);
-        Vec3 wrist = world(space, ActuatorPose.restWrist(side, time));
+        Vec3 wrist = b.held(space, ActuatorPose.restWrist(side, time));
         if (!b.first) wrist = wrist.add(b.look.subtract(b.forward).scale(0.12));
         if (a.lowAir > 0) wrist = wrist.subtract(b.up.scale(a.lowAir * (0.14 + 0.012 * Math.sin(time * 2.9 + side))));
-        Aim pose = free(s, wrist, vec(space.direction(vec3f(ActuatorPose.restBulge(side)))), ActuatorPose.restStraight(time),
+        Aim pose = free(s, wrist, b.heldDir(space, ActuatorPose.restBulge(side)), ActuatorPose.restStraight(time),
                 ActuatorPose.restOpen(side, time), b);
         if (arm.glance > 0) {
             Entity mob = a.glanceId >= 0 ? player.level().getEntity(a.glanceId) : null;
@@ -982,12 +1011,12 @@ public final class ActuatorRenderer {
 
     private static Aim folded(int side, Vec3 s, Body b, TentacleRenderer.Space space) {
         Vec3 sh = ActuatorPose.shoulder(side);
-        return free(s, world(space, sh.add(side * 0.06, 0.18, 0.06)), vec(space.direction(new Vector3f(side, 0.4F, 0.5F))), FOLD_STRAIGHT, 0, b);
+        return free(s, b.held(space, sh.add(side * 0.06, 0.18, 0.06)), b.heldDir(space, new Vec3(side, 0.4, 0.5)), FOLD_STRAIGHT, 0, b);
     }
 
     private static Aim limpPose(int side, Vec3 s, Body b, TentacleRenderer.Space space) {
         Vec3 sh = ActuatorPose.shoulder(side);
-        return free(s, world(space, sh.add(side * 0.3, -0.62, -0.02)), vec(space.direction(new Vector3f(side, 0.25F, 0.35F))), LIMP_STRAIGHT, LIMP_OPEN, b);
+        return free(s, b.held(space, sh.add(side * 0.3, -0.62, -0.02)), b.heldDir(space, new Vec3(side, 0.25, 0.35)), LIMP_STRAIGHT, LIMP_OPEN, b);
     }
 
     /** Rest Pose straight in tank space, for the inventory preview (no world). */

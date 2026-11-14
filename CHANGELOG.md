@@ -18,6 +18,8 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 - An enchanted (glinting) item in an Actuator no longer crashes the game when it is used out at Far Use range (issue #32). Client only. Thanks @snipernumber3.
 - With Sable, looking at a Ship no longer logs "Aborting entity get for abnormally large AABB" from the Actuators' crosshair pick, and a Ship block no longer gets the Far Use crosshair marks (Far Use leaves Ship blocks to Sable) (issue #38). Client only. Thanks @snipernumber3.
+- First person: a resting Actuator no longer swings into view when the body turns away from the look (strafing, a fast turn, looking up, crouching, crawling or swimming); the Rest, folded and limp poses now follow the view, at any field of view. Third person is unchanged (issue #33). Client only. Thanks @snipernumber3.
+- First person: the Actuators no longer block the view while scoping with a spyglass, as vanilla hides the hands (issue #41). Client only. Thanks @snipernumber3.
 
 ## [2.0.0] - 2026-11-09
 

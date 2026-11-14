@@ -415,4 +415,61 @@ class ActuatorPoseTest {
         for (int t = 0; t < 230; t++) if (bump(t, 230, 18, 5) > 0) busy++;
         assertTrue(busy <= 18, "a fidget is rare: " + busy + " of 230 ticks");
     }
+
+    /** The old first-person transform for a standing body facing {@code yaw}: tank space to eye-relative world. */
+    private static Vec3 standingBody(Vec3 tank, float yaw) {
+        com.mojang.blaze3d.vertex.PoseStack ps = new com.mojang.blaze3d.vertex.PoseStack();
+        ps.translate(0, -STANDING_EYE, 0);
+        ps.mulPose(com.mojang.math.Axis.YP.rotationDegrees(180.0F - yaw));
+        TentacleRenderer.bodyToTank(ps);
+        org.joml.Vector3f v = ps.last().pose().transformPosition((float) tank.x, (float) tank.y, (float) tank.z, new org.joml.Vector3f());
+        return new Vec3(v.x, v.y, v.z);
+    }
+
+    @Test
+    void eyeViewIsTheStandingBodyFacingTheLook() {
+        for (float yaw : new float[]{0, 37, 90, 200, -120}) {
+            double r = Math.toRadians(yaw);
+            Vec3 right = new Vec3(-Math.cos(r), 0, -Math.sin(r)), up = new Vec3(0, 1, 0), ahead = new Vec3(-Math.sin(r), 0, Math.cos(r));
+            for (int side : SIDES) {
+                for (Vec3 tank : new Vec3[]{restWrist(side, 0), restWrist(side, 30), shoulder(side), new Vec3(0, 0, 0), new Vec3(1, 1, 1)}) {
+                    Vec3 old = standingBody(tank, yaw), p = eyeView(tank);
+                    Vec3 now = right.scale(p.x).add(up.scale(p.y)).add(ahead.scale(p.z));
+                    assertTrue(old.distanceTo(now) < 1.0E-4, "yaw " + yaw + " side " + side + " " + tank + ": " + old + " vs " + now);
+                }
+            }
+        }
+    }
+
+    @Test
+    void firstPersonRestFoldedAndLimpStayOffScreen() {
+        double[] aspects = {4.0 / 3, 16.0 / 9, 21.0 / 9};
+        for (double fov = 30; fov <= 110; fov += 5) {
+            for (double aspect : aspects) {
+                for (int side : SIDES) {
+                    Vec3 s = entry(side, fov, aspect);
+                    Vec3 sh = shoulder(side);
+                    for (float t = 0; t < BREATH_TICKS; t += 7) {
+                        offScreen(s, eyeView(restWrist(side, t)), eyeDirection(restBulge(side)), restStraight(t), side, fov, aspect, "rest t " + t);
+                    }
+                    offScreen(s, eyeView(sh.add(side * 0.06, 0.18, 0.06)), eyeDirection(new Vec3(side, 0.4, 0.5)), 0.5, side, fov, aspect, "folded");
+                    offScreen(s, eyeView(sh.add(side * 0.3, -0.62, -0.02)), eyeDirection(new Vec3(side, 0.25, 0.35)), 0.88, side, fov, aspect, "limp");
+                }
+            }
+        }
+    }
+
+    private static void offScreen(Vec3 s, Vec3 wrist, Vec3 bulge, double straight, int side, double fov, double aspect, String what) {
+        for (double reach = 4; reach <= 9; reach += 1) {
+            Chain c = chain(s, wrist, bulge, new Vec3(side, 0.3, 0), segment(s.distanceTo(wrist), straight, (reach + 0.5) / SEGMENTS));
+            Vec3[] j = c.joints();
+            for (int i = 0; i + 1 < j.length; i++)
+                for (int k = 0; k <= 4; k++) {
+                    Vec3 p = j[i].lerp(j[i + 1], k / 4.0);
+                    assertFalse(inFrame(p, fov, aspect), what + " fov " + fov + " aspect " + aspect + " side " + side + " reach " + reach + ": " + p);
+                }
+            Vec3 tip = wrist.add(c.wristDir().scale(GRIP_LENGTH));
+            assertFalse(inFrame(tip, fov, aspect), what + " tip fov " + fov + " aspect " + aspect + " side " + side + ": " + tip);
+        }
+    }
 }

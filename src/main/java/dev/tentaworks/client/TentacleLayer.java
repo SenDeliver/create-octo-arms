@@ -139,7 +139,7 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
         if (player == null || !mc.options.getCameraType().isFirstPerson() || mc.getCameraEntity() != player || player.isSpectator()) return;
         if (!(WornRig.of(player).item() instanceof TentacleRigItem rig) || player.getPose() == Pose.SLEEPING) return;
         RigVisuals.Visual visual = RigVisuals.get(player);
-        boolean tentacles = visual != null && visual.visible(), actuators = Actuators.fitted(player);
+        boolean tentacles = visual != null && visual.visible(), actuators = Actuators.fitted(player) && !player.isScoping();
         if (!tentacles && !actuators) return;
         float pt = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         ActuatorRenderer.worldProjection(event.getProjectionMatrix());
@@ -176,9 +176,6 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
             ps.mulPose(Axis.XP.rotationDegrees(Mth.lerp(swim, 0.0F, flat)));
             if (player.isVisuallySwimming()) ps.translate(0.0F, -1.0F, 0.3F);
         }
-        ps.scale(-1.0F, -1.0F, 1.0F);
-        ps.scale(0.9375F, 0.9375F, 0.9375F);
-        ps.translate(0.0F, -1.501F, 0.0F);
-        TentacleRenderer.toTankSpace(ps);
+        TentacleRenderer.bodyToTank(ps);
     }
 }

@@ -1,8 +1,12 @@
 package dev.tentaworks.client;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 /**
  * Pose math of the Actuators, free of rendering. An Actuator is a chain of {@link #SEGMENTS} rigid segments of one length, each
@@ -209,6 +213,35 @@ public final class ActuatorPose {
         double half = Math.atan(Math.tan(Math.toRadians(Mth.clamp(fovDegrees, 1, 179)) / 2) * Math.max(0.1, aspect));
         double a = Math.min(half + Math.toRadians(ENTRY_MARGIN_DEGREES), Math.toRadians(150));
         return new Vec3(side * ENTRY_DISTANCE * Math.sin(a), -ENTRY_DROP, ENTRY_DISTANCE * Math.cos(a));
+    }
+
+    /** Eye height of a standing wearer over the feet (blocks). */
+    public static final double STANDING_EYE = 1.62;
+    private static final Matrix4f TANK_TO_EYE = tankToEye();
+
+    /** Tank space of a standing Rig whose body faces the look, seen from the eye: camera space (x right, y up, z ahead). */
+    private static Matrix4f tankToEye() {
+        PoseStack ps = new PoseStack();
+        ps.scale(-1, 1, 1);
+        ps.translate(0, -STANDING_EYE, 0);
+        ps.mulPose(Axis.YP.rotationDegrees(180));
+        TentacleRenderer.bodyToTank(ps);
+        return new Matrix4f(ps.last().pose());
+    }
+
+    /**
+     * First person: a tank-space point of a body-held pose (Rest, folded, limp) in camera space, as a standing wearer facing the
+     * look holds it, so the body's turn, a strafe, a crouch or a swim never bring it on screen.
+     */
+    public static Vec3 eyeView(Vec3 tank) {
+        Vector3f v = TANK_TO_EYE.transformPosition((float) tank.x, (float) tank.y, (float) tank.z, new Vector3f());
+        return new Vec3(v.x, v.y, v.z);
+    }
+
+    /** A tank-space direction of a body-held pose in camera space ({@link #eyeView}), unit length. */
+    public static Vec3 eyeDirection(Vec3 tank) {
+        Vector3f v = TANK_TO_EYE.transformDirection((float) tank.x, (float) tank.y, (float) tank.z, new Vector3f()).normalize();
+        return new Vec3(v.x, v.y, v.z);
     }
 
     /** Whether a camera-space point is inside the view frustum (near plane ignored). */

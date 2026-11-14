@@ -1,0 +1,137 @@
+# First-person view (#33, #41): the wearer's own Actuators at rest stay off screen (CLOOK rview), and none is drawn in the world pass while scoping (CLOOK wpass). Empty hands unless said. TIMELINE fpview-timeline.txt
+trace on
+hud on
+view first
+await start
+wait 20
+# V1 FOV 70, standing, looking ahead (control)
+fov 70
+cmd tp @s 11900.5 -60 0.5 0 0
+wait 20
+looktrace on
+mark v1a
+wait 30
+mark v1b
+looktrace off
+# V2 FOV 90, looking up 40, strafing right (the report)
+fov 90
+cmd tp @s 11900.5 -60 0.5 0 -40
+wait 20
+looktrace on
+mark v2a
+hold right on
+wait 20
+clearchat
+shot fpview_v2_strafe_up
+wait 15
+hold right off
+mark v2b
+looktrace off
+# V3 FOV 90, a fast turn 120 to the left, looking up 30
+cmd tp @s 11900.5 -60 0.5 0 -30
+wait 20
+looktrace on
+mark v3a
+look -120 -30
+wait 30
+mark v3b
+looktrace off
+# V4 FOV 90, a fast turn 120 to the right, looking up 30
+cmd tp @s 11900.5 -60 0.5 0 -30
+wait 20
+looktrace on
+mark v4a
+look 120 -30
+wait 5
+clearchat
+shot fpview_v4_turn_right
+wait 25
+mark v4b
+looktrace off
+# V5 FOV 90, Active, looking up 40, strafing right
+cmd tp @s 11900.5 -60 0.5 0 -40
+wait 10
+doublejump
+wait 30
+looktrace on
+mark v5a
+hold right on
+wait 30
+hold right off
+mark v5b
+looktrace off
+doublejump
+wait 80
+# V6 FOV 90, crouched, looking up 40, strafing right
+cmd tp @s 11900.5 -60 0.5 0 -40
+wait 20
+hold shift on
+wait 10
+looktrace on
+mark v6a
+hold right on
+wait 30
+hold right off
+mark v6b
+looktrace off
+hold shift off
+# V7 FOV 90, crawling in a 1-high tunnel: looking ahead, up, down, crawling on
+cmd tp @s 11912.5 -60 0.5 -90 0
+wait 30
+looktrace on
+mark v7a
+wait 10
+look -90 -45
+wait 10
+look -90 45
+wait 10
+look -90 0
+hold up on
+wait 20
+clearchat
+shot fpview_v7_crawl
+hold up off
+mark v7b
+looktrace off
+# V8 FOV 90, left-handed (sides swap), looking up 40, strafing left
+mainarm left
+cmd tp @s 11900.5 -60 0.5 0 -40
+wait 20
+looktrace on
+mark v8a
+hold left on
+wait 30
+hold left off
+mark v8b
+looktrace off
+mainarm right
+# S1 spyglass in the main hand, scoping
+cmd tp @s 11900.5 -60 0.5 0 -10
+cmd item replace entity @s weapon.mainhand with spyglass
+wait 20
+holdkey key.use on
+wait 10
+looktrace on
+mark s1a
+wait 10
+clearchat
+shot fpview_s1_spyglass
+wait 20
+mark s1b
+looktrace off
+holdkey key.use off
+wait 10
+# S2 spyglass in the off hand, main hand empty, scoping
+cmd item replace entity @s weapon.mainhand with air
+cmd item replace entity @s weapon.offhand with spyglass
+wait 20
+holdkey key.use on
+wait 10
+looktrace on
+mark s2a
+wait 30
+mark s2b
+looktrace off
+holdkey key.use off
+wait 10
+quit

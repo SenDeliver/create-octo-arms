@@ -177,6 +177,14 @@ public final class TentacleRenderer {
     }
 
     /** Pushes the Backtank layer's block transform (Create's BacktankArmorLayer, south-facing model) and the 180° model turn: tank space. */
+    /** From the body's turn (and swim tilt), over the wearer's feet, to tank space: the body model's transform without the model. */
+    public static void bodyToTank(PoseStack ps) {
+        ps.scale(-1.0F, -1.0F, 1.0F);
+        ps.scale(0.9375F, 0.9375F, 0.9375F);
+        ps.translate(0.0F, -1.501F, 0.0F);
+        toTankSpace(ps);
+    }
+
     public static void toTankSpace(PoseStack ps) {
         ps.translate(-0.5F, 0.625F, 1.0F);
         ps.scale(1.0F, -1.0F, -1.0F);

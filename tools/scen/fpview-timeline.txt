@@ -1,0 +1,8 @@
+# First-person view timeline: the client script does the moves; RCON only sets up. A 1-high tunnel at x 11910..11920 for the crawl.
+op Dev
+tp Dev 11900.5 -60 0.5 0 0
+clear Dev
+item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=1800,tentaworks:actuators={}]
+fill 11910 -59 -2 11920 -59 2 stone
+#sleep 1
+#signal start
