@@ -994,12 +994,12 @@ public final class DevScript {
         }
         Entity last = lastHeldId < 0 || clientTicks - lastHeldTick > 40 ? null : mc.level.getEntity(lastHeldId);
         String lmob = last == null ? "-" : fmt(last.getBoundingBox().getCenter()) + ";" + fmt(new Vec3(last.lerpTargetX(), last.lerpTargetY(), last.lerpTargetZ()));
-        return String.format(Locale.ROOT, " gheld=%d gheavy=%b gship=%s far=%d xh=%s hmob=%s hpt=%s xd=%s limp=%b opa=%.2f harm=%s hdist=%.2f spot=%s spotok=%b aff=%s affarm=%s dual=%b gkey=%b farhand=%s lmob=%s",
+        return String.format(Locale.ROOT, " gheld=%d gheavy=%b gship=%s far=%d xh=%s hmob=%s hpt=%s xd=%s limp=%b opa=%.2f harm=%s hdist=%.2f spot=%s spotok=%b aff=%s affarm=%s dual=%b gkey=%b farhand=%s lmob=%s airhud=%b",
                 s.heldId(), s.heavy(),
                 s.ship() == null ? "-" : s.ship().toShortString().replace(" ", ""), s.farTtl(), crosshair(mc), heldCentre(mc, s), point,
                 held == null ? "-" : String.format(Locale.ROOT, "%.3f", rayGap(p.getEyePosition(), p.getViewVector(1.0F), held.getBoundingBox())),
                 Actuators.limp(p), TentaworksClientConfig.limbOpacity(), s.arm(), s.distance(), spot == null ? "-" : fmt(spot.feet()), spot != null && spot.valid(),
-                aff.kind(), aff.arm(), ActuatorClient.dualWield(), ActuatorClient.grabKeyDown(), s.farHand() == net.minecraft.world.InteractionHand.OFF_HAND ? "off" : "main", lmob);
+                aff.kind(), aff.arm(), ActuatorClient.dualWield(), ActuatorClient.grabKeyDown(), s.farHand() == net.minecraft.world.InteractionHand.OFF_HAND ? "off" : "main", lmob, dev.tentaworks.client.RigAirHud.shown(p));
     }
 
     private static double rayGap(Vec3 eye, Vec3 look, net.minecraft.world.phys.AABB box) {

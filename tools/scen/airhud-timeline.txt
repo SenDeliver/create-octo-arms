@@ -1,0 +1,8 @@
+# Air timer timeline: the client script does the moves; RCON only sets up.
+op Dev
+tentaworks trace on
+tp Dev 11810.5 -60 0.5 -90 0
+clear Dev
+item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=1800,tentaworks:actuators={}]
+#sleep 1
+#signal start

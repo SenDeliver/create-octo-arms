@@ -1,0 +1,67 @@
+# Air timer: Create's remaining-Air timer shows for the Rig while it uses Air (TRACE airhud). TIMELINE airhud-timeline.txt
+trace on
+hud on
+view first
+await start
+wait 20
+# A1 Stowed, standing: no Air used, no timer
+mark a1
+wait 30
+mark a1e
+# A2 Active: the Rig drains, timer on
+doublejump
+wait 30
+mark a2
+wait 40
+shot airhud_active
+mark a2e
+# A3 Set Down to Stowed: timer gone once the last Air drop is RECENT ticks old
+doublejump
+wait 80
+mark a3
+wait 20
+mark a3e
+# A4 Stowed Far Use sips (air.farUse 4: whole Air per action): timer shows, then goes
+cmd tentaworks config air.farUse 4
+cmd tp @s 11810.5 -60 8.5 -90 0
+wait 10
+lookat 11817.5 -58.5 8.5
+wait 5
+mark a4
+holdkey key.attack on
+wait 30
+holdkey key.attack off
+mark a4e
+wait 70
+mark a4f
+wait 10
+mark a4g
+cmd tentaworks config air.farUse 0.5
+# A5 creative, Active: no Air used, no timer
+cmd gamemode creative @s
+cmd tp @s 11810.5 -60 0.5 -90 0
+wait 20
+doublejump
+wait 30
+mark a5
+wait 20
+mark a5e
+doublejump
+wait 60
+cmd gamemode survival @s
+# A6 Diving Helmet under water, Stowed: Create's own timer shows, this one stays hidden (no double draw)
+cmd item replace entity @s armor.head with create:copper_diving_helmet
+cmd tp @s 11801.5 -60 1.5
+wait 60
+mark a6
+wait 40
+shot airhud_helmet_water
+mark a6e
+# A7 out of the water: the helmet's breaths are not Rig drain, so no timer lingers
+cmd tp @s 11806.5 -60 1.5
+wait 5
+mark a7
+wait 30
+mark a7e
+wait 10
+quit
