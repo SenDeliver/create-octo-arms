@@ -1,0 +1,44 @@
+# own_hand: an item in the tag stays in the wearer's own hand (vanilla draws it), others are carried by the Actuator. TIMELINE ownhand-timeline.txt, TW_DATAPACK=tools/scen/ownhand-pack
+trace on
+hud on
+view first
+# O1 iron pickaxe (not in the tag): the main-hand Actuator carries it, vanilla draws no hand
+await o1
+wait 20
+looktrace on
+mark o1a
+wait 30
+mark o1b
+looktrace off
+shot ownhand_o1_pick_fp
+third
+wait 10
+shot ownhand_o1_pick_third
+view first
+signal o1done
+# O2 stick (in the tag): vanilla draws the main hand with it, the Actuator does not
+await o2
+wait 20
+looktrace on
+mark o2a
+wait 30
+mark o2b
+looktrace off
+shot ownhand_o2_stick_fp
+third
+wait 10
+shot ownhand_o2_stick_third
+view first
+signal o2done
+# O3 stick in the off hand, main hand empty: vanilla draws the off hand with it
+await o3
+wait 20
+looktrace on
+mark o3a
+wait 30
+mark o3b
+looktrace off
+shot ownhand_o3_offstick_fp
+signal o3done
+wait 10
+quit
