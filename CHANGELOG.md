@@ -9,6 +9,10 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ## [Unreleased]
 
+### Added
+
+- Create's remaining-Air timer beside the hotbar now shows for the Rig whenever it uses Air (Active, Setting Down, holding a Grab, and for 2 seconds after Far Use, Dual Wield or a Throw), not only with a Diving Helmet under water. Never drawn twice: under water with a helmet Create's own timer shows. Client only.
+
 ## [2.0.0] - 2026-11-09
 
 Actuators: two more arms for the Rig, one for each hand. The four Tentacles carry you as before; the Actuators mine, build, fight, Grab and Throw out to the Rig's Reach.
