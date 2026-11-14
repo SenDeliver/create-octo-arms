@@ -131,6 +131,8 @@ public final class ActuatorRenderer {
     private static float worldM11 = (float) (1 / Math.tan(Math.toRadians(HAND_FOV) / 2));
     /** Own wearer: the hand's last click was a use (a swing after it is a thrust, not a strike). */
     private static final boolean[] USED = new boolean[2];
+    /** The tick another mod last drew the local player's hand itself in first person (it cancelled {@link RenderHandEvent} before us): main, off. */
+    private static final int[] OTHER_HAND = {Integer.MIN_VALUE / 2, Integer.MIN_VALUE / 2};
     private static long frame, handFrame = -1;
     /** First-person draws of an Actuator standing in for a hand, per hand (main, off): the harness checks no hand is drawn twice in a frame. */
     public static final int[] HAND_DRAWS = new int[2];
@@ -246,7 +248,8 @@ public final class ActuatorRenderer {
     /**
      * The hand's Actuator stands in for it, so the vanilla hand, arm and item of that hand are not drawn and the body's arm
      * stays still: Actuators ready (fitted, with Air), no Extendo Grip in either hand (Create lifts the reach itself), and not an
-     * item Create or vanilla draws in first person in its own way (Potato Cannon, Worldshaper, a map).
+     * item Create or vanilla draws in first person in its own way (Potato Cannon, Worldshaper, a map), nor, for the local player, one
+     * another mod is drawing in that hand itself ({@link #drawnByOther}).
      */
     public static boolean standsIn(LivingEntity entity, InteractionHand hand) {
         Anim a = entity instanceof Player ? ANIMS.get(entity.getId()) : null;
@@ -269,6 +272,15 @@ public final class ActuatorRenderer {
         Anim a = ANIMS.get(player.getId());
         Arm arm = a == null ? null : a.arm(true);
         return arm == null || !arm.acting || arm.at == null || arm.to == null ? -1 : arm.at.distanceTo(arm.to);
+    }
+
+    /**
+     * Another mod drew this hand of the local player itself in first person this tick or the last (TACZ guns, anything drawn
+     * from its own {@link RenderHandEvent} listener that cancels it): the Actuator leaves that hand alone until the mod stops.
+     */
+    private static boolean drawnByOther(Player p, boolean main) {
+        int d = p.tickCount - OTHER_HAND[main ? 0 : 1];
+        return d >= 0 && d <= 1;
     }
 
     private static boolean excluded(ItemStack stack) {
@@ -383,7 +395,7 @@ public final class ActuatorRenderer {
             Arm arm = a.arm(main);
             ItemStack stack = p.getItemInHand(h);
             arm.main = main;
-            arm.hand = ready && !extendo && !excluded(stack);
+            arm.hand = ready && !extendo && !excluded(stack) && !(own && drawnByOther(p, main));
             arm.holding = hold.uses(h);
             arm.carries = arm.hand && !stack.isEmpty() && !arm.holding;
             arm.empty = own && main && arm.hand && stack.isEmpty() && !arm.holding;
@@ -628,8 +640,8 @@ public final class ActuatorRenderer {
     /**
      * First person, once per frame at the first hand vanilla is about to draw: the Actuators that work near the eye, in the hand
      * pass (no wall clips them, F1 hides them like a hand). The hand pass has its own field of view; the world-to-camera
-     * transform is scaled so an arm lands on screen exactly where the world pass would draw it. A hand its Actuator stands in
-     * for is not drawn by vanilla at all.
+     * transform is scaled so an arm lands on screen exactly where the world pass would draw it. Hiding vanilla's hand is left
+     * to {@link #onRenderHandLast}.
      */
     @SubscribeEvent(priority = EventPriority.HIGH, receiveCanceled = true)
     static void onRenderHand(RenderHandEvent event) {
@@ -655,7 +667,19 @@ public final class ActuatorRenderer {
                 ps.popPose();
             }
         }
-        if (standsIn(player, event.getHand())) event.setCanceled(true);
+    }
+
+    /**
+     * Last, so another mod that draws the hand itself (and cancels) gets it first: a cancelled hand is another mod's, and its
+     * Actuator steps back ({@link #drawnByOther}); otherwise vanilla does not draw a hand its Actuator stands in for.
+     */
+    @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
+    static void onRenderHandLast(RenderHandEvent event) {
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        if (player == null || mc.getCameraEntity() != player) return;
+        if (event.isCanceled()) OTHER_HAND[event.getHand() == InteractionHand.MAIN_HAND ? 0 : 1] = player.tickCount;
+        else if (standsIn(player, event.getHand())) event.setCanceled(true);
     }
 
     /** Draws a fitted Rig's Actuators of {@code pass}, and the items they carry. */

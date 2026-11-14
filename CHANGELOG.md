@@ -9,6 +9,10 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ## [Unreleased]
 
+### Changed
+
+- An Actuator steps back from a hand another mod draws itself in first person (TACZ guns and their animations): when a mod draws that hand from its own `RenderHandEvent` listener and cancels it, vanilla's hand is no longer hidden first, and the Actuator stops carrying that item until the mod stops (#34).
+
 ## [2.0.0] - 2026-11-09
 
 Actuators: two more arms for the Rig, one for each hand. The four Tentacles carry you as before; the Actuators mine, build, fight, Grab and Throw out to the Rig's Reach.
