@@ -13,6 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * (GLFW focuses a new window on creation unless told otherwise; FML's early window must be off, see tools/setup_run.sh).
  * With {@code -Dtentaworks.minimized} as well the window starts minimized (WSLg ignores the focus hints and stacks new windows on top;
  * a minimized client keeps ticking, at the inactivity frame limit, and no stray mouse turns its camera).
+ * {@code -Dtentaworks.winpos=x,y} moves the window there (screen coordinates; tools/run_split.sh cascades the clients of parallel shards,
+ * a fully covered window may render slower on macOS). Malformed or absent: the window stays where vanilla put it.
  */
 @Mixin(Window.class)
 public class DevWindowFocusMixin {
@@ -23,7 +25,16 @@ public class DevWindowFocusMixin {
     }
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void tentaworks$minimizedOnOpen(CallbackInfo ci) {
-        if (System.getProperty("tentaworks.minimized") != null) GLFW.glfwIconifyWindow(((Window) (Object) this).getWindow());
+    private void tentaworks$placeOnOpen(CallbackInfo ci) {
+        long window = ((Window) (Object) this).getWindow();
+        String pos = System.getProperty("tentaworks.winpos");
+        if (pos != null) {
+            String[] xy = pos.split(",");
+            try {
+                GLFW.glfwSetWindowPos(window, Integer.parseInt(xy[0].trim()), Integer.parseInt(xy[1].trim()));
+            } catch (RuntimeException ignored) {
+            }
+        }
+        if (System.getProperty("tentaworks.minimized") != null) GLFW.glfwIconifyWindow(window);
     }
 }

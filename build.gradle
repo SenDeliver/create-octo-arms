@@ -117,6 +117,36 @@ neoForge {
             programArgument '--nogui'
             gameDirectory = project.file('run/server')
         }
+        ['B', 'C', 'D', 'E', 'F'].each { id ->
+            register("client${id}") {
+                client()
+                disableIdeRun()
+                sourceSet = sourceSets.dev
+                gameDirectory = project.file("runs/${id}/client")
+                programArguments.addAll '--width', '1280', '--height', '720'
+                if (project.hasProperty('connect')) {
+                    programArguments.addAll '--quickPlayMultiplayer', project.property('connect').toString()
+                }
+            }
+            register("client2${id}") {
+                client()
+                disableIdeRun()
+                sourceSet = sourceSets.dev
+                gameDirectory = project.file("runs/${id}/client2")
+                programArguments.addAll '--width', '1280', '--height', '720', '--username', 'Dev2'
+                if (project.hasProperty('tentaworks.script2')) systemProperty 'tentaworks.script', project.property('tentaworks.script2').toString()
+                if (project.hasProperty('connect')) {
+                    programArguments.addAll '--quickPlayMultiplayer', project.property('connect').toString()
+                }
+            }
+            register("server${id}") {
+                server()
+                disableIdeRun()
+                sourceSet = sourceSets.dev
+                programArgument '--nogui'
+                gameDirectory = project.file("runs/${id}/server")
+            }
+        }
         data {
             data()
             gameDirectory = project.file('run/data')

@@ -1,89 +1,149 @@
 #!/bin/bash
-# Full regression: spike suites main (scenarios 1-8 + water + Dev2 watcher), lifecycle + negative controls, creative;
-# phase-1 suite p1 (Netherite Reach, Rig Block refill/pickup/loot, worn render, diving HUD, creative tab);
-# phase-2 suite p2 (Air drain, Crawl, Setting Down let-go, mid-air catch, Air gate, warnings, forged packets with 0 Air);
-# phase-3 suite p3 (Rig Settings screen + component, clamping, Standing Height, Speed, key-only mode, Crawl let-go/re-grab, creative, tooltips, long fall; ends with a kick);
-# phase-4 suite p4 (enchanting table offers + real enchant, anvil books, durability + Mending, Rig Block keeps enchants, Far Reach, Thrift, Swift, forged speed);
-# phase-5 suite p5 (recipe lookups after /reload, real Sequenced Assembly line + Mechanical Crafter grids, worn-out Rig, anvil/Mending repair, tooltips, smithing, JEI, creative tab);
-# phase-6 suite p6 (gait spread/steppers/Held while stepping, Tentacle art shots, Rig Blocks, icons, frame cost with two Rigs, plant sounds heard by Dev2, v1.1.2 still body while Held: own and as seen by Dev2),
-# p6walk (same with client config animation.walkWhileHeld=true: vanilla walk animation back while Held) and p6fast (speed.max 20 + Swift II: Grips stay valid for the server at 26 b/s).
-# phase-7 suite p7 (goggles on filling Rig Blocks, Display Link "Rig Air" board + percent + GUI, Rig Block shots, Ponder scene frames for every component, Ponder hint).
-# phase-8 suite p8 (code-review fixes: forged zero-motion climb Air, ghost blocks, through-wall / unloaded-neighbour Grips, packet bursts, speed check,
-# Setting Down rise, lenient settings codec, 16 RPM goggle sync, untested items U1-U6, input cost; ends with a kick) and p8r16 (input cost at Reach 16).
-# pole suite (1x1 and 2x2 poles climbed from a face and from a corner, going round them at height: outside-edge Held rule);
-# tank suite (issue #19: Create Fluid Tank columns climbed from a face and a corner, a Fluid Tank roof hung under: sturdy-face Grip rule);
-# cave suite (2026-10-20 clipping report: a low body on a floor with a cave under it keeps every Grip on the floor: Grips in sight only, back aim not under the floor);
-# sneak suite (Shift with the Rig out: moves down, server sees a sneak, no crouch; sneak + use with Create's wrench and on a chest);
-# sneak2 suite (sneak hand-over: Stowed sneak untouched, crouch returns when the Rig folds with Shift held, release seen, Rig Settings from the hand);
-# flat suite (issue #18: client config movement.forward = flat: W/S level only while looking up or down, Space/Shift still climb; look mode unchanged);
-# ride suite (adr/0003: a Ride Stows the Rig: Create seat, boat, horse, minecart, chain conveyor; old-client server check; needs ANIMALS=true for the horse);
-# spec suite (a spectator wearing a Rig: no Double Jump, flight kept, Rig back in survival); dig suite (mining while carried as fast as standing);
-# sculk suite (Silent Step: a Sculk Sensor hears a Stowed walk and a plain carried Rig, not a carried Rig with Silent Step);
-# curios suite (issue #17, adr/0006, the only suite built with -PwithCurios: a Rig in the Curios back slot over an iron chestplate is a Rig and not armor: Rise + Air drain,
-# hits wear it and a fall does not, Mending, Rig Settings for the back slot, one Rig at a time both ways with the action-bar line, use puts a Rig into a free back slot,
-# a Rig forced into the chest mid-use Sets Down and wins, Elytra in the chest never opens while deployed and glides after Set Down, Dev2 shots);
-# curiosoff suite (same scene with the server config curios.backSlot = false: a Rig placed in the back slot is inert, the slot refuses Rigs, use swaps into the chest as vanilla does).
-# phase-9 suite p9 (v1.1 Sable Ships: parked turned ship, moving 4/15 b/s, rotating, world <-> ship, ship removed mid-grip, deck ride). p9 and rideaero run last (then shipgrab), the
-# only suites built with -PwithSable (Sable runtime + Aeronautics bundle); rideaero: seat on a Ship, Control Hold on a Simulated steering wheel, Simulated handle;
-# 2.0 Actuators: faruse suite (Far Use lift Netherite and Copper at TW_REACH_COPPER=6: far mine/hit/place, sight through blocks and panes, Air paid,
-# drops and XP at the wearer, Rig Settings Far Use modes, Extendo, heavy hold pauses the lift);
-# glint suite (#32: Far Use with glinting items, Create wrench main and off hand, vanilla pickaxe; no "Not building!" crash);
-# airhud suite (Create's remaining-Air timer for the Rig while it uses Air: Active, Far Use sips, not Stowed idle, creative or under a Diving Helmet).
-# ownhand suite (#34: an item in tentaworks:own_hand, a stick from a test datapack, stays in the wearer's own hand in first person; a pickaxe stays carried).
-# fpview suite (#33, #41: the wearer's resting Actuators stay off screen at FOV 90 turning, strafing, crouched, crawling, left-handed; none drawn while scoping a spyglass).
-# grab suite (light sheep off the crosshair as wearer and Dev2 see it,
-# Throw Impact once, pinned creeper, heavy horse/iron golem x0.6 vs light cow, boss/player/owned refusals, seat, release reasons; needs ANIMALS=true);
-# look suite (Rest Pose, first-person limbOpacity 1.0 vs 0.3, held mobs, HUD lines; built with -PwithCurios for the Back Slot shot; needs ANIMALS=true);
-# shipgrab suite (Sable: small Ship held and followed, Set Down, Throw, mass cap and crew refusals; SKIP without Sable).
-# every other suite runs without Sable, and every suite but curios, curiosoff and look without Curios (no-Sable / no-Curios regression path).
-# p9, rideaero and shipgrab keep the old join (TW_PREBOOT=0, see run_split.sh): a join right after the scene assembles a Ship failed p9 moving-ship checks (B b4 Air, G g15 server ride) in 2 of 3 runs, 0 of 7 with the old join or a 10 s later join.
-# usage: tools/run_all.sh <tag>   logs land in tools/logs/<tag>-{main,life,creative,p1,p2,p3,p4,p5,p6,p6walk,p6fast,p7,p8,p8r16,pole,tank,cave,sneak,sneak2,flat,ride,spec,dig,sculk,curios,curiosoff,lag,lagneth,lagoff,slider,p9,rideaero,faruse,glint,airhud,ownhand,fpview,grab,look,shipgrab}-*
+# Full regression: every suite of tools/suites.tsv (one row each; what each tests: the comments there) through run_split.sh,
+# then the screenshots to tools/shots/, analyze.py per suite and the metrics below.
+# TW_SHARDS=1 (default): the table rows in order, one after another, on the default shard (run/, run2/, ports 25608/25609).
+# TW_SHARDS=N (2..6): suites in parallel, N workers on the shards default, B, C, ... (TW_SHARD of run_split.sh). Per dep set
+# (plain, then curios, then sable) its non-quiet suites, longest weight first, each worker taking the next free one; then the
+# quiet lane: every quiet suite alone, serial, on the default shard, in table order, Sable suites last. run_split output of each
+# suite goes to tools/logs/<tag>-<suite>-run.txt. TW_QUIET=par: quiet suites run as the others (still per dep set).
+# TW_DRY=1: print the command of each suite in schedule order (TW_SHARDS>1: the shard is a prediction from the weights), run nothing.
+# A suite with a non-zero exit (run_split.sh refused to start: shard busy, ports taken) in a parallel phase stops its worker for that phase.
+# TW_RUN_SPLIT=<script>: a stand-in for tools/run_split.sh (scheduler tests). Ctrl-C: no new suite starts (serial: the running suite dies, parallel: running ones finish), then exit 130 without metrics.
+# TW_SHARDS>1 builds once first (gradlew classes devClasses): no source edit or commit in this checkout while it runs, the next suite's gradle would rebuild under the running shards.
+# usage: [TW_SHARDS=N] [TW_QUIET=par] [TW_DRY=1] tools/run_all.sh <tag>   logs land in tools/logs/<tag>-<suite>-*, schedule in tools/logs/<tag>-sched.txt
 cd "$(dirname "$0")/.."
 TAG=${1:-reg}
 S=tools/scen
-rm -rf run/screenshots run2/screenshots
-TIMELINE=$S/main-timeline.txt SCRIPT2=$S/main-watch.txt tools/run_split.sh $S/scene-main.txt $S/main-client.txt tools/logs/$TAG-main
-TIMELINE=$S/life-timeline.txt tools/run_split.sh $S/scene-main.txt $S/life-client.txt tools/logs/$TAG-life
-GAMEMODE=creative TIMELINE=$S/creative-timeline.txt tools/run_split.sh $S/scene-main.txt $S/creative-client.txt tools/logs/$TAG-creative
-TIMELINE=$S/p1-timeline.txt tools/run_split.sh $S/scene-p1.txt $S/p1-client.txt tools/logs/$TAG-p1
-TIMELINE=$S/p2-timeline.txt tools/run_split.sh $S/scene-p2.txt $S/p2-client.txt tools/logs/$TAG-p2
-TIMELINE=$S/p3-timeline.txt tools/run_split.sh $S/scene-p3.txt $S/p3-client.txt tools/logs/$TAG-p3
-TIMELINE=$S/p4-timeline.txt tools/run_split.sh $S/scene-p4.txt $S/p4-client.txt tools/logs/$TAG-p4
-TIMELINE=$S/p5-timeline.txt tools/run_split.sh $S/scene-p5.txt $S/p5-client.txt tools/logs/$TAG-p5
-TIMELINE=$S/p6-timeline.txt SCRIPT2=$S/p6-watch.txt tools/run_split.sh $S/scene-p6.txt $S/p6-client.txt tools/logs/$TAG-p6
-TW_CLIENT_WALK=true TIMELINE=$S/p6-timeline.txt SCRIPT2=$S/p6-watch.txt tools/run_split.sh $S/scene-p6.txt $S/p6-client.txt tools/logs/$TAG-p6walk
-TW_SPEED_MAX=20 TIMELINE=$S/p6fast-timeline.txt tools/run_split.sh $S/scene-p6.txt $S/p6fast-client.txt tools/logs/$TAG-p6fast
-TIMELINE=$S/p7-timeline.txt tools/run_split.sh $S/scene-p7.txt $S/p7-client.txt tools/logs/$TAG-p7
-TIMELINE=$S/p8-timeline.txt tools/run_split.sh $S/scene-p8.txt $S/p8-client.txt tools/logs/$TAG-p8
-TW_REACH_NETHERITE=13 TIMELINE=$S/p8r16-timeline.txt tools/run_split.sh $S/scene-p8.txt $S/p8r16-client.txt tools/logs/$TAG-p8r16
-tools/run_split.sh $S/scene-pole.txt $S/pole-client.txt tools/logs/$TAG-pole
-tools/run_split.sh $S/scene-tank.txt $S/tank-client.txt tools/logs/$TAG-tank
-tools/run_split.sh $S/scene-cave.txt $S/cave-client.txt tools/logs/$TAG-cave
-TIMELINE=$S/sneak-timeline.txt SCRIPT2=$S/sneak-watch.txt tools/run_split.sh $S/scene-sneak.txt $S/sneak-client.txt tools/logs/$TAG-sneak
-TIMELINE=$S/sneak2-timeline.txt tools/run_split.sh $S/scene-sneak.txt $S/sneak2-client.txt tools/logs/$TAG-sneak2
-tools/run_split.sh $S/empty.txt $S/flat-client.txt tools/logs/$TAG-flat
-ANIMALS=true TIMELINE=$S/ride-timeline.txt tools/run_split.sh $S/scene-ride.txt $S/ride-client.txt tools/logs/$TAG-ride
-TIMELINE=$S/spec-timeline.txt tools/run_split.sh $S/empty.txt $S/spec-client.txt tools/logs/$TAG-spec
-tools/run_split.sh $S/empty.txt $S/dig-client.txt tools/logs/$TAG-dig
-tools/run_split.sh $S/scene-sculk.txt $S/sculk-client.txt tools/logs/$TAG-sculk
-GRADLE_ARGS="$GRADLE_ARGS -PwithCurios" TIMELINE=$S/curios-timeline.txt SCRIPT2=$S/curios-watch.txt tools/run_split.sh $S/scene-curios.txt $S/curios-client.txt tools/logs/$TAG-curios
-GRADLE_ARGS="$GRADLE_ARGS -PwithCurios" TW_BACK_SLOT=false tools/run_split.sh $S/scene-curios.txt $S/curiosoff-client.txt tools/logs/$TAG-curiosoff
-TW_REACH_COPPER=6 TIMELINE=$S/faruse-timeline.txt tools/run_split.sh $S/scene-faruse.txt $S/faruse-client.txt tools/logs/$TAG-faruse
-TIMELINE=$S/glint-timeline.txt tools/run_split.sh $S/scene-glint.txt $S/glint-client.txt tools/logs/$TAG-glint
-TIMELINE=$S/airhud-timeline.txt tools/run_split.sh $S/scene-airhud.txt $S/airhud-client.txt tools/logs/$TAG-airhud
-TW_DATAPACK=$S/ownhand-pack TIMELINE=$S/ownhand-timeline.txt tools/run_split.sh $S/empty.txt $S/ownhand-client.txt tools/logs/$TAG-ownhand
-TIMELINE=$S/fpview-timeline.txt tools/run_split.sh $S/empty.txt $S/fpview-client.txt tools/logs/$TAG-fpview
-ANIMALS=true TIMELINE=$S/grab-timeline.txt SCRIPT2=$S/grab-watch.txt tools/run_split.sh $S/scene-grab.txt $S/grab-client.txt tools/logs/$TAG-grab
-TW_REACH_COPPER=5 GRADLE_ARGS="$GRADLE_ARGS -PwithCurios" ANIMALS=true TIMELINE=$S/look-timeline.txt tools/run_split.sh $S/scene-look.txt $S/look-client.txt tools/logs/$TAG-look
-TIMELINE=$S/lag-timeline.txt tools/run_split.sh $S/empty.txt $S/lag-client.txt tools/logs/$TAG-lag
-TW_SWIFT_PER_LEVEL=0.225 TW_FAR_REACH_PER_LEVEL=1.334 TIMELINE=$S/lag-timeline.txt tools/run_split.sh $S/empty.txt $S/lag-stress-client.txt tools/logs/$TAG-lagneth
-TW_SPEED_CHECK=false TIMELINE=$S/lag-timeline.txt tools/run_split.sh $S/empty.txt $S/lag-client.txt tools/logs/$TAG-lagoff
-tools/run_split.sh $S/empty.txt $S/slider-client.txt tools/logs/$TAG-slider
-TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/p9-timeline.txt tools/run_split.sh $S/scene-p9.txt $S/p9-client.txt tools/logs/$TAG-p9
-TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/rideaero-timeline.txt tools/run_split.sh $S/scene-rideaero.txt $S/rideaero-client.txt tools/logs/$TAG-rideaero
-TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/shipgrab-timeline.txt SCRIPT2=$S/shipgrab-watch.txt tools/run_split.sh $S/scene-shipgrab.txt $S/shipgrab-client.txt tools/logs/$TAG-shipgrab
-mkdir -p tools/shots && cp run/screenshots/*.png run2/screenshots/*.png tools/shots/ 2>/dev/null
-for r in main life creative p1 p2 p3 p4 p5 p6 p6walk p6fast p7 p8 p8r16 pole tank cave sneak sneak2 flat ride spec dig sculk curios curiosoff lag lagneth lagoff slider faruse glint airhud ownhand fpview grab look p9 rideaero shipgrab; do echo "== $r"; python3 tools/analyze.py tools/logs/$TAG-$r | grep -v '^mark'; done
+SHARDS=${TW_SHARDS:-1}
+RUN_SPLIT=${TW_RUN_SPLIT:-tools/run_split.sh}
+LETTER=(x - B C D E F)
+unset TW_SHARD
+case $SHARDS in [1-6]) ;; *) echo "TW_SHARDS must be 1..6" >&2; exit 2;; esac
+
+N=0
+while IFS=$'\t' read -r name dep quiet weight scene client env; do
+  case $name in ''|'#'*) continue;; esac
+  [ "$env" = - ] && env=
+  bad=
+  case $dep in plain) flag=;; curios) flag=-PwithCurios;; sable) flag=-PwithSable;; *) flag=; bad="$bad dep=$dep";; esac
+  case $quiet in 0|1) ;; *) bad="$bad quiet=$quiet";; esac
+  case $weight in ''|*[!0-9]*) bad="$bad weight=$weight";; esac
+  for f in -PwithCurios -PwithSable; do
+    case "$env" in *"$f"*) [ "$f" = "$flag" ] || bad="$bad env-has$f";; *) [ "$f" = "$flag" ] && bad="$bad env-lacks$f";; esac
+  done
+  [ -f "$S/$scene" ] || bad="$bad scene=$scene"
+  [ -f "$S/$client" ] || bad="$bad client=$client"
+  j=0; while [ $j -lt $N ]; do [ "${NAMES[j]}" = "$name" ] && bad="$bad duplicate"; j=$((j+1)); done
+  if [ -n "$bad" ]; then echo "tools/suites.tsv: $name:$bad" >&2; exit 2; fi
+  NAMES[N]=$name; DEPS[N]=$dep; QUIETS[N]=$quiet; WEIGHTS[N]=$weight; SCENES[N]=$scene; CLIENTS[N]=$client; ENVS[N]=$env
+  N=$((N+1))
+done < tools/suites.tsv
+
+sname() { if [ "$1" = - ]; then echo default; else echo "$1"; fi; }
+cdir() { if [ "$1" = - ]; then echo run; else echo "runs/$1/client"; fi; }
+c2dir() { if [ "$1" = - ]; then echo run2; else echo "runs/$1/client2"; fi; }
+cmd() {
+  local p= e=${ENVS[$1]}
+  [ "$2" != - ] && p="TW_SHARD=$2 "
+  echo "$p${e:+$e }$RUN_SPLIT \$S/${SCENES[$1]} \$S/${CLIENTS[$1]} tools/logs/\$TAG-${NAMES[$1]}"
+}
+isquiet() { [ "${QUIETS[$1]}" = 1 ] && [ "$TW_QUIET" != par ]; }
+bydep() {
+  local i=0
+  while [ $i -lt $N ]; do
+    [ "${DEPS[i]}" = "$1" ] && ! isquiet $i && echo "${WEIGHTS[i]} $i"
+    i=$((i+1))
+  done | sort -s -k1,1nr | awk '{print $2}'
+}
+lane() {
+  local i=0
+  while [ $i -lt $N ]; do isquiet $i && [ "${DEPS[i]}" != sable ] && echo $i; i=$((i+1)); done
+  i=0
+  while [ $i -lt $N ]; do isquiet $i && [ "${DEPS[i]}" = sable ] && echo $i; i=$((i+1)); done
+}
+
+worker() {
+  local sh=$1 i t0 t rc
+  while read -r i <&3; do
+    [ -e "$ST/stop" ] && break
+    mkdir "$ST/claim-$i" 2>/dev/null || continue
+    t0=$(date +%s)
+    echo "$(date +%H:%M:%S) start ${NAMES[i]} on $(sname $sh)"
+    if [ "$SHARDS" = 1 ]; then
+      eval "$(cmd $i $sh)" 3<&-
+    else
+      eval "$(cmd $i $sh)" > "tools/logs/$TAG-${NAMES[i]}-run.txt" 2>&1 3<&-
+    fi
+    rc=$?
+    t=$(( $(date +%s) - t0 ))
+    printf '%s\t%s\t%s\t%s\n' "${NAMES[i]}" "$sh" "$rc" "$t" >> "$ST/done"
+    echo "$(date +%H:%M:%S) done  ${NAMES[i]} on $(sname $sh) rc=$rc ${t} s"
+    if [ -n "$3" ] && [ $rc != 0 ]; then echo "$(date +%H:%M:%S) shard $(sname $sh) refused ${NAMES[i]}: no more suites on it this phase"; break; fi
+  done 3< "$2"
+}
+DRYSUM=0
+simulate() {
+  local label=$1 w=$2 i k b end=0 sum=0 free
+  shift 2
+  k=1; while [ $k -le $w ]; do free[k]=0; k=$((k+1)); done
+  for i in "$@"; do
+    b=1; k=2
+    while [ $k -le $w ]; do [ ${free[k]} -lt ${free[b]} ] && b=$k; k=$((k+1)); done
+    cmd $i ${LETTER[b]}
+    free[b]=$(( free[b] + WEIGHTS[i] )); sum=$(( sum + WEIGHTS[i] ))
+    [ ${free[b]} -gt $end ] && end=${free[b]}
+  done
+  DRYSUM=$(( DRYSUM + end ))
+  echo "# phase $label: $# suites, $w worker(s), $sum s of suites, predicted $end s" >&2
+}
+phase() {
+  local label=$1 w=$2 k p pids=
+  shift 2
+  [ $# -gt 0 ] || return 0
+  [ "$w" -gt $# ] && w=$#
+  if [ -n "$TW_DRY" ]; then simulate "$label" "$w" "$@"; return 0; fi
+  [ -e "$ST/stop" ] && return 0
+  printf '%s\n' "$@" > "$ST/q-$label"
+  echo "$(date +%H:%M:%S) phase $label: $# suites, $w worker(s)"
+  if [ "$w" = 1 ]; then worker - "$ST/q-$label"; return 0; fi
+  k=1
+  while [ $k -le $w ]; do worker "${LETTER[k]}" "$ST/q-$label" par & pids="$pids $!"; k=$((k+1)); done
+  for p in $pids; do while :; do wait $p; [ $? -gt 128 ] || break; done; done
+}
+schedule() {
+  if [ "$SHARDS" = 1 ]; then
+    phase all 1 $(i=0; while [ $i -lt $N ]; do echo $i; i=$((i+1)); done)
+  else
+    for d in plain curios sable; do phase $d $SHARDS $(bydep $d); done
+    phase quiet 1 $(lane)
+  fi
+}
+
+if [ -n "$TW_DRY" ]; then
+  echo "# S=$S TAG=$TAG, $N suites, TW_SHARDS=$SHARDS${TW_QUIET:+ TW_QUIET=$TW_QUIET}" >&2
+  schedule
+  [ "$SHARDS" = 1 ] || echo "# predicted wall clock of the suites: $DRYSUM s" >&2
+  exit 0
+fi
+mkdir -p tools/logs
+ST=$(mktemp -d "${TMPDIR:-/tmp}/tw-runall.XXXXXX") || exit 1
+: > "$ST/done"
+k=1; while [ $k -le $SHARDS ]; do rm -rf "$(cdir ${LETTER[k]})/screenshots" "$(c2dir ${LETTER[k]})/screenshots"; k=$((k+1)); done
+if [ "$SHARDS" != 1 ] && [ -z "$TW_RUN_SPLIT" ]; then
+  ./gradlew classes devClasses > "tools/logs/$TAG-build.txt" 2>&1 || { echo "run_all: build failed, see tools/logs/$TAG-build.txt" >&2; exit 1; }
+fi
+trap 'touch "$ST/stop"; echo "run_all: stop asked, no new suite starts" >&2' INT TERM
+schedule
+trap - INT TERM
+cp "$ST/done" "tools/logs/$TAG-sched.txt"
+if [ -e "$ST/stop" ]; then echo "run_all $TAG: stopped, ran: $(cut -f1 "$ST/done" | tr '\n' ' ')" >&2; rm -rf "$ST"; exit 130; fi
+mkdir -p tools/shots
+k=1; while [ $k -le $SHARDS ]; do cp "$(cdir ${LETTER[k]})"/screenshots/*.png "$(c2dir ${LETTER[k]})"/screenshots/*.png tools/shots/ 2>/dev/null; k=$((k+1)); done
+LOOK_SHARD=$(awk -F'\t' '$1 == "look" {s = $2} END {print s}' "$ST/done")
+LOOK_SHOTS=$(cdir ${LOOK_SHARD:--})/screenshots
+SUITES_SECONDS=$SECONDS
+rm -rf "$ST"
+i=0; while [ $i -lt $N ]; do r=${NAMES[i]}; echo "== $r"; python3 tools/analyze.py tools/logs/$TAG-$r | grep -v '^mark'; i=$((i+1)); done
 python3 tools/spike_metrics.py tools/logs/$TAG
 python3 tools/p1_metrics.py tools/logs/$TAG-p1
 python3 tools/p2_metrics.py tools/logs/$TAG-p2
@@ -113,7 +173,7 @@ python3 tools/airhud_metrics.py tools/logs/$TAG-airhud
 python3 tools/ownhand_metrics.py tools/logs/$TAG-ownhand
 python3 tools/fpview_metrics.py tools/logs/$TAG-fpview
 python3 tools/grab_metrics.py tools/logs/$TAG-grab
-python3 tools/look_metrics.py tools/logs/$TAG-look
+python3 tools/look_metrics.py tools/logs/$TAG-look "$LOOK_SHOTS"
 python3 tools/lag_metrics.py tools/logs/$TAG-lag
 python3 tools/lag_metrics.py tools/logs/$TAG-lagneth
 python3 tools/lag_metrics.py tools/logs/$TAG-lagoff check-off
@@ -121,3 +181,8 @@ python3 tools/slider_metrics.py tools/logs/$TAG-slider
 python3 tools/p9_metrics.py tools/logs/$TAG-p9
 python3 tools/rideaero_metrics.py tools/logs/$TAG-rideaero
 python3 tools/shipgrab_metrics.py tools/logs/$TAG-shipgrab
+FAILED=$(awk -F'\t' '$3 != 0 {printf " %s", $1}' "tools/logs/$TAG-sched.txt")
+[ -n "$FAILED" ] && echo "run_all $TAG: non-zero exit, re-run alone:$FAILED"
+NOTRUN=; i=0; while [ $i -lt $N ]; do grep -q "^${NAMES[i]}	" "tools/logs/$TAG-sched.txt" || NOTRUN="$NOTRUN ${NAMES[i]}"; i=$((i+1)); done
+[ -n "$NOTRUN" ] && echo "run_all $TAG: not run:$NOTRUN"
+echo "run_all $TAG: TW_SHARDS=$SHARDS, suites $((SUITES_SECONDS / 60)) min $((SUITES_SECONDS % 60)) s, total $((SECONDS / 60)) min $((SECONDS % 60)) s"

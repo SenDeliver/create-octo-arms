@@ -120,7 +120,7 @@ import java.util.Set;
 /**
  * Dev-only client script: -Ptentaworks.script=file, run once a world is joined.
  * -Ptentaworks.connect=host:port: quickplay join held back until signal/_connect exists (the client boots while the scene is built; no title screen meanwhile).
- * Lines: wait N | await name (run/signal/name exists) | signal name (writes run/signal/c_name for rcon.py #await) | cmd /x (needs op) | shot name (toasts cleared first) | hud on|off | close | quit
+ * Lines: wait N | await name (<game dir>/signal/name exists) | signal name (writes <game dir>/signal/c_name for rcon.py #await) | cmd /x (needs op) | shot name (toasts cleared first) | hud on|off | close | quit
  * | hold up|down|left|right|jump|shift|sprint on|off (re-pressed every tick) | taps N (jump down 1 tick, up 2, N times)
  * | doublejump (taps 2) | look yaw pitch | trace on|off (TRACE line per tick) | mark tag (CPOS line + /tentaworks pos tag)
  * | freeze ms (blocks the client thread: a real hitch, no packets) | TITLE lines whenever the on-screen subtitle changes (Create's backtank warnings), OVERLAY lines whenever the action-bar text changes
@@ -639,7 +639,7 @@ public final class DevScript {
                     mc.player.connection.sendCommand("tentaworks pos " + a[1]);
                 }
                 case "rejoin" -> {
-                    rejoinAddress = mc.getCurrentServer() != null ? mc.getCurrentServer().ip : "localhost:25609";
+                    rejoinAddress = mc.getCurrentServer() != null ? mc.getCurrentServer().ip : CONNECT != null ? CONNECT : "localhost:25609";
                     rejoinTicks = Integer.parseInt(a[1]);
                     HELD.clear();
                     mc.level.disconnect();

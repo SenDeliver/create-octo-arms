@@ -1,0 +1,92 @@
+# Suite table, read by tools/run_all.sh: run lines, analyze loop and parallel schedule. One row per suite.
+# Columns, tab-separated (a run of tabs counts as one, so align freely; an empty field is -):
+#   name     log suffix: tools/logs/<tag>-<name>-*
+#   dep      plain | curios (built with -PwithCurios) | sable (-PwithSable); must match the GRADLE_ARGS in env
+#   quiet    1: timing-sensitive, with TW_SHARDS>1 it runs in the quiet lane (alone, serial, default shard); 0: may run next to other suites
+#   weight   seconds in the last full run, for the longest-first schedule (look, lag, lagneth, lagoff, slider, p9, rideaero, shipgrab: guessed from the client script's waits)
+#   scene    RCON scene in tools/scen
+#   client   client script in tools/scen
+#   env      shell assignments before tools/run_split.sh, as written ($S = tools/scen, $GRADLE_ARGS = the caller's), - for none
+# Row order = the TW_SHARDS=1 run order and the analyze order. New suite: a row here, a metrics line in run_all.sh, a section in tools/README.md.
+#
+# What the suites test:
+# spike suites main (scenarios 1-8 + water + Dev2 watcher), lifecycle + negative controls, creative;
+# phase-1 suite p1 (Netherite Reach, Rig Block refill/pickup/loot, worn render, diving HUD, creative tab);
+# phase-2 suite p2 (Air drain, Crawl, Setting Down let-go, mid-air catch, Air gate, warnings, forged packets with 0 Air);
+# phase-3 suite p3 (Rig Settings screen + component, clamping, Standing Height, Speed, key-only mode, Crawl let-go/re-grab, creative, tooltips, long fall; ends with a kick);
+# phase-4 suite p4 (enchanting table offers + real enchant, anvil books, durability + Mending, Rig Block keeps enchants, Far Reach, Thrift, Swift, forged speed);
+# phase-5 suite p5 (recipe lookups after /reload, real Sequenced Assembly line + Mechanical Crafter grids, worn-out Rig, anvil/Mending repair, tooltips, smithing, JEI, creative tab);
+# phase-6 suite p6 (gait spread/steppers/Held while stepping, Tentacle art shots, Rig Blocks, icons, frame cost with two Rigs, plant sounds heard by Dev2, v1.1.2 still body while Held: own and as seen by Dev2),
+# p6walk (same with client config animation.walkWhileHeld=true: vanilla walk animation back while Held) and p6fast (speed.max 20 + Swift II: Grips stay valid for the server at 26 b/s).
+# phase-7 suite p7 (goggles on filling Rig Blocks, Display Link "Rig Air" board + percent + GUI, Rig Block shots, Ponder scene frames for every component, Ponder hint).
+# phase-8 suite p8 (code-review fixes: forged zero-motion climb Air, ghost blocks, through-wall / unloaded-neighbour Grips, packet bursts, speed check,
+# Setting Down rise, lenient settings codec, 16 RPM goggle sync, untested items U1-U6, input cost; ends with a kick) and p8r16 (input cost at Reach 16).
+# pole suite (1x1 and 2x2 poles climbed from a face and from a corner, going round them at height: outside-edge Held rule);
+# tank suite (issue #19: Create Fluid Tank columns climbed from a face and a corner, a Fluid Tank roof hung under: sturdy-face Grip rule);
+# cave suite (2026-10-20 clipping report: a low body on a floor with a cave under it keeps every Grip on the floor: Grips in sight only, back aim not under the floor);
+# sneak suite (Shift with the Rig out: moves down, server sees a sneak, no crouch; sneak + use with Create's wrench and on a chest);
+# sneak2 suite (sneak hand-over: Stowed sneak untouched, crouch returns when the Rig folds with Shift held, release seen, Rig Settings from the hand);
+# flat suite (issue #18: client config movement.forward = flat: W/S level only while looking up or down, Space/Shift still climb; look mode unchanged);
+# ride suite (adr/0003: a Ride Stows the Rig: Create seat, boat, horse, minecart, chain conveyor; old-client server check; needs ANIMALS=true for the horse);
+# spec suite (a spectator wearing a Rig: no Double Jump, flight kept, Rig back in survival); dig suite (mining while carried as fast as standing);
+# sculk suite (Silent Step: a Sculk Sensor hears a Stowed walk and a plain carried Rig, not a carried Rig with Silent Step);
+# curios suite (issue #17, adr/0006, the only suite built with -PwithCurios: a Rig in the Curios back slot over an iron chestplate is a Rig and not armor: Rise + Air drain,
+# hits wear it and a fall does not, Mending, Rig Settings for the back slot, one Rig at a time both ways with the action-bar line, use puts a Rig into a free back slot,
+# a Rig forced into the chest mid-use Sets Down and wins, Elytra in the chest never opens while deployed and glides after Set Down, Dev2 shots);
+# curiosoff suite (same scene with the server config curios.backSlot = false: a Rig placed in the back slot is inert, the slot refuses Rigs, use swaps into the chest as vanilla does).
+# phase-9 suite p9 (v1.1 Sable Ships: parked turned ship, moving 4/15 b/s, rotating, world <-> ship, ship removed mid-grip, deck ride). p9 and rideaero run last (then shipgrab), the
+# only suites built with -PwithSable (Sable runtime + Aeronautics bundle); rideaero: seat on a Ship, Control Hold on a Simulated steering wheel, Simulated handle;
+# 2.0 Actuators: faruse suite (Far Use lift Netherite and Copper at TW_REACH_COPPER=6: far mine/hit/place, sight through blocks and panes, Air paid,
+# drops and XP at the wearer, Rig Settings Far Use modes, Extendo, heavy hold pauses the lift);
+# glint suite (#32: Far Use with glinting items, Create wrench main and off hand, vanilla pickaxe; no "Not building!" crash);
+# airhud suite (Create's remaining-Air timer for the Rig while it uses Air: Active, Far Use sips, not Stowed idle, creative or under a Diving Helmet).
+# ownhand suite (#34: an item in tentaworks:own_hand, a stick from a test datapack, stays in the wearer's own hand in first person; a pickaxe stays carried).
+# fpview suite (#33, #41: the wearer's resting Actuators stay off screen at FOV 90 turning, strafing, crouched, crawling, left-handed; none drawn while scoping a spyglass).
+# grab suite (light sheep off the crosshair as wearer and Dev2 see it,
+# Throw Impact once, pinned creeper, heavy horse/iron golem x0.6 vs light cow, boss/player/owned refusals, seat, release reasons; needs ANIMALS=true);
+# look suite (Rest Pose, first-person limbOpacity 1.0 vs 0.3, held mobs, HUD lines; built with -PwithCurios for the Back Slot shot; needs ANIMALS=true);
+# shipgrab suite (Sable: small Ship held and followed, Set Down, Throw, mass cap and crew refusals; SKIP without Sable).
+# every other suite runs without Sable, and every suite but curios, curiosoff and look without Curios (no-Sable / no-Curios regression path).
+# p9, rideaero and shipgrab keep the old join (TW_PREBOOT=0, see run_split.sh): a join right after the scene assembles a Ship failed p9 moving-ship checks (B b4 Air, G g15 server ride) in 2 of 3 runs, 0 of 7 with the old join or a 10 s later join.
+#
+# name		dep	quiet	weight	scene			client			env
+main		plain	0	131	scene-main.txt		main-client.txt		TIMELINE=$S/main-timeline.txt SCRIPT2=$S/main-watch.txt
+life		plain	0	59	scene-main.txt		life-client.txt		TIMELINE=$S/life-timeline.txt
+creative	plain	0	30	scene-main.txt		creative-client.txt	GAMEMODE=creative TIMELINE=$S/creative-timeline.txt
+p1		plain	0	82	scene-p1.txt		p1-client.txt		TIMELINE=$S/p1-timeline.txt
+p2		plain	0	244	scene-p2.txt		p2-client.txt		TIMELINE=$S/p2-timeline.txt
+p3		plain	0	211	scene-p3.txt		p3-client.txt		TIMELINE=$S/p3-timeline.txt
+p4		plain	0	260	scene-p4.txt		p4-client.txt		TIMELINE=$S/p4-timeline.txt
+p5		plain	0	127	scene-p5.txt		p5-client.txt		TIMELINE=$S/p5-timeline.txt
+p6		plain	1	110	scene-p6.txt		p6-client.txt		TIMELINE=$S/p6-timeline.txt SCRIPT2=$S/p6-watch.txt
+p6walk		plain	1	106	scene-p6.txt		p6-client.txt		TW_CLIENT_WALK=true TIMELINE=$S/p6-timeline.txt SCRIPT2=$S/p6-watch.txt
+p6fast		plain	1	26	scene-p6.txt		p6fast-client.txt	TW_SPEED_MAX=20 TIMELINE=$S/p6fast-timeline.txt
+p7		plain	1	57	scene-p7.txt		p7-client.txt		TIMELINE=$S/p7-timeline.txt
+p8		plain	1	127	scene-p8.txt		p8-client.txt		TIMELINE=$S/p8-timeline.txt
+p8r16		plain	1	26	scene-p8.txt		p8r16-client.txt	TW_REACH_NETHERITE=13 TIMELINE=$S/p8r16-timeline.txt
+pole		plain	0	175	scene-pole.txt		pole-client.txt		-
+tank		plain	0	61	scene-tank.txt		tank-client.txt		-
+cave		plain	0	42	scene-cave.txt		cave-client.txt		-
+sneak		plain	0	66	scene-sneak.txt		sneak-client.txt	TIMELINE=$S/sneak-timeline.txt SCRIPT2=$S/sneak-watch.txt
+sneak2		plain	0	38	scene-sneak.txt		sneak2-client.txt	TIMELINE=$S/sneak2-timeline.txt
+flat		plain	0	44	empty.txt		flat-client.txt		-
+ride		plain	1	136	scene-ride.txt		ride-client.txt		ANIMALS=true TIMELINE=$S/ride-timeline.txt
+spec		plain	0	36	empty.txt		spec-client.txt		TIMELINE=$S/spec-timeline.txt
+dig		plain	0	34	empty.txt		dig-client.txt		-
+sculk		plain	0	47	scene-sculk.txt		sculk-client.txt	-
+curios		curios	0	76	scene-curios.txt	curios-client.txt	GRADLE_ARGS="$GRADLE_ARGS -PwithCurios" TIMELINE=$S/curios-timeline.txt SCRIPT2=$S/curios-watch.txt
+curiosoff	curios	0	34	scene-curios.txt	curiosoff-client.txt	GRADLE_ARGS="$GRADLE_ARGS -PwithCurios" TW_BACK_SLOT=false
+faruse		plain	0	180	scene-faruse.txt	faruse-client.txt	TW_REACH_COPPER=6 TIMELINE=$S/faruse-timeline.txt
+glint		plain	0	31	scene-glint.txt		glint-client.txt	TIMELINE=$S/glint-timeline.txt
+airhud		plain	0	59	scene-airhud.txt	airhud-client.txt	TIMELINE=$S/airhud-timeline.txt
+ownhand		plain	0	31	empty.txt		ownhand-client.txt	TW_DATAPACK=$S/ownhand-pack TIMELINE=$S/ownhand-timeline.txt
+fpview		plain	0	59	empty.txt		fpview-client.txt	TIMELINE=$S/fpview-timeline.txt
+grab		plain	0	140	scene-grab.txt		grab-client.txt		ANIMALS=true TIMELINE=$S/grab-timeline.txt SCRIPT2=$S/grab-watch.txt
+look		curios	0	122	scene-look.txt		look-client.txt		TW_REACH_COPPER=5 GRADLE_ARGS="$GRADLE_ARGS -PwithCurios" ANIMALS=true TIMELINE=$S/look-timeline.txt
+lag		plain	1	45	empty.txt		lag-client.txt		TIMELINE=$S/lag-timeline.txt
+lagneth		plain	1	45	empty.txt		lag-stress-client.txt	TW_SWIFT_PER_LEVEL=0.225 TW_FAR_REACH_PER_LEVEL=1.334 TIMELINE=$S/lag-timeline.txt
+lagoff		plain	1	45	empty.txt		lag-client.txt		TW_SPEED_CHECK=false TIMELINE=$S/lag-timeline.txt
+slider		plain	0	32	empty.txt		slider-client.txt	-
+p9		sable	1	179	scene-p9.txt		p9-client.txt		TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/p9-timeline.txt
+rideaero	sable	1	61	scene-rideaero.txt	rideaero-client.txt	TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/rideaero-timeline.txt
+shipgrab	sable	1	59	scene-shipgrab.txt	shipgrab-client.txt	TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/shipgrab-timeline.txt SCRIPT2=$S/shipgrab-watch.txt
