@@ -9,18 +9,6 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ## [Unreleased]
 
-### Added
-
-- Create's remaining-Air timer beside the hotbar now shows for the Rig whenever it uses Air (Active, Setting Down, holding a Grab unless Deft, during Far Use, and for 2 seconds after the Rig's Air goes down, as with Dual Wield, a Throw or a Create tool drawing on it), not only with a Diving Helmet under water. Never drawn twice: under water with a helmet Create's own timer shows. Client only (issue #36). Thanks @snipernumber3.
-- Item tag `tentaworks:own_hand`: items in it stay in the wearer's own hand like a Potato Cannon or a map, so a mod that draws and animates them itself keeps its first-person view. TACZ guns are in it by default (issue #34). The tag is server data: the server needs this version for the default entry. Thanks @snipernumber3.
-
-### Fixed
-
-- An enchanted (glinting) item in an Actuator no longer crashes the game when it is used out at Far Use range (issue #32). Client only. Thanks @snipernumber3.
-- With Sable, looking at a Ship no longer logs "Aborting entity get for abnormally large AABB" from the Actuators' crosshair pick, and a Ship block no longer gets the Far Use crosshair marks (Far Use leaves Ship blocks to Sable) (issue #38). Client only. Thanks @snipernumber3.
-- First person: a resting Actuator no longer swings into view when the body turns away from the look (strafing, a fast turn, looking up, crouching, crawling or swimming); the Rest, folded and limp poses now follow the view, at any field of view. Third person is unchanged (issue #33). Client only. Thanks @snipernumber3.
-- First person: the Actuators no longer block the view while scoping with a spyglass, as vanilla hides the hands (issue #41). Client only. Thanks @snipernumber3.
-
 ## [2.0.0] - 2026-11-09
 
 Actuators: two more arms for the Rig, one for each hand. The four Tentacles carry you as before; the Actuators mine, build, fight, Grab and Throw out to the Rig's Reach.
@@ -47,6 +35,8 @@ Actuators: two more arms for the Rig, one for each hand. The four Tentacles carr
 - **1.21.1 only:** Advancement Fridge Mover (Grab a Ship and set it down 50 blocks away), shown only with Sable.
 - Client config: `firstPerson.limbOpacity` (how solid Tentacles and Actuators are drawn in first person, 1.0 down to 0.1), `hud.crosshair` and `hud.hints` (turn the marks and the key hints off).
 - Server config `speed.check` (default on): off, the server never Stows a Rig for moving faster than its top Speed.
+- Create's remaining-Air timer beside the hotbar now shows for the Rig whenever it uses Air (Active, Setting Down, holding a Grab unless Deft, during Far Use, and for 2 seconds after the Rig's Air goes down, as with Dual Wield, a Throw or a Create tool drawing on it), not only with a Diving Helmet under water. Never drawn twice: under water with a helmet Create's own timer shows. Client only (issue #36). Thanks @snipernumber3.
+- Item tag `tentaworks:own_hand`: items in it stay in the wearer's own hand like a Potato Cannon or a map, so a mod that draws and animates them itself keeps its first-person view. TACZ guns are in it by default (issue #34). The tag is server data: the server needs this version for the default entry. Thanks @snipernumber3.
 
 ### Changed
 
@@ -61,6 +51,10 @@ Actuators: two more arms for the Rig, one for each hand. The four Tentacles carr
 - In creative, opening the inventory no longer Stows an Active Rig (since 1.8.0).
 - A Rig at its top Speed is no longer Stowed on a lagging server.
 - Rig Settings: with Swift, the Speed slider now reaches the top Speed named under it.
+- 2.0 beta: An enchanted (glinting) item in an Actuator no longer crashes the game when the Actuator reaches out with it: Far Use, or hitting a mob up close (issue #32). Client only. Thanks @snipernumber3.
+- 2.0 beta: With Sable, looking at a Ship no longer logs "Aborting entity get for abnormally large AABB" from the Actuators' crosshair pick, and a Ship block no longer gets the Far Use crosshair marks (Far Use leaves Ship blocks to Sable) (issue #38). Client only. Thanks @snipernumber3.
+- 2.0 beta: First person: a resting Actuator no longer swings into view when the body turns away from the look (strafing, a fast turn, looking up, crouching, crawling or swimming); the Rest, folded and limp poses now follow the view, at any field of view. Third person is unchanged (issue #33). Client only. Thanks @snipernumber3.
+- 2.0 beta: First person: the Actuators no longer block the view while scoping with a spyglass, as vanilla hides the hands (issue #41). Client only. Thanks @snipernumber3.
 
 ### Compatibility
 
