@@ -22,6 +22,7 @@ public final class TentaworksIds {
     public static final String ACTUATORS = "actuators";
     public static final String DEFT = "deft";
     public static final String BOSSES = "bosses";
+    public static final String OWN_HAND = "own_hand";
     public static final String PINNED = "pinned";
     public static final String THROWN = "thrown";
     public static final String FITTING = "fitting";

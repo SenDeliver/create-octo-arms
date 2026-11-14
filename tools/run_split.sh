@@ -2,7 +2,7 @@
 # Dedicated server + client(s) over localhost. Fresh world each run.
 # GRADLE_ARGS (e.g. -PnoJei) go to every gradle run.
 # Clients boot while the server boots and join once the scene is done (signal/_connect, DevScript); TW_PREBOOT=0: old flow (client started after the scene, 2 s polls).
-# usage: [TW_SPEED_MAX=20] [TW_SPEED_CHECK=false] [TW_SWIFT_PER_LEVEL=N] [TW_FAR_REACH_PER_LEVEL=N] [TW_REACH_COPPER=N] [TW_REACH_NETHERITE=N] [TW_BACK_SLOT=false] [TW_CLIENT_WALK=true] [TW_CLIENT_FORWARD=flat] [TIMELINE=<rcon file run after Dev joins>] [SCRIPT2=<client script for Dev2>] [GAMEMODE=creative] [ANIMALS=true] tools/run_split.sh <rcon scene> <client script> <log prefix>
+# usage: [TW_SPEED_MAX=20] [TW_SPEED_CHECK=false] [TW_SWIFT_PER_LEVEL=N] [TW_FAR_REACH_PER_LEVEL=N] [TW_REACH_COPPER=N] [TW_REACH_NETHERITE=N] [TW_BACK_SLOT=false] [TW_DATAPACK=<dir>] [TW_CLIENT_WALK=true] [TW_CLIENT_FORWARD=flat] [TIMELINE=<rcon file run after Dev joins>] [SCRIPT2=<client script for Dev2>] [GAMEMODE=creative] [ANIMALS=true] tools/run_split.sh <rcon scene> <client script> <log prefix>
 cd "$(dirname "$0")/.."
 SCENE=$1; SCRIPT=$2; OUT=$3
 TW_REACH_COPPER=${TW_REACH_COPPER:-4}
@@ -11,6 +11,8 @@ for i in $(seq 1 480); do pgrep -f "bootstraplauncher.*$PWD/build/moddev" > /dev
 if pgrep -f "bootstraplauncher.*$PWD/build/moddev" > /dev/null; then echo "a dev Minecraft of this repo is already running; not starting"; exit 1; fi
 tools/setup_run.sh > /dev/null
 rm -rf run/server/world run/signal run2/signal
+# TW_DATAPACK=<dir>: a datapack copied into the fresh world before boot (a new world enables every pack it finds), e.g. a test entry in a tag.
+if [ -n "$TW_DATAPACK" ]; then mkdir -p run/server/world/datapacks && cp -R "$TW_DATAPACK" run/server/world/datapacks/; fi
 # TW_SPEED_MAX (e.g. 20), TW_SPEED_CHECK (true|false), TW_SWIFT_PER_LEVEL / TW_FAR_REACH_PER_LEVEL (a level past the max: levels are capped at max_level), TW_REACH_COPPER (default 4, the 1.x Reach the movement suites are built on) / TW_REACH_NETHERITE, TW_BACK_SLOT (true|false): this run's world overrides those keys (world/serverconfig beats config/).
 # A [speed] check key or [curios] section missing from an older config/ copy is added (NeoForge fills the other keys with defaults).
 if [ -n "$TW_SPEED_MAX$TW_SPEED_CHECK$TW_SWIFT_PER_LEVEL$TW_FAR_REACH_PER_LEVEL$TW_REACH_COPPER$TW_REACH_NETHERITE$TW_BACK_SLOT" ] && [ -f run/server/config/tentaworks-server.toml ]; then

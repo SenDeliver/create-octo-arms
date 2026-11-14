@@ -9,6 +9,7 @@ import com.simibubi.create.content.equipment.zapper.ZapperItem;
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.compat.Frame;
 import dev.tentaworks.compat.ShipFrames;
+import dev.tentaworks.registry.TentaworksItems;
 import dev.tentaworks.rig.ActuatorReach;
 import dev.tentaworks.rig.Actuators;
 import dev.tentaworks.rig.FarUse;
@@ -272,7 +273,8 @@ public final class ActuatorRenderer {
     }
 
     private static boolean excluded(ItemStack stack) {
-        return stack.getItem() instanceof MapItem || stack.getItem() instanceof PotatoCannonItem || stack.getItem() instanceof ZapperItem;
+        return stack.getItem() instanceof MapItem || stack.getItem() instanceof PotatoCannonItem || stack.getItem() instanceof ZapperItem
+                || stack.is(TentaworksItems.OWN_HAND);
     }
 
     /** A tool or weapon strikes; anything else, and an empty gripper, thrusts. */
