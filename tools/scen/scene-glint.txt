@@ -1,0 +1,12 @@
+# Glint suite (x 11700..11710): Far Use with glinting items, whose glint and base buffers are taken at once (#32). Flat world: ground top at y=-60.
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+gamerule doImmediateRespawn true
+gamerule keepInventory true
+time set noon
+forceload add 11690 -10 11720 20
+# G1 dirt at 6.5 (glinting Create wrench, main hand, mined); G2 shaft at 6.5 (wrench used, main hand); G3 shaft at 6.5 (wrench used, off hand); G4 dirt at 6.5 (glinting vanilla pickaxe, mined)
+setblock 11707 -59 0 dirt
+setblock 11707 -59 4 create:shaft[axis=x]
+setblock 11707 -59 8 create:shaft[axis=x]
+setblock 11707 -59 12 dirt

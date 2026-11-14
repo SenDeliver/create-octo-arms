@@ -11,7 +11,12 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ### Added
 
+- Create's remaining-Air timer beside the hotbar now shows for the Rig whenever it uses Air (Active, Setting Down, holding a Grab unless Deft, during Far Use, and for 2 seconds after the Rig's Air goes down, as with Dual Wield, a Throw or a Create tool drawing on it), not only with a Diving Helmet under water. Never drawn twice: under water with a helmet Create's own timer shows. Client only (issue #36). Thanks @snipernumber3.
 - Item tag `tentaworks:own_hand`: items in it stay in the wearer's own hand like a Potato Cannon or a map, so a mod that draws and animates them itself keeps its first-person view. TACZ guns are in it by default (issue #34). The tag is server data: the server needs this version for the default entry. Thanks @snipernumber3.
+
+### Fixed
+
+- An enchanted (glinting) item in an Actuator no longer crashes the game when it is used out at Far Use range (issue #32). Client only. Thanks @snipernumber3.
 
 ## [2.0.0] - 2026-11-09
 

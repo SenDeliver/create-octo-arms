@@ -26,14 +26,17 @@
 # phase-9 suite p9 (v1.1 Sable Ships: parked turned ship, moving 4/15 b/s, rotating, world <-> ship, ship removed mid-grip, deck ride). p9 and rideaero run last (then shipgrab), the
 # only suites built with -PwithSable (Sable runtime + Aeronautics bundle); rideaero: seat on a Ship, Control Hold on a Simulated steering wheel, Simulated handle;
 # 2.0 Actuators: faruse suite (Far Use lift Netherite and Copper at TW_REACH_COPPER=6: far mine/hit/place, sight through blocks and panes, Air paid,
-# drops and XP at the wearer, Rig Settings Far Use modes, Extendo, heavy hold pauses the lift); grab suite (light sheep off the crosshair as wearer and Dev2 see it,
+# drops and XP at the wearer, Rig Settings Far Use modes, Extendo, heavy hold pauses the lift);
+# glint suite (#32: Far Use with glinting items, Create wrench main and off hand, vanilla pickaxe; no "Not building!" crash);
+# airhud suite (Create's remaining-Air timer for the Rig while it uses Air: Active, Far Use sips, not Stowed idle, creative or under a Diving Helmet).
+# ownhand suite (#34: an item in tentaworks:own_hand, a stick from a test datapack, stays in the wearer's own hand in first person; a pickaxe stays carried).
+# grab suite (light sheep off the crosshair as wearer and Dev2 see it,
 # Throw Impact once, pinned creeper, heavy horse/iron golem x0.6 vs light cow, boss/player/owned refusals, seat, release reasons; needs ANIMALS=true);
 # look suite (Rest Pose, first-person limbOpacity 1.0 vs 0.3, held mobs, HUD lines; built with -PwithCurios for the Back Slot shot; needs ANIMALS=true);
-# ownhand suite (#34: an item in tentaworks:own_hand, a stick from a test datapack, stays in the wearer's own hand in first person; a pickaxe stays carried).
 # shipgrab suite (Sable: small Ship held and followed, Set Down, Throw, mass cap and crew refusals; SKIP without Sable).
 # every other suite runs without Sable, and every suite but curios, curiosoff and look without Curios (no-Sable / no-Curios regression path).
 # p9, rideaero and shipgrab keep the old join (TW_PREBOOT=0, see run_split.sh): a join right after the scene assembles a Ship failed p9 moving-ship checks (B b4 Air, G g15 server ride) in 2 of 3 runs, 0 of 7 with the old join or a 10 s later join.
-# usage: tools/run_all.sh <tag>   logs land in tools/logs/<tag>-{main,life,creative,p1,p2,p3,p4,p5,p6,p6walk,p6fast,p7,p8,p8r16,pole,tank,cave,sneak,sneak2,flat,ride,spec,dig,sculk,curios,curiosoff,lag,lagneth,lagoff,slider,p9,rideaero,faruse,ownhand,grab,look,shipgrab}-*
+# usage: tools/run_all.sh <tag>   logs land in tools/logs/<tag>-{main,life,creative,p1,p2,p3,p4,p5,p6,p6walk,p6fast,p7,p8,p8r16,pole,tank,cave,sneak,sneak2,flat,ride,spec,dig,sculk,curios,curiosoff,lag,lagneth,lagoff,slider,p9,rideaero,faruse,glint,airhud,ownhand,grab,look,shipgrab}-*
 cd "$(dirname "$0")/.."
 TAG=${1:-reg}
 S=tools/scen
@@ -65,6 +68,8 @@ tools/run_split.sh $S/scene-sculk.txt $S/sculk-client.txt tools/logs/$TAG-sculk
 GRADLE_ARGS="$GRADLE_ARGS -PwithCurios" TIMELINE=$S/curios-timeline.txt SCRIPT2=$S/curios-watch.txt tools/run_split.sh $S/scene-curios.txt $S/curios-client.txt tools/logs/$TAG-curios
 GRADLE_ARGS="$GRADLE_ARGS -PwithCurios" TW_BACK_SLOT=false tools/run_split.sh $S/scene-curios.txt $S/curiosoff-client.txt tools/logs/$TAG-curiosoff
 TW_REACH_COPPER=6 TIMELINE=$S/faruse-timeline.txt tools/run_split.sh $S/scene-faruse.txt $S/faruse-client.txt tools/logs/$TAG-faruse
+TIMELINE=$S/glint-timeline.txt tools/run_split.sh $S/scene-glint.txt $S/glint-client.txt tools/logs/$TAG-glint
+TIMELINE=$S/airhud-timeline.txt tools/run_split.sh $S/scene-airhud.txt $S/airhud-client.txt tools/logs/$TAG-airhud
 TW_DATAPACK=$S/ownhand-pack TIMELINE=$S/ownhand-timeline.txt tools/run_split.sh $S/empty.txt $S/ownhand-client.txt tools/logs/$TAG-ownhand
 ANIMALS=true TIMELINE=$S/grab-timeline.txt SCRIPT2=$S/grab-watch.txt tools/run_split.sh $S/scene-grab.txt $S/grab-client.txt tools/logs/$TAG-grab
 TW_REACH_COPPER=5 GRADLE_ARGS="$GRADLE_ARGS -PwithCurios" ANIMALS=true TIMELINE=$S/look-timeline.txt tools/run_split.sh $S/scene-look.txt $S/look-client.txt tools/logs/$TAG-look
@@ -76,7 +81,7 @@ TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/p9-timeline.txt 
 TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/rideaero-timeline.txt tools/run_split.sh $S/scene-rideaero.txt $S/rideaero-client.txt tools/logs/$TAG-rideaero
 TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/shipgrab-timeline.txt SCRIPT2=$S/shipgrab-watch.txt tools/run_split.sh $S/scene-shipgrab.txt $S/shipgrab-client.txt tools/logs/$TAG-shipgrab
 mkdir -p tools/shots && cp run/screenshots/*.png run2/screenshots/*.png tools/shots/ 2>/dev/null
-for r in main life creative p1 p2 p3 p4 p5 p6 p6walk p6fast p7 p8 p8r16 pole tank cave sneak sneak2 flat ride spec dig sculk curios curiosoff lag lagneth lagoff slider faruse ownhand grab look p9 rideaero shipgrab; do echo "== $r"; python3 tools/analyze.py tools/logs/$TAG-$r | grep -v '^mark'; done
+for r in main life creative p1 p2 p3 p4 p5 p6 p6walk p6fast p7 p8 p8r16 pole tank cave sneak sneak2 flat ride spec dig sculk curios curiosoff lag lagneth lagoff slider faruse glint airhud ownhand grab look p9 rideaero shipgrab; do echo "== $r"; python3 tools/analyze.py tools/logs/$TAG-$r | grep -v '^mark'; done
 python3 tools/spike_metrics.py tools/logs/$TAG
 python3 tools/p1_metrics.py tools/logs/$TAG-p1
 python3 tools/p2_metrics.py tools/logs/$TAG-p2
@@ -101,6 +106,8 @@ python3 tools/sculk_metrics.py tools/logs/$TAG-sculk
 python3 tools/curios_metrics.py tools/logs/$TAG-curios
 python3 tools/curiosoff_metrics.py tools/logs/$TAG-curiosoff
 python3 tools/faruse_metrics.py tools/logs/$TAG-faruse
+python3 tools/glint_metrics.py tools/logs/$TAG-glint
+python3 tools/airhud_metrics.py tools/logs/$TAG-airhud
 python3 tools/ownhand_metrics.py tools/logs/$TAG-ownhand
 python3 tools/grab_metrics.py tools/logs/$TAG-grab
 python3 tools/look_metrics.py tools/logs/$TAG-look

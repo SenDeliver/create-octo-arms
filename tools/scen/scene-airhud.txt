@@ -1,0 +1,9 @@
+# Air timer suite (x 11800..11820): Create's remaining-Air timer for the Rig while it uses Air. Flat world: ground top at y=-60.
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+time set noon
+forceload add 11790 -10 11830 20
+# a glass tank of water 1x4 deep for the Diving Helmet case; dirt at 6.5 east of x 11810.5 for a Far Use sip
+fill 11800 -60 0 11802 -56 2 glass hollow
+fill 11801 -60 1 11801 -56 1 water
+setblock 11817 -59 8 dirt

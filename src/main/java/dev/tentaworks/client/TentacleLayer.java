@@ -17,6 +17,7 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
@@ -34,6 +35,9 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
+import java.util.LinkedHashMap;
+import java.util.SequencedMap;
+
 /**
  * The Tentacles on every player wearing a Rig in the chest slot (third person, other players, inventory preview = Stowed pose), drawn in
  * the body's space on top of Create's Backtank layer, with the Actuators of a fitted Rig ({@link ActuatorRenderer}); a Back Slot
@@ -45,6 +49,11 @@ import org.joml.Vector3f;
 public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
     /** The first-person Rig's own buffer: ending a batch on the shared one mid-frame frees builders other layers still hold under batching mods. */
     private static final ByteBufferBuilder FIRST_PERSON_BUFFER = new ByteBufferBuilder(256 * 1024);
+    /**
+     * Glint gets buffers of its own, the glint types vanilla's buffer source keeps fixed: a foil item asks for its glint and its own type at once, and on
+     * the shared buffer the second ends the first ("Not building!").
+     */
+    private static final SequencedMap<RenderType, ByteBufferBuilder> FIRST_PERSON_GLINT = glintBuffers();
     public TentacleLayer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent) {
         super(parent);
     }
@@ -139,13 +148,21 @@ public class TentacleLayer extends RenderLayer<AbstractClientPlayer, PlayerModel
             PoseStack ps = event.getPoseStack();
             ps.pushPose();
             firstPersonTank(ps, player, pt, cam);
-            MultiBufferSource.BufferSource buffers = MultiBufferSource.immediate(FIRST_PERSON_BUFFER);
+            MultiBufferSource.BufferSource buffers = MultiBufferSource.immediateWithBuffers(FIRST_PERSON_GLINT, FIRST_PERSON_BUFFER);
             TentacleRenderer.Space space = new TentacleRenderer.Space(new Matrix4f(ps.last().pose()), cam, true, true, 0xF000F0, 0);
             if (tentacles) TentacleRenderer.drawRig(ps, buffers, player, rig.tier(), visual, pt, space);
             if (actuators) ActuatorRenderer.draw(ps, buffers, player, rig.tier(), pt, space, ActuatorRenderer.Pass.WORLD);
             ps.popPose();
             buffers.endBatch();
         });
+    }
+
+    private static SequencedMap<RenderType, ByteBufferBuilder> glintBuffers() {
+        SequencedMap<RenderType, ByteBufferBuilder> map = new LinkedHashMap<>();
+        for (RenderType type : new RenderType[]{RenderType.armorEntityGlint(), RenderType.glint(), RenderType.glintTranslucent(),
+                RenderType.entityGlint(), RenderType.entityGlintDirect()})
+            map.put(type, new ByteBufferBuilder(type.bufferSize()));
+        return map;
     }
 
     /** First person: from the camera to the wearer's tank space (the body model's transform without the model). */
