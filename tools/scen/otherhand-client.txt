@@ -1,0 +1,56 @@
+# otherhand: a hand another mod draws itself (selfdraw: sticks, cancelling the hand like TACZ) is left to it, the Actuator steps back; others are carried by the Actuator. TIMELINE otherhand-timeline.txt
+trace on
+selfdraw minecraft:stick
+hud on
+view first
+# O1 iron pickaxe (not in the tag): the main-hand Actuator carries it, vanilla draws no hand
+await o1
+wait 20
+looktrace on
+mark o1a
+wait 30
+mark o1b
+looktrace off
+shot otherhand_o1_pick_fp
+third
+wait 10
+shot otherhand_o1_pick_third
+view first
+signal o1done
+# O2 stick: the other mod draws the main hand, the Actuator does not carry it
+await o2
+wait 20
+looktrace on
+mark o2a
+wait 30
+mark o2b
+looktrace off
+shot otherhand_o2_stick_fp
+third
+wait 10
+shot otherhand_o2_stick_third
+view first
+signal o2done
+# O3 stick in the off hand, main hand empty: the other mod draws the off hand
+await o3
+wait 20
+looktrace on
+mark o3a
+wait 30
+mark o3b
+looktrace off
+shot otherhand_o3_offstick_fp
+view first
+signal o3done
+# O4 iron pickaxe again: the other mod stopped, the main-hand Actuator carries it again
+await o4
+wait 20
+looktrace on
+mark o4a
+wait 30
+mark o4b
+looktrace off
+shot otherhand_o4_pick_again_fp
+signal o4done
+wait 10
+quit

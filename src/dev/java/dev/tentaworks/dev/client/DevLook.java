@@ -12,9 +12,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -38,10 +41,11 @@ import java.util.Map;
  * meanwhile), guiscale N, mainarm left|right, hudstate TAG (CHUD line: what the crosshair HUD shows: mark, Grab cue and its arm,
  * holding arm, set-down spot, whether a Throw needs the Grab key, hold distance, the out-of-Reach flash, the brackets drawn as
  * holding pads, the gauge's lit notch of how many, the Grab key beside the cue, hints shown this session, the action-bar line),
- * hints on|off (client hud.hints in memory; on also starts the session's hints over), looktrace on|off (CLOOK
+ * hints on|off (client hud.hints in memory; on also starts the session's hints over), selfdraw ITEM|off (a stand-in for a mod
+ * that draws ITEM in the hand itself and cancels the hand, as TACZ does for its guns), looktrace on|off (CLOOK
  * line per tick: what vanilla and the Actuators drew of each hand in first person, the frames with a hand drawn twice, the
  * crosshair mark, the Grab cue and how far the acting Actuator is from its target, the most drawn points of each Actuator inside
- * a solid block in one frame of the tick; and a CCLIP line per other wearer with the same count).
+ * a solid block in one frame of the tick, the frames selfdraw drew each hand; and a CCLIP line per other wearer with the same count).
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public final class DevLook {
@@ -50,7 +54,10 @@ public final class DevLook {
     private static String burst;
     private static int burstLeft, burstCount;
     private static final boolean[] vanilla = new boolean[2];
-    private static final int[] before = new int[2], vanillaFrames = new int[2], actuatorFrames = new int[2], doubled = new int[2];
+    private static final int[] before = new int[2], vanillaFrames = new int[2], actuatorFrames = new int[2], doubled = new int[2], otherFrames = new int[2];
+    private static final boolean[] other = new boolean[2];
+    /** selfdraw: an item another mod draws in the hand itself (stands in for TACZ's guns), or null. */
+    private static Item selfDrawn;
     private static int frames;
     /** Most drawn points inside a block in one frame this tick and the deepest of them, per player id: main, off. */
     private static final Map<Integer, double[]> CLIP = new HashMap<>();
@@ -97,6 +104,10 @@ public final class DevLook {
                 mc.options.broadcastOptions();
                 return 2;
             }
+            case "selfdraw" -> {
+                selfDrawn = a[1].equals("off") ? null : BuiltInRegistries.ITEM.get(ResourceLocation.parse(a[1]));
+                return 0;
+            }
             case "looktrace" -> {
                 trace = a[1].equals("on");
                 return 0;
@@ -107,10 +118,19 @@ public final class DevLook {
         }
     }
 
+    /** selfdraw: like a mod that draws an item in the hand itself (TACZ, at the default priority), takes the hand and cancels. */
+    @SubscribeEvent
+    static void onSelfDraw(RenderHandEvent event) {
+        if (selfDrawn == null || !event.getItemStack().is(selfDrawn)) return;
+        other[event.getHand() == InteractionHand.MAIN_HAND ? 0 : 1] = true;
+        event.setCanceled(true);
+    }
+
     @SubscribeEvent(priority = EventPriority.LOWEST)
     static void onHand(RenderHandEvent event) {
         boolean main = event.getHand() == InteractionHand.MAIN_HAND;
         Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null && ActuatorRenderer.standsIn(mc.player, event.getHand())) return; // the Actuator's: cancelled at LOWEST too
         if (!event.getItemStack().isEmpty() || main && mc.player != null && !mc.player.isInvisible()) vanilla[main ? 0 : 1] = true;
     }
 
@@ -118,6 +138,7 @@ public final class DevLook {
     static void onFrameStart(RenderFrameEvent.Pre event) {
         for (int h = 0; h < 2; h++) {
             vanilla[h] = false;
+            other[h] = false;
             before[h] = ActuatorRenderer.HAND_DRAWS[h];
         }
     }
@@ -148,6 +169,8 @@ public final class DevLook {
             if (vanilla[h]) vanillaFrames[h]++;
             if (actuator) actuatorFrames[h]++;
             if (vanilla[h] && actuator) doubled[h]++;
+            if (other[h]) otherFrames[h]++;
+            if (other[h] && actuator) doubled[h]++;
         }
     }
 
@@ -162,10 +185,10 @@ public final class DevLook {
         }
         if (trace) {
             double[] own = CLIP.getOrDefault(mc.player.getId(), new double[4]);
-            LOG.info("CLOOK gt={} first={} frames={} vhand={},{} ahand={},{} dbl={},{} mark={} cue={} lag={} clip={},{} cdepth={}", mc.level.getGameTime(),
+            LOG.info("CLOOK gt={} first={} frames={} vhand={},{} ahand={},{} dbl={},{} mark={} cue={} lag={} clip={},{} cdepth={} ohand={},{}", mc.level.getGameTime(),
                     mc.options.getCameraType().isFirstPerson(), frames, vanillaFrames[0], vanillaFrames[1], actuatorFrames[0], actuatorFrames[1], doubled[0],
                     doubled[1], ActuatorSight.mark(), ActuatorSight.cue().kind(), String.format(Locale.ROOT, "%.2f", ActuatorRenderer.lag(mc.player)),
-                    (int) own[0], (int) own[1], String.format(Locale.ROOT, "%.2f", Math.max(own[2], own[3])));
+                    (int) own[0], (int) own[1], String.format(Locale.ROOT, "%.2f", Math.max(own[2], own[3])), otherFrames[0], otherFrames[1]);
             for (AbstractClientPlayer p : mc.level.players()) {
                 if (p == mc.player) continue;
                 double[] c = CLIP.getOrDefault(p.getId(), new double[4]);
@@ -175,7 +198,7 @@ public final class DevLook {
         }
         CLIP.clear();
         frames = 0;
-        for (int h = 0; h < 2; h++) vanillaFrames[h] = actuatorFrames[h] = doubled[h] = 0;
+        for (int h = 0; h < 2; h++) vanillaFrames[h] = actuatorFrames[h] = doubled[h] = otherFrames[h] = 0;
     }
 
     /** How deep {@code p} is inside the collision shape of its block (0 outside). */

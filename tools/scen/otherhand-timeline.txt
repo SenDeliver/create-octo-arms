@@ -1,0 +1,23 @@
+# otherhand timeline: hand items come from here; the client's selfdraw stands in for a mod that draws sticks in the hand itself.
+op Dev
+tp Dev 11850.5 -60 0.5 -90 0
+clear Dev
+item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=1800,tentaworks:actuators={}]
+item replace entity Dev weapon.mainhand with iron_pickaxe
+#sleep 1
+#signal o1
+#await o1done
+item replace entity Dev weapon.mainhand with stick
+#sleep 0.5
+#signal o2
+#await o2done
+item replace entity Dev weapon.mainhand with air
+item replace entity Dev weapon.offhand with stick
+#sleep 0.5
+#signal o3
+#await o3done
+item replace entity Dev weapon.offhand with air
+item replace entity Dev weapon.mainhand with iron_pickaxe
+#sleep 0.5
+#signal o4
+#await o4done
