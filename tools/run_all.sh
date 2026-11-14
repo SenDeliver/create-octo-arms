@@ -2,8 +2,8 @@
 # Full regression: every suite of tools/suites.tsv (one row each; what each tests: the comments there) through run_split.sh,
 # then the screenshots to tools/shots/, analyze.py per suite and the metrics below.
 # TW_SHARDS=1 (default): the table rows in order, one after another, on the default shard (run/, run2/, ports 25608/25609).
-# TW_SHARDS=N (2..6): suites in parallel, N workers on the shards default, B, C, ... (TW_SHARD of run_split.sh). Per dep set
-# (plain, then curios, then sable) its non-quiet suites, longest weight first, each worker taking the next free one; then the
+# TW_SHARDS=N (2..6): suites in parallel, N workers on the shards default, B, C, ... (TW_SHARD of run_split.sh). Per dep group
+# (plain and curios together, then sable) its non-quiet suites, longest weight first, each worker taking the next free one; then the
 # quiet lane: every quiet suite alone, serial, on the default shard, in table order, Sable suites last. run_split output of each
 # suite goes to tools/logs/<tag>-<suite>-run.txt. TW_QUIET=par: quiet suites run as the others (still per dep set).
 # TW_QUIET_SHARDS=M (1..N, default 1): the quiet 1 suites M wide, per dep set, longest first; the quiet 2 suites (alone always) follow, serial.
@@ -57,7 +57,7 @@ bydep() {
   local i=0 q
   while [ $i -lt $N ]; do
     q=0; isquiet $i && q=${QUIETS[i]}
-    [ "${DEPS[i]}" = "$1" ] && [ $q = "${2:-0}" ] && echo "${WEIGHTS[i]} $i"
+    case " $1 " in *" ${DEPS[i]} "*) [ $q = "${2:-0}" ] && echo "${WEIGHTS[i]} $i";; esac
     i=$((i+1))
   done | sort -s -k1,1nr | awk '{print $2}'
 }
@@ -120,8 +120,8 @@ schedule() {
   if [ "$SHARDS" = 1 ]; then
     phase all 1 $(i=0; while [ $i -lt $N ]; do echo $i; i=$((i+1)); done)
   else
-    for d in plain curios sable; do phase $d $SHARDS $(bydep $d); done
-    if [ "$QW" = 1 ]; then phase quiet 1 $(lane); else for d in plain curios sable; do phase quiet-$d $QW $(bydep $d 1); done; phase alone 1 $(for d in plain curios sable; do bydep $d 2; done); fi
+    phase main $SHARDS $(bydep "plain curios"); phase sable $SHARDS $(bydep sable)
+    if [ "$QW" = 1 ]; then phase quiet 1 $(lane); else phase quiet-main $QW $(bydep "plain curios" 1); phase quiet-sable $QW $(bydep sable 1); phase alone 1 $(bydep "plain curios" 2; bydep sable 2); fi
   fi
 }
 
