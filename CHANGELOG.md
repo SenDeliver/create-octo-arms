@@ -9,6 +9,10 @@ Platforms: the same version number ships for every supported Minecraft version (
 
 ## [Unreleased]
 
+### Added
+
+- Item tag `tentaworks:own_hand`: items in it stay in the wearer's own hand like a Potato Cannon or a map, so a mod that draws and animates them itself keeps its first-person view. TACZ guns are in it by default (#34).
+
 ## [2.0.0] - 2026-11-09
 
 Actuators: two more arms for the Rig, one for each hand. The four Tentacles carry you as before; the Actuators mine, build, fight, Grab and Throw out to the Rig's Reach.
