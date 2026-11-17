@@ -223,6 +223,16 @@ class HoldTest {
     }
 
     @Test
+    void theDepthBelowTheHeldFaceFollowsTheWantedTurnNotTheWorldBox() {
+        AABB cube = new AABB(100, 64, 200, 103, 67, 203);
+        Vec3 west = new Vec3(100, 65.5, 201.5);
+        assertEquals(1.5, Hold.shipBelow(new Quaterniond(), west, cube), 1.0E-9, "level: half the cube");
+        assertEquals(1.5, Hold.shipBelow(new Quaterniond().rotateY(0.7), west, cube), 1.0E-9, "a yaw turn keeps it");
+        double tipped = Hold.shipBelow(new Quaterniond().rotateZ(Math.toRadians(-20)), west, cube);
+        assertEquals(1.5 * Math.cos(Math.toRadians(20)) + 3 * Math.sin(Math.toRadians(20)), tipped, 1.0E-9, "the far bottom edge tipped down");
+    }
+
+    @Test
     void overheadTheHullClearsTheEyeAheadOnTheLevel() {
         Vec3 body = EYE.subtract(0, 0.72, 0);
         for (float yaw = -180; yaw < 180; yaw += 30) {

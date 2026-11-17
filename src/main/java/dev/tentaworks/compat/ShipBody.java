@@ -11,8 +11,11 @@ public interface ShipBody {
     /** The Ship's pose now. */
     Frame frame();
 
-    /** The Ship's blocks in the world now, as one axis-aligned box; null when unknown. */
+    /** The Ship's blocks in the world now, as one axis-aligned box; null when unknown. Sable updates it a tick or two late. */
     @Nullable AABB worldBounds();
+
+    /** The Ship's blocks in its own (plot) space, the space of {@link Frame#toWorld}; null when unknown. */
+    @Nullable AABB localBounds();
 
     /** Sable mass (stone about 2 per block), -1 when unknown. */
     double mass();

@@ -10,6 +10,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaterniond;
 import org.joml.Quaterniondc;
+import org.joml.Vector3d;
 
 import java.util.List;
 import java.util.function.DoublePredicate;
@@ -171,6 +172,18 @@ public final class Hold {
             return new Vec3(body.x + dx * k, body.y, body.z + dz * k);
         }
         return new Vec3(ahead.x, Math.min(y, body.y + Math.sqrt(max * max - h2)), ahead.z);
+    }
+
+    /** How far the lowest corner of {@code bounds} sits below {@code face}, both in the Ship's own space, once turned to {@code orientation}. */
+    public static double shipBelow(Quaterniondc orientation, Vec3 face, AABB bounds) {
+        double below = Double.NEGATIVE_INFINITY;
+        Vector3d d = new Vector3d();
+        for (int i = 0; i < 8; i++) {
+            d.set(face.x - ((i & 1) == 0 ? bounds.minX : bounds.maxX), face.y - ((i & 2) == 0 ? bounds.minY : bounds.maxY),
+                    face.z - ((i & 4) == 0 ? bounds.minZ : bounds.maxZ));
+            below = Math.max(below, orientation.transform(d).y);
+        }
+        return below;
     }
 
     /** The camera basis for this look and yaw (degrees): look direction, right, up. */

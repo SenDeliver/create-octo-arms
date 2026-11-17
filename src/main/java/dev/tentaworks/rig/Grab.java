@@ -59,6 +59,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaterniond;
+import org.joml.Quaterniondc;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
 
@@ -797,7 +798,7 @@ public final class Grab {
         Frame f = h.ship.frame();
         float yaw = wearer.getYRot();
         Quaterniond want = Hold.shipWant(h.orientation, yaw - h.yaw, h.user);
-        Vec3 point = h.overhead ? overhead(wearer, h, f, yaw) : Hold.shipPoint(wearer.getEyePosition(), wearer.getViewVector(1.0F), yaw, h.rel);
+        Vec3 point = h.overhead ? overhead(wearer, h, want, yaw) : Hold.shipPoint(wearer.getEyePosition(), wearer.getViewVector(1.0F), yaw, h.rel);
         Vector3d arm = want.transform(new Vector3d(h.local.x - f.pose().pivot().x(), h.local.y - f.pose().pivot().y(), h.local.z - f.pose().pivot().z()));
         Vec3 aim = point.subtract(arm.x, arm.y, arm.z);
         Vec3 feed = h.lastAim == null ? Vec3.ZERO : aim.subtract(h.lastAim).scale(20);
@@ -812,10 +813,13 @@ public final class Grab {
         far(wearer, h, h.centre);
     }
 
-    /** Where the held face goes Overhead ({@link Hold#shipOverhead}): the hull's lowest point measured below the face as it is now. */
-    private static Vec3 overhead(ServerPlayer wearer, Held h, Frame f, float yaw) {
-        AABB bounds = h.ship.worldBounds();
-        double below = bounds == null ? 0 : f.toWorld(h.local).y - bounds.minY;
+    /**
+     * Where the held face goes Overhead ({@link Hold#shipOverhead}): the hull's lowest corner below the face in the wanted
+     * orientation, from the Ship's own bounds (its world box lags a tick or two, and a hold measured on it bounces).
+     */
+    private static Vec3 overhead(ServerPlayer wearer, Held h, Quaterniondc want, float yaw) {
+        AABB local = h.ship.localBounds();
+        double below = local == null ? 0 : Hold.shipBelow(want, h.local, local);
         return Hold.shipOverhead(wearer.getEyePosition(), yaw, below, Grips.body(wearer), Math.max(1.0, TentacleRigItem.reach(wearer) - SHIP_INSIDE));
     }
 
