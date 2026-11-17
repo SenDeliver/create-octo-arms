@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/** The round 3 packet fields survive the wire: the Far Use hand, the hold arm and distance, the wheel notches and set-down feet. */
+/** The round 3 packet fields survive the wire: the Far Use hand, the hold arm and distance, the wheel notches and set-down feet, Overhead, the grip tangent and a Turn. */
 class ActuatorPacketsTest {
     private static <T> T trip(StreamCodec<FriendlyByteBuf, T> codec, T p) {
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
@@ -33,11 +33,13 @@ class ActuatorPacketsTest {
     @Test
     void actuatorStateCarriesTheArmAndDistance() {
         for (HoldArm arm : HoldArm.values()) {
-            ActuatorStatePacket p = new ActuatorStatePacket(3, 12, arm == HoldArm.BOTH, null, Direction.UP, "", arm, 2.55F);
+            ActuatorStatePacket p = new ActuatorStatePacket(3, 12, arm == HoldArm.BOTH, null, Direction.UP, "", arm, 2.55F, false, Direction.NORTH);
             assertEquals(p, trip(ActuatorStatePacket.STREAM_CODEC, p));
         }
-        ActuatorStatePacket ship = new ActuatorStatePacket(3, -1, true, new BlockPos(5, -59, 2), Direction.WEST, "", HoldArm.BOTH, 1.5F);
+        ActuatorStatePacket ship = new ActuatorStatePacket(3, -1, true, new BlockPos(5, -59, 2), Direction.WEST, "", HoldArm.BOTH, 1.5F, false, Direction.SOUTH);
         assertEquals(ship, trip(ActuatorStatePacket.STREAM_CODEC, ship));
+        ActuatorStatePacket overhead = new ActuatorStatePacket(3, -1, true, new BlockPos(5, -59, 2), Direction.UP, "", HoldArm.BOTH, 6.5F, true, Direction.EAST);
+        assertEquals(overhead, trip(ActuatorStatePacket.STREAM_CODEC, overhead));
     }
 
     @Test
@@ -48,5 +50,8 @@ class ActuatorPacketsTest {
         }
         RigGrabPacket p = RigGrabPacket.place(new Vec3(11204.0, -60.0, 113.5));
         assertEquals(p, trip(RigGrabPacket.STREAM_CODEC, p));
+        RigGrabPacket turn = RigGrabPacket.turn(15.0F, -7.5F);
+        assertEquals(turn, trip(RigGrabPacket.STREAM_CODEC, turn));
+        assertEquals(RigGrabPacket.Kind.TURN, RigGrabPacket.Kind.values()[RigGrabPacket.Kind.values().length - 1], "new kinds at the end");
     }
 }

@@ -5,6 +5,7 @@ import dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle;
 import dev.ryanhcode.sable.companion.SableCompanion;
 import dev.ryanhcode.sable.companion.SubLevelAccess;
 import dev.ryanhcode.sable.companion.math.BoundingBox3d;
+import dev.ryanhcode.sable.companion.math.BoundingBox3dc;
 import dev.ryanhcode.sable.companion.math.Pose3dc;
 import dev.ryanhcode.sable.mixinterface.entity.entity_sublevel_collision.LivingEntityMovementExtension;
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
@@ -133,6 +134,16 @@ public final class SableShips implements ShipFrames {
         @Override
         public Frame frame() {
             return SableShips.frame(level, ship);
+        }
+
+        @Override
+        public AABB worldBounds() {
+            try {
+                BoundingBox3dc b = ship.boundingBox();
+                return b == null ? null : new AABB(b.minX(), b.minY(), b.minZ(), b.maxX(), b.maxY(), b.maxZ());
+            } catch (LinkageError e) {
+                return null;
+            }
         }
 
         @Override

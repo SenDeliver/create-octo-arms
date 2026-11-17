@@ -352,7 +352,8 @@ public final class DevActuators {
 
     /**
      * STRACE fields (end of line): Far Use lift of the block and entity range, the Grab (held id, heavy, Ship block, hold point,
-     * Ship mass), the Actuator Air debt not yet taken, the movement speed attribute, total XP, fitted, Deft, Far Use mode.
+     * Ship mass), the Actuator Air debt not yet taken, the movement speed attribute, total XP, fitted, Deft, Far Use mode; then a held
+     * Ship's Overhead, the wearer's Turn (quaternion x,y,z,w), its lowest world point and the tips' grip tangent.
      */
     static String fields(ServerPlayer p) {
         ItemStack rig = WornRig.of(p).stack();
@@ -363,7 +364,14 @@ public final class DevActuators {
                 lift(p.getAttribute(Attributes.BLOCK_INTERACTION_RANGE), FarUse.REACH_ID), lift(p.getAttribute(Attributes.ENTITY_INTERACTION_RANGE), FarUse.ENTITY_ID),
                 held == null ? -1 : held.getId(), Grab.heavy(p), ship == null ? "-" : ship.toShortString().replace(" ", ""), vec(Grab.centre(p)), Grab.shipMass(p),
                 debt(p), speed == null ? 0 : speed.getValue(), p.totalExperience, Actuators.fitted(rig), RigEnchants.deft(rig),
-                rig.isEmpty() ? "-" : RigSettings.of(rig).farUse().getSerializedName(), Grab.arm(p), Grab.distance(p), Grab.placing(p), DualWield.on(p));
+                rig.isEmpty() ? "-" : RigSettings.of(rig).farUse().getSerializedName(), Grab.arm(p), Grab.distance(p), Grab.placing(p), DualWield.on(p))
+                + String.format(Locale.ROOT, " gover=%b guser=%s gbot=%s gtan=%s", Grab.overhead(p), quat(Grab.shipUser(p)),
+                Double.isNaN(Grab.shipBottom(p)) ? "-" : String.format(Locale.ROOT, "%.3f", Grab.shipBottom(p)),
+                Grab.shipTangent(p) == null ? "-" : Grab.shipTangent(p).getSerializedName());
+    }
+
+    private static String quat(org.joml.Quaterniondc q) {
+        return String.format(Locale.ROOT, "%.5f,%.5f,%.5f,%.5f", q.x(), q.y(), q.z(), q.w());
     }
 
     private static double lift(@Nullable AttributeInstance inst, ResourceLocation id) {

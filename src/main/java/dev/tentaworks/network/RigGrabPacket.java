@@ -13,7 +13,9 @@ import net.minecraft.world.phys.Vec3;
  * {@link ActuatorStatePacket}). START: Grab entity {@code entityId}. SHIP: Ship Grab of the Ship owning plot block {@code block}
  * by its {@code face}. RELEASE: set the held target down where it is. THROW: fling it along {@code look}. PLACE: carry the held
  * mob to the set-down spot whose feet are at {@code look} and set it down there (the server checks the spot). DISTANCE: move the
- * hold {@code notches} × 0.5 blocks farther along the look (negative: nearer).
+ * hold {@code notches} × 0.5 blocks farther along the look (negative: nearer), past the farthest spot of a Ship to Overhead. TURN:
+ * Turn the held Ship by {@code look.x} degrees of yaw and {@code look.y} of pitch in the wearer's view (the mouse, Grab key and use
+ * held).
  */
 public record RigGrabPacket(Kind kind, int entityId, BlockPos block, Direction face, Vec3 look, int notches) implements CustomPacketPayload {
     public static final Type<RigGrabPacket> TYPE = new Type<>(TentaworksIds.id("rig_grab"));
@@ -31,7 +33,7 @@ public record RigGrabPacket(Kind kind, int entityId, BlockPos block, Direction f
 
     /** Wire order is frozen: new kinds go at the end. */
     public enum Kind {
-        START, SHIP, RELEASE, THROW, PLACE, DISTANCE
+        START, SHIP, RELEASE, THROW, PLACE, DISTANCE, TURN
     }
 
     public static RigGrabPacket start(int entityId) {
@@ -56,6 +58,10 @@ public record RigGrabPacket(Kind kind, int entityId, BlockPos block, Direction f
 
     public static RigGrabPacket distance(int notches) {
         return new RigGrabPacket(Kind.DISTANCE, -1, BlockPos.ZERO, Direction.UP, Vec3.ZERO, notches);
+    }
+
+    public static RigGrabPacket turn(float dYaw, float dPitch) {
+        return new RigGrabPacket(Kind.TURN, -1, BlockPos.ZERO, Direction.UP, new Vec3(dYaw, dPitch, 0), 0);
     }
 
     @Override
