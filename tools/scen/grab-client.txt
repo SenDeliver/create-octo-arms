@@ -110,7 +110,7 @@ mark g4g1
 key key.keyboard.v
 awaitheld off 20
 signal g4gdone
-# G5 refusals: boss, player, another player's wolf
+# G5 refusals: boss, player, another player's wolf, grab.denied, grab.maxHearts
 await g5b
 lookate minecraft:wither
 wait 3
@@ -132,6 +132,20 @@ key key.keyboard.v
 wait 10
 actuators g5w
 signal g5wdone
+await g5e
+lookate minecraft:elder_guardian
+wait 3
+key key.keyboard.v
+wait 10
+actuators g5e
+signal g5edone
+await g5h
+lookate minecraft:pig 6
+wait 3
+key key.keyboard.v
+wait 10
+actuators g5h
+signal g5hdone
 # G6 set down onto a Create seat
 await g6
 # the G6 sheep is 3 blocks away; under load the client may still only track the G1 sheep 72 blocks off after the tp

@@ -361,8 +361,7 @@ public final class ActuatorClient {
         HitResult aim = target(player);
         if (aim instanceof EntityHitResult e) {
             affordanceAt = e.getEntity().getBoundingBox().getCenter();
-            GrabRule.Verdict v = GrabRule.check(Grab.facts(player, e.getEntity(), heldByAnyone(e.getEntity())),
-                    new GrabRule.Rules(reach, TentaworksConfig.value(TentaworksConfig.GRAB_TAMED_OTHERS)));
+            GrabRule.Verdict v = GrabRule.check(Grab.facts(player, e.getEntity(), heldByAnyone(e.getEntity())), Grab.rules(player));
             if (v == GrabRule.Verdict.GONE) return Affordance.NONE;
             if (v == GrabRule.Verdict.TOO_FAR) return new Affordance(Affordance.Kind.OUT_OF_REACH, HoldArm.NONE, v);
             if (!v.ok()) return new Affordance(Affordance.Kind.REFUSED, HoldArm.NONE, v);

@@ -54,7 +54,7 @@ nav a{margin-right:14px;color:var(--acc);text-decoration:none;font-size:14px}
 <tr><td>Limbs</td><td>4 Tentacles walk only. 2 Actuators act, Stowed or Active, on Rides, gliding, Falling, Control Hold.</td></tr>
 <tr><td>Item</td><td>One Actuator item, no tiers, Sequenced Assembly. Fitting is permanent and optional. Three recipes: Rig as now; Rig recipe + Actuator each side; Fitting at a crafting table keeping components.</td></tr>
 <tr><td>Far Use</td><td>Either hand. Blocks, mobs and players at the full Reach (Far Reach included; Strike Reach removed after the first in-game test). Extendo Grip in hand: Actuator idles, no lift. Server line-of-sight check past arm's length. Setting always / Rig out only / off.</td></tr>
-<tr><td>Grab</td><td>Key V (G is Curios). Empty main hand only. Mobs: no players, no bosses (<code>tentaworks:bosses</code> tag + Dragon, Wither, Warden, &gt;100 max hp), nothing riding/ridden, not already held, not leashed by another, others' pets only with config. Ships via Ship Grab (Sable, 1.21.1 only). Claim-mod event asked first. Refusal = action-bar line.</td></tr>
+<tr><td>Grab</td><td>Key V (G is Curios). Empty main hand only. Mobs: no players, no bosses (<code>tentaworks:bosses</code> tag + Dragon, Wither, Warden; config <code>grab.denied</code> list and <code>grab.maxHearts</code> 50), nothing riding/ridden, not already held, not leashed by another, others' pets only with config. Ships via Ship Grab (Sable, 1.21.1 only). Claim-mod event asked first. Refusal = action-bar line.</td></tr>
 <tr><td>Hold</td><td>Low left of view, out of crosshair, own clicks pass through. Swept with block collision. Pinned (no AI, fuse, shots). Light: w ≤ 1.5, h ≤ 2, w²h ≤ 2; heavy takes both Actuators, Far Use pauses, walk and Rig Speed 60%.</td></tr>
 <tr><td>Release</td><td>V again = set down where it is, 1 s calm (Creeper fuse reset), seat/boat/minecart under it = seated. Hold survives Stow, Setting Down, Rides, glide, Falling. Ends on Crawl, death, logout, Rig off, dimension change, target gone/out of Reach, no Air.</td></tr>
 <tr><td>Throw</td><td>Attack while holding. Tier speed. Fall damage + Impact once (thrown mob and what it hits), wearer is the damage source, PvP rule for players.</td></tr>
@@ -162,6 +162,8 @@ flowchart TD
 <tr><td><code>reach.copper</code></td><td>5.0 (was 4.0)</td><td>1–16</td><td>Reach of every Limb: Grips, Grab, Far Use on blocks, mobs and players. Raised so a Copper Rig reaches past a bare hand.</td></tr>
 <tr><td><code>farUse.players</code></td><td>true</td><td></td><td>Far Use may hit players.</td></tr>
 <tr><td><code>grab.tamedOthers</code></td><td>false</td><td></td><td>Others' tamed, owned or leashed animals.</td></tr>
+<tr><td><code>grab.denied</code></td><td>Elder Guardian, Born in Chaos bosses</td><td><code>modid:entity</code>, <code>modid:*</code></td><td>Mobs never Grabbed.</td></tr>
+<tr><td><code>grab.maxHearts</code></td><td>50</td><td>0–1e6</td><td>More max health than this many hearts is never Grabbed; 0 = no limit.</td></tr>
 <tr><td><code>grab.ships</code></td><td>true</td><td></td><td>Ship Grab (needs Sable + ships.grip).</td></tr>
 <tr><td><code>grab.massCap.copper</code> / <code>.netherite</code></td><td>2000 / 6000</td><td>0–1e6</td><td>Sable mass cap.</td></tr>
 <tr><td><code>grab.throwSpeed.copper</code> / <code>.netherite</code></td><td>0.8 / 1.2</td><td>0.1–5</td><td>Blocks per tick.</td></tr>

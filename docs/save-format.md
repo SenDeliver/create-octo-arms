@@ -120,6 +120,8 @@ Phase 8 kept every payload as is but bumped the registrar to `7` (server packet 
 | `actuators.dualWield` | true | true/false (2.0: the off-hand item works along with the main-hand one) |
 | `farUse.players` | true | true/false (2.0: Far Use may hit and use on players) |
 | `grab.tamedOthers` | false | true/false (2.0: Grab another player's tamed, owned or leashed animal) |
+| `grab.denied` | Elder Guardian, Born in Chaos bosses | list of `modid:entity` or `modid:*` (2.0: mobs never Grabbed) |
+| `grab.maxHearts` | 50.0 | 0–1000000 (2.0: more max health than this many hearts is never Grabbed, 0 = no limit) |
 | `grab.ships` | true | true/false (2.0: Ship Grab; also needs `ships.grip` and Sable) |
 | `grab.massCap.copper` | 2000.0 | 0–1000000 (2.0: Sable mass) |
 | `grab.massCap.netherite` | 6000.0 | 0–1000000 |

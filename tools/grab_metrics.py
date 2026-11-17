@@ -67,7 +67,7 @@ def paid(a, b):
 
 print('== Setup')
 want = {'s1': (11204.5, 0.5), 'p1': (11202.5, 12.5), 'h1': (11203.5, 36.5), 'w1': (11203.5, 40.5), 'g1': (11203.5, 48.5),
-        'boss': (11205.5, 60.5), 'wolf': (11203.5, 68.5), 's2': (11203.5, 72.5), 'p4': (11203.5, 84.5),
+        'boss': (11205.5, 60.5), 'eg': (11205.5, 56.5), 'hp': (11203.5, 52.5), 'wolf': (11203.5, 68.5), 's2': (11203.5, 72.5), 'p4': (11203.5, 84.5),
         'p5': (11203.5, 96.5), 'w2': (11203.5, 100.5), 'h2': (11203.5, 104.5), 'p6': (11203.5, 108.5), 'p7': (11203.5, 112.5), 'p8': (11203.5, 116.5),
         'p9': (11203.5, 120.5), 'w9': (11203.5, 124.5), 'p10': (11202.5, 132.5), 'p11': (11202.5, 134.5), 'h3': (11199.5, 142.0)}
 ids = {k: mob(*v) for k, v in want.items()}
@@ -158,7 +158,9 @@ check('G4 iron golem heavy: walks at about 0.6 of bare speed (timing)', spos['g4
 
 print('== G5 refusals')
 for name, key, why, text in (('boss', 'boss', 'boss', 'Too mighty to Grab: a boss'), ('player', None, 'player', "Players can't be Grabbed"),
-                             ("someone else's wolf", 'wolf', 'owned', "That's someone else's animal")):
+                             ("someone else's wolf", 'wolf', 'owned', "That's someone else's animal"),
+                             ('Elder Guardian (grab.denied default)', 'eg', 'denied', "This server doesn't let you Grab that"),
+                             ('pig with 60 hearts (grab.maxHearts 50)', 'hp', 'denied', "This server doesn't let you Grab that")):
     r = [g for g in grab if g['kind'] == 'refuse' and g['why'] == why and (key is None or g['target'] == ids[key])]
     note = r and any(t == text and 0 <= g - r[0]['gt'] <= 5 for g, t in overlay)
     check(f'G5 {name} refused', r and not [g for g in grab if g['kind'] == 'start' and g['target'] == r[0]['target']] and note, f'{r[:1]} note {bool(note)}')

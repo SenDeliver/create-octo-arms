@@ -86,6 +86,7 @@ public final class TentaworksLang {
         refusal(GRAB, "not_living", "Only living mobs can be Grabbed");
         refusal(GRAB, "player", "Players can't be Grabbed");
         refusal(GRAB, "boss", "Too mighty to Grab: a boss");
+        refusal(GRAB, "denied", "This server doesn't let you Grab that");
         refusal(GRAB, "riding", "Can't Grab something riding or ridden");
         refusal(GRAB, "held", "Someone else already holds it");
         refusal(GRAB, "owned", "That's someone else's animal");
@@ -203,6 +204,8 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(cfg + "grab", "Grab");
         REGISTRATE.addRawLang(cfg + "grab.tamedOthers", "Grab others' animals");
         REGISTRATE.addRawLang(cfg + "grab.ships", "Grab Ships");
+        REGISTRATE.addRawLang(cfg + "grab.denied", "Mobs never Grabbed");
+        REGISTRATE.addRawLang(cfg + "grab.maxHearts", "Most hearts to Grab");
         REGISTRATE.addRawLang(cfg + "grab.massCap", "Ship mass cap");
         REGISTRATE.addRawLang(cfg + "grab.massCap.copper", "Copper mass cap");
         REGISTRATE.addRawLang(cfg + "grab.massCap.netherite", "Netherite mass cap");
@@ -243,6 +246,8 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(cfg + "farUse.players.tooltip", "Far Use may hit and use on players (the PvP rule still applies)");
         REGISTRATE.addRawLang(cfg + "grab.tamedOthers.tooltip", "Grab may take another player's tamed, owned or leashed animal");
         REGISTRATE.addRawLang(cfg + "grab.ships.tooltip", "Grab may take Sable Ships (also needs Rigs grip Ships). Ignored without Sable");
+        REGISTRATE.addRawLang(cfg + "grab.denied.tooltip", "Mobs that can never be Grabbed: entity ids (modid:entity) or every mob of a mod (modid:*). Ids of mods that are not installed are ignored");
+        REGISTRATE.addRawLang(cfg + "grab.maxHearts.tooltip", "Mobs with more max health than this many hearts cannot be Grabbed (1 heart = 2 health). 0: no limit");
         REGISTRATE.addRawLang(cfg + "grab.massCap.copper.tooltip", "Heaviest Ship a Copper Rig can Grab, Sable mass");
         REGISTRATE.addRawLang(cfg + "grab.massCap.netherite.tooltip", "Heaviest Ship a Netherite Rig can Grab, Sable mass");
         REGISTRATE.addRawLang(cfg + "grab.throwSpeed.copper.tooltip", "Throw speed of a Copper Rig, blocks per tick");

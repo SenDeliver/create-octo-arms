@@ -98,7 +98,7 @@ Put a tool in each hand and both Actuators work at once. Two pickaxes mine at th
 - The off-hand Actuator takes the mob if your off hand is empty, else the main-hand one if your main hand is empty. An item that lands in the holding Actuator's hand sets the mob down.
 - You can shear, milk, name, saddle or leash a held mob.
 - Light mobs (up to 1.5 blocks wide and 2 tall: zombie, villager, cow, spider) take one Actuator. Heavy ones take both: Far Use pauses and you move at 60% speed.
-- Never: players, bosses (Ender Dragon, Wither, Warden, anything over 100 max health, the `tentaworks:bosses` entity tag), anything riding or ridden, anything another wearer holds or another player has on a lead, or another player's pet unless the server allows it. Claim and protection mods are asked first. A refused Grab says why on the action bar.
+- Never: players, bosses (Ender Dragon, Wither, Warden, the `tentaworks:bosses` entity tag), the mobs in the server config `grab.denied` (the Elder Guardian and the Born in Chaos bosses by default), anything with more max health than `grab.maxHearts` hearts (50 by default), anything riding or ridden, anything another wearer holds or another player has on a lead, or another player's pet unless the server allows it. Claim and protection mods are asked first. A refused Grab says why on the action bar.
 - The hold lasts through Stowing, Setting Down, Rides, gliding and Falling. It ends on Crawl, death, logout, taking the Rig off, a dimension change, the target gone or out of Reach, or no Air left: the target is set down where it is.
 
 **Set Down and Throw**
@@ -337,6 +337,8 @@ Server config: `serverconfig/tentaworks-server.toml` inside the world folder (pu
 | `farUse` | `players` | true | Far Use may hit and use on players (the PvP rule still applies) |
 | `actuators` | `dualWield` | true | Dual Wield on or off |
 | `grab` | `tamedOthers` | false | Grab may take another player's tamed, owned or leashed animal |
+| `grab` | `denied` | Elder Guardian, Born in Chaos bosses | Mobs never Grabbed: entity ids (`modid:entity`) or every mob of a mod (`modid:*`); ids of mods not installed are ignored |
+| `grab` | `maxHearts` | 50.0 | Mobs with more max health than this many hearts are never Grabbed (1 heart = 2 health, 0 = no limit) |
 | `grab` | `heavySpeedFactor` | 0.6 | Walking and Rig Speed while both Actuators hold a heavy target, relative to normal |
 | `grab.throwSpeed` | `copper` | 0.8 | Throw speed of a Copper Rig, blocks per tick (0.1–5) |
 | `grab.throwSpeed` | `netherite` | 1.2 | Throw speed of a Netherite Rig, blocks per tick (0.1–5) |

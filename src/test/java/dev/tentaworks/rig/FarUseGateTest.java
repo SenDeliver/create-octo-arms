@@ -148,9 +148,9 @@ class FarUseGateTest {
             assertTrue(WorkSight.seesBlock(w, pos, Direction.UP, aim, eye, aim.subtract(eye).normalize(), range + 1.0, CollisionContext.empty()), "reach=" + reach);
 
             AABB mob = new AABB(pos.getX() + 0.2, 1.0, 0.2, pos.getX() + 0.8, 2.95, 0.8);
-            GrabRule.Target t = new GrabRule.Target(true, false, false, false, false, false, 20, 0.6, 1.95, false, Math.sqrt(mob.distanceToSqr(body)),
+            GrabRule.Target t = new GrabRule.Target(true, false, false, false, false, false, false, 20, 0.6, 1.95, false, Math.sqrt(mob.distanceToSqr(body)),
                     SetDown.sight(w, body, mob, CollisionContext.empty()));
-            assertEquals(GrabRule.Verdict.LIGHT, GrabRule.check(t, new GrabRule.Rules(reach, false)), "reach=" + reach);
+            assertEquals(GrabRule.Verdict.LIGHT, GrabRule.check(t, new GrabRule.Rules(reach, false, 100.0)), "reach=" + reach);
         }
     }
 

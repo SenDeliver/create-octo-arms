@@ -1,7 +1,10 @@
 package dev.tentaworks.config;
 
 import dev.tentaworks.TentaworksIds;
+import dev.tentaworks.rig.GrabDeny;
 import net.neoforged.neoforge.common.ModConfigSpec;
+
+import java.util.List;
 
 public final class TentaworksConfig {
     public static final ModConfigSpec SPEC;
@@ -22,6 +25,8 @@ public final class TentaworksConfig {
     public static final ModConfigSpec.BooleanValue FAR_USE_PLAYERS;
     public static final ModConfigSpec.BooleanValue GRAB_TAMED_OTHERS;
     public static final ModConfigSpec.BooleanValue GRAB_SHIPS;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> GRAB_DENIED;
+    public static final ModConfigSpec.DoubleValue GRAB_MAX_HEARTS;
     public static final ModConfigSpec.DoubleValue GRAB_MASS_CAP_COPPER;
     public static final ModConfigSpec.DoubleValue GRAB_MASS_CAP_NETHERITE;
     public static final ModConfigSpec.DoubleValue GRAB_THROW_SPEED_COPPER;
@@ -68,6 +73,10 @@ public final class TentaworksConfig {
         b.translation(t + "grab").push("grab");
         GRAB_TAMED_OTHERS = b.comment("Grab may take another player's tamed, owned or leashed animal").translation(t + "grab.tamedOthers").define("tamedOthers", false);
         GRAB_SHIPS = b.comment("Grab may take Sable Ships (also needs ships.grip). Ignored without Sable").translation(t + "grab.ships").define("ships", true);
+        GRAB_DENIED = b.comment("Mobs that can never be Grabbed: entity ids (modid:entity) or every mob of a mod (modid:*). Ids of mods that are not installed are ignored")
+                .translation(t + "grab.denied").defineListAllowEmpty("denied", GrabDeny.DEFAULTS, () -> GrabDeny.NEW_ENTRY, GrabDeny::valid);
+        GRAB_MAX_HEARTS = b.comment("Mobs with more max health than this many hearts cannot be Grabbed (1 heart = 2 health). 0: no limit")
+                .translation(t + "grab.maxHearts").defineInRange("maxHearts", 50.0, 0.0, 1.0E6);
         b.translation(t + "grab.massCap").push("massCap");
         GRAB_MASS_CAP_COPPER = b.comment("Heaviest Ship a Copper Rig can Grab, Sable mass").translation(t + "grab.massCap.copper").defineInRange("copper", 2000.0, 0.0, 1.0E6);
         GRAB_MASS_CAP_NETHERITE = b.comment("Heaviest Ship a Netherite Rig can Grab, Sable mass").translation(t + "grab.massCap.netherite").defineInRange("netherite", 6000.0, 0.0, 1.0E6);

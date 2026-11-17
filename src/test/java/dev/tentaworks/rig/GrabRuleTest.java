@@ -19,10 +19,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Who an Actuator may Grab, every refusal reason, and which targets are light (one Actuator) or heavy (both). */
 class GrabRuleTest {
-    private static final Rules RULES = new Rules(4.0, false);
+    private static final Rules RULES = new Rules(4.0, false, 100.0);
 
     private static Target mob(double width, double height, double maxHealth, double distance) {
-        return new Target(true, false, false, false, false, false, maxHealth, width, height, false, distance, true);
+        return new Target(true, false, false, false, false, false, false, maxHealth, width, height, false, distance, true);
     }
 
     private static Verdict check(Target t) {
@@ -33,15 +33,16 @@ class GrabRuleTest {
     void everyRefusal() {
         Target pig = mob(0.9, 0.9, 10, 2);
         assertEquals(Verdict.LIGHT, check(pig));
-        assertEquals(Verdict.GONE, check(new Target(false, true, false, false, false, false, 0, 0, 0, false, Double.MAX_VALUE, false)));
-        assertEquals(Verdict.PLAYER, check(new Target(true, false, true, false, false, false, 20, 0.6, 1.8, false, 2, true)));
-        assertEquals(Verdict.NOT_LIVING, check(new Target(false, false, false, false, false, false, 0, 0.5, 0.5, false, 2, true)));
-        assertEquals(Verdict.BOSS, check(new Target(true, false, false, false, false, true, 20, 0.9, 0.9, false, 2, true)));
-        assertEquals(Verdict.RIDING, check(new Target(true, false, false, true, false, false, 10, 0.9, 0.9, false, 2, true)));
-        assertEquals(Verdict.HELD, check(new Target(true, false, false, false, true, false, 10, 0.9, 0.9, false, 2, true)));
-        assertEquals(Verdict.OWNED, check(new Target(true, false, false, false, false, false, 20, 0.6, 0.85, true, 2, true)));
+        assertEquals(Verdict.GONE, check(new Target(false, true, false, false, false, false, false, 0, 0, 0, false, Double.MAX_VALUE, false)));
+        assertEquals(Verdict.PLAYER, check(new Target(true, false, true, false, false, false, false, 20, 0.6, 1.8, false, 2, true)));
+        assertEquals(Verdict.NOT_LIVING, check(new Target(false, false, false, false, false, false, false, 0, 0.5, 0.5, false, 2, true)));
+        assertEquals(Verdict.BOSS, check(new Target(true, false, false, false, false, true, false, 20, 0.9, 0.9, false, 2, true)));
+        assertEquals(Verdict.DENIED, check(new Target(true, false, false, false, false, false, true, 20, 0.9, 0.9, false, 2, true)));
+        assertEquals(Verdict.RIDING, check(new Target(true, false, false, true, false, false, false, 10, 0.9, 0.9, false, 2, true)));
+        assertEquals(Verdict.HELD, check(new Target(true, false, false, false, true, false, false, 10, 0.9, 0.9, false, 2, true)));
+        assertEquals(Verdict.OWNED, check(new Target(true, false, false, false, false, false, false, 20, 0.6, 0.85, true, 2, true)));
         assertEquals(Verdict.TOO_FAR, check(mob(0.9, 0.9, 10, 9)));
-        assertEquals(Verdict.NO_SIGHT, check(new Target(true, false, false, false, false, false, 10, 0.9, 0.9, false, 2, false)));
+        assertEquals(Verdict.NO_SIGHT, check(new Target(true, false, false, false, false, false, false, 10, 0.9, 0.9, false, 2, false)));
         for (Verdict v : Verdict.values()) {
             assertEquals(v.ok(), v == Verdict.LIGHT || v == Verdict.HEAVY, v.name());
             assertEquals(v.ok() ? v == Verdict.HEAVY ? 2 : 1 : 0, v.actuators(), v.name());
@@ -66,10 +67,34 @@ class GrabRuleTest {
     }
 
     @Test
-    void bossByTagOrHealth() {
-        assertEquals(Verdict.BOSS, check(mob(0.9, 3.5, GrabRule.BOSS_HEALTH + 1, 2)));
-        assertEquals(Verdict.HEAVY, check(mob(1.4, 2.7, GrabRule.BOSS_HEALTH, 2)), "an Iron Golem, exactly 100 max health");
-        assertEquals(Verdict.BOSS, check(new Target(true, false, false, false, false, true, 1, 0.9, 0.9, false, 2, true)), "tagged, whatever its health");
+    void bossByTagDeniedByConfigOrHealth() {
+        assertEquals(Verdict.BOSS, check(new Target(true, false, false, false, false, true, false, 1, 0.9, 0.9, false, 2, true)), "tagged, whatever its health");
+        assertEquals(Verdict.BOSS, check(new Target(true, false, false, false, false, true, true, 300, 0.9, 0.9, false, 2, true)), "a tagged boss stays a boss");
+        assertEquals(Verdict.DENIED, check(new Target(true, false, false, false, false, false, true, 20, 0.9, 0.9, false, 2, true)), "grab.denied, whatever its health");
+        assertEquals(Verdict.DENIED, check(mob(0.9, 3.5, 101, 2)), "over 50 hearts");
+        assertEquals(Verdict.HEAVY, check(mob(1.4, 2.7, 100, 2)), "an Iron Golem, exactly 50 hearts");
+        assertEquals(Verdict.HEAVY, check(mob(1.95, 2.2, 100, 2)), "a Ravager, exactly 50 hearts");
+        assertEquals(Verdict.HEAVY, GrabRule.check(mob(0.9, 3.5, 5000, 2), new Rules(4.0, false, 0)), "maxHearts 0: no limit");
+        assertEquals(Verdict.DENIED, GrabRule.check(mob(0.9, 0.9, 21, 2), new Rules(4.0, false, 20)), "a 10-heart cap");
+        assertEquals(Verdict.DENIED, check(new Target(true, false, false, true, false, false, true, 20, 0.9, 0.9, false, 9, false)), "denied comes before riding, Reach and sight");
+    }
+
+    @Test
+    void deniedListMatchesIdsAndWholeMods() {
+        GrabDeny.Matcher m = GrabDeny.parse(List.of("minecraft:elder_guardian", "born_in_chaos_v1:*", "Bad Entry", "nomod:", "absent_mod:thing"));
+        assertTrue(m.denies("minecraft", "elder_guardian"));
+        assertFalse(m.denies("minecraft", "guardian"));
+        assertTrue(m.denies("born_in_chaos_v1", "krampus"), "modid:* takes every mob of the mod");
+        assertFalse(m.denies("born", "in_chaos_v1:krampus"));
+        assertFalse(m.denies("minecraft", "zombie"));
+        assertTrue(m.denies("absent_mod", "thing"), "an id of a mod that is not installed is kept as text, never looked up");
+        assertTrue(GrabDeny.valid("minecraft:elder_guardian") && GrabDeny.valid("modid:*") && GrabDeny.valid(GrabDeny.NEW_ENTRY));
+        assertFalse(GrabDeny.valid("Minecraft:Zombie") || GrabDeny.valid("zombie") || GrabDeny.valid("a:*b") || GrabDeny.valid("*:*") || GrabDeny.valid(3));
+        assertFalse(GrabDeny.parse(List.of(GrabDeny.NEW_ENTRY)).denies("minecraft", "pig"), "a new config screen entry denies nothing");
+        GrabDeny.Matcher d = GrabDeny.parse(GrabDeny.DEFAULTS);
+        assertEquals(GrabDeny.DEFAULTS.size(), d.ids().size(), "every default parses");
+        assertTrue(d.denies("minecraft", "elder_guardian") && d.denies("born_in_chaos_v1", "lord_pumpkinhead"));
+        assertFalse(d.denies("minecraft", "iron_golem") || d.denies("minecraft", "ravager") || d.denies("minecraft", "guardian"));
     }
 
     @Test
@@ -94,9 +119,9 @@ class GrabRuleTest {
 
     @Test
     void othersAnimalsOnlyWithConfig() {
-        Target dog = new Target(true, false, false, false, false, false, 20, 0.6, 0.85, true, 2, true);
+        Target dog = new Target(true, false, false, false, false, false, false, 20, 0.6, 0.85, true, 2, true);
         assertEquals(Verdict.OWNED, GrabRule.check(dog, RULES));
-        assertEquals(Verdict.LIGHT, GrabRule.check(dog, new Rules(4, true)));
+        assertEquals(Verdict.LIGHT, GrabRule.check(dog, new Rules(4, true, 100.0)));
     }
 
     @Test
@@ -104,7 +129,7 @@ class GrabRuleTest {
         double edge = 4.0 + GrabRule.SLACK;
         assertEquals(Verdict.LIGHT, check(mob(0.9, 0.9, 10, edge - 0.01)));
         assertEquals(Verdict.TOO_FAR, check(mob(0.9, 0.9, 10, edge + 0.01)));
-        assertEquals(Verdict.LIGHT, GrabRule.check(mob(0.9, 0.9, 10, edge + 1.4), new Rules(5.5, false)));
+        assertEquals(Verdict.LIGHT, GrabRule.check(mob(0.9, 0.9, 10, edge + 1.4), new Rules(5.5, false, 100.0)));
     }
 
     @Test

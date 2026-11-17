@@ -5,9 +5,9 @@ import java.util.function.BooleanSupplier;
 
 /**
  * Who the Actuators may Grab, as a pure function of what the server sees (CONTEXT: Grab). A living mob, never a player,
- * never a boss ({@code tentaworks:bosses} or over {@value #BOSS_HEALTH} max health), nothing riding or ridden, nothing held
- * by another wearer, another player's tamed, owned or leashed animal only with {@code grab.tamedOthers}; some point of its box
- * within Reach + {@value #SLACK} of the body ({@link ActuatorReach}) and in sight of it. A light target ({@link #light}) takes
+ * never a boss ({@code tentaworks:bosses}), nothing the Server Config denies ({@code grab.denied}, or max health over
+ * {@code grab.maxHearts}), nothing riding or ridden, nothing held by another wearer, another player's tamed, owned or leashed
+ * animal only with {@code grab.tamedOthers}; some point of its box within Reach + {@value #SLACK} of the body ({@link ActuatorReach}) and in sight of it. A light target ({@link #light}) takes
  * one free Actuator ({@link #arm}: the off-hand one first), a heavy one or a Ship both, and both hands must then be empty. A claim
  * or protection mod may still say no ({@link #claimed}). A Ship that is all that holds the wearer up is refused ({@link #holdsUp}).
  */
@@ -16,22 +16,21 @@ public final class GrabRule {
     public static final double LIGHT_HEIGHT = 2.0;
     /** Width × width × height: keeps a horse (1.4 × 1.6) heavy while a spider (1.4 × 0.9) stays light. */
     public static final double LIGHT_BULK = 2.0;
-    public static final double BOSS_HEALTH = 100.0;
     public static final double SLACK = 0.75;
     private static final double EPS = 1.0E-6;
 
     /** What the server knows of a target; {@code distance} from the wearer's body to the nearest point of its box. */
-    public record Target(boolean living, boolean gone, boolean player, boolean riding, boolean held, boolean boss, double maxHealth,
+    public record Target(boolean living, boolean gone, boolean player, boolean riding, boolean held, boolean boss, boolean denied, double maxHealth,
                          double width, double height, boolean othersAnimal, double distance, boolean sight) {
     }
 
-    /** {@code reach}: the wearer's Reach; {@code tamedOthers}: the Server Config. */
-    public record Rules(double reach, boolean tamedOthers) {
+    /** {@code reach}: the wearer's Reach; {@code tamedOthers}, {@code maxHealth} (0: no limit): the Server Config. */
+    public record Rules(double reach, boolean tamedOthers, double maxHealth) {
     }
 
     /** Lower-case names are the refusal keys ({@code tentaworks.refusal.grab.<name>}). */
     public enum Verdict {
-        LIGHT, HEAVY, NOT_LIVING, GONE, PLAYER, RIDING, HELD, BOSS, OWNED, TOO_FAR, NO_SIGHT, HANDS_FULL, TWO_HANDS, OWN;
+        LIGHT, HEAVY, NOT_LIVING, GONE, PLAYER, RIDING, HELD, BOSS, DENIED, OWNED, TOO_FAR, NO_SIGHT, HANDS_FULL, TWO_HANDS, OWN;
 
         public boolean ok() {
             return this == LIGHT || this == HEAVY;
@@ -50,7 +49,8 @@ public final class GrabRule {
         if (t.gone()) return Verdict.GONE;
         if (t.player()) return Verdict.PLAYER;
         if (!t.living()) return Verdict.NOT_LIVING;
-        if (t.boss() || t.maxHealth() > BOSS_HEALTH) return Verdict.BOSS;
+        if (t.boss()) return Verdict.BOSS;
+        if (t.denied() || r.maxHealth() > 0 && t.maxHealth() > r.maxHealth() + EPS) return Verdict.DENIED;
         if (t.riding()) return Verdict.RIDING;
         if (t.held()) return Verdict.HELD;
         if (t.othersAnimal() && !r.tamedOthers()) return Verdict.OWNED;

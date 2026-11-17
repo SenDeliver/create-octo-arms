@@ -55,6 +55,20 @@ tp Dev 11200.5 -60 68.5 -90 0
 #sleep 0.5
 #signal g5w
 #await g5wdone
+# G5 grab.denied (an Elder Guardian, a default entry) and grab.maxHearts (a pig with 60 hearts, default cap 50); NoAI, killed after (the guardian's Mining Fatigue)
+summon elder_guardian 11205.5 -60 56.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","eg"]}
+tp Dev 11200.5 -60 56.5 -90 0
+#sleep 0.5
+#signal g5e
+#await g5edone
+kill @e[tag=eg]
+effect clear Dev minecraft:mining_fatigue
+summon pig 11203.5 -60 52.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b,Tags:["tw","hp"],Health:120f,attributes:[{id:"minecraft:generic.max_health",base:120.0}]}
+tp Dev 11200.5 -60 52.5 -90 0
+#sleep 0.5
+#signal g5h
+#await g5hdone
+kill @e[tag=hp]
 # G6 seat
 tp Dev 11200.5 -60 72.5 -90 0
 #sleep 0.5

@@ -443,7 +443,7 @@ public final class Grab {
         GrabRule.Verdict verdict = null;
         HoldArm arm = HoldArm.NONE;
         if (why == null) {
-            verdict = GrabRule.check(facts(wearer, target), new GrabRule.Rules(TentacleRigItem.reach(wearer), TentaworksConfig.value(TentaworksConfig.GRAB_TAMED_OTHERS)));
+            verdict = GrabRule.check(facts(wearer, target), rules(wearer));
             if (!verdict.ok()) why = verdict == GrabRule.Verdict.GONE ? "" : key(verdict);
         }
         if (why == null) {
@@ -506,11 +506,17 @@ public final class Grab {
     /** What {@code wearer}'s side knows of {@code target} for {@link GrabRule#check}; {@code held}: some wearer holds it. */
     public static GrabRule.Target facts(Player wearer, @Nullable Entity target, boolean held) {
         if (target == null || target.isRemoved() || !target.isAlive() || target.isSpectator())
-            return new GrabRule.Target(false, true, false, false, false, false, 0, 0, 0, false, Double.MAX_VALUE, false);
+            return new GrabRule.Target(false, true, false, false, false, false, false, 0, 0, 0, false, Double.MAX_VALUE, false);
         boolean boss = target.getType().is(BOSSES) || target instanceof EnderDragon || target instanceof WitherBoss;
         return new GrabRule.Target(target instanceof LivingEntity, false, target instanceof Player, target.isPassenger() || target.isVehicle(),
-                held, boss, target instanceof LivingEntity l ? l.getMaxHealth() : 0, target.getBbWidth(), target.getBbHeight(),
+                held, boss, GrabDeny.denied(EntityType.getKey(target.getType())), target instanceof LivingEntity l ? l.getMaxHealth() : 0, target.getBbWidth(), target.getBbHeight(),
                 othersAnimal(wearer, target), Math.sqrt(target.getBoundingBox().distanceToSqr(Grips.body(wearer))), sight(wearer, target));
+    }
+
+    /** The Server Config's rules for {@code wearer}'s Grab, the same on the server and in the client's prediction. */
+    public static GrabRule.Rules rules(Player wearer) {
+        return new GrabRule.Rules(TentacleRigItem.reach(wearer), TentaworksConfig.value(TentaworksConfig.GRAB_TAMED_OTHERS),
+                2 * TentaworksConfig.value(TentaworksConfig.GRAB_MAX_HEARTS));
     }
 
     /** Tamed or owned by another player, or leashed to anything but the wearer (a fence knot belongs to someone too). */
