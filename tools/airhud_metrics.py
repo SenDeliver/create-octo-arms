@@ -35,6 +35,15 @@ case('A5', 'a5', 'a5e', False, 'creative, Active', state='ACTIVE')
 case('A6', 'a6', 'a6e', False, 'Diving Helmet under water: Create shows its own')
 case('A6b', 'a6b', 'a6be', False, 'Active in the water with the helmet: Create shows its own', state='ACTIVE')
 case('A7', 'a7', 'a7e', False, 'out of the water: helmet breaths are not Rig drain')
+at = {int(m[0]): (int(m[1]), float(m[2])) for m in re.findall(r'TRACE t=\d+ gt=(\d+) .*? airt=(-?\d+) airr=(\S+)', c)}
+idle = 0.5 / 80
+w = [g for g in sorted(at) if 'a2' in mk and 'a2e' in mk and mk['a2'] <= g <= mk['a2e']]
+last = at[w[-1]] if w else None
+check('A2r Active Idle: the time is the Air left at the Netherite Idle rate (air.idle 80, factor 0.5), not 1 Air a second',
+      last and abs(last[1] - idle) <= 0.1 * idle and 1500 <= last[0] * last[1] <= 1801, f'airt {last and last[0]} airr {last and last[1]} (want {idle:.6f}), Air {last and last[0] * last[1]:.0f}')
+on = {t[0] for t in tr if t[2]}
+hid = [g for g in at if at[g][0] >= 0 and not on & {g - 1, g, g + 1}]
+check('A8 the time is set only while the timer shows (a tick of slack: the trace and the HUD tick run apart)', not hid, f'{len(hid)} ticks with airt but no airhud')
 bad = re.findall(r'---- Minecraft Crash Report ----|Exception in thread', c)
 check('E client: no crash', not bad, f'{len(bad)} hits')
 print('RESULT ' + ('PASS' if not fails else 'FAIL ' + ' '.join(fails)))

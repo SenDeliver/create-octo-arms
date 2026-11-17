@@ -2,6 +2,7 @@ package dev.tentaworks.client;
 
 import com.simibubi.create.content.equipment.armor.BacktankUtil;
 import dev.tentaworks.TentaworksIds;
+import dev.tentaworks.rig.RigAir;
 import dev.tentaworks.rig.RigEnchants;
 import dev.tentaworks.rig.WornRig;
 import net.minecraft.client.DeltaTracker;
@@ -26,7 +27,8 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
  * Create's remaining-Air timer (Backtank icon and time beside the hotbar) for the worn Rig while it uses Air: Active or Setting Down,
  * an Actuator holding a Grab (not with Deft), a Far Use reach, or Air taken in the last {@value #RECENT} ticks (Dual Wield, Throw, Create tools that draw
  * Air from the Rig; not a Diving Helmet's breath). Create's own overlay
- * shows it only for a Diving Helmet under water or in lava; then this one stays hidden, so it is never drawn twice.
+ * shows it only for a Diving Helmet under water or in lava; then this one stays hidden, so it is never drawn twice. The time is the
+ * Air left at the rate it really goes ({@link AirClock}), not Create's 1 Air a second.
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public final class RigAirHud {
@@ -34,12 +36,18 @@ public final class RigAirHud {
     static final int RECENT = 40;
     /** Ticks after a Diving Helmet last breathed in which a drop is still its breath (the server's sip can land after the eyes leave the water). */
     static final int HELMET_GRACE = 20;
+    /** Ticks of Air drops the observed rate is taken over. */
+    static final int OBSERVE = 100;
     private static final String CREATE_VISUAL_AIR = "VisualBacktankAir";
     private static WornRig lastRig = WornRig.NONE;
     private static int lastAir = -1;
     private static long lastDrop = Long.MIN_VALUE / 2;
     private static long lastHelmet = Long.MIN_VALUE / 2;
     private static long ticks;
+    private static final int[] drops = new int[OBSERVE];
+    private static int dropSum;
+    private static double rate = -1;
+    private static int shownTicks = -1;
 
     private RigAirHud() {
     }
@@ -58,10 +66,39 @@ public final class RigAirHud {
         int air = rig.isEmpty() ? -1 : BacktankUtil.getAir(rig);
         if (player != null && player.getPersistentData().contains(CREATE_VISUAL_AIR)) lastHelmet = ticks;
         boolean sameRig = WornRig.same(lastRig, worn);
-        if (sameRig && air >= 0 && lastAir >= 0 && air < lastAir && ticks - lastHelmet > HELMET_GRACE) lastDrop = ticks;
+        int drop = sameRig && air >= 0 && lastAir >= 0 && air < lastAir && ticks - lastHelmet > HELMET_GRACE ? lastAir - air : 0;
+        if (drop > 0) lastDrop = ticks;
         if (!rig.isEmpty() && ActuatorClient.local().farTtl() > 0 && !RigEnchants.deft(rig)) lastDrop = ticks;
+        int slot = (int) (ticks % OBSERVE);
+        dropSum += drop - drops[slot];
+        drops[slot] = drop;
         lastRig = worn;
         lastAir = air;
+        if (!sameRig || player == null || !shown(player)) {
+            rate = -1;
+            shownTicks = -1;
+            return;
+        }
+        rate = AirClock.smooth(rate, AirClock.target(expected(player, rig), (double) dropSum / OBSERVE));
+        shownTicks = AirClock.ticks(air, rate);
+    }
+
+    /** Air per tick the Rig is expected to use now: its state (Idle, Move, Climb) while it drains, plus a Grab's cost (none with Deft). */
+    private static double expected(LocalPlayer player, ItemStack rig) {
+        double r = 0;
+        if (RigClient.state().drains() && !RigAir.free(player)) r += RigAir.perTick(RigAir.use(RigClient.motion()), rig);
+        if (ActuatorClient.local().holding()) r += RigAir.grabPerTick(rig);
+        return r;
+    }
+
+    /** The time the timer shows, ticks; -1 while hidden. */
+    public static int shownTicks() {
+        return shownTicks;
+    }
+
+    /** The smoothed rate the time is counted with, Air per tick; -1 while hidden. */
+    public static double rate() {
+        return rate;
     }
 
     /** Whether the timer shows: the Rig is using Air and Create's diving timer is not already on screen. */
@@ -89,7 +126,7 @@ public final class RigAirHud {
         return !(isAir || canBreathe) || player.isInLava();
     }
 
-    /** Drawn as Create draws it: the Rig at the right of the hotbar and its Air as a time (1 Air a second, Create's diving rate). */
+    /** Drawn as Create draws it: the Rig at the right of the hotbar and its Air as a time. */
     private static void render(GuiGraphics g, DeltaTracker delta) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
@@ -101,7 +138,8 @@ public final class RigAirHud {
         g.renderItem(rig, 0, 0);
         int color = 0xFFFFFFFF;
         if (air < 60 && air % 2 == 0) color = mix(0xFFFF0000, color, Math.max(air / 60f, .25f));
-        g.drawString(mc.font, StringUtil.formatTickDuration(Math.max(0, air - 1) * 20, mc.level.tickRateManager().tickrate()), 16, 5, color);
+        int left = shownTicks >= 0 ? shownTicks : AirClock.ticks(air, AirClock.CREATE_RATE);
+        g.drawString(mc.font, StringUtil.formatTickDuration(left, mc.level.tickRateManager().tickrate()), 16, 5, color);
         g.pose().popPose();
     }
 
