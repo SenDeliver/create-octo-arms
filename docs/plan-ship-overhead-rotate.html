@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ship Overhead and Turn</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<style>
+  :root { --bg:#1b1f27; --card:#232934; --ink:#d9dee7; --muted:#8c96a5; --line:#333b48; --acc:#7aa7ff; --ok:#6fcf8f; --warn:#e2b05c; --bad:#ef7a72; }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:24px 32px; font:15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color:var(--ink); background:var(--bg); }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:19px; margin:30px 0 10px; border-bottom:2px solid var(--line); padding-bottom:4px; color:var(--acc); }
+  h3 { font-size:16px; margin:16px 0 6px; }
+  p.sub { color:var(--muted); margin:0 0 16px; }
+  code { background:#2c3340; padding:1px 5px; border-radius:4px; font-size:13px; }
+  table { width:100%; border-collapse:collapse; margin:8px 0 16px; font-size:14px; }
+  th, td { border:1px solid var(--line); padding:6px 9px; vertical-align:top; text-align:left; }
+  th { background:#2a313d; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(420px, 1fr)); gap:16px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px 16px; }
+  .tag { display:inline-block; padding:0 7px; border-radius:10px; font-size:12px; font-weight:600; color:#111; }
+  .s { background:var(--acc); } .c { background:var(--ok); } .v { background:var(--warn); } .r { background:var(--bad); }
+  pre.mermaid { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px; }
+  ul { margin:4px 0; padding-left:20px; }
+</style>
+</head>
+<body>
+<h1>Ship Overhead and Turn</h1>
+<p class="sub">2.0 line, branch <code>v1.21.1-v2</code>, 1.21.1 only (Ship Grab needs Sable). Two additions to Ship Grab: hold a Ship <b>Overhead</b> to clear the view, and <b>Turn</b> a held Ship with the mouse, the Actuators visibly doing it. The feel follows Simulated's Creative Physics Staff (rotate mode): yaw about world up, pitch about the camera's horizontal right axis, smooth, camera still.</p>
+
+<h2>Controls</h2>
+<table>
+<tr><th>Input (while a Ship is held)</th><th>Now</th><th>After</th></tr>
+<tr><td>Grab key tap</td><td>let the Ship go where it is</td><td>same</td></tr>
+<tr><td>Grab key + wheel</td><td>held face nearer / farther along the look, SHIP_MIN … Reach − 0.5</td><td>same; one notch <b>farther than the farthest</b> = <b>Overhead</b>; one notch nearer from Overhead = back to the farthest spot in front</td></tr>
+<tr><td>Grab key + attack</td><td>Throw</td><td>same</td></tr>
+<tr><td>Grab key + use (held)</td><td>nothing special</td><td><b>Turn</b>: camera frozen, mouse dx = yaw about world up, dy = pitch about the camera's horizontal right axis. Release either key: camera free again</td></tr>
+</table>
+
+<h2>Behaviour</h2>
+<div class="grid">
+<div class="card">
+<h3><span class="tag s">server</span> Overhead</h3>
+<ul>
+<li>The anchor uses a <b>yaw-only</b> basis (horizontal forward, right, world up), so pitch does not move the Ship: the wearer looks down or forward under the hull. Yaw still turns it with the wearer, like the in-front hold.</li>
+<li>Height: the held face goes up until the hull's lowest world point, read from the Sable <code>boundingBox()</code> at the current orientation, sits <code>OVERHEAD_CLEAR</code> = 0.75 above the eye. Horizontally it sits <code>OVERHEAD_FORWARD</code> ≈ 0.5 ahead of the eye.</li>
+<li>The anchor is capped at Reach − SHIP_INSIDE from the Rig body. A hull too tall to clear goes as high as Reach allows.</li>
+<li>The move is the existing gain (feed + P term) toward the new aim, so it flies up smoothly.</li>
+</ul>
+</div>
+<div class="card">
+<h3><span class="tag s">server</span> Turn</h3>
+<ul>
+<li>The Held gets a <code>user</code> quaternion. <code>want = rotY(−yawDelta) · user · start</code>. The pivot stays the held face (the existing <code>arm</code> transform), so the grip points don't slide.</li>
+<li>Each input delta is applied in the wearer's view frame: yaw premultiplied about world Y, pitch premultiplied about the horizontal right of the current yaw. This is what the Physics Staff does.</li>
+<li>Packet <code>RigGrabPacket.turn(dYaw, dPitch)</code> in degrees. The server clamps it to ±30° per packet and drops more than 2 packets a tick. Ships only, ignored for mobs.</li>
+<li>The turn stays after Set Down and Throw: the Ship is let go in its pose as it is.</li>
+</ul>
+</div>
+<div class="card">
+<h3><span class="tag c">client</span> Input</h3>
+<ul>
+<li>A new <b>client</b> mixin on <code>MouseHandler.turnPlayer</code> (or the accumulated delta): while turning, it swallows the look delta and hands it to <code>ShipTurn</code>. Mouse sensitivity and invert are applied the vanilla way. Deltas are summed and sent once a tick.</li>
+<li>Use with the Grab key down while a Ship is held is consumed (no vanilla use, no Far Use).</li>
+<li>The turn stops when the key, the screen or the hold goes away.</li>
+</ul>
+</div>
+<div class="card">
+<h3><span class="tag v">visual</span> Actuators turn it</h3>
+<ul>
+<li>At the Grab the server picks a face tangent: the in-face axis closest to the wearer's right. The two tips grip ship-local points at the face centre ± 0.4 along it.</li>
+<li>The state packet carries the tangent as a <code>Direction</code>, appended at the end. <code>ActuatorRenderer.holdPoint</code> maps the ship-local points through <code>renderPose</code>, replacing today's world-space <code>b.out(side)</code>.</li>
+<li>Roll lifts one tip and drops the other, and yaw twists them. In Overhead the tips reach up.</li>
+</ul>
+</div>
+<div class="card">
+<h3><span class="tag v">HUD</span> Gauge and hints</h3>
+<ul>
+<li>The distance tick column gets an <b>Overhead cap</b> past the farthest tick: a small gap, then an up-chevron glyph in its own colour. It lights when Overhead and is dim otherwise. Shown for Ship holds only.</li>
+<li>While turning, a small rotate glyph sits by the crosshair. No words.</li>
+<li>Ship hold hint line (first 2 holds): adds the Turn key combo. Lang keys in all 15 locales.</li>
+</ul>
+</div>
+<div class="card">
+<h3><span class="tag r">risk</span> Watch</h3>
+<ul>
+<li>A long hull pitched while Overhead swings its far end down, possibly into the wearer or the terrain. Sable collides, and <code>Hold.far</code> releases it if it can't follow.</li>
+<li>An Overhead Ship rising into a ceiling stays pressed against it. That's acceptable.</li>
+<li>The frozen camera must never stick: every exit path (key up, screen, hold end, death, dimension change) restores look.</li>
+</ul>
+</div>
+</div>
+
+<h2>Flow</h2>
+<pre class="mermaid">
+flowchart LR
+  subgraph Client
+    W[V + wheel] -->|notch past far| G[RigGrabPacket.distance]
+    T[V + use held] --> M[MouseHandler mixin<br/>swallow look]
+    M --> S[ShipTurn sum per tick]
+    S --> P[RigGrabPacket.turn dYaw dPitch]
+  end
+  subgraph Server
+    G --> H{Held.overhead}
+    P --> U[Held.user quaternion]
+    H --> A[anchor: in-front or overhead]
+    U --> Q[want = yawFollow · user · start]
+    A --> D[holdShip gain → ship.velocity]
+    Q --> D
+    D --> ST[ActuatorStatePacket<br/>overhead + tangent at end]
+  end
+  ST --> R[ActuatorRenderer tips on ship-local points]
+  ST --> HUD[gauge overhead cap]
+</pre>
+
+<h2>Steps</h2>
+<table>
+<tr><th>#</th><th>Step</th><th>Files</th><th>Check</th></tr>
+<tr><td>1</td><td>Pure math in <code>Hold</code>: <code>shipOverhead(eye, yaw, rel, hullBottomBelowFace, body, max)</code>, <code>shipTurnInput(user, yaw, dYaw, dPitch)</code>, <code>shipWant(start, yawDelta, user)</code>, <code>shipAlong</code> past far → overhead flag, <code>faceTangent(face, wearerRight)</code></td><td><code>rig/Hold.java</code></td><td>JUnit <code>HoldTest</code></td></tr>
+<tr><td>2</td><td><code>ShipBody</code> gains <code>worldBounds()</code> (Sable <code>boundingBox()</code>). Held fields <code>overhead</code>, <code>user</code>, <code>tangent</code>. <code>holdShip</code> uses them, <code>distance()</code> flips overhead</td><td><code>compat/ShipBody</code>, <code>compat/sable/SableShips</code>, <code>rig/Grab</code></td><td>JUnit + shipgrab</td></tr>
+<tr><td>3</td><td>Packets: <code>RigGrabPacket.turn</code> (clamped, rate-limited). <code>ActuatorStatePacket</code> gets overhead + tangent appended</td><td><code>network/*</code></td><td>build</td></tr>
+<tr><td>4</td><td>Client input: <code>ShipTurn</code> state, client mixin swallowing look, use consumed with V, exit paths</td><td><code>client/ActuatorClient</code>, new <code>client/ShipTurn</code>, <code>mixin/client/…</code>, <code>tentaworks.mixins.json</code></td><td>look suite + manual</td></tr>
+<tr><td>5</td><td>Visuals: tips on ship-local tangent points</td><td><code>client/ActuatorRenderer</code></td><td>look suite shots</td></tr>
+<tr><td>6</td><td>HUD gauge overhead cap, turn glyph, hint line + 15 locales</td><td><code>client/ActuatorHud</code>, <code>client/GrabHint</code>, <code>TentaworksLang</code>, lang files</td><td><code>lang_check.py</code></td></tr>
+<tr><td>7</td><td>Harness: shipgrab sections, Overhead (hull bottom &gt; eye), Turn (orientation delta), kept after release. STRACE fields appended at the end. Dev client script hooks for wheel past far + turn</td><td><code>src/dev</code>, <code>tools/</code> shipgrab files</td><td>shipgrab alone, then run_all</td></tr>
+<tr><td>8</td><td>Docs: <code>CONTEXT.md</code> Ship Grab entry, CHANGELOG unreleased line</td><td>docs</td><td>-</td></tr>
+</table>
+
+<script>mermaid.initialize({ startOnLoad:true, theme:'dark' });</script>
+</body>
+</html>
