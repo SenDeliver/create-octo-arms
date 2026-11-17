@@ -111,7 +111,7 @@ doublejump
 wait 30
 mark sd1b
 signal sd1done
-# SD2 Setting Down under ceiling B (floor 15 below)
+# SD2 Setting Down under ceiling B (floor 15 below): holds at the lowest Held point, a Double Jump makes it Active again
 await sd2
 cmd tp @s 768.5 -48 0.5 -90 0
 wait 3
@@ -121,6 +121,14 @@ mark sd2a
 doublejump
 wait 80
 mark sd2b
+doublejump
+wait 20
+mark sd2c
+cmd tp @s 768.5 -60 0.5 -90 0
+wait 20
+doublejump
+wait 30
+mark sd2d
 signal sd2done
 # MJ1 mid-air Double Jump while falling next to the wall: caught, then Setting Down to the floor
 await mj1

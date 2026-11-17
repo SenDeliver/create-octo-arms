@@ -1,6 +1,7 @@
 # lag: a wearer at top Speed on a lagging server keeps the Rig (2026-11-10 report: "moves faster than its top Speed: stowing" under lag).
 # W0 walk, no lag (control). W1 walk through sustained lag (130 ms ticks, about 7.7 TPS, 70 ticks). W2 walk through three 1.5 s stalls.
-# A anti-cheat: Rig Set Down and folded, the timeline forges a 20 b/s server-side slide with 5 packets per tick (must still stow, unless speed.check=false).
+# B backlog: Rig folded, the timeline forges held packets while the server moves Dev 20 blocks in two ticks (a lag backlog): no speed violation.
+# A anti-cheat: Rig Set Down and folded, the timeline forges a 20 b/s server-side slide with 5 packets per tick (must still force Falling, unless speed.check=false).
 # Flat superflat ground at y -60, nothing around x 8500. TIMELINE lag-timeline.txt
 wait 40
 trace on

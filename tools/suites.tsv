@@ -12,7 +12,7 @@
 # What the suites test:
 # spike suites main (scenarios 1-8 + water + Dev2 watcher), lifecycle + negative controls, creative;
 # phase-1 suite p1 (Netherite Reach, Rig Block refill/pickup/loot, worn render, diving HUD, creative tab);
-# phase-2 suite p2 (Air drain, Crawl, Setting Down let-go, mid-air catch, Air gate, warnings, forged packets with 0 Air);
+# phase-2 suite p2 (Air drain, Crawl, Setting Down hold with no floor + Double Jump back to Active, mid-air catch, Air gate, warnings, forged packets with 0 Air);
 # phase-3 suite p3 (Rig Settings screen + component, clamping, Standing Height, Speed, key-only mode, Crawl let-go/re-grab, creative, tooltips, long fall; ends with a kick);
 # phase-4 suite p4 (enchanting table offers + real enchant, anvil books, durability + Mending, Rig Block keeps enchants, Far Reach, Thrift, Swift, forged speed);
 # phase-5 suite p5 (recipe lookups after /reload, real Sequenced Assembly line + Mechanical Crafter grids, worn-out Rig, anvil/Mending repair, tooltips, smithing, JEI, creative tab);

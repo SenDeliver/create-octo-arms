@@ -18,6 +18,7 @@ for m in re.findall(r'SPOS (\S+) gt=(\d+) Dev', s):
 hurts = [(int(m[0]), float(m[1])) for m in re.findall(r'HURT gt=(\d+) Dev source=fall amount=(\S+)', s)]
 falls = [(int(m[0]), float(m[1])) for m in re.findall(r'FALL gt=(\d+) Dev distance=(\S+)', s)]
 titles = re.findall(r'TITLE gt=(\d+) subtitle="([^"]*)"', c)
+overlays = [(int(g), t) for g, t in re.findall(r'OVERLAY gt=(\d+) text="([^"]*)"', c)]
 fails = []
 
 def check(name, ok, text):
@@ -106,17 +107,17 @@ w = span(tr, mk['sd1a'], mk['sd1b']); sw = span(st, mk['sd1a'] - 30, mk['sd1b'])
 check('SD1 on a floor: on feet, Stowed, no damage', w[-1][1]['state'] == 'STOWED' and w[-1][1]['ground'] and min(x['hp'] for _, x in sw) == 20,
       f"client {states(w)}, end feet {w[-1][1]['p'][1]:.3f}, server hp min {min(x['hp'] for _, x in sw)}")
 w = span(tr, mk['sd2a'], mk['sd2b']); sw = span(st, mk['sd2a'], mk['sd2b'])
-lg = first(tr, mk['sd2a'], mk['sd2b'], lambda x: x['state'] == 'STOWED')
-letgo_y = tr[lg - 1]['p'][1]
-land = first(st, lg, mk['sd2b'], lambda x: x['hp'] < 20)
-fall = next((d for g, d in falls if lg <= g <= mk['sd2b'] and d > 3), float('nan'))
-hp = 20 - sum(d for g, d in hurts if lg <= g <= mk['sd2b'])
-exp = math.ceil(fall - 3) if fall == fall else -1
-cf_after = [x['cf'] for g, x in span(st, lg + 3, lg + 10)]
-check('SD2 under a ceiling: lets go at the lowest Held point', abs(letgo_y + 0.9 - (-49)) < 0.05 and states(w).startswith('ACTIVE -> SETTING_DOWN -> STOWED'),
-      f"client {states(w)}, let go at feet {letgo_y:.3f} (body {letgo_y + 0.9:.3f}; ceiling -45 - Reach 4 = -49), server fall at let-go {st.get(lg, {}).get('fall')}, cf after {sorted(set(cf_after))}")
-check('SD2 vanilla fall damage from the let-go point', land and abs(fall - (letgo_y + 60)) < 1.2 and 20 - hp == exp and max(cf_after) == 0,
-      f'server fall distance at landing {fall:.2f} (let-go feet - floor = {letgo_y + 60:.2f}; vanilla skips the landing step), damage {20 - hp:.0f}, expected ceil(fall - 3) = {exp}')
+feet = w[-1][1]['p'][1]
+cue = [g for g, t in overlays if mk['sd2a'] - 2 <= g <= mk['sd2b'] and 'Double Jump again' in t]
+check('SD2 under a ceiling, no floor below: holds at the lowest Held point', states(w) == 'ACTIVE -> SETTING_DOWN' and abs(feet + 0.9 - (-49)) < 0.05
+      and states(sw).endswith('SETTING_DOWN') and min(x['hp'] for _, x in sw) == 20 and not any(mk['sd2a'] <= g <= mk['sd2b'] for g, _ in hurts),
+      f"client {states(w)}, server {states(sw)}, held at feet {feet:.3f} (body {feet + 0.9:.3f}; ceiling -45 - Reach 4 = -49), server hp min {min(x['hp'] for _, x in sw)}")
+check('SD2 the Double Jump that starts Setting Down shows the action-bar line', len(cue) == 1, f"{len(cue)} OVERLAY lines with 'Double Jump again' after sd2a")
+w = span(tr, mk['sd2b'], mk['sd2c']); sw = span(st, mk['sd2b'] + 5, mk['sd2c'])
+check('SD2 a Double Jump during Setting Down: Active again, still Held', states(w) == 'SETTING_DOWN -> ACTIVE' and abs(w[-1][1]['p'][1] - feet) < 0.05 and states(sw) == 'ACTIVE',
+      f"client {states(w)}, server {states(sw)}, feet {w[-1][1]['p'][1]:.3f}")
+w = span(tr, mk['sd2c'] + 5, mk['sd2d'])
+check('SD2 then Setting Down on the floor: Stowed', w[-1][1]['state'] == 'STOWED' and w[-1][1]['ground'], f"client {states(w)}, end feet {w[-1][1]['p'][1]:.3f}")
 
 print('== Mid-air Double Jump')
 w = span(tr, mk['mj1a'], mk['mj1b']); sw = span(st, mk['mj1a'], mk['mj1b'])

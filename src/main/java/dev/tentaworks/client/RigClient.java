@@ -69,6 +69,8 @@ import java.util.List;
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public final class RigClient {
     public static final int DOUBLE_JUMP_TICKS = 7;
+    /** Setting Down that stalls with a floor at most this far under the feet Stows (no fall damage up to 3); with none it holds. */
+    private static final double SAFE_DROP = 3.0;
 
     private static RigState state = RigState.STOWED;
     /** Where the worn Rig sat last tick: a Rig that moves between the chest slot and the Back Slot mid-use Sets Down. */
@@ -240,8 +242,11 @@ public final class RigClient {
             case SETTING_DOWN -> {
                 motion = Grips.clampHeld(level, player, new Vec3(0, -step, 0), reach, faces, shift);
                 if (motion.y > -1.0E-4) {
-                    setState(player, RigState.STOWED);
-                    return;
+                    if (worn || floorBelow(player, SAFE_DROP - 1.5) != null) {
+                        setState(player, RigState.STOWED);
+                        return;
+                    }
+                    motion = Vec3.ZERO;
                 }
                 player.setDeltaMovement(motion.add(carry));
                 player.resetFallDistance();
@@ -297,7 +302,7 @@ public final class RigClient {
             player.onUpdateAbilities();
             return true;
         }
-        if (quick && (state == RigState.ACTIVE || state == RigState.CRAWL)) {
+        if (quick && (state == RigState.ACTIVE || state == RigState.SETTING_DOWN || state == RigState.CRAWL)) {
             lastPress = -100;
             return toggle(player, settings);
         }
@@ -307,7 +312,8 @@ public final class RigClient {
 
     /**
      * The Rig's on/off (a Double Jump, or the toggle key): activates a Stowed Rig that has Air (mid-air it catches at
-     * the first Grip), starts Setting Down when Active, and lets go in Crawl (Stowed, the wearer falls).
+     * the first Grip), starts Setting Down when Active (with an action-bar line: the same input again keeps the wearer up),
+     * turns Setting Down back to Active on a Rig that is not worn out, and lets go in Crawl (Stowed, the wearer falls).
      */
     private static boolean toggle(LocalPlayer player, RigSettings settings) {
         switch (state) {
@@ -330,6 +336,12 @@ public final class RigClient {
             }
             case ACTIVE -> {
                 state = RigState.SETTING_DOWN;
+                settingDownCue(player, settings);
+                return true;
+            }
+            case SETTING_DOWN -> {
+                if (TentacleRigItem.wornOut(RigAir.worn(player))) return false;
+                state = RigState.ACTIVE;
                 return true;
             }
             case CRAWL -> {
@@ -340,6 +352,13 @@ public final class RigClient {
                 return false;
             }
         }
+    }
+
+    private static void settingDownCue(LocalPlayer player, RigSettings settings) {
+        Component line = settings.activation() == RigSettings.ActivationMode.KEY
+                ? Component.translatable("tentaworks.rig.setting_down.key", TentaworksKeys.TOGGLE.getTranslatedKeyMessage())
+                : Component.translatable("tentaworks.rig.setting_down");
+        player.displayClientMessage(line.copy().withStyle(ChatFormatting.GRAY), true);
     }
 
     /** Create's backtank warning style (subtitle under an empty title): a worn-out Rig refuses to carry. */

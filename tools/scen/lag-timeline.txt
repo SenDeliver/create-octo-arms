@@ -15,6 +15,10 @@ tentaworks lag 1500 1
 #sleep 3
 #signal w2done
 #await a
+tentaworks pos la
+tentaworks fake lump20 30
+#sleep 2
+tentaworks pos lb
 tentaworks pos fa
 tentaworks burst 5
 tentaworks fake slide20 40

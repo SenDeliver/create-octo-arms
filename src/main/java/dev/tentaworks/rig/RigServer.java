@@ -11,7 +11,9 @@ import dev.tentaworks.config.TentaworksConfig;
 import dev.tentaworks.mixin.ServerGamePacketListenerImplAccessor;
 import dev.tentaworks.network.RigMotionPacket;
 import dev.tentaworks.network.RigStatePacket;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -62,11 +64,9 @@ public final class RigServer {
     private static final double CRAWL_SLACK = 1.5;
     private static final double FALL_STEP = 0.1;
     private static final int RESEND_TICKS = 10;
-    private static final int SPEED_WINDOW = 10;
+    private static final int SPEED_WINDOW = SpeedCheck.WINDOW;
     private static final int SPEED_GRACE = 2 * SPEED_WINDOW;
     private static final double REAL_STILL = 0.01;
-    private static final double SPEED_SLACK = 1.25;
-    private static final double SPEED_EXTRA = 1.0;
     private static final double NANOS_PER_TICK = 50_000_000.0;
     private static final int LOG_QUIET_TICKS = 200;
     private static final Map<UUID, Wearer> WEARERS = new HashMap<>();
@@ -97,15 +97,13 @@ public final class RigServer {
         boolean airRejected;
         int resentAt = -100;
         Vec3 tickPos;
-        final double[] window = new double[SPEED_WINDOW];
-        int windowAt;
-        /** Rig motion packets (one per client tick) since the last server tick, then per tick in the window. */
+        final SpeedCheck speed = new SpeedCheck();
+        /** Rig motion packets (one per client tick) since the last server tick. */
         int packets;
-        final int[] packetWindow = new int[SPEED_WINDOW];
-        /** Real time per server tick in the window, in ticks of 50 ms. */
-        final double[] timeWindow = new double[SPEED_WINDOW];
         long tickNanos;
-        int overSpeed;
+        boolean overSpeed;
+        /** Ticks left in which carrying claims are answered with Falling after a speed violation; stays at 1 while the window is over. */
+        int speedRefused;
         Vec3 realMove = Vec3.ZERO;
         RigState relayedState;
         Tentacles relayed;
@@ -146,12 +144,10 @@ public final class RigServer {
             if (w != null) {
                 w.tickPos = null;
                 w.tickAnchor = null;
-                Arrays.fill(w.window, 0);
-                Arrays.fill(w.packetWindow, 0);
-                Arrays.fill(w.timeWindow, 0);
+                w.speed.reset();
                 w.packets = 0;
                 w.tickNanos = 0;
-                w.overSpeed = 0;
+                w.overSpeed = false;
             }
         });
         NeoForge.EVENT_BUS.addListener((PlayerEvent.StartTracking e) -> {
@@ -201,6 +197,17 @@ public final class RigServer {
     public static Vec3 motion(ServerPlayer player) {
         Wearer w = WEARERS.get(player.getUUID());
         return w == null ? Vec3.ZERO : w.motion;
+    }
+
+    /**
+     * The speed check and the unheld count as the dev trace logs them: window move sum, allowed steps, move packets, real time
+     * (ticks), over ticks in a row, refusal ticks left, unheld ticks; all zero without a Wearer.
+     */
+    public static double[] checks(ServerPlayer player) {
+        Wearer w = WEARERS.get(player.getUUID());
+        if (w == null) return new double[7];
+        SpeedCheck c = w.speed;
+        return new double[]{c.sum(), c.steps(), c.packets(), c.time(), c.overTicks(), w.speedRefused, w.unheldTicks};
     }
 
     /** Motion packets handled and state relays sent since start (server stats). */
@@ -264,8 +271,8 @@ public final class RigServer {
     public static void resetSpeedWindow(ServerPlayer player) {
         Wearer w = WEARERS.get(player.getUUID());
         if (w == null) return;
-        Arrays.fill(w.window, 0);
-        w.overSpeed = 0;
+        w.speed.clearMoves();
+        w.overSpeed = false;
         w.speedGrace = SPEED_GRACE;
     }
 
@@ -345,20 +352,25 @@ public final class RigServer {
         List<Grip> grips = tentacles.list();
         boolean held = grips.size() >= Grips.HELD;
         RigState state = wornState(w, airState(w, packet.state(), air, RigAir.free(player)), worn);
-        if (w.state == RigState.FALLING && state == RigState.CRAWL) w.crawlBad = 0;
-        if (state == RigState.CRAWL && crawlViolation(player, w, packet.motion()) && ++w.crawlBad > REJECT_TICKS) {
+        if (state != RigState.CRAWL || !crawlViolation(player, w, packet.motion())) {
+            w.crawlBad = 0;
+        } else if (++w.crawlBad > REJECT_TICKS) {
             LOG.warn("Tentacle Rig of {} moves against Crawl with no Air: forcing Falling", player.getName().getString());
             state = RigState.FALLING;
             w.airRejected = true;
+            tell(player, "crawl");
         }
-        if (state == RigState.SETTING_DOWN) {
-            if (!settingDownViolation(player, w, packet.motion())) {
-                w.downBad = 0;
-            } else if (++w.downBad > REJECT_TICKS) {
-                LOG.warn("Tentacle Rig of {} moves against SETTING_DOWN: stowing", player.getName().getString());
-                stow(player, true);
-                return;
-            }
+        if (state != RigState.SETTING_DOWN || !settingDownViolation(player, w, packet.motion())) {
+            w.downBad = 0;
+        } else if (++w.downBad > REJECT_TICKS) {
+            LOG.warn("Tentacle Rig of {} moves against SETTING_DOWN: stowing", player.getName().getString());
+            tell(player, "setting_down");
+            stow(player, true);
+            return;
+        }
+        if (w.speedRefused > 0 && state.carries()) {
+            state = RigState.FALLING;
+            resendFalling(player, w, tentacles, packet, ghost);
         }
         w.lastPos = player.position();
         w.posAnchor = anchor(player.level(), grips);
@@ -385,6 +397,7 @@ public final class RigServer {
                 w.told = state;
                 w.resentAt = player.tickCount;
                 PacketDistributor.sendToPlayer(player, new RigStatePacket(player.getId(), state, tentacles));
+                tell(player, "grips");
             }
         }
         w.state = state;
@@ -431,6 +444,7 @@ public final class RigServer {
     private static void refuseRide(ServerPlayer player, Wearer w) {
         int now = player.server.getTickCount();
         if (w != null) {
+            if (w.state.carries()) tell(player, "ride");
             stow(player, true);
             RIDE_REFUSED.put(player.getUUID(), now);
             return;
@@ -558,15 +572,16 @@ public final class RigServer {
         Wearer w = WEARERS.get(player.getUUID());
         if (w == null) return;
         if (!TentacleRigItem.isWorn(player) || riding(player) || player.isSpectator() || !sameRig(player, w)) {
+            if (w.state.carries() && riding(player) && TentacleRigItem.isWorn(player)) tell(player, "ride");
             stow(player, true);
             return;
         }
         if (!w.state.carries()) return;
         noFlying(player);
         noGliding(player);
-        if (w.overSpeed > REJECT_TICKS && TentaworksConfig.value(TentaworksConfig.SPEED_CHECK)) {
-            LOG.warn("Tentacle Rig of {} moves faster than its top Speed: stowing", player.getName().getString());
-            stow(player, true);
+        if (w.overSpeed && TentaworksConfig.value(TentaworksConfig.SPEED_CHECK)) {
+            LOG.warn("Tentacle Rig of {} moves faster than its top Speed: forcing Falling", player.getName().getString());
+            speedFalling(player, w);
             return;
         }
         Vec3 body = Grips.body(player);
@@ -596,12 +611,8 @@ public final class RigServer {
     /**
      * The server's own view of the wearer's move: position delta per server tick, read after all players ticked (during the
      * player tick vanilla moves a ServerPlayer by its velocity and then puts it back), teleport events reset it. Feeds the Air rate
-     * (never below what the real move costs) and the speed check (a {@value #SPEED_WINDOW}-tick window, so bursty move
-     * packets after lag do not count as speeding). Like vanilla's move check, the allowed distance follows the wearer's move
-     * packets (one per client tick), not server ticks: a server below 20 TPS, or one catching up after a stall, gets
-     * several client ticks of move per server tick. The packets count only up to the real time of the window, so sending
-     * extra packets buys no speed (on a server at 20 TPS the allowance stays the old {@value #SPEED_WINDOW} steps), and
-     * never below {@value #SPEED_WINDOW}. The carry Ship's move since the last tick is not the wearer's.
+     * (never below what the real move costs) and the {@link SpeedCheck}. The carry Ship's move since the last tick is not the wearer's.
+     * A speed refusal lasts {@value #SPEED_WINDOW} ticks, longer while the window is still over.
      */
     private static void trackRealMove(ServerPlayer player, Wearer w) {
         Vec3 pos = player.position();
@@ -612,28 +623,41 @@ public final class RigServer {
         w.realMove = still(carried ? carriedMove(w, d) : d);
         if (!carried) Arrays.fill(w.carryWindow, Vec3.ZERO);
         long nanos = System.nanoTime();
-        w.window[w.windowAt] = d.length();
-        w.packetWindow[w.windowAt] = w.packets;
-        w.timeWindow[w.windowAt] = w.tickNanos == 0 ? 1 : (nanos - w.tickNanos) / NANOS_PER_TICK;
+        w.speed.add(d.length(), w.packets, w.tickNanos == 0 ? 1 : (nanos - w.tickNanos) / NANOS_PER_TICK);
         w.packets = 0;
         w.tickNanos = nanos;
-        w.windowAt = (w.windowAt + 1) % SPEED_WINDOW;
+        double max = maxStep(player);
+        if (w.speedRefused > 1 || (w.speedRefused == 1 && !w.speed.over(max))) w.speedRefused--;
         if (!w.state.carries() || w.speedGrace > 0) {
             if (w.speedGrace > 0) w.speedGrace--;
-            w.overSpeed = 0;
+            w.speed.calm();
+            w.overSpeed = false;
             return;
         }
-        double sum = 0;
-        int packets = 0;
-        double time = 0;
-        for (int i = 0; i < SPEED_WINDOW; i++) {
-            sum += w.window[i];
-            packets += w.packetWindow[i];
-            time += w.timeWindow[i];
-        }
-        double steps = Math.max(SPEED_WINDOW, Math.min(packets, time));
-        if (sum > maxStep(player) * steps * SPEED_SLACK + SPEED_EXTRA) w.overSpeed++;
-        else w.overSpeed = 0;
+        w.overSpeed = w.speed.count(max);
+    }
+
+    /**
+     * Sustained real move past top Speed: Falling, not Stowed, so the Rig catches again where it can. Carrying claims are
+     * answered with Falling until the refusal ends ({@link #trackRealMove}); a client that keeps moving that fast stays refused.
+     */
+    private static void speedFalling(ServerPlayer player, Wearer w) {
+        w.speed.clearMoves();
+        w.overSpeed = false;
+        w.speedRefused = SPEED_WINDOW;
+        w.state = RigState.FALLING;
+        w.motion = Vec3.ZERO;
+        w.told = RigState.FALLING;
+        w.resentAt = player.tickCount;
+        setFloat(player, false);
+        PacketDistributor.sendToPlayer(player, new RigStatePacket(player.getId(), RigState.FALLING, w.tentacles));
+        relay(player, w);
+        tell(player, "speed");
+    }
+
+    /** One action-bar line for the wearer: why the server stopped the Rig carrying ({@code tentaworks.rig.forced.<reason>}). */
+    private static void tell(ServerPlayer player, String reason) {
+        player.displayClientMessage(Component.translatable("tentaworks.rig.forced." + reason).withStyle(ChatFormatting.RED), true);
     }
 
     private static Vec3 still(Vec3 d) {

@@ -35,7 +35,7 @@ Actuators: two more arms for the Rig, one for each hand. The four Tentacles carr
 - Advancements: Fitted, Special Delivery, Hang In There, Spider, Man, The Power of the Sun, Intelligence Is a Privilege.
 - **1.21.1 only:** Advancement Fridge Mover (Grab a Ship and set it down 50 blocks away), shown only with Sable.
 - Client config: `firstPerson.limbOpacity` (how solid Tentacles and Actuators are drawn in first person, 1.0 down to 0.1), `hud.crosshair` and `hud.hints` (turn the marks and the key hints off).
-- Server config `speed.check` (default on): off, the server never Stows a Rig for moving faster than its top Speed.
+- Server config `speed.check` (default on): off, the server never stops a Rig for moving faster than its top Speed.
 - Create's remaining-Air timer beside the hotbar now shows for the Rig whenever it uses Air (Active, Setting Down, holding a Grab unless Deft, during Far Use, and for 2 seconds after the Rig's Air goes down, as with Dual Wield, a Throw or a Create tool drawing on it), not only with a Diving Helmet under water. Never drawn twice: under water with a helmet Create's own timer shows. The time is how long the Air lasts at the rate the Rig uses it now (Idle, moving or climbing, the tier, Thrift, a Grab), eased over about a second, not Create's 1 Air a second; after a sip it follows the Air seen going. Client only (issue #36). Thanks @snipernumber3.
 - Item tag `tentaworks:own_hand`: items in it stay in the wearer's own hand like a Potato Cannon or a map, so a mod that draws and animates them itself keeps its first-person view. TACZ guns are in it by default (issue #34). The tag is server data: the server needs this version for the default entry. Thanks @snipernumber3.
 
@@ -45,12 +45,17 @@ Actuators: two more arms for the Rig, one for each hand. The four Tentacles carr
 - Actuators use a little Air. Copper Rig: 0.5 per Far Use or Dual Wield action, 1 per 2 seconds of holding, 10 per Throw; Netherite half. With no Air they hang limp and let go.
 - Copper Rig Reach 4 → 5 blocks. Its highest Standing Height is 5 too.
 - A Rig whose Speed was never set in the Rig Settings now runs at the server's top Speed (8 blocks/s by default) instead of 5.6. A Speed you saved stays.
+- Setting Down with no floor below (under a ceiling, over a pit) holds you at the lowest Held point instead of letting go. A Double Jump (or the toggle key) during Setting Down makes the Rig Active again, and starting Setting Down says so on the action bar. A worn-out Rig still lets go there.
+- The speed check makes the Rig fall (it catches again where it can) instead of Stowing it, and only overspeed that lasts longer than a second counts: a lag backlog of moves arriving at once no longer trips it.
+- When the server makes the Rig fall or Stows it, the action bar says why: too fast, no Grips the server sees, moving against Crawl or Setting Down, a Ride.
 
 ### Fixed
 
 - No more rubber-banding ("moved wrongly") when going round an outside corner at about 7 blocks/s or faster.
 - In creative, opening the inventory no longer Stows an Active Rig (since 1.8.0).
 - A Rig at its top Speed is no longer Stowed on a lagging server.
+- 2.0 beta: "The Rig shuts off while I move": tapping jump to climb could count as a Double Jump and start Setting Down, which let go over a pit, and a lag spike could Stow the Rig mid-move. Both now keep you held.
+- The server's Crawl check no longer adds up moves against Crawl that were far apart: a Crawl move in line resets it.
 - Rig Settings: with Swift, the Speed slider now reaches the top Speed named under it.
 - 2.0 beta: An enchanted (glinting) item in an Actuator no longer crashes the game when the Actuator reaches out with it: Far Use, or hitting a mob up close (issue #32). Client only. Thanks @snipernumber3.
 - 2.0 beta: With Sable, looking at a Ship no longer logs "Aborting entity get for abnormally large AABB" from the Actuators' crosshair pick, and a Ship block no longer gets the Far Use crosshair marks (Far Use leaves Ship blocks to Sable) (issue #38). Client only. Thanks @snipernumber3.

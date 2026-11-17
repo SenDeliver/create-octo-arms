@@ -41,11 +41,11 @@ The Rig is worn but not Active: Tentacles are folded against the wearer's back a
 _Avoid_: off, idle, retracted, inactive
 
 **Double Jump**:
-Pressing jump twice quickly. The on/off of the Rig: activates a Stowed Rig (also mid-air, where it catches the wearer once a Grip is in Reach, so no fall damage); on an Active Rig it starts Setting Down.
+Pressing jump twice quickly. The on/off of the Rig: activates a Stowed Rig (also mid-air, where it catches the wearer once a Grip is in Reach, so no fall damage); on an Active Rig it starts Setting Down (an action-bar line says so), and during Setting Down it makes the Rig Active again.
 _Avoid_: toggle key, activate key
 
 **Setting Down**:
-"Just put me down": an Active Rig lowers the wearer while Held. Floor reached → wearer on their feet, Stowed. No floor before Grips run out (hanging under a ceiling, over a pit) → the Rig lets go at the lowest Held point and Stows; the wearer falls with normal fall damage. The only way a Rig stops carrying the wearer by choice.
+"Just put me down": an Active Rig lowers the wearer while Held. Floor reached → wearer on their feet, Stowed (also when Held runs out with a floor at most 3 blocks below: no fall damage). No floor before Grips run out (hanging under a ceiling, over a pit) → the Rig holds at the lowest Held point, still Setting Down; a Double Jump makes it Active again. A worn-out Rig lets go there instead and Stows; the wearer falls with normal fall damage. With the Crawl let-go, the only way a Rig stops carrying the wearer by choice.
 _Avoid_: dismount, release, drop
 
 **Standing Height**:
@@ -64,11 +64,11 @@ _Avoid_: tank block, charger, filler
 A worn Rig takes the Double Jump in creative too. Creative flight is reached by a third jump press while Active or by the fly key.
 
 **Falling**:
-What happens when a Held wearer loses Grips (blocks broken under them) and no new Grip is in Reach: vanilla gravity and fall damage return until a Grip is found again. Taking the Rig off, logging out, changing dimension or starting a Ride Stows it at once.
+What happens when a Held wearer loses Grips (blocks broken under them) and no new Grip is in Reach: vanilla gravity and fall damage return until a Grip is found again. The server forces it too, with an action-bar line saying why: Grips it does not see, a real move faster than top Speed for more than a second (carrying claims stay refused while it lasts), moving against Crawl. Taking the Rig off, logging out, changing dimension or starting a Ride Stows it at once.
 _Avoid_: drop, release
 
 **Crawl**:
-The Rig's behaviour with no Air left: Grips hold, but the wearer can only move slowly, downward only, toward the nearest floor, after which the Rig Stows itself. No floor in Reach → it holds at the lowest Held point; a Double Jump lets go (as Setting Down). A Crawling wearer who loses Grips re-grabs into Crawl.
+The Rig's behaviour with no Air left: Grips hold, but the wearer can only move slowly, downward only, toward the nearest floor, after which the Rig Stows itself. No floor in Reach → it holds at the lowest Held point; a Double Jump lets go (Stowed, the wearer falls). A Crawling wearer who loses Grips re-grabs into Crawl.
 _Avoid_: limp, emergency mode, low power
 
 **Idle**:

@@ -105,6 +105,13 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang("tentaworks.rig.worn_out", "Worn out: repair it with %s at an anvil, or by Mending");
         REGISTRATE.addRawLang("tentaworks.rig.worn_out.warning", "Tentacle Rig worn out: repair it");
         REGISTRATE.addRawLang("tentaworks.rig.one_at_a_time", "One Rig at a time: take off the Rig you wear first");
+        REGISTRATE.addRawLang("tentaworks.rig.setting_down", "Setting Down: Double Jump again to stay up");
+        REGISTRATE.addRawLang("tentaworks.rig.setting_down.key", "Setting Down: %s again to stay up");
+        REGISTRATE.addRawLang("tentaworks.rig.forced.speed", "Falling: the Rig moved faster than its top Speed");
+        REGISTRATE.addRawLang("tentaworks.rig.forced.grips", "Falling: the server sees no Grips here");
+        REGISTRATE.addRawLang("tentaworks.rig.forced.crawl", "Falling: with no Air the Rig only Crawls down");
+        REGISTRATE.addRawLang("tentaworks.rig.forced.setting_down", "Rig Stowed: it rose while Setting Down");
+        REGISTRATE.addRawLang("tentaworks.rig.forced.ride", "Rig Stowed: a Ride carries alone");
         REGISTRATE.addRawLang("tentaworks.rig.back.not_armor", "In the back slot: no armor, armor enchantments idle");
         REGISTRATE.addRawLang("tentaworks.rig.back.idle_enchants", "Protection, Thorns and other armor enchantments do nothing in the back slot");
         REGISTRATE.addRawLang("tentaworks.rig.back.inert", "In the back slot: does nothing while a Rig is in the chest slot");

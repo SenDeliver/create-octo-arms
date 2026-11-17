@@ -62,6 +62,7 @@ import java.util.Locale;
  * (east) face of the wall column at x=X; Grips on a block at x=20047 whose outer neighbour is in unloaded chunk 1253 when only 20000 0 is forceloaded), burst N (each fake packet
  * sent N times per tick), netstats TAG (NETSTATS: motion packets handled, relays, server tick time), probe X Y Z (reads a block:
  * CHUNKLOAD control), fake slideN (real Grips, zero claimed motion, the server moves the player N blocks per second: speed check),
+ * fake lumpN (real Grips, zero claimed motion, two held ticks, then the server moves the player N blocks over the next two, then holds: a lag backlog on an Active Rig),
  * ghost FROM TO (air on the server only: a client ghost block), lag MS TICKS (the server thread sleeps MS at the end of each of the next TICKS
  * ticks: a slow or stalling server; logs LAG on and LAG off), nbt X Y Z TAG (SNBT: a block entity's NBT), chain FROM TO (connects two Create chain conveyors). With Sable: ship NAME drive|stop and SSHIP lines ({@link DevShips}). Logs CHUNKLOAD for chunks at x ≥ 1250. Logs FALL (LivingFallEvent distance) and HURT (damage taken) lines for fall-damage checks, SBREAK (a player broke a block) and, with trace on, SGEVENT (game events with a player source: what Sculk Sensors hear).
  */
@@ -71,6 +72,7 @@ public final class DevTools {
     private static boolean trace;
     private static String fakeKind = "";
     private static int fakeTicks;
+    private static int fakeTotal;
     private static int burst = 1;
     private static int lagMs;
     private static int lagTicks;
@@ -132,6 +134,7 @@ public final class DevTools {
                 .then(Commands.literal("fake").then(Commands.argument("kind", StringArgumentType.word()).then(Commands.argument("ticks", IntegerArgumentType.integer(1)).executes(c -> {
                     fakeKind = StringArgumentType.getString(c, "kind");
                     fakeTicks = IntegerArgumentType.getInteger(c, "ticks");
+                    fakeTotal = fakeTicks;
                     LOG.info("fake {} for {} ticks", fakeKind, fakeTicks);
                     return reply(c.getSource(), "fake " + fakeKind);
                 }))))
@@ -275,11 +278,13 @@ public final class DevTools {
                 Tentacles tentacles = Tentacles.NONE;
                 Vec3 body = Grips.body(p);
                 boolean slide = fakeKind.startsWith("slide");
-                if (slide) {
-                    p.connection.teleport(p.getX() + Double.parseDouble(fakeKind.substring(5)) / 20.0, p.getY(), p.getZ(), p.getYRot(), p.getXRot());
+                boolean lump = fakeKind.startsWith("lump");
+                if (slide || (lump && fakeTotal - fakeTicks >= 3 && fakeTotal - fakeTicks <= 4)) {
+                    double dx = slide ? Double.parseDouble(fakeKind.substring(5)) / 20.0 : Double.parseDouble(fakeKind.substring(4)) / 2.0;
+                    p.connection.teleport(p.getX() + dx, p.getY(), p.getZ(), p.getYRot(), p.getXRot());
                     body = Grips.body(p);
                 }
-                if (fast || slide || fakeKind.equals("held") || fakeKind.equals("climb") || fakeKind.equals("downrise")) {
+                if (fast || slide || lump || fakeKind.equals("held") || fakeKind.equals("climb") || fakeKind.equals("downrise")) {
                     double reach = RigServer.reach(p);
                     TentacleGait gait = new TentacleGait();
                     gait.tick(p.level(), Grips.faces(p.level(), body, reach + 1), body, p.yBodyRot, Vec3.ZERO, reach, 0, Double.NaN);
@@ -337,7 +342,9 @@ public final class DevTools {
         WornRig worn = WornRig.of(p);
         var flight = p.getAttribute(NeoForgeMod.CREATIVE_FLIGHT);
         Entity vehicle = p.getVehicle();
-        return String.format("gt=%d %s pos=%.3f,%.3f,%.3f v=%.3f,%.3f,%.3f state=%s grips=%d cf=%.0f flying=%b fall=%.2f hp=%.1f ground=%b air=%d mv=%.3f,%.3f,%.3f%s sneak=%b pose=%s veh=%s ride=%s vrot=%s armor=%d rigslot=%s rigdmg=%d ff=%b%s",
+        double[] c = RigServer.checks(p);
+        return String.format("gt=%d %s pos=%.3f,%.3f,%.3f v=%.3f,%.3f,%.3f state=%s grips=%d cf=%.0f flying=%b fall=%.2f hp=%.1f ground=%b air=%d mv=%.3f,%.3f,%.3f%s sneak=%b pose=%s veh=%s ride=%s vrot=%s armor=%d rigslot=%s rigdmg=%d ff=%b%s"
+                        + " spsum=%.2f spsteps=%.1f sppk=%.0f sptime=%.1f spover=%.0f sprefuse=%.0f unheld=%.0f",
                 p.level().getGameTime(), p.getName().getString(), p.getX(), p.getY(), p.getZ(),
                 p.getDeltaMovement().x, p.getDeltaMovement().y, p.getDeltaMovement().z,
                 RigServer.state(p), RigServer.grips(p).size(), flight == null ? -1 : flight.getValue(),
@@ -346,7 +353,8 @@ public final class DevTools {
                 vehicle == null ? "-" : BuiltInRegistries.ENTITY_TYPE.getKey(vehicle.getType()),
                 ServerChainConveyorHandler.hangingPlayers.containsKey(p.getUUID()) ? "chain" : "-",
                 vehicle == null ? "-" : String.format(Locale.ROOT, "%.1f", vehicle.getYRot()),
-                p.getArmorValue(), worn.worn() ? worn.slot().getName() : "-", worn.stack().getDamageValue(), p.isFallFlying(), DevActuators.fields(p));
+                p.getArmorValue(), worn.worn() ? worn.slot().getName() : "-", worn.stack().getDamageValue(), p.isFallFlying(), DevActuators.fields(p),
+                c[0], c[1], c[2], c[3], c[4], c[5], c[6]);
     }
 
     /** {@code sgrips}: valid Grips on a Ship; {@code carry}: the Ship holding most of them (at least {@link Grips#HELD}), as RigServer picks it. */

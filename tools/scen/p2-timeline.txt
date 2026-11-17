@@ -49,7 +49,7 @@ data get entity Dev Pos
 tentaworks air 900
 #signal sd1
 #await sd1done
-# SD2 Setting Down under ceiling B: lets go at the lowest Held point
+# SD2 Setting Down under ceiling B: holds at the lowest Held point, Double Jump back to Active
 #signal sd2
 #await sd2done
 data get entity Dev Health

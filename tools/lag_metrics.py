@@ -1,5 +1,6 @@
-"""lag suite: a wearer at top Speed on a lagging server keeps the Rig; forged speed is still stowed (speed.check on).
-usage: lag_metrics.py <log prefix> [check-off]   check-off: the run had TW_SPEED_CHECK=false, the forged slide must NOT stow"""
+"""lag suite: a wearer at top Speed on a lagging server keeps the Rig; a forged backlog lump is no violation; forged sustained
+speed still forces Falling (speed.check on).
+usage: lag_metrics.py <log prefix> [check-off]   check-off: the run had TW_SPEED_CHECK=false, the forged slide must NOT force Falling"""
 import re, sys
 pre = sys.argv[1]
 off = len(sys.argv) > 2 and sys.argv[2] == 'check-off'
@@ -21,8 +22,10 @@ if cr and 'w0a' in marks and 'w0b' in marks:
 else:
     check('R the worn Rig really runs at its top Speed (W0, no lag)', False, 'CREACH rig line or W0 marks missing')
 lag_on = server.find('LAG on ms=80')
+lump = server.find('fake lump20 ')
 burst = server.find('burst 5')
-walk = server[lag_on:burst] if lag_on >= 0 and burst >= 0 else ''
+walk = server[lag_on:lump] if lag_on >= 0 and lump >= 0 else ''
+lumped = server[lump:burst] if lump >= 0 and burst >= 0 else ''
 forged = server[burst:] if burst >= 0 else ''
 check('setup: lag and forged phases ran', lag_on >= 0 and burst >= 0 and server.count('LAG off') >= 4,
       f"LAG on at {lag_on}, burst at {burst}, {server.count('LAG off')} LAG off (>= 4)")
@@ -39,11 +42,18 @@ for a, b, what in (('w0a', 'w0b', 'W0 no lag'), ('w1a', 'w1b', 'W1 sustained lag
     dz = zs.get(b, 0) - zs.get(a, 0)
     check(what + ': really walked (a moved mouse turns the camera)', dz >= 15, f'z {zs.get(a)} -> {zs.get(b)}, {dz:.1f} blocks (>= 15)')
 n_walk = walk.count('faster than its top Speed')
-check('S no speed stow while walking (W1, W2)', n_walk == 0 and 'faster than its top Speed' not in server[:max(lag_on, 0)], f'{n_walk} "faster than" lines during the lag phases')
+check('S no speed violation while walking (W1, W2)', n_walk == 0 and 'faster than its top Speed' not in server[:max(lag_on, 0)], f'{n_walk} "faster than" lines during the lag phases')
+over = [int(x) for x in re.findall(r'STRACE gt=\d+ Dev .* spover=(\d+)', lumped)]
+n_lump = lumped.count('faster than its top Speed')
+check('B forged 20-block lump in two ticks (a lag backlog) is no violation', lump >= 0 and n_lump == 0 and max(over, default=0) > 10,
+      f'{n_lump} "faster than" lines; window over {max(over, default=0)} ticks in a row (> 10: the check before 2.0 stowed here)')
 n_forged = forged.count('faster than its top Speed')
 if off:
-    check('A speed.check=false: forged 20 b/s slide (5 packets per tick) is not stowed', n_forged == 0, f'{n_forged} "faster than" lines')
+    check('A speed.check=false: forged 20 b/s slide (5 packets per tick) does not force Falling', n_forged == 0, f'{n_forged} "faster than" lines')
 else:
-    check('A forged 20 b/s slide with 5 packets per tick is still stowed', n_forged >= 1, f'{n_forged} "faster than" lines (>= 1)')
+    at = forged.find('faster than its top Speed')
+    after = re.findall(r'STRACE gt=\d+ Dev pos=\S+ v=\S+ state=(\w+)', forged[at:])[:5] if at >= 0 else []
+    check('A forged 20 b/s slide with 5 packets per tick forces Falling (not Stowed)', n_forged >= 1 and 'forcing Falling' in forged and after[:1] == ['FALLING'],
+          f'{n_forged} "faster than" lines (>= 1), server states after the first: {after}')
 print('INFO vanilla: ' + str(len(re.findall(r'moved too quickly', server))) + ' "moved too quickly", ' + str(len(re.findall(r'moved wrongly', server))) + ' "moved wrongly", ' + str(len(re.findall(r'kicked|lost connection', server, re.I))) + ' kick/lost connection')
 print('PASS' if all(checks) else 'FAIL')
