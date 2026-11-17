@@ -33,6 +33,7 @@
     "LivingEntityWalkMixin",
     "LocalPlayerBobMixin",
     "LocalPlayerSneakMixin",
+    "MouseHandlerTurnMixin",
     "PlayerRendererMixin"
   ],
   "injectors": {

@@ -83,22 +83,26 @@ public final class ActuatorClient {
      * One player's Actuators. {@code heldId} the held mob (-1 none), {@code ship} the held Ship block (null none),
      * {@code farTarget} where the {@code farHand} Actuator reaches for {@code farTtl} more ticks (null none), {@code refusal} the
      * last refused Grab's lang key (empty none), {@code arm} which Actuator(s) hold, {@code distance} the hold distance along the
-     * look (blocks, 0 when nothing is held).
+     * look (blocks, 0 when nothing is held), {@code overhead} a held Ship is Overhead, {@code shipTangent} the direction along
+     * the held face the tips spread.
      */
     public record State(int heldId, boolean heavy, @Nullable BlockPos ship, Direction shipFace, @Nullable Vec3 farTarget, int farTtl,
-                        String refusal, HoldArm arm, float distance, InteractionHand farHand) {
-        public static final State NONE = new State(-1, false, null, Direction.UP, null, 0, "", HoldArm.NONE, 0, InteractionHand.MAIN_HAND);
+                        String refusal, HoldArm arm, float distance, InteractionHand farHand, boolean overhead, Direction shipTangent) {
+        public static final State NONE = new State(-1, false, null, Direction.UP, null, 0, "", HoldArm.NONE, 0, InteractionHand.MAIN_HAND, false,
+                Direction.NORTH);
 
         public boolean holding() {
             return heldId >= 0 || ship != null;
         }
 
         State held(ActuatorStatePacket p) {
-            return new State(p.heldId(), p.heavy(), p.ship(), p.shipFace(), farTarget, farTtl, p.refusal(), p.arm(), p.distance(), farHand);
+            return new State(p.heldId(), p.heavy(), p.ship(), p.shipFace(), farTarget, farTtl, p.refusal(), p.arm(), p.distance(), farHand,
+                    p.overhead(), p.shipTangent());
         }
 
         State far(@Nullable Vec3 target, int ttl, InteractionHand hand) {
-            return new State(heldId, heavy, ship, shipFace, ttl > 0 ? target : null, Math.max(0, ttl), refusal, arm, distance, hand);
+            return new State(heldId, heavy, ship, shipFace, ttl > 0 ? target : null, Math.max(0, ttl), refusal, arm, distance, hand, overhead,
+                    shipTangent);
         }
 
         boolean idle() {
@@ -281,6 +285,7 @@ public final class ActuatorClient {
     @SubscribeEvent(priority = EventPriority.HIGH)
     static void onClientTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
+        ShipTurn.tick();
         if (!STATES.isEmpty() && !mc.isPaused()) {
             for (Int2ObjectMap.Entry<State> e : STATES.int2ObjectEntrySet())
                 if (e.getValue().farTtl > 0) e.setValue(e.getValue().far(e.getValue().farTarget, e.getValue().farTtl - 1, e.getValue().farHand));
@@ -311,6 +316,11 @@ public final class ActuatorClient {
             case SET_DOWN -> setDown(s);
             case NONE -> {
             }
+        }
+        if (ShipTurn.active()) {
+            KEY.turned();
+            downTicks = 0;
+            gaugeAt = Integer.MIN_VALUE / 2;
         }
     }
 
@@ -437,6 +447,15 @@ public final class ActuatorClient {
         throwSent = mc.player.tickCount;
         PacketDistributor.sendToServer(RigGrabPacket.throwAlong(look));
         onThrow(mc.player.getId(), look);
+    }
+
+    /** Use with the Grab key down while a Ship is held is the Turn ({@link ShipTurn}), never the item's use. */
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    static void onTurnUse(InputEvent.InteractionKeyMappingTriggered event) {
+        if (!event.isUseItem() || !TentaworksKeys.GRAB.isDown() || local().ship() == null) return;
+        KEY.turned();
+        event.setCanceled(true);
+        event.setSwingHand(false);
     }
 
     @SubscribeEvent
