@@ -45,7 +45,7 @@
 # grab suite (light sheep off the crosshair as wearer and Dev2 see it,
 # Throw Impact once, pinned creeper, heavy horse/iron golem x0.6 vs light cow, boss/player/owned refusals, seat, release reasons; needs ANIMALS=true);
 # look suite (Rest Pose, first-person limbOpacity 1.0 vs 0.3, held mobs, HUD lines; built with -PwithCurios for the Back Slot shot; needs ANIMALS=true);
-# shipgrab suite (Sable: small Ship held and followed, Set Down, Throw, mass cap and crew refusals; SKIP without Sable).
+# shipgrab suite (Sable: small Ship held and followed, Set Down, Throw, mass cap and crew refusals, own Ship, Overhead and Turn; SKIP without Sable).
 # every other suite runs without Sable, and every suite but curios, curiosoff and look without Curios (no-Sable / no-Curios regression path).
 # p9, rideaero and shipgrab keep the old join (TW_PREBOOT=0, see run_split.sh): a join right after the scene assembles a Ship failed p9 moving-ship checks (B b4 Air, G g15 server ride) in 2 of 3 runs, 0 of 7 with the old join or a 10 s later join.
 #
@@ -89,4 +89,4 @@ lagoff		plain	1	45	empty.txt		lag-client.txt		TW_SPEED_CHECK=false TIMELINE=$S/l
 slider		plain	0	32	empty.txt		slider-client.txt	-
 p9		sable	2	179	scene-p9.txt		p9-client.txt		TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/p9-timeline.txt
 rideaero	sable	2	61	scene-rideaero.txt	rideaero-client.txt	TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/rideaero-timeline.txt
-shipgrab	sable	2	59	scene-shipgrab.txt	shipgrab-client.txt	TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/shipgrab-timeline.txt SCRIPT2=$S/shipgrab-watch.txt
+shipgrab	sable	2	80	scene-shipgrab.txt	shipgrab-client.txt	TW_PREBOOT=0 GRADLE_ARGS="$GRADLE_ARGS -PwithSable" TIMELINE=$S/shipgrab-timeline.txt SCRIPT2=$S/shipgrab-watch.txt

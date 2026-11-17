@@ -172,6 +172,81 @@ key key.keyboard.v
 awaitheld off 20
 wait 5
 signal o7done
+# V Overhead and Turn on so (Netherite): V0 held by its west face (hints on: the hint line names the Turn); the Grab key + wheel 10
+# to the farthest spot (V1, chevron dim), one more notch Overhead (V2, chevron lit, the hull bottom 0.75 over the eye, the wearer
+# not pushed); a pitched look leaves it (V3). The Grab key + use: the mouse turns it, the camera stays (V4 yaw 3 x 15, V5 pitch
+# 20 down, V6 back up); a screen gives the look back (VS); use up, the mouse turns the camera (V7). One notch nearer: in front at
+# the farthest spot (V8); the key up sets nothing down (V9); a tap lets go, the Turn stays (VR0..VR1).
+await v
+wait 20
+hints on
+lookship
+wait 3
+key key.keyboard.v
+awaitheld on 20
+look -90 0
+wait 20
+mark v0
+hudstate v0
+holdkey key.tentaworks.grab on
+wait 5
+wheel 10
+wait 30
+mark v1
+hudstate v1
+wheel 1
+wait 40
+mark v2
+hudstate v2
+look -90 40
+wait 20
+mark v3
+holdkey key.use on
+wait 3
+hudstate v4a
+mouselook 100 0
+wait 1
+mouselook 100 0
+wait 1
+mouselook 100 0
+wait 30
+mark v4
+mouselook 0 133.333
+wait 30
+mark v5
+mouselook 0 -133.333
+wait 30
+mark v6
+key key.keyboard.e
+wait 3
+screen
+mouselook 50 0
+hudstate vs
+close
+wait 5
+look -90 40
+wait 5
+holdkey key.use off
+wait 3
+mouselook 50 0
+hudstate v7
+wait 3
+mark v7
+look -90 0
+wait 3
+wheel -1
+wait 40
+mark v8
+holdkey key.tentaworks.grab off
+wait 10
+mark v9
+actuators v9
+key key.keyboard.v
+awaitheld off 20
+mark vr0
+wait 30
+mark vr1
+signal vdone
 await end
 wait 10
 quit

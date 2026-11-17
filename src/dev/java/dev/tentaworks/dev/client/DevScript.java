@@ -144,6 +144,8 @@ import java.util.Set;
  * | awaitheld on|off N (waits until the own Actuators hold something, or nothing, at most N ticks; CAWAIT line)
  * | opacity X (client config firstPerson.limbOpacity, in memory only) | actuators tag (CACT: own Actuator state, HUD line, ranges)
  * | ifmod modid ... endif (the lines between run only with that mod loaded). rawsettings takes the Far Use mode always|rig_out|off as a 5th value.
+ * | mouselook dx dy (a mouse move of that much {@code Entity.turn}, 0.15 degrees each, through the real look path, also with the window
+ * unfocused; CTURN line: the Turn active, the camera before and after)
  */
 @EventBusSubscriber(modid = TentaworksIds.MOD_ID, value = Dist.CLIENT)
 public final class DevScript {
@@ -713,6 +715,34 @@ public final class DevScript {
                             String.format("%.2f", worn.getItem() instanceof TentacleRigItem ? TentacleRigItem.topSpeed(worn) : 0),
                             String.format("%.3f", RigEnchants.thrift(worn)), String.format("%.3f", RigEnchants.swift(worn)));
                 }
+                case "mouselook" -> {
+                    double dx = Double.parseDouble(a[1]), dy = Double.parseDouble(a[2]);
+                    float yaw0 = mc.player.getYRot(), pitch0 = mc.player.getXRot();
+                    boolean active = dev.tentaworks.client.ShipTurn.active();
+                    try {
+                        double k = mc.options.sensitivity().get() * 0.6F + 0.2F;
+                        k = k * k * k * 8.0;
+                        int invert = mc.options.invertYMouse().get() ? -1 : 1;
+                        for (String f : new String[]{"accumulatedDX", "accumulatedDY"}) {
+                            Field field = MouseHandler.class.getDeclaredField(f);
+                            field.setAccessible(true);
+                            field.setDouble(mc.mouseHandler, (f.equals("accumulatedDX") ? dx : dy * invert) / k);
+                        }
+                        Method turn = MouseHandler.class.getDeclaredMethod("turnPlayer", double.class);
+                        turn.setAccessible(true);
+                        turn.invoke(mc.mouseHandler, 0.05);
+                        for (String f : new String[]{"accumulatedDX", "accumulatedDY"}) {
+                            Field field = MouseHandler.class.getDeclaredField(f);
+                            field.setAccessible(true);
+                            field.setDouble(mc.mouseHandler, 0);
+                        }
+                    } catch (ReflectiveOperationException e) {
+                        LOG.error("script: mouselook", e);
+                    }
+                    LOG.info("CTURN gt={} dx={} dy={} active={} yaw0={} pitch0={} yaw1={} pitch1={}", mc.level.getGameTime(), a[1], a[2], active,
+                            String.format(Locale.ROOT, "%.3f", yaw0), String.format(Locale.ROOT, "%.3f", pitch0),
+                            String.format(Locale.ROOT, "%.3f", mc.player.getYRot()), String.format(Locale.ROOT, "%.3f", mc.player.getXRot()));
+                }
                 case "mouse" -> {
                     double gx = Double.parseDouble(a[1]), gy = Double.parseDouble(a[2]);
                     if (mc.screen instanceof AbstractContainerScreen<?> cs) {
@@ -973,7 +1003,8 @@ public final class DevScript {
     /**
      * TRACE fields (end of line): own Actuator state (held id, heavy, Ship block, Far Use ttl), the crosshair entity, the held
      * mob's box centre, the hold point for it from this camera ({@link Hold#point}), the closest the crosshair ray passes to the
-     * held box within 6 blocks, limp, the first-person Limb opacity; last: the last held mob's box centre and lerp target up to 40 ticks after the hold (lmob); last: the Rig Air timer shown (airhud).
+     * held box within 6 blocks, limp, the first-person Limb opacity; last: the last held mob's box centre and lerp target up to 40 ticks after the hold (lmob); last: the Rig Air timer shown (airhud);
+     * then the Ship Turn active (turn), the held Ship Overhead (sover) and its grip tangent (stan) as the client has them.
      */
     private static String actuatorFields(Minecraft mc, LocalPlayer p) {
         ActuatorClient.State s = ActuatorClient.get(p);
@@ -994,12 +1025,13 @@ public final class DevScript {
         }
         Entity last = lastHeldId < 0 || clientTicks - lastHeldTick > 40 ? null : mc.level.getEntity(lastHeldId);
         String lmob = last == null ? "-" : fmt(last.getBoundingBox().getCenter()) + ";" + fmt(new Vec3(last.lerpTargetX(), last.lerpTargetY(), last.lerpTargetZ()));
-        return String.format(Locale.ROOT, " gheld=%d gheavy=%b gship=%s far=%d xh=%s hmob=%s hpt=%s xd=%s limp=%b opa=%.2f harm=%s hdist=%.2f spot=%s spotok=%b aff=%s affarm=%s dual=%b gkey=%b farhand=%s lmob=%s airhud=%b",
+        return String.format(Locale.ROOT, " gheld=%d gheavy=%b gship=%s far=%d xh=%s hmob=%s hpt=%s xd=%s limp=%b opa=%.2f harm=%s hdist=%.2f spot=%s spotok=%b aff=%s affarm=%s dual=%b gkey=%b farhand=%s lmob=%s airhud=%b turn=%b sover=%b stan=%s",
                 s.heldId(), s.heavy(),
                 s.ship() == null ? "-" : s.ship().toShortString().replace(" ", ""), s.farTtl(), crosshair(mc), heldCentre(mc, s), point,
                 held == null ? "-" : String.format(Locale.ROOT, "%.3f", rayGap(p.getEyePosition(), p.getViewVector(1.0F), held.getBoundingBox())),
                 Actuators.limp(p), TentaworksClientConfig.limbOpacity(), s.arm(), s.distance(), spot == null ? "-" : fmt(spot.feet()), spot != null && spot.valid(),
-                aff.kind(), aff.arm(), ActuatorClient.dualWield(), ActuatorClient.grabKeyDown(), s.farHand() == net.minecraft.world.InteractionHand.OFF_HAND ? "off" : "main", lmob, dev.tentaworks.client.RigAirHud.shown(p));
+                aff.kind(), aff.arm(), ActuatorClient.dualWield(), ActuatorClient.grabKeyDown(), s.farHand() == net.minecraft.world.InteractionHand.OFF_HAND ? "off" : "main", lmob, dev.tentaworks.client.RigAirHud.shown(p),
+                dev.tentaworks.client.ShipTurn.active(), s.overhead(), s.shipTangent().getSerializedName());
     }
 
     private static double rayGap(Vec3 eye, Vec3 look, net.minecraft.world.phys.AABB box) {

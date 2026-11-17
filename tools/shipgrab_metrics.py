@@ -234,6 +234,96 @@ else:
               f"max step {jump:.3f}, gap {agree:.3f}, warnings {warn[:2]}")
         check('O7 a tap lets the deck go (why=release)', rl7 and rl7[0][3] == 'release', f"{rl7[:1]}")
 
+print('== V Overhead and Turn (Netherite, so)')
+def qmul(a, b):
+    ax, ay, az, aw = a
+    bx, by, bz, bw = b
+    return (aw * bx + ax * bw + ay * bz - az * by, aw * by - ax * bz + ay * bw + az * bx, aw * bz + ax * by - ay * bx + az * bw, aw * bw - ax * bx - ay * by - az * bz)
+
+def qinv(q):
+    return (-q[0], -q[1], -q[2], q[3])
+
+def qangle(q):
+    return math.degrees(2 * math.acos(min(1.0, abs(q[3]))))
+
+def qrel(a, b):
+    return qangle(qmul(b, qinv(a)))
+
+vx = {mm[1]: dict(gt=int(mm[2]), pos=vec(mm[3]), state=mm[4], ship=mm[5], dist=float(mm[6]), over=mm[7] == 'true', user=vec(mm[8]), bot=None if mm[9] == '-' else float(mm[9]), tan=mm[10])
+      for mm in re.finditer(r'SPOS (v\S*) gt=(\d+) Dev pos=(\S+) v=\S+ state=(\w+) .*? gship=(\S+) .*? gdist=(\S+) .*? gover=(\w+) guser=(\S+) gbot=(\S+) gtan=(\S+)', s)}
+chud = {mm[1]: dict(gauge=mm[2], ocap=mm[3], turn=mm[4] == 'true')
+        for mm in re.finditer(r'CHUD (v\S*) gt=\d+ .*? gauge=(\S+) cap=\w+ hints=\d+ bar="[^"]*" ocap=(\S+) turn=(\w+)', c)}
+cturn = [dict(gt=int(mm[1]), dx=float(mm[2]), dy=float(mm[3]), active=mm[4] == 'true', y0=float(mm[5]), p0=float(mm[6]), y1=float(mm[7]), p1=float(mm[8]))
+         for mm in re.finditer(r'CTURN gt=(\d+) dx=(\S+) dy=(\S+) active=(\w+) yaw0=(\S+) pitch0=(\S+) yaw1=(\S+) pitch1=(\S+)', c)]
+need = ['v0', 'v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'vr0', 'vr1']
+if 'so' not in ships or any(k not in vx for k in need):
+    check('V section ran', False, f"marks {sorted(vx)} ships {sorted(ships)}")
+else:
+    V = {k: dict(vx[k], so=at('so', vx[k]['gt'])) for k in need}
+    st = [g for g in grab if g['kind'] == 'start' and g['gt'] <= V['v0']['gt'] and abs(g['mass'] - 54) < 0.5]
+    hint = [t for g, t in overlay if st and 0 <= g - st[-1]['gt'] <= 5]
+    check('V0 so Grabbed by its west face, the tips spread along it toward the wearer\'s right (south), the hint line names the Turn',
+          st and V['v0']['ship'] != '-' and not V['v0']['over'] and V['v0']['tan'] == 'south' and any(t.endswith(' + Right Button Turn') for t in hint),
+          f"{st[-1:]} gtan {V['v0']['tan']} hint {hint[:1]}")
+    w10 = [x for x in wheel if x['n'] == 10 and x['gt'] >= V['v0']['gt']]
+    eye1 = V['v1']['pos'][1] + 1.62
+    check('V1 the Grab key + wheel 10: the farthest spot in front, not Overhead, the gauge chevron dim', w10 and w10[0]['canceled'] and not V['v1']['over']
+          and V['v1']['dist'] > V['v0']['dist'] + 1 and abs(V['v1']['so']['pos'][1] - eye1) < 0.5 and chud.get('v1', {}).get('ocap') == 'dim',
+          f"gdist {V['v0']['dist']:.2f} -> {V['v1']['dist']:.2f}, ship y - eye {V['v1']['so']['pos'][1] - eye1:.3f}, hud {chud.get('v1')}")
+    eye2 = V['v2']['pos'][1] + 1.62
+    clear = (V['v2']['bot'] if V['v2']['bot'] is not None else -99) - eye2
+    hull = V['v2']['so']['pos'][1] - 1.5 - eye2
+    ahead = V['v2']['so']['pos'][0] - V['v2']['pos'][0]
+    shove = max(math.dist(dev[g], V['v1']['pos']) for g in range(V['v1']['gt'], V['v2']['gt'] + 1) if g in dev)
+    check('V2 one notch past the farthest: Overhead, the hull bottom 0.75 over the eye, just ahead, the wearer not pushed, the chevron lit',
+          V['v2']['over'] and abs(clear - 0.75) < 0.15 and abs(hull - 0.75) < 0.2 and 0.5 < ahead < 3.5 and shove < 0.1 and chud.get('v2', {}).get('ocap') == 'lit',
+          f"gbot - eye {clear:.3f}, hull bottom - eye {hull:.3f}, centre ahead {ahead:.2f}, wearer moved {shove:.3f}, hud {chud.get('v2')}")
+    lift = math.dist(V['v3']['so']['pos'], V['v2']['so']['pos'])
+    check('V3 a pitched look (40 down) leaves the Overhead hold where it is', V['v3']['over'] and lift < 0.25, f'ship moved {lift:.3f}')
+    tu = [x for x in cturn if V['v3']['gt'] <= x['gt'] <= V['v6']['gt']]
+    still = max((max(abs(x['y1'] - x['y0']), abs(x['p1'] - x['p0'])) for x in tu), default=9)
+    check('V4 the Grab key + use: every mouse move turns the Ship, the camera stays (yaw and pitch unchanged), the rotate glyph shows, the gauge hides',
+          len(tu) == 5 and all(x['active'] for x in tu) and still < 1e-3 and chud.get('v4a', {}).get('turn') and chud['v4a']['gauge'] == '-',
+          f"{len(tu)} moves, active {[x['active'] for x in tu]}, camera change max {still:.4f}, hud {chud.get('v4a')}")
+    q3, q4, q5, q6 = (V[k]['so']['q'] for k in ('v3', 'v4', 'v5', 'v6'))
+    r4 = qmul(q4, qinv(q3))
+    u4 = V['v4']['user']
+    face = rot(r4, (-1, 0, 0))
+    axis = math.sqrt(1 - min(1.0, r4[3] * r4[3])) or 1
+    check('V4 three 15 degree moves right: the Ship turns 45 about up, the face toward the wearer swings to their right (south), as the server holds it',
+          abs(qrel(q3, q4) - 45) < 5 and abs(r4[1]) / axis > 0.95 and face[2] > 0.5 and abs(qangle(u4) - 45) < 0.5 and qangle(qmul(r4, qinv(u4))) < 5,
+          f"turned {qrel(q3, q4):.2f} deg, axis y {r4[1] / axis:.3f}, face {tuple(round(x, 3) for x in face)}, guser {qangle(u4):.2f} deg, ship vs guser {qangle(qmul(r4, qinv(u4))):.2f}")
+    n4, n5 = rot(q4, (-1, 0, 0)), rot(q5, (-1, 0, 0))
+    r5 = qmul(q5, qinv(q4))
+    ax5 = math.sqrt(1 - min(1.0, r5[3] * r5[3])) or 1
+    check('V5 20 down: the Ship pitches 20 about the wearer\'s right (world south axis), the near face tips down',
+          abs(qrel(q4, q5) - 20) < 4 and abs(r5[2]) / ax5 > 0.95 and n5[1] < n4[1] - 0.15, f"pitched {qrel(q4, q5):.2f} deg, axis z {r5[2] / ax5:.3f}, face y {n4[1]:.3f} -> {n5[1]:.3f}")
+    check('V6 20 back up: the Ship as at V4', qrel(q4, q6) < 4, f'{qrel(q4, q6):.2f} deg from V4')
+    hp = {int(g): float(h) for g, h in re.findall(r'STRACE gt=(\d+) Dev pos=\S+ .*? hp=(\S+)', s)}
+    span = [g for g in range(V['v2']['gt'], V['v8']['gt'] + 1) if g in dev]
+    push = max((math.dist(dev[g], V['v2']['pos']) for g in span), default=9)
+    check('V the hull Overhead and Turning never touches the wearer (V2..V8: moved < 0.1, no damage)', len(span) > 100 and push < 0.1
+          and min(hp.get(g, 20) for g in span) >= 20, f"{len(span)} ticks, moved max {push:.3f}, hp min {min((hp.get(g, 20) for g in span), default=0)}")
+    vs = [x for x in cturn if x['dx'] == 50 and V['v6']['gt'] <= x['gt'] <= V['v7']['gt']]
+    check('VS a screen open, then use up: the mouse turns the camera again (7.5 each), no rotate glyph', len(vs) == 2 and all(not x['active'] and abs(x['y1'] - x['y0'] - 7.5) < 0.01 for x in vs)
+          and not chud.get('vs', {}).get('turn', True) and not chud.get('v7', {}).get('turn', True), f"{vs} hud {chud.get('vs')} {chud.get('v7')}")
+    rc = re.findall(r'SFAR gt=(\d+) Dev kind=rclick', s)
+    used = [g for g in rc if V['v3']['gt'] <= int(g) <= V['v7']['gt']]
+    check('V use with the Grab key down never reaches the item or a block (no SFAR rclick while Turning)', not used, f'{len(used)} rclick lines')
+    eye8 = V['v8']['pos'][1] + 1.62
+    check('V8 one notch nearer: back in front at the farthest spot, the Turn kept (45 from V3)', not V['v8']['over'] and abs(V['v8']['so']['pos'][1] - eye8) < 0.5
+          and abs(V['v8']['dist'] - V['v1']['dist']) < 0.05 and abs(qrel(q3, V['v8']['so']['q']) - 45) < 5,
+          f"gdist {V['v8']['dist']:.2f}, ship y - eye {V['v8']['so']['pos'][1] - eye8:.3f}, turned {qrel(q3, V['v8']['so']['q']):.2f}")
+    check('V9 the Grab key up after a Turn sets nothing down', V['v9']['ship'] != '-', f"gship {V['v9']['ship']}")
+    rv = [g for g in kind('release') if g['gt'] >= V['v9']['gt']]
+    qa, qb = V['vr0']['so']['q'], V['vr1']['so']['q']
+    check('VR a tap lets go (why=release), the Ship keeps its Turn (within 5 over 30 ticks, 45 from the Grab)', rv and rv[0]['why'] == 'release' and V['vr0']['ship'] == '-'
+          and qrel(qa, qb) < 5 and abs(qrel(q3, qb) - 45) < 6, f"{rv[:1]} drift {qrel(qa, qb):.2f}, from V3 {qrel(q3, qb):.2f}")
+    tr = [mm for mm in re.finditer(r'TRACE t=\d+ gt=(\d+) .*? turn=(\w+) sover=(\w+) stan=(\S+)', c)]
+    on = [m for m in tr if V['v4']['gt'] <= int(m[1]) < V['v6']['gt']]
+    check('V the wearer\'s client agrees: Turning, Overhead, the grip tangent south (TRACE)', len(on) > 30 and all(m[2] == 'true' and m[3] == 'true' and m[4] == 'south' for m in on),
+          f"{len(on)} ticks, {sorted({(m[2], m[3], m[4]) for m in on})}")
+
 exc = [l for l in (c + c2 + s).splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'authlib' not in l and 'neoforge-client.new.tmp.toml' not in l
        and 'Error loading class: net/irisshaders/' not in l and 'org.gradle.' not in l and 'MessageIOException' not in l
        and 'sun.nio.fs.UnixException' not in l]

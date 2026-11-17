@@ -39,7 +39,8 @@ import java.util.Map;
  * Dev-only tools of the look suite, DevScript lines: burst NAME N [bg] (a shot per tick, NAME_00..; bg: the script goes on
  * meanwhile), guiscale N, mainarm left|right, hudstate TAG (CHUD line: what the crosshair HUD shows: mark, Grab cue and its arm,
  * holding arm, set-down spot, whether a Throw needs the Grab key, hold distance, the out-of-Reach flash, the brackets drawn as
- * holding pads, the gauge's lit notch of how many, the Grab key beside the cue, hints shown this session, the action-bar line),
+ * holding pads, the gauge's lit notch of how many, the Grab key beside the cue, hints shown this session, the action-bar line,
+ * the gauge's Overhead chevron -|dim|lit, the Turn's rotate glyph),
  * hints on|off (client hud.hints in memory; on also starts the session's hints over), looktrace on|off (CLOOK
  * line per tick: what vanilla and the Actuators drew of each hand in first person, the frames with a hand drawn twice, the
  * crosshair mark, the Grab cue and how far the acting Actuator is from its target, the most drawn points of each Actuator inside
@@ -82,13 +83,14 @@ public final class DevLook {
                 SetDown.Spot spot = ActuatorClient.setDownSpot();
                 int[] gauge = ActuatorHud.gaugeShown(mc.player);
                 Component bar = ActuatorHud.actionBar();
-                LOG.info("CHUD {} gt={} shown={} mark={} cue={} hold={} spot={} throwkey={} cuearm={} dist={} miss={} grip={} gauge={} cap={} hints={} bar=\"{}\"",
+                LOG.info("CHUD {} gt={} shown={} mark={} cue={} hold={} spot={} throwkey={} cuearm={} dist={} miss={} grip={} gauge={} cap={} hints={} bar=\"{}\" ocap={} turn={}",
                         a[1], mc.level.getGameTime(), ActuatorHud.marksShown(), ActuatorSight.mark(), ActuatorSight.cue().kind(),
                         ActuatorClient.holdArm(mc.player), spot == null ? "-" : spot.valid() ? "ok" : "bad",
                         !GrabRule.throwsOnAttack(mc.player.getMainHandItem().isEmpty(), false), ActuatorSight.cue().arm(),
                         String.format(Locale.ROOT, "%.2f", ActuatorClient.holdDistance(mc.player)), ActuatorHud.missShown(mc.player),
                         ActuatorHud.gripsShown(mc.player), gauge == null ? "-" : gauge[0] + "/" + gauge[1], ActuatorHud.capShown(mc.player),
-                        ActuatorHud.hints().shown(), bar == null ? "" : bar.getString().replace('\uE000', '~'));
+                        ActuatorHud.hints().shown(), bar == null ? "" : bar.getString().replace('\uE000', '~'), ActuatorHud.overheadShown(mc.player),
+                        ActuatorHud.turnShown());
                 return 0;
             }
             case "hints" -> {

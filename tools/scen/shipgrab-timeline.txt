@@ -47,4 +47,12 @@ tp Dev 11470.0 -59 0.5 90 0
 #sleep 1.5
 #signal o7
 #await o7done
+#sleep 2
+# V Overhead and Turn: the Netherite Rig again, the new Ship so 2.5 east of the eye, Dev2 watches from the south
+item replace entity Dev armor.chest with tentaworks:netherite_tentacle_rig[create:banktank_air=900,tentaworks:actuators={}]
+tp Dev2 11505.5 -60 10.5 180 0
+tp Dev 11503.5 -60 0.5 -90 0
+#sleep 1.5
+#signal v
+#await vdone
 #signal end
