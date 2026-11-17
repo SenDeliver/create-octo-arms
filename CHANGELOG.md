@@ -64,10 +64,11 @@ Actuators: two more arms for the Rig, one for each hand. The four Tentacles carr
 - 2.0 beta: First person: a resting Actuator no longer swings into view when the body turns away from the look (strafing, a fast turn, looking up, crouching, crawling or swimming); the Rest, folded and limp poses now follow the view, at any field of view. Third person is unchanged (issue #33). Client only. Thanks @snipernumber3.
 - 2.0 beta: First person: the Actuators no longer block the view while scoping with a spyglass, as vanilla hides the hands (issue #41). Client only. Thanks @snipernumber3.
 - 2.0 beta: Mining from an Active Rig no longer leaves items on the floor below. Items and XP under a carried wearer are picked up, drops of a block mined nearby that would land out of your pickup reach fly to you as Far Use drops do, and a block whose mining started as a Far Use still sends its drops to you if the Rig stops lending its Reach before it breaks.
+- **1.21.1 only:** 2.0 beta: Ship Grab: the Tentacles can no longer hang on a part of the Ship the Actuators hold. Every Ship touching the held one (within half a block, and the ones touching those) counts as the held Ship: a mech or crane of jointed Sable parts can no longer carry the wearer while the wearer lifts it. Holding a Ship while standing on a separate one still works while they do not touch. Parts joined only by a rope or a long joint, with a gap, are not detected.
 
 ### Compatibility
 
-- Network changed (registrar "13"). 1.8.0 and 2.0.0 clients and servers cannot join each other, nor 2.0.0 beta.128 or older betas: update both.
+- Network changed (registrar "14"). 1.8.0 and 2.0.0 clients and servers cannot join each other, nor 2.0.0 beta.128 or older betas: update both.
 - Existing Rigs keep working and stay unfitted. Fit Actuators whenever you like; nothing on the Rig is lost.
 - Existing Rigs keep their Air while the cap doubles, so the Air bar shows half until the Rig is refilled once.
 - A server config file written by an older version keeps `reach.copper = 4.0`. Set it to 5.0 by hand to get the new default.

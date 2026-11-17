@@ -10,9 +10,12 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/** The round 3 packet fields survive the wire: the Far Use hand, the hold arm and distance, the wheel notches and set-down feet, Overhead, the grip tangent, a Turn and the tips on a Ship. */
+/** The round 3 packet fields survive the wire: the Far Use hand, the hold arm and distance, the wheel notches and set-down feet, Overhead, the grip tangent, a Turn, the tips on a Ship and its build. */
 class ActuatorPacketsTest {
     private static <T> T trip(StreamCodec<FriendlyByteBuf, T> codec, T p) {
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
@@ -34,19 +37,21 @@ class ActuatorPacketsTest {
     void actuatorStateCarriesTheArmAndDistance() {
         for (HoldArm arm : HoldArm.values()) {
             ActuatorStatePacket p = new ActuatorStatePacket(3, 12, arm == HoldArm.BOTH, null, Direction.UP, "", arm, 2.55F, false, Direction.NORTH,
-                    ActuatorStatePacket.Tip.NONE, ActuatorStatePacket.Tip.NONE);
+                    ActuatorStatePacket.Tip.NONE, ActuatorStatePacket.Tip.NONE, List.of());
             assertEquals(p, trip(ActuatorStatePacket.STREAM_CODEC, p));
         }
         ActuatorStatePacket ship = new ActuatorStatePacket(3, -1, true, new BlockPos(5, -59, 2), Direction.WEST, "", HoldArm.BOTH, 1.5F, false, Direction.SOUTH,
                 new ActuatorStatePacket.Tip(new Vec3(0.5, 0.5, -0.25), new Vec3(0.5, 0.5, -0.25), -1),
-                new ActuatorStatePacket.Tip(new Vec3(1.0, 1.75, 0.5), new Vec3(0.5, 0.5, 0.75), 3));
+                new ActuatorStatePacket.Tip(new Vec3(1.0, 1.75, 0.5), new Vec3(0.5, 0.5, 0.75), 3),
+                List.of(new UUID(1, 2), new UUID(-3, 4), new UUID(5, -6)));
         assertEquals(ship, trip(ActuatorStatePacket.STREAM_CODEC, ship));
         ActuatorStatePacket overhead = new ActuatorStatePacket(3, -1, true, new BlockPos(5, -59, 2), Direction.UP, "", HoldArm.BOTH, 6.5F, true, Direction.EAST,
-                new ActuatorStatePacket.Tip(new Vec3(-0.5, 0, 0.5), new Vec3(0.5, 0, 0.5), 0), ActuatorStatePacket.Tip.NONE);
+                new ActuatorStatePacket.Tip(new Vec3(-0.5, 0, 0.5), new Vec3(0.5, 0, 0.5), 0), ActuatorStatePacket.Tip.NONE, List.of(new UUID(7, 8)));
         assertEquals(overhead, trip(ActuatorStatePacket.STREAM_CODEC, overhead));
         ActuatorStatePacket.Tip back = trip(ActuatorStatePacket.STREAM_CODEC, ship).right();
         assertEquals(3, back.reach(), "the right tip reaching, 3 ticks in");
         assertEquals(new Vec3(0.5, 0.5, 0.75), back.from(), "from where it held");
+        assertEquals(List.of(new UUID(1, 2), new UUID(-3, 4), new UUID(5, -6)), trip(ActuatorStatePacket.STREAM_CODEC, ship).build(), "the build, held Ship first");
     }
 
     @Test

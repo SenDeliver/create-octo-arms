@@ -14,6 +14,7 @@ import dev.tentaworks.compat.Frame;
 import dev.tentaworks.compat.Pose;
 import dev.tentaworks.compat.ShipBody;
 import dev.tentaworks.compat.ShipFrames;
+import dev.tentaworks.rig.ShipBuild;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.server.level.ServerLevel;
@@ -25,6 +26,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
 import org.slf4j.Logger;
@@ -127,6 +129,42 @@ public final class SableShips implements ShipFrames {
             LOG.warn("This Sable has no Ship bodies Octo Arms can use: Ship Grab is off", e);
             return null;
         }
+    }
+
+    @Override
+    public List<ShipBody> bodies(Level level, AABB box) {
+        if (noBodies || level.isClientSide() || !ShipFrames.enabled()) return List.of();
+        List<ShipBody> out = new ArrayList<>();
+        try {
+            for (SubLevelAccess s : SableCompanion.INSTANCE.getAllIntersecting(level, new BoundingBox3d(box)))
+                if (s instanceof ServerSubLevel ship && !ship.isRemoved()) out.add(new Body(level, ship));
+        } catch (LinkageError e) {
+            noBodies = true;
+            LOG.warn("This Sable has no Ship bodies Octo Arms can use: Ship Grab is off", e);
+            return List.of();
+        }
+        return out;
+    }
+
+    @Override
+    public List<Frame> build(Level level, BlockPos pos) {
+        if (!ShipFrames.enabled()) return List.of();
+        SubLevelAccess seed = SableCompanion.INSTANCE.getContaining(level, (Vec3i) pos);
+        if (seed == null) return List.of();
+        List<Frame> out = new ArrayList<>();
+        for (SubLevelAccess s : ShipBuild.<SubLevelAccess>group(seed, SableShips::box, b -> intersecting(level, b), x -> x.getUniqueId())) out.add(frame(level, s));
+        return out;
+    }
+
+    private static List<SubLevelAccess> intersecting(Level level, AABB box) {
+        List<SubLevelAccess> out = new ArrayList<>();
+        for (SubLevelAccess s : SableCompanion.INSTANCE.getAllIntersecting(level, new BoundingBox3d(box))) out.add(s);
+        return out;
+    }
+
+    private static @Nullable AABB box(SubLevelAccess s) {
+        BoundingBox3dc b = s.boundingBox();
+        return b == null ? null : new AABB(b.minX(), b.minY(), b.minZ(), b.maxX(), b.maxY(), b.maxZ());
     }
 
     /** Every call guarded: a Sable whose internals moved gives a dead body (released, never thrown) instead of a crash. */

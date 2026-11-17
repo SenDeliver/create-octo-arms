@@ -2,6 +2,7 @@ package dev.tentaworks.network;
 
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.rig.HoldArm;
+import dev.tentaworks.rig.ShipBuild;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
@@ -10,17 +11,23 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 /**
  * Server → clients: what the Actuators of player {@code entityId} hold. {@code heldId} the held mob (-1 none), {@code heavy}
  * when both Actuators hold it, {@code ship} the Ship block held by {@code shipFace} (null none), {@code arm} which Actuator holds,
  * {@code distance} the hold distance along the look (blocks, 0 none), {@code overhead} a Ship held Overhead, {@code shipTangent} the
  * in-face direction of the held face the two tips took hold along at the Grab (its Frame, toward the wearer's right), {@code left} and
- * {@code right} the body-left and body-right tips on a held Ship ({@link Tip}). To the wearer after every
+ * {@code right} the body-left and body-right tips on a held Ship ({@link Tip}), {@code build} the ids of the held Ship's build
+ * (the held Ship first, then the Ships touching it: no Grip on them holds the wearer up, {@code ShipBuild}; empty for a mob). To the wearer after every
  * Grab request, with {@code refusal} the lang key of the action-bar line when it was refused (empty otherwise); to trackers on
  * every change and on start of tracking.
  */
 public record ActuatorStatePacket(int entityId, int heldId, boolean heavy, @Nullable BlockPos ship, Direction shipFace, String refusal,
-                                  HoldArm arm, float distance, boolean overhead, Direction shipTangent, Tip left, Tip right) implements CustomPacketPayload {
+                                  HoldArm arm, float distance, boolean overhead, Direction shipTangent, Tip left, Tip right, List<UUID> build)
+        implements CustomPacketPayload {
     /**
      * One tip on a held Ship: where it holds ({@code at}) or reaches to, and where it reached from, both in the Ship's plot space
      * relative to the held block (plot coordinates are too large for a float); {@code reach} ticks into a reach, −1 holding.
@@ -54,6 +61,7 @@ public record ActuatorStatePacket(int entityId, int heldId, boolean heavy, @Null
 
     public static final Type<ActuatorStatePacket> TYPE = new Type<>(TentaworksIds.id("actuator_state"));
     private static final int MAX_REFUSAL = 256;
+    private static final int MAX_BUILD = ShipBuild.MAX;
     public static final StreamCodec<FriendlyByteBuf, ActuatorStatePacket> STREAM_CODEC = StreamCodec.of(
             (buf, p) -> {
                 buf.writeVarInt(p.entityId);
@@ -69,6 +77,8 @@ public record ActuatorStatePacket(int entityId, int heldId, boolean heavy, @Null
                 buf.writeByte(p.shipTangent.get3DDataValue());
                 Tip.write(buf, p.left);
                 Tip.write(buf, p.right);
+                buf.writeVarInt(Math.min(p.build.size(), MAX_BUILD));
+                for (int i = 0; i < Math.min(p.build.size(), MAX_BUILD); i++) buf.writeUUID(p.build.get(i));
             },
             buf -> {
                 int entity = buf.readVarInt();
@@ -81,11 +91,16 @@ public record ActuatorStatePacket(int entityId, int heldId, boolean heavy, @Null
                 float distance = buf.readFloat();
                 boolean overhead = buf.readBoolean();
                 Direction tangent = Direction.from3DDataValue(buf.readByte());
-                return new ActuatorStatePacket(entity, held, heavy, ship, face, refusal, arm, distance, overhead, tangent, Tip.read(buf), Tip.read(buf));
+                Tip left = Tip.read(buf), right = Tip.read(buf);
+                int n = buf.readVarInt();
+                if (n < 0 || n > MAX_BUILD) throw new IllegalArgumentException("Ship build of " + n);
+                List<UUID> build = new ArrayList<>(n);
+                for (int i = 0; i < n; i++) build.add(buf.readUUID());
+                return new ActuatorStatePacket(entity, held, heavy, ship, face, refusal, arm, distance, overhead, tangent, left, right, List.copyOf(build));
             });
 
     public static ActuatorStatePacket empty(int entityId, String refusal) {
-        return new ActuatorStatePacket(entityId, -1, false, null, Direction.UP, refusal, HoldArm.NONE, 0, false, Direction.NORTH, Tip.NONE, Tip.NONE);
+        return new ActuatorStatePacket(entityId, -1, false, null, Direction.UP, refusal, HoldArm.NONE, 0, false, Direction.NORTH, Tip.NONE, Tip.NONE, List.of());
     }
 
     @Override

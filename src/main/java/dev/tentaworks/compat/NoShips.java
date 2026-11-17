@@ -11,6 +11,11 @@ import java.util.List;
 public final class NoShips implements ShipFrames {
     public static final NoShips INSTANCE = new NoShips();
 
+    @Override
+    public List<Frame> build(Level level, BlockPos pos) {
+        return List.of();
+    }
+
     private NoShips() {
     }
 
@@ -51,5 +56,10 @@ public final class NoShips implements ShipFrames {
     @Override
     public ShipBody body(Level level, BlockPos pos) {
         return null;
+    }
+
+    @Override
+    public List<ShipBody> bodies(Level level, AABB box) {
+        return List.of();
     }
 }

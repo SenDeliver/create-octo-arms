@@ -72,7 +72,7 @@ The component is network-synced (stream codec: float, float, UTF-8 string, then 
 
 Phase 7 adds no keys: a placed Rig Block only syncs this NBT to clients more often (every 10 ticks while its Air changes) so goggles show Air rising. The network protocol is unchanged (registrar stays `6`).
 
-## Network (play phase, registrar version `11`)
+## Network (play phase, registrar version `14`)
 
 | Payload | Direction | Fields |
 |---|---|---|
@@ -80,7 +80,7 @@ Phase 7 adds no keys: a placed Rig Block only syncs this NBT to clients more oft
 | `tentaworks:rig_state` | server → client | entity id, `RigState` enum ordinal, Tentacles (same 4 slots; slots whose Grip the server rejected are empty) |
 | `tentaworks:rig_settings` | client → server | slot var-int (`0` main hand, `1` off hand, `2` chest, `3` Back Slot), Rig Settings (stream codec above). The server clamps and writes the component to the Rig in that slot; anything else in the slot is ignored. |
 | `tentaworks:rig_grab` | client → server | kind enum ordinal (`START, SHIP, RELEASE, THROW, PLACE, DISTANCE`), entity id + 1 var-int, block pos, face byte (3D data value), look `Vec3`, notches var-int. START names the mob, SHIP the plot block and face, THROW the look; PLACE carries the feet of the set-down spot in the look field, DISTANCE the wheel notches (0.5 block each, positive farther). 2.0 |
-| `tentaworks:actuator_state` | server → client | entity id var-int, held entity id + 1 var-int (0 = none), heavy bool, Ship present bool [+ block pos], Ship face byte, refusal lang key UTF-8 (≤ 256, empty = none), holding Actuator byte (`0` none, `1` main hand, `2` off hand, `3` both), hold distance float (blocks along the look, 0 = nothing held). 2.0 |
+| `tentaworks:actuator_state` | server → client | entity id var-int, held entity id + 1 var-int (0 = none), heavy bool, Ship present bool [+ block pos], Ship face byte, refusal lang key UTF-8 (≤ 256, empty = none), holding Actuator byte (`0` none, `1` main hand, `2` off hand, `3` both), hold distance float (blocks along the look, 0 = nothing held), Overhead bool, grip tangent byte (3D data value), left tip and right tip (each: at 3 floats relative to the held block, reach ticks byte (−1 holding) [+ from 3 floats while reaching]), Build count var-int (≤ 16) + that many Ship UUIDs (the held Ship first; 0 for a mob). 2.0 |
 | `tentaworks:far_use` | server → client | entity id var-int, target `Vec3`, kind byte (`0` block, `1` entity), ttl ticks var-int, off hand bool (which hand's Actuator acted). 2.0 |
 | `tentaworks:actuator_fx` | server → client | kind byte (`0` THROW, `1` IMPACT), entity id var-int, at `Vec3`, speed float. THROW: the wearer, at = throw velocity (blocks per tick); IMPACT: the Thrown entity, at = its box centre, speed blocks per tick. 2.0 |
 
@@ -93,7 +93,7 @@ Phase 6 changed both Rig payloads to the fixed 4-slot Tentacles with a Step phas
 Phase 8 kept every payload as is but bumped the registrar to `7` (server packet handling changed); 1.0.0 shipped with `7`.
 1.1.0 keeps every payload byte-identical but bumps the registrar to `8`: a Grip point and block may now be in a Ship's plot coords, and the `rig_motion` motion is the Rig's own move without the carry Ship's. 1.0 clients cannot join a 1.1 server, and the other way round.
 1.8.0 bumps the registrar to `9`: `rig_settings` can name the Back Slot (`3`).
-2.0.0 bumps the registrar to `11`: `rig_settings` carries `far_use` at the end, and `rig_grab`, `actuator_state`, `far_use` and `actuator_fx` are new (`10` was a 2.0.0 test build without the holding Actuator, the hold distance, PLACE, DISTANCE and the Far Use hand; it never shipped).
+2.0.0 bumps the registrar to `11`: `rig_settings` carries `far_use` at the end, and `rig_grab`, `actuator_state`, `far_use` and `actuator_fx` are new (`10` was a 2.0.0 test build without the holding Actuator, the hold distance, PLACE, DISTANCE and the Far Use hand; it never shipped). 2.0.0 betas went on to `13` (Overhead, Turn, the tips) and `14` (the held Ship's Build in `actuator_state`).
 
 ## Server Config (`tentaworks-server.toml`, per world in `serverconfig/`)
 

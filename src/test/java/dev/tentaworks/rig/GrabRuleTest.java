@@ -63,6 +63,13 @@ class GrabRuleTest {
         assertTrue(GrabRule.holdsUp(ship, false, true, Arrays.asList(null, null)), "Falling: Grips no longer hold, the feet decide");
         assertTrue(GrabRule.holdsUp(ship, true, true, List.of()), "a carrying Rig with no Grip: the feet decide");
         assertFalse(GrabRule.holdsUp(ship, true, false, List.of()));
+        Object leg = "leg";
+        List<Object> build = List.of(ship, leg);
+        assertTrue(GrabRule.holdsUp(build, true, false, List.of(leg, leg)), "every Grip on a Ship touching the held one: no support");
+        assertTrue(GrabRule.holdsUp(build, true, false, List.of(ship, leg)), "Grips on the held Ship and a part of it");
+        assertFalse(GrabRule.holdsUp(build, true, false, List.of(leg, other)), "one Grip on a separate Ship is enough");
+        assertFalse(GrabRule.holdsUp(build, true, false, Arrays.asList(leg, null)), "one Grip on a world block is enough");
+        assertTrue(GrabRule.holdsUp(build, false, true, List.of()), "Stowed, feet on a part of the build");
         assertEquals("OWN", Verdict.OWN.name(), "its lower-case name is the refusal key own");
     }
 

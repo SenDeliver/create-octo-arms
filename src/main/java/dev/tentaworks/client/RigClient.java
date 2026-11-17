@@ -50,6 +50,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Wearer side of the Rig (adr/0001): reads the movement keys, moves the body along the Heading as far as it stays Held,
@@ -189,12 +190,12 @@ public final class RigClient {
         Level level = player.level();
         ShipFrames ships = ShipFrames.get();
         Vec3 body = Grips.body(player);
-        Object heldShip = ActuatorClient.heldShip(level);
-        if (heldShip != null) GAIT.letGo(g -> ships.isPlot(level, g.block()) && ships.containing(level, g.block()) instanceof Frame f && f.id().equals(heldShip));
+        Set<Object> heldBuild = ActuatorClient.heldBuild(level);
+        if (!heldBuild.isEmpty()) GAIT.letGo(g -> ships.isPlot(level, g.block()) && ships.containing(level, g.block()) instanceof Frame f && heldBuild.contains(f.id()));
         carryShip = carryShip(level, GAIT.grips());
         Vec3 shipMove = carryShip == null ? Vec3.ZERO : carryShip.carry(player.position());
         boolean tracked = carryShip != null && ships.tracking(player, carryShip);
-        List<Grips.Face> faces = Grips.faces(level, body, reach + Math.max(1.0, step + 0.5) + shipMove.length(), heldShip);
+        List<Grips.Face> faces = Grips.faces(level, body, reach + Math.max(1.0, step + 0.5) + shipMove.length(), heldBuild);
         heldCount = Grips.count(faces, state.carries() ? body.add(shipMove) : body, reach);
         boolean held = heldCount >= Grips.HELD;
         boolean air = RigAir.has(player);
@@ -262,7 +263,7 @@ public final class RigClient {
             }
             case FALLING -> {
                 motion = player.getDeltaMovement();
-                Vec3 catchAt = noRegrab || worn ? null : Grips.firstHeld(level, player, motion, reach, heldShip);
+                Vec3 catchAt = noRegrab || worn ? null : Grips.firstHeld(level, player, motion, reach, heldBuild);
                 if (catchAt != null) {
                     motion = catchAt;
                     player.setDeltaMovement(motion);

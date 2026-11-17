@@ -49,6 +49,10 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Client side of the Actuators: what each player's Actuators hold and where a Far Use reaches (from the server), and the
@@ -85,13 +89,14 @@ public final class ActuatorClient {
      * last refused Grab's lang key (empty none), {@code arm} which Actuator(s) hold, {@code distance} the hold distance along the
      * look (blocks, 0 when nothing is held), {@code overhead} a held Ship is Overhead, {@code shipTangent} the direction along
      * the held face the tips took hold along, {@code left} and {@code right} the body-left and body-right tips on a held Ship,
-     * told at game time {@code tipsAt} (a reach goes on from there).
+     * told at game time {@code tipsAt} (a reach goes on from there), {@code build} the ids of the held Ship's build (the held Ship
+     * first, empty for a mob).
      */
     public record State(int heldId, boolean heavy, @Nullable BlockPos ship, Direction shipFace, @Nullable Vec3 farTarget, int farTtl,
                         String refusal, HoldArm arm, float distance, InteractionHand farHand, boolean overhead, Direction shipTangent,
-                        ActuatorStatePacket.Tip left, ActuatorStatePacket.Tip right, long tipsAt) {
+                        ActuatorStatePacket.Tip left, ActuatorStatePacket.Tip right, long tipsAt, List<UUID> build) {
         public static final State NONE = new State(-1, false, null, Direction.UP, null, 0, "", HoldArm.NONE, 0, InteractionHand.MAIN_HAND, false,
-                Direction.NORTH, ActuatorStatePacket.Tip.NONE, ActuatorStatePacket.Tip.NONE, 0);
+                Direction.NORTH, ActuatorStatePacket.Tip.NONE, ActuatorStatePacket.Tip.NONE, 0, List.of());
 
         public boolean holding() {
             return heldId >= 0 || ship != null;
@@ -99,12 +104,12 @@ public final class ActuatorClient {
 
         State held(ActuatorStatePacket p, long now) {
             return new State(p.heldId(), p.heavy(), p.ship(), p.shipFace(), farTarget, farTtl, p.refusal(), p.arm(), p.distance(), farHand,
-                    p.overhead(), p.shipTangent(), p.left(), p.right(), now);
+                    p.overhead(), p.shipTangent(), p.left(), p.right(), now, p.build());
         }
 
         State far(@Nullable Vec3 target, int ttl, InteractionHand hand) {
             return new State(heldId, heavy, ship, shipFace, ttl > 0 ? target : null, Math.max(0, ttl), refusal, arm, distance, hand, overhead,
-                    shipTangent, left, right, tipsAt);
+                    shipTangent, left, right, tipsAt, build);
         }
 
         boolean idle() {
@@ -216,11 +221,14 @@ public final class ActuatorClient {
         return local().heavy() ? Grab.heavyFactor() : 1.0;
     }
 
-    /** The id of the Ship the wearer's Actuators hold (its Grips do not hold the wearer up), or null. */
-    public static @Nullable Object heldShip(Level level) {
-        BlockPos ship = local().ship();
-        Frame frame = ship == null ? null : ShipFrames.get().containing(level, ship);
-        return frame == null ? null : frame.id();
+    /** The ids of the held Ship's build, as the server last said (no Grip on them holds the wearer up); empty when no Ship is held. */
+    public static Set<Object> heldBuild(Level level) {
+        State s = local();
+        if (s.ship() == null) return Set.of();
+        Set<Object> out = new HashSet<>(s.build());
+        Frame frame = ShipFrames.get().containing(level, s.ship());
+        if (frame != null) out.add(frame.id());
+        return out;
     }
 
     public static void onState(ActuatorStatePacket packet) {
@@ -372,7 +380,8 @@ public final class ActuatorClient {
             Frame frame = ShipFrames.get().containing(player.level(), b.getBlockPos());
             if (frame == null || !TentaworksConfig.value(TentaworksConfig.GRAB_SHIPS) || !ShipFrames.enabled()) return Affordance.NONE;
             affordanceAt = frame.toWorld(b.getLocation());
-            if (Grab.holdsUp(player, frame, RigClient.state().carries(), Arrays.asList(RigClient.grips())))
+            List<Frame> build = ShipFrames.get().build(player.level(), b.getBlockPos());
+            if (Grab.holdsUp(player, build.isEmpty() ? List.of(frame) : build, RigClient.state().carries(), Arrays.asList(RigClient.grips())))
                 return new Affordance(Affordance.Kind.REFUSED, HoldArm.NONE, GrabRule.Verdict.OWN);
             if (!ActuatorReach.within(Grips.body(player), affordanceAt, reach + GrabRule.SLACK))
                 return new Affordance(Affordance.Kind.OUT_OF_REACH, HoldArm.NONE, GrabRule.Verdict.TOO_FAR);

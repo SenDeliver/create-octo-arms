@@ -56,6 +56,15 @@ public interface ShipFrames {
     /** The server body of the Ship owning a plot block, or null (world block, Ship gone, Ships off, a client, or a Sable without the internals Ship Grab needs). */
     ShipBody body(Level level, BlockPos pos);
 
+    /** The server bodies of the Ships whose (Sable, a tick or two late) world box meets {@code box}; empty as for {@link #body}. */
+    List<ShipBody> bodies(Level level, AABB box);
+
+    /**
+     * The Build of the Ship owning a plot block ({@code ShipBuild}) as Sable's (a tick or two late) world boxes see it, that Ship
+     * first, on either side: the crosshair cue's guess at what the server checks. Empty for a world block or with Ships off.
+     */
+    List<Frame> build(Level level, BlockPos pos);
+
     /** World point of a point given in the frame of {@code block}: unchanged for world blocks or when the Ship is gone. */
     default Vec3 toWorld(Level level, BlockPos block, Vec3 point) {
         if (!isPlot(level, block)) return point;

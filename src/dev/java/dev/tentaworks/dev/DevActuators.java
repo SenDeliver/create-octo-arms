@@ -357,7 +357,7 @@ public final class DevActuators {
      * Ship mass), the Actuator Air debt not yet taken, the movement speed attribute, total XP, fitted, Deft, Far Use mode; then a held
      * Ship's Overhead, the wearer's Turn (quaternion x,y,z,w), its lowest world point and the tips' grip tangent; then the tips on a
      * held Ship (Turn by hand): each tip's world point, the tips as told to the clients ({@link #tips}), the regrips of each, the
-     * Turn banked (yaw, pitch), the hold's correction and the body's aim.
+     * Turn banked (yaw, pitch), the hold's correction and the body's aim; then how many Ships the held Ship's build has.
      */
     static String fields(ServerPlayer p) {
         ItemStack rig = WornRig.of(p).stack();
@@ -372,7 +372,7 @@ public final class DevActuators {
                 + String.format(Locale.ROOT, " gover=%b guser=%s gbot=%s gtan=%s", Grab.overhead(p), quat(Grab.shipUser(p)),
                 Double.isNaN(Grab.shipBottom(p)) ? "-" : String.format(Locale.ROOT, "%.3f", Grab.shipBottom(p)),
                 Grab.shipTangent(p) == null ? "-" : Grab.shipTangent(p).getSerializedName())
-                + shipTips(p);
+                + shipTips(p) + " gbuild=" + Grab.shipBuild(p);
     }
 
     private static String shipTips(ServerPlayer p) {

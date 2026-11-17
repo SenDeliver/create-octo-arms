@@ -19,6 +19,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -68,12 +69,12 @@ public final class Grips {
         return faces(level, centre, radius, null);
     }
 
-    /** As {@link #faces(Level, Vec3, double)}, without the Ship whose id is {@code skipShip} (the one the Actuators hold). */
-    public static List<Face> faces(Level level, Vec3 centre, double radius, Object skipShip) {
+    /** As {@link #faces(Level, Vec3, double)}, without the Ships whose ids are in {@code skipShips} (the build the Actuators hold). */
+    public static List<Face> faces(Level level, Vec3 centre, double radius, Collection<?> skipShips) {
         List<Face> faces = new ArrayList<>();
         scan(level, centre, radius, null, faces);
         for (Frame frame : ShipFrames.get().near(level, new AABB(centre, centre).inflate(radius + 1)))
-            if (frame.unitScale() && !frame.id().equals(skipShip)) scan(level, frame.toLocal(centre), radius, frame, faces);
+            if (frame.unitScale() && (skipShips == null || !skipShips.contains(frame.id()))) scan(level, frame.toLocal(centre), radius, frame, faces);
         return faces;
     }
 
@@ -374,13 +375,13 @@ public final class Grips {
 
     /**
      * First point along this tick's fall step where the body is Held, so a fast fall cannot step over a thin Held band.
-     * The Ship whose id is {@code skipShip} (the one the Actuators hold) does not catch.
+     * The Ships whose ids are in {@code skipShips} (the build the Actuators hold) do not catch.
      */
-    public static Vec3 firstHeld(Level level, Entity entity, Vec3 motion, double reach, Object skipShip) {
+    public static Vec3 firstHeld(Level level, Entity entity, Vec3 motion, double reach, Collection<?> skipShips) {
         double len = motion.length();
         if (len < 1.0E-4) return null;
         Vec3 centre = body(entity);
-        List<Face> faces = faces(level, centre.add(motion.scale(0.5)), reach + len / 2 + 0.5, skipShip);
+        List<Face> faces = faces(level, centre.add(motion.scale(0.5)), reach + len / 2 + 0.5, skipShips);
         int n = Mth.ceil(len / 0.1);
         for (int k = 1; k <= n; k++) {
             Vec3 moved = collide(level, entity, motion.scale((double) k / n));

@@ -1,5 +1,6 @@
 package dev.tentaworks.rig;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
@@ -89,14 +90,20 @@ public final class GrabRule {
         return !mayInteract || cancelled.getAsBoolean();
     }
 
-    /**
-     * The Ship {@code ship} is all that holds the wearer up (CONTEXT: Ship Grab), so it is not Grabbed, and a held one is let go.
-     * While the Rig carries and has Grips: every Grip is on that Ship ({@code gripShips}, per Grip the id of its Ship, null for a
-     * world block); one Grip on anything else is enough. Otherwise (Stowed, Falling, no Grip): the feet rest on it.
-     */
+    /** {@link #holdsUp(Collection, boolean, boolean, List)} for a build of one Ship. */
     public static boolean holdsUp(Object ship, boolean carries, boolean feetOn, List<?> gripShips) {
+        return holdsUp(List.of(ship), carries, feetOn, gripShips);
+    }
+
+    /**
+     * The build {@code build} (ids of the held Ship and the Ships touching it, {@link ShipBuild}) is all that holds the wearer up
+     * (CONTEXT: Ship Grab), so it is not Grabbed, and a held one is let go. While the Rig carries and has Grips: every Grip is on
+     * the build ({@code gripShips}, per Grip the id of its Ship, null for a world block); one Grip on anything else is enough.
+     * Otherwise (Stowed, Falling, no Grip): the feet rest on it ({@code feetOn}: on any Ship of the build).
+     */
+    public static boolean holdsUp(Collection<?> build, boolean carries, boolean feetOn, List<?> gripShips) {
         if (!carries || gripShips.isEmpty()) return feetOn;
-        for (Object g : gripShips) if (!ship.equals(g)) return false;
+        for (Object g : gripShips) if (g == null || !build.contains(g)) return false;
         return true;
     }
 
