@@ -58,6 +58,10 @@ fill 11203 -57 17 11203 -57 24 air
 fill 11205 -56 34 11205 -54 39 dirt
 fill 11204 -53 34 11205 -53 39 stone
 fill 11203 -56 41 11203 -53 48 stone
+# P pickup while carried (Copper): the floor 3.5 from the eye (clay, a near mine) and 6.3 (soul sand, a far mine), an emerald summoned under the Active wearer
+forceload add 11290 -10 11320 20
+setblock 11302 -61 4 clay
+setblock 11306 -61 4 soul_sand
 op Dev
 tentaworks trace on
 gamemode survival Dev

@@ -62,9 +62,11 @@ import java.util.UUID;
  * and is told to the clients ({@link FarUsePacket}): a use that consumed the click ({@link #usedOn}), a hit that hurt
  * ({@link #hit}), a mining start that makes progress ({@link #mines}); a use that passes (an empty hand on stone) is nothing.
  * <p>
- * Drops and XP of a block broken past arm's length go to the wearer: {@link BlockDropsEvent} hands over the item entities
- * and the XP before they enter the world, so they are moved to the wearer there, with no capture of spawned entities.
- * Ship blocks (plot coordinates) are left to vanilla and Sable.
+ * Drops and XP of a block broken past arm's length go to the wearer, and so do those of a nearer block outside vanilla's
+ * pickup box while the lift is on with the Rig out ({@link #toWearer}); both are decided when its mining starts, so a lift
+ * gone by the break changes nothing. {@link BlockDropsEvent} hands over the item entities and the XP before they enter the
+ * world, so they are moved to the wearer there, with no capture of spawned entities. Ship blocks (plot coordinates) are left
+ * to vanilla and Sable.
  */
 public final class FarUse {
     public static final ResourceLocation REACH_ID = TentaworksIds.id(TentaworksIds.FAR_USE_REACH);
@@ -92,7 +94,8 @@ public final class FarUse {
 
     /**
      * Server ticks of the wearer's last charge, packet and refusal (one click fires several events: both hands, interact-at and
-     * interact) and the block being mined past arm's length (null none).
+     * interact), the block being mined past arm's length (null none), and the block whose mining started last with where
+     * it lay then and whether the lift was on with the Rig out.
      */
     private static final class Track {
         int charged = Integer.MIN_VALUE / 2;
@@ -100,6 +103,9 @@ public final class FarUse {
         int refused = Integer.MIN_VALUE / 2;
         String refusal = "";
         @Nullable BlockPos mining;
+        @Nullable BlockPos dug;
+        Far dugFar = Far.NEAR;
+        boolean dugLift;
     }
 
     private FarUse() {
@@ -135,6 +141,14 @@ public final class FarUse {
         if (!lifted || !beyond(eyeDistSqr, base)) return Far.NEAR;
         double r = reach + SLACK, v = base + SLACK;
         return bodyDistSqr <= r * r || eyeDistSqr <= v * v ? Far.FAR : Far.OUT;
+    }
+
+    /**
+     * The drops of a block broken by the wearer go to the wearer: it lay past arm's length ({@code far}), or the lift was on with
+     * the Rig out ({@code liftOut}) and the block lies outside vanilla's pickup box ({@code inPickup} false).
+     */
+    public static boolean toWearer(Far far, boolean liftOut, boolean inPickup) {
+        return far != Far.NEAR || liftOut && !inPickup;
     }
 
     /** At least {@code gap} ticks passed since {@code last}. */
@@ -326,7 +340,11 @@ public final class FarUse {
             return;
         }
         if (block(p, e.getPos(), e.getFace(), null)) {
-            BlockPos far = blockFar(p, e.getPos()) == Far.FAR ? e.getPos().immutable() : null;
+            Track t = TRACKS.computeIfAbsent(p.getUUID(), u -> new Track());
+            t.dug = e.getPos().immutable();
+            t.dugFar = blockFar(p, t.dug);
+            t.dugLift = lifting(p) && RigSide.deployed(p);
+            BlockPos far = t.dugFar == Far.FAR ? t.dug : null;
             boolean mines = far != null && mines(p, far);
             if (mines) act(p, Vec3.atCenterOf(far), FarUsePacket.Kind.BLOCK, InteractionHand.MAIN_HAND);
             mine(p, mines ? far : null);
@@ -385,7 +403,13 @@ public final class FarUse {
     }
 
     private static void onDrops(BlockDropsEvent e) {
-        if (!(e.getBreaker() instanceof ServerPlayer p) || blockFar(p, e.getPos()) == Far.NEAR) return;
+        if (!(e.getBreaker() instanceof ServerPlayer p) || ShipFrames.get().isPlot(e.getLevel(), e.getPos())) return;
+        Track t = TRACKS.get(p.getUUID());
+        boolean started = t != null && e.getPos().equals(t.dug);
+        Far far = started ? t.dugFar : blockFar(p, e.getPos());
+        boolean liftOut = started ? t.dugLift : lifting(p) && RigSide.deployed(p);
+        if (started) t.dug = null;
+        if (!toWearer(far, liftOut, new AABB(e.getPos()).intersects(RigPickup.vanilla(p)))) return;
         Vec3 home = p.position();
         for (ItemEntity item : e.getDrops()) {
             item.setPos(home);

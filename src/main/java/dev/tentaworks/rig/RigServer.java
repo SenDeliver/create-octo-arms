@@ -670,6 +670,7 @@ public final class RigServer {
             drain(player, w);
         }
         RigEvents.hangTick(player, w.state.carries() && RigEvents.hanging(body.y, worldGrips(player.level(), w.grips)));
+        if (w.state.carries()) RigPickup.tick(player);
     }
 
     /** Grips with their points in world coords (a Ship Grip is kept in its Ship's plot coords). */

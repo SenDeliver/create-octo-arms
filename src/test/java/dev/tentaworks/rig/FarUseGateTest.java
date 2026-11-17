@@ -194,4 +194,12 @@ class FarUseGateTest {
         assertEquals("tentaworks.refusal.far_use.players", FarUse.PLAYERS);
         assertEquals("tentaworks.refusal.grab.claimed", TentaworksLang.refusalKey(TentaworksLang.GRAB, "claimed"));
     }
+    @Test
+    void dropsGoToTheWearerPastArmsLengthOrOutsideThePickupBoxWithTheLiftOut() {
+        for (boolean liftOut : new boolean[]{false, true})
+            for (boolean inPickup : new boolean[]{false, true}) {
+                assertTrue(FarUse.toWearer(Far.FAR, liftOut, inPickup), "far liftOut=" + liftOut + " inPickup=" + inPickup);
+                assertEquals(liftOut && !inPickup, FarUse.toWearer(Far.NEAR, liftOut, inPickup), "near liftOut=" + liftOut + " inPickup=" + inPickup);
+            }
+    }
 }

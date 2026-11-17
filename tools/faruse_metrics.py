@@ -3,6 +3,7 @@ import re, sys
 pre = sys.argv[1]
 c = open(f'{pre}-client.log', errors='replace').read()
 s = open(f'{pre}-server.log', errors='replace').read()
+r = open(f'{pre}-rcon.txt', errors='replace').read()
 fails = []
 
 def check(name, ok, text):
@@ -210,6 +211,21 @@ x = sfar('lclick', '11205,-57,44')
 check('D6 the floor behind a stone wall (cheat path): refused, the block stays', x and x[0]['far'] == 'FAR' and not x[0]['sight'] and x[0]['canceled']
       and not [f for f in sfar('break', '11205,-57,44') if not f['canceled']] and last_probe('11205,-57,44') == 'minecraft:dirt' and refused_note(x[0]['gt']),
       f"{x[:1]} probe {last_probe('11205,-57,44')} note {x and refused_note(x[0]['gt'])}")
+
+print('== Pickup while carried (Copper, Standing Height 1.5)')
+def held(item):
+    m = re.findall(rf'> clear Dev minecraft:{item} 0 => (?:Found (\d+) matching|(No items))', r)
+    return int(m[-1][0]) if m and m[-1][0] else 0 if m else None
+a, b = spos.get('p1a'), spos.get('p1b')
+check('P1 an emerald on the floor under the Active wearer is picked up', a and b and a['state'] == b['state'] == 'ACTIVE' and held('emerald') == 3,
+      f"state {a and a['state']}/{b and b['state']} emeralds {held('emerald')}")
+d = drops.get('11302,-61,4')
+check('P2 near floor block (clay, NEAR) mined Active: drops at the wearer, in the inventory', sfar('lclick', '11302,-61,4')[:1] and sfar('lclick', '11302,-61,4')[0]['far'] == 'NEAR'
+      and d and d['far'] <= 0.6 and last_probe('11302,-61,4') == 'minecraft:air' and held('clay_ball') == 4,
+      f"{sfar('lclick', '11302,-61,4')[:1]} drops {d} probe {last_probe('11302,-61,4')} clay balls {held('clay_ball')}")
+d = drops.get('11306,-61,4')
+check('P3 far floor block (soul sand, FAR) mined Active: in the inventory', sfar('lclick', '11306,-61,4')[:1] and sfar('lclick', '11306,-61,4')[0]['far'] == 'FAR'
+      and d and d['far'] <= 0.6 and held('soul_sand') == 1, f"{sfar('lclick', '11306,-61,4')[:1]} drops {d} soul sand {held('soul_sand')}")
 
 exc = [l for l in (c + s).splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'authlib' not in l and 'neoforge-client.new.tmp.toml' not in l
        and 'Error loading class: net/irisshaders/' not in l and 'org.gradle.' not in l and 'MessageIOException' not in l

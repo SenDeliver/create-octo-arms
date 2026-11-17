@@ -205,3 +205,21 @@ tp Dev 11200.5 -56 44.5 -90 0
 #signal d6
 #await d6done
 tentaworks probe 11205 -57 44
+# P pickup while carried: inventory counts after the case (clear ... 0 only counts)
+clear Dev
+item replace entity Dev armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900,tentaworks:actuators={}]
+item replace entity Dev weapon.mainhand with diamond_shovel
+item replace entity Dev weapon.offhand with diamond_shovel
+tp Dev 11300.5 -60 4.5 -90 0
+#sleep 0.5
+#signal p1
+#await p1up
+summon item 11300.5 -60 4.5 {Item:{id:"minecraft:emerald",count:3},PickupDelay:0s,Motion:[0.0,0.0,0.0]}
+#sleep 0.3
+#signal p1item
+#await p1done
+clear Dev minecraft:emerald 0
+clear Dev minecraft:clay_ball 0
+clear Dev minecraft:soul_sand 0
+tentaworks probe 11302 -61 4
+tentaworks probe 11306 -61 4

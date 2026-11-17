@@ -366,5 +366,27 @@ mark d6b
 doublejump
 wait 60
 signal d6done
+# P Active over the floor (Standing Height 1.5): an emerald summoned under the feet, then a near clay and a far soul sand floor block mined
+await p1
+look -90 0
+doublejump
+wait 30
+mark p1a
+signal p1up
+await p1item
+wait 20
+mark p1b
+lookat 11302.5 -60.5 4.5
+wait 3
+dig 11302 -61 4 p2
+wait 20
+lookat 11306.5 -60.5 4.5
+wait 3
+dig 11306 -61 4 p3
+wait 20
+mark p1c
+doublejump
+wait 60
+signal p1done
 wait 10
 quit

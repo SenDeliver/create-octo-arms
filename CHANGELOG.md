@@ -62,6 +62,7 @@ Actuators: two more arms for the Rig, one for each hand. The four Tentacles carr
 - 2.0 beta: With Sable, looking at a Ship no longer logs "Aborting entity get for abnormally large AABB" from the Actuators' crosshair pick, and a Ship block no longer gets the Far Use crosshair marks (Far Use leaves Ship blocks to Sable) (issue #38). Client only. Thanks @snipernumber3.
 - 2.0 beta: First person: a resting Actuator no longer swings into view when the body turns away from the look (strafing, a fast turn, looking up, crouching, crawling or swimming); the Rest, folded and limp poses now follow the view, at any field of view. Third person is unchanged (issue #33). Client only. Thanks @snipernumber3.
 - 2.0 beta: First person: the Actuators no longer block the view while scoping with a spyglass, as vanilla hides the hands (issue #41). Client only. Thanks @snipernumber3.
+- 2.0 beta: Mining from an Active Rig no longer leaves items on the floor below. Items and XP under a carried wearer are picked up, drops of a block mined nearby that would land out of your pickup reach fly to you as Far Use drops do, and a block whose mining started as a Far Use still sends its drops to you if the Rig stops lending its Reach before it breaks.
 
 ### Compatibility
 

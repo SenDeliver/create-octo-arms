@@ -37,7 +37,7 @@
 # phase-9 suite p9 (v1.1 Sable Ships: parked turned ship, moving 4/15 b/s, rotating, world <-> ship, ship removed mid-grip, deck ride). p9 and rideaero run last (then shipgrab), the
 # only suites built with -PwithSable (Sable runtime + Aeronautics bundle); rideaero: seat on a Ship, Control Hold on a Simulated steering wheel, Simulated handle;
 # 2.0 Actuators: faruse suite (Far Use lift Netherite and Copper at TW_REACH_COPPER=6: far mine/hit/place, sight through blocks and panes, Air paid,
-# drops and XP at the wearer, Rig Settings Far Use modes, Extendo, heavy hold pauses the lift);
+# drops and XP at the wearer, Rig Settings Far Use modes, Extendo, heavy hold pauses the lift, pickup while carried: floor items, near and far floor mines);
 # glint suite (#32: Far Use with glinting items, Create wrench main and off hand, vanilla pickaxe; no "Not building!" crash);
 # airhud suite (Create's remaining-Air timer for the Rig while it uses Air: Active, Far Use sips, not Stowed idle, creative or under a Diving Helmet).
 # ownhand suite (#34: an item in tentaworks:own_hand, a stick from a test datapack, stays in the wearer's own hand in first person; a pickaxe stays carried).
