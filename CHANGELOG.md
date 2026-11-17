@@ -29,6 +29,7 @@ Actuators: two more arms for the Rig, one for each hand. The four Tentacles carr
 - **Throw**: attack while holding. With an item in the main hand, hold `V` and attack. A thrown mob takes fall damage and **Impact** damage when it hits a block or another mob, which is hurt too. Impact counts as your damage and hurts players only where PvP allows.
 - A hold lasts through Stowing, Setting Down, Rides, gliding and Falling. It ends on Crawl, death, logout, taking the Rig off, a dimension change, or when the Air runs out.
 - **1.21.1 only:** **Ship Grab**: with Sable and both hands empty, `V` on a Ship block takes the whole Ship in both Actuators. It follows your view; set it down or throw it like a mob. The Ship must be scale 1, within the tier's mass cap and have nobody else on board. A Ship that is all that holds you up is refused.
+- **1.21.1 only:** A held Ship goes **Overhead**: hold `V` and turn the wheel one notch past the farthest spot, and it rides over your head, its bottom just above your eyes, wherever you look; one notch back puts it in front again. Hold `V` and use, and the mouse **turns** the held Ship instead of your view: left and right about up, up and down tips it toward or away from you. The turn stays when you let go or throw it.
 - Crosshair marks in first person: which Actuator will reach, both for Dual Wield, hollow when just out of Reach, red without Air. An open claw shows a mob you can Grab, a glyph shows why not. A holding Actuator's bracket closes, and with `V` down a small gauge shows the hold distance. Key hints show on the first two holds of a game session.
 - **Deft**, a fifth Rig enchantment (one level): the Actuators use no Air. It does nothing on a Rig without Actuators.
 - Advancements: Fitted, Special Delivery, Hang In There, Spider, Man, The Power of the Sun, Intelligence Is a Privilege.
@@ -58,7 +59,7 @@ Actuators: two more arms for the Rig, one for each hand. The four Tentacles carr
 
 ### Compatibility
 
-- Network changed (registrar "11"). 1.8.0 and 2.0.0 clients and servers cannot join each other: update both.
+- Network changed (registrar "12"). 1.8.0 and 2.0.0 clients and servers cannot join each other, nor 2.0.0 beta.128 or older betas: update both.
 - Existing Rigs keep working and stay unfitted. Fit Actuators whenever you like; nothing on the Rig is lost.
 - Existing Rigs keep their Air while the cap doubles, so the Air bar shows half until the Rig is refilled once.
 - A server config file written by an older version keeps `reach.copper = 4.0`. Set it to 5.0 by hand to get the new default.
