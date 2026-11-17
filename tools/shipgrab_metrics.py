@@ -383,6 +383,34 @@ else:
     check('V the wearer\'s client agrees: Turning, Overhead, the grip tangent south (TRACE)', len(on) > 30 and all(m[2] == 'true' and m[3] == 'true' and m[4] == 'south' for m in on),
           f"{len(on)} ticks, {sorted({(m[2], m[3], m[4]) for m in on})}")
 
+print('== X Actuators at work on a Ship (sx)')
+X_TIP = 7 + 0.72 + 1.5
+X_GAP = 400
+xs = [t for t in ('x1', 'x1e', 'x2', 'x2e', 'x3', 'x3e') if t in cmk]
+if len(xs) < 6:
+    check('X marks reached', False, f'{xs}')
+else:
+    chit = {mm[1]: mm for mm in re.finditer(r'CHIT (x\d) type=(\w+) block=\S+ at=(\S+) .*? entity=(\S+) plot=(\w+)', c)}
+    x1h, x3h = chit.get('x1'), chit.get('x3')
+    check('[setup] X1 and X3 the crosshair is on a Ship block (Sable gives the hit in plot coordinates)',
+          bool(x1h and x3h and all(h[2] == 'BLOCK' and h[5] == 'true' and vec(h[3])[0] > 1.0e6 for h in (x1h, x3h))),
+          f"x1 {x1h and x1h[0]} x3 {x3h and x3h[0]}")
+    tr = [(int(mm[1]), float(mm[2]), int(mm[3])) for mm in re.finditer(r'TRACE t=\d+ gt=(\d+) .*? atip=(\S+) tms=(\d+)', c)]
+    tr2 = [(int(mm[1]), int(mm[2])) for mm in re.finditer(r'TRACE t=\d+ gt=(\d+) .*? tms=(\d+)', c2)]
+    rt = [(int(mm[1]), float(mm[2])) for mm in re.finditer(r'RWALK gt=(\d+) name=Dev .*? rtip=(\S+)', c2)]
+    for a, b, what in (('x1', 'x1e', 'X1 place on the Ship'), ('x2', 'x2e', 'X2 mine the Ship'), ('x3', 'x3e', 'X3 place on the north face')):
+        g0, g1 = cmk[a], cmk[b]
+        own = [x for x in tr if g0 <= x[0] <= g1]
+        obs = [x for x in rt if g0 <= x[0] <= g1]
+        far = max((x[1] for x in own), default=-1)
+        seen = max((x[1] for x in obs), default=-1)
+        check(f'{what}: the wearer\'s Actuator grips stay within {X_TIP:.2f} of the eye (TRACE atip), as Dev2 draws them (RWALK rtip)',
+              len(own) > 30 and 0 < far <= X_TIP and len(obs) > 30 and seen <= X_TIP, f"wearer max {far:.2f} ({len(own)} ticks), Dev2 max {seen:.2f} ({len(obs)} ticks)")
+        gap = max((x[2] for x in own), default=-1)
+        gap2 = max((x[1] for x in tr2 if g0 <= x[0] <= g1), default=-1)
+        check(f'{what}: no frozen tick (TRACE tms < {X_GAP} ms) on the wearer\'s client and on Dev2\'s', 0 <= gap < X_GAP and 0 <= gap2 < X_GAP,
+              f"wearer max {gap} ms, Dev2 max {gap2} ms")
+
 exc = [l for l in (c + c2 + s).splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'authlib' not in l and 'neoforge-client.new.tmp.toml' not in l
        and 'Error loading class: net/irisshaders/' not in l and 'org.gradle.' not in l and 'MessageIOException' not in l
        and 'sun.nio.fs.UnixException' not in l]

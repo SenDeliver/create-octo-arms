@@ -217,7 +217,7 @@ public final class DevActuators {
         double lift = lift(range, FarUse.REACH_ID);
         boolean plot = ShipFrames.get().isPlot(p.level(), pos);
         FarUse.Far far = plot ? FarUse.Far.NEAR : FarUse.blockFar(p, pos);
-        boolean sight = WorkSight.seesBlock(p, pos, face, point);
+        boolean sight = !plot && WorkSight.seesBlock(p, pos, face, point);
         LOG.info("SFAR gt={} {} kind={} at={} type={} dist={} range={} lift={} far={} sight={} asking={} canceled={} bdist={}{}", p.level().getGameTime(), p.getName().getString(), kind,
                 pos.toShortString().replace(" ", ""), BuiltInRegistries.BLOCK.getKey(p.level().getBlockState(pos).getBlock()), f3(Math.sqrt(d2)), f3(range == null ? 0 : range.getValue()),
                 f3(lift), plot ? "PLOT" : far, sight, Grab.asking(), canceled, f3(Math.sqrt(new AABB(pos).distanceToSqr(Grips.body(p)))), mineFields(p, pos));

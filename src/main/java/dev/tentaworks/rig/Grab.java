@@ -731,7 +731,8 @@ public final class Grab {
         if (target.isPassenger() || target.isVehicle()) return;
         Vec3 end = eye.add(look.scale(ActuatorReach.pickRange(TentacleRigItem.reach(wearer))));
         BlockHitResult block = level.clip(new ClipContext(eye, end, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, wearer));
-        Vec3 to = block.getType() == HitResult.Type.MISS ? end : block.getLocation();
+        Vec3 at = block.getType() == HitResult.Type.MISS ? null : ShipFrames.get().worldAt(level, block);
+        Vec3 to = at == null || !ActuatorReach.segment(eye, at, "seat sweep") ? end : at;
         EntityHitResult aimed = ProjectileUtil.getEntityHitResult(wearer, eye, to, wearer.getBoundingBox().expandTowards(to.subtract(eye)).inflate(1.0),
                 Grab::seatEntity, eye.distanceToSqr(to));
         if (aimed != null && target.startRiding(aimed.getEntity())) return;

@@ -2,6 +2,7 @@
 # sg: solid 3x3x3 stone cube (Sable mass 54: stone weighs 2); sh: hollow 5x5x5 (mass 196), refused once grab.massCap.netherite is 100; sc: solid 3x3x3 with Dev2 on board.
 # sd: a 9x1x9 stone deck (mass 162) whose west edge rests against a world wall (x 11465, 3 blocks above the deck): O own Ship.
 # so: solid 3x3x3 stone cube: V Overhead and Turn.
+# sx: solid 3x3x3 stone cube: X Actuators working on a Ship.
 gamerule doDaylightCycle false
 gamerule doWeatherCycle false
 gamerule doImmediateRespawn true
@@ -31,6 +32,11 @@ fill 11506 -60 -1 11508 -58 1 minecraft:stone
 sable assemble area 11506 -60 -1 11508 -58 1
 execute positioned 11507.5 -58.5 0.5 run sable name set @n so
 sable forceload add @e[name=so]
+forceload add 11521 -20 11540 20
+fill 11526 -60 -1 11528 -58 1 minecraft:stone
+sable assemble area 11526 -60 -1 11528 -58 1
+execute positioned 11527.5 -58.5 0.5 run sable name set @n sx
+sable forceload add @e[name=sx]
 op Dev
 op Dev2
 tentaworks trace on

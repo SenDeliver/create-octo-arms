@@ -3,6 +3,7 @@ package dev.tentaworks.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import dev.tentaworks.rig.ActuatorReach;
 import dev.tentaworks.rig.RigTier;
 import dev.tentaworks.rig.Tentacles;
 import net.minecraft.client.Minecraft;
@@ -407,6 +408,7 @@ public final class TentacleRenderer {
     /** How much of the push from {@code from} to {@code elbow} (length {@code h}) is free of blocks, 0..1. */
     private static float room(Player player, Space space, Vector3f from, Vector3f elbow, float h) {
         Vec3 a = space.toWorld(from), b = space.toWorld(elbow);
+        if (!ActuatorReach.segment(a, b, "tentacle room clip")) return 1;
         BlockHitResult hit = player.level().clip(new ClipContext(a, b, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
         if (hit.getType() == HitResult.Type.MISS) return 1;
         return Mth.clamp(((float) hit.getLocation().distanceTo(a) - ELBOW_CLEARANCE) / h, 0, 1);

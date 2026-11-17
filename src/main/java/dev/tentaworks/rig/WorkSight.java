@@ -53,6 +53,7 @@ public final class WorkSight {
     /** {@link #seesBlock(Player, BlockPos, Direction, Vec3)} from {@code eye} looking along {@code look} as far as {@code range}. */
     public static boolean seesBlock(BlockGetter level, BlockPos pos, @Nullable Direction face, @Nullable Vec3 point, Vec3 eye, Vec3 look, double range,
                                     CollisionContext ctx) {
+        if (!ActuatorReach.segment(eye, Vec3.atCenterOf(pos), "work sight clip")) return false;
         BlockHitResult pick = level.clip(new ClipContext(eye, eye.add(look.scale(range)), ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, ctx));
         if (picked(level, pos, pick, point)) return true;
         for (Vec3 to : spots(level, pos, face, point, eye)) {
@@ -79,6 +80,7 @@ public final class WorkSight {
     /** {@code box} (an entity's, pick radius included) is in sight: the look ray meets it before any block, or a line to its centre crosses no block. */
     public static boolean seesBox(BlockGetter level, AABB box, Vec3 eye, Vec3 look, double range, CollisionContext ctx) {
         if (box.contains(eye)) return true;
+        if (!ActuatorReach.segment(eye, box.getCenter(), "work sight clip")) return false;
         Vec3 end = eye.add(look.scale(range));
         Optional<Vec3> on = box.clip(eye, end);
         if (on.isPresent()) {

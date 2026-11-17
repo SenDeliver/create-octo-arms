@@ -25,6 +25,11 @@ public final class NoShips implements ShipFrames {
     }
 
     @Override
+    public Frame owner(Level level, BlockPos pos) {
+        return null;
+    }
+
+    @Override
     public boolean isPlot(Level level, BlockPos pos) {
         return false;
     }

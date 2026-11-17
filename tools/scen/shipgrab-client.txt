@@ -297,6 +297,42 @@ mark vr0
 wait 30
 mark vr1
 signal vdone
+# X the Actuators at work on Ship blocks: each arm's drawn grip stays near the wearer, no frozen tick.
+# X1 place stone on the west face of sx (near), X2 mine it with an iron pickaxe (a held attack), X3 place stone on its north
+# face, walked round to it. Each then 40 ticks for the arm to go back to rest (on 2.0 betas the grip chased the plot point).
+await x
+wait 20
+lookat 11526 -58.5 0.5
+wait 3
+hit x1
+mark x1
+key key.mouse.right
+wait 3
+key key.mouse.right
+wait 40
+mark x1e
+signal x1done
+await x2
+wait 5
+lookat 11526 -59.5 0.5
+wait 3
+mark x2
+holdkey key.attack on
+wait 30
+holdkey key.attack off
+wait 40
+mark x2e
+signal x2done
+await x3
+wait 20
+lookat 11527.5 -58.5 -1.03
+wait 3
+hit x3
+mark x3
+key key.mouse.right
+wait 40
+mark x3e
+signal xdone
 await end
 wait 10
 quit

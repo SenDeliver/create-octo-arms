@@ -55,4 +55,19 @@ tp Dev 11503.5 -60 0.5 -90 0
 #sleep 1.5
 #signal v
 #await vdone
+# X the Actuators work on a Ship (sx): place stone on it, mine it, place stone on its north face; Dev2 watches from the south
+tp Dev2 11524.5 -60 8.5 180 0
+tp Dev 11522.5 -60 0.5 -90 0
+item replace entity Dev weapon.mainhand with stone 16
+#sleep 1.5
+#signal x
+#await x1done
+item replace entity Dev weapon.mainhand with iron_pickaxe
+#signal x2
+#await x2done
+item replace entity Dev weapon.mainhand with stone 16
+tp Dev 11527.5 -60 -4.5 0 0
+#sleep 1
+#signal x3
+#await xdone
 #signal end

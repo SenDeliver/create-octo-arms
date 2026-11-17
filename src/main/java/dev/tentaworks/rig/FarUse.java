@@ -230,12 +230,13 @@ public final class FarUse {
     /**
      * The crosshair pick of a wearer from {@code eye} (this frame's), cut to what the hands and the Actuators reach: with a lifted
      * range, a hit past the unlifted one counts only within Reach of the body ({@link ActuatorReach#accepts}); else it becomes a
-     * miss, as vanilla's own range filter makes it. Ship blocks are left to the Ship mod.
+     * miss, as vanilla's own range filter makes it. Hits on a Ship (its blocks, the entities in its plot) are left to the Ship mod.
      */
     public static HitResult filter(Player player, HitResult hit, Vec3 eye) {
         if (hit.getType() == HitResult.Type.MISS) return hit;
         boolean entity = hit instanceof EntityHitResult;
-        if (!entity && hit instanceof BlockHitResult b && ShipFrames.get().isPlot(player.level(), b.getBlockPos())) return hit;
+        BlockPos frameBlock = ShipFrames.frameBlock(hit);
+        if (frameBlock != null && ShipFrames.get().isPlot(player.level(), frameBlock)) return hit;
         AttributeInstance inst = player.getAttribute(entity ? Attributes.ENTITY_INTERACTION_RANGE : Attributes.BLOCK_INTERACTION_RANGE);
         AttributeModifier m = inst == null ? null : inst.getModifier(entity ? ENTITY_ID : REACH_ID);
         if (m == null || m.amount() <= EPS) return hit;
@@ -249,7 +250,9 @@ public final class FarUse {
         return far(player, Attributes.BLOCK_INTERACTION_RANGE, REACH_ID, new AABB(pos));
     }
 
+    /** A Ship's own entities (in its plot) are left to the Ship mod, as its blocks are. */
     public static Far entityFar(Player player, Entity target) {
+        if (ShipFrames.get().isPlot(player.level(), target.blockPosition())) return Far.NEAR;
         return far(player, Attributes.ENTITY_INTERACTION_RANGE, ENTITY_ID, target.getBoundingBox());
     }
 

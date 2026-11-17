@@ -78,7 +78,11 @@ public final class SableShips implements ShipFrames {
 
     @Override
     public Frame containing(Level level, BlockPos pos) {
-        if (!ShipFrames.enabled()) return null;
+        return ShipFrames.enabled() ? owner(level, pos) : null;
+    }
+
+    @Override
+    public Frame owner(Level level, BlockPos pos) {
         SubLevelAccess s = SableCompanion.INSTANCE.getContaining(level, (Vec3i) pos);
         return s == null ? null : frame(level, s);
     }

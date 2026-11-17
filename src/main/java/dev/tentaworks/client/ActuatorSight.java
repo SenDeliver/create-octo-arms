@@ -15,6 +15,7 @@ import dev.tentaworks.rig.TentacleRigItem;
 import dev.tentaworks.rig.WornRig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
@@ -158,8 +159,10 @@ public final class ActuatorSight {
         boolean picked = vanilla != null && vanilla.getType() != HitResult.Type.MISS;
         HitResult hit = picked ? vanilla : ActuatorClient.aim(player, ActuatorReach.pickRange(reach) + MISS_PAST);
         if (hit.getType() == HitResult.Type.MISS) return;
-        boolean ship = hit instanceof BlockHitResult b && ShipFrames.get().isPlot(player.level(), b.getBlockPos());
+        BlockPos frameBlock = ShipFrames.frameBlock(hit);
+        boolean ship = frameBlock != null && ShipFrames.get().isPlot(player.level(), frameBlock);
         Vec3 at = ActuatorClient.worldAt(player.level(), hit);
+        if (at == null) return;
         Vec3 eye = player.getEyePosition();
         boolean entity = hit instanceof EntityHitResult;
         double base = entity ? base(player, Attributes.ENTITY_INTERACTION_RANGE, FarUse.ENTITY_ID)

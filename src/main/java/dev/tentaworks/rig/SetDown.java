@@ -103,6 +103,7 @@ public final class SetDown {
     public static boolean sight(BlockGetter level, Vec3 body, AABB box, CollisionContext ctx) {
         Vec3 centre = box.getCenter();
         if (box.contains(body)) return true;
+        if (!ActuatorReach.segment(body, centre, "sight clip")) return false;
         Vec3 entry = box.clip(body, centre).orElse(body);
         BlockHitResult hit = level.clip(new ClipContext(body, centre, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, ctx));
         return hit.getType() != HitResult.Type.BLOCK || hit.getLocation().distanceToSqr(body) >= entry.distanceToSqr(body) - 1.0E-4;

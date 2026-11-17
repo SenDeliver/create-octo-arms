@@ -70,6 +70,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -117,6 +118,8 @@ public final class ActuatorRenderer {
     /** An arm stays on its target this many ticks after its swing ends; a swing at nothing strikes this far ahead, blocks. */
     private static final int LINGER_TICKS = 4;
     private static final double AIR_DISTANCE = 1.9;
+    private static final org.slf4j.Logger LOG = com.mojang.logging.LogUtils.getLogger();
+    private static long lastTargetLog;
     /** A gripper pulled in short of a block keeps this far from it, blocks. */
     private static final double ROOM = 0.15;
     /** How far an arm leans toward a far target under the crosshair before any action: this much of the way to its ready pose, at most this many blocks. */
@@ -162,9 +165,10 @@ public final class ActuatorRenderer {
         float used;
         double lean;
         int swingStart = Integer.MIN_VALUE / 2, lastSwing = Integer.MIN_VALUE / 2, equipTick = Integer.MIN_VALUE / 2;
-        Vec3 goal, to, at, pointAt, lastHold, farFrom;
-        /** Normal of the block face the arm works on (null: a mob or the air), and the one the tool follows this frame. */
-        Vec3 face, n;
+        Target target;
+        /** The target in the world this frame, the normal of the block face it is on (null: a mob or the air), and the one the tool follows. */
+        Vec3 goal, face, n;
+        Vec3 to, at, pointAt, lastHold, farFrom;
         Vec3[] probe;
         double carry, bare, act, use, point, hold, glance, tipDistance;
         /** Turn of the chain's bend about its root-to-wrist line that keeps it out of blocks: this frame's and the goal, picked once a tick. */
@@ -181,9 +185,34 @@ public final class ActuatorRenderer {
             hand = carries = empty = acting = attack = strike = dual = loop = using = pointing = holding = world = false;
             lean = carry = bare = act = use = point = hold = glance = 0;
             goal = to = at = pointAt = lastHold = farFrom = face = n = null;
+            target = null;
             probe = null;
             bend = bendGoal = 0;
             room = roomGoal = 1;
+        }
+    }
+
+    /**
+     * Where an arm works: a world point, or with {@code ship} set a point on that Ship in its plot coordinates (Sable gives Ship
+     * hits so), placed in the world through the Ship's render pose every frame, so the arm follows a moving Ship.
+     */
+    record Target(@Nullable BlockPos ship, Vec3 at, @Nullable Vec3 face) {
+        static Target world(Vec3 at, @Nullable Vec3 face) {
+            return new Target(null, at, face);
+        }
+
+        static Target of(Level level, HitResult hit) {
+            BlockPos block = ShipFrames.frameBlock(hit);
+            return new Target(block != null && ShipFrames.get().isPlot(level, block) ? block : null, hit.getLocation(), ActuatorRenderer.face(hit));
+        }
+
+        /** This target in the world at {@code pt}, or null when its Ship is not on this client. */
+        @Nullable Target inWorld(Level level, float pt) {
+            if (ship == null) return this;
+            Frame frame = ShipFrames.get().owner(level, ship);
+            if (frame == null) return null;
+            Pose pose = frame.renderPose(pt);
+            return world(pose.toWorld(at), face == null ? null : pose.normalToWorld(face));
         }
     }
 
@@ -284,6 +313,13 @@ public final class ActuatorRenderer {
         Anim a = ANIMS.get(player.getId());
         Arm arm = a == null ? null : a.arm(true);
         return arm == null || !arm.acting || arm.at == null || arm.to == null ? -1 : arm.at.distanceTo(arm.to);
+    }
+
+    /** How far from the eye the player's farthest Actuator grip was last drawn, blocks; -1 for none (the harness reads it). */
+    public static double tipDistance(Player player) {
+        Anim a = ANIMS.get(player.getId());
+        if (a == null || !a.fitted) return -1;
+        return Math.max(a.arms[0].tipDistance, a.arms[1].tipDistance);
     }
 
     private static boolean excluded(ItemStack stack) {
@@ -435,26 +471,21 @@ public final class ActuatorRenderer {
             arm.acting = arm.hand && !arm.holding && !arm.using
                     && (swinging || main && mining || p.tickCount - arm.lastSwing <= LINGER_TICKS);
             arm.dual = false;
-            if (own && arm.acting && hit != null && hit.getType() != HitResult.Type.MISS) {
-                arm.goal = hit.getLocation();
-                arm.face = face(hit);
-            }
+            if (own && arm.acting && hit != null && hit.getType() != HitResult.Type.MISS) arm.target = Target.of(p.level(), hit);
             if (!own && arm.acting) {
                 if (far != null) {
                     if (!far.equals(arm.farFrom)) {
                         arm.farFrom = far;
                         BlockHitResult on = surface(p, far);
-                        arm.goal = on == null ? far : on.getLocation();
-                        arm.face = face(on);
+                        arm.target = on == null ? Target.world(far, null) : Target.of(p.level(), on);
                     }
                 } else if (!was || swinging && p.swingTime <= 0) {
-                    HitResult on = pick(p);
-                    arm.goal = on.getLocation();
-                    arm.face = face(on);
+                    arm.target = Target.of(p.level(), pick(p));
                     arm.farFrom = null;
                 }
             }
-            if (arm.acting && !was && arm.goal != null && arm.goal.distanceToSqr(p.getEyePosition()) > 9 && p.tickCount - a.hissTick >= HISS_TICKS) {
+            Target at = arm.target == null ? null : arm.target.inWorld(p.level(), 1);
+            if (arm.acting && !was && at != null && at.at().distanceToSqr(p.getEyePosition()) > 9 && p.tickCount - a.hissTick >= HISS_TICKS) {
                 a.hissTick = p.tickCount;
                 RigSounds.hiss(p, 0.05F, 1.7F);
             }
@@ -464,8 +495,7 @@ public final class ActuatorRenderer {
                 && ActuatorClient.dualWield(p, own ? hit : pick(p))) {
             offArm.dual = true;
             offArm.acting = true;
-            offArm.goal = mainArm.goal;
-            offArm.face = mainArm.face;
+            offArm.target = mainArm.target;
         }
         Vec3 cueAt = own ? ActuatorSight.cuePoint() : null, pre = own ? ActuatorSight.farPoint() : null;
         boolean dualMark = own && ActuatorSight.mark() == ActuatorSight.Mark.DUAL;
@@ -475,24 +505,27 @@ public final class ActuatorRenderer {
             if (arm.pointing) arm.pointAt = cueAt;
             arm.lean = pre != null && arm.hand && !arm.holding && !arm.using && (arm.main || arm.carries && (dualMark || mainArm.holding))
                     ? Math.min(PRE_AIM, PRE_AIM_BLOCKS / Math.max(0.5, pre.distanceTo(p.getEyePosition()))) : 0;
-            if (own && !arm.acting && arm.lean > 0) {
-                arm.goal = pre;
-                arm.face = face(hit);
-            }
+            if (own && !arm.acting && arm.lean > 0) arm.target = Target.world(pre, face(hit));
         }
     }
 
     /** What another player's hand works on: the first block or mob along its look within its Reach, else a point in the air ahead. */
     private static HitResult pick(Player p) {
         Vec3 eye = p.getEyePosition(), look = p.getViewVector(1.0F);
-        double reach = Math.max(3, ActuatorReach.pickRange(TentacleRigItem.reach(p)));
+        double reach = pickRange(p);
         BlockHitResult block = p.level().clip(new ClipContext(eye, eye.add(look.scale(reach)), ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, p));
-        double range = block.getType() == HitResult.Type.MISS ? reach : block.getLocation().distanceTo(eye);
+        Vec3 at = block.getType() == HitResult.Type.MISS ? null : ShipFrames.get().worldAt(p.level(), block);
+        double range = at == null ? reach : Math.min(reach, at.distanceTo(eye));
         Vec3 end = eye.add(look.scale(range));
         EntityHitResult entity = ProjectileUtil.getEntityHitResult(p, eye, end, p.getBoundingBox().expandTowards(look.scale(range)).inflate(1.0),
                 e -> !e.isSpectator() && e.isPickable(), range * range);
         if (entity != null) return entity;
         return block.getType() == HitResult.Type.MISS ? BlockHitResult.miss(eye.add(look.scale(AIR_DISTANCE)), Direction.UP, block.getBlockPos()) : block;
+    }
+
+    /** How far from the eye this player's hand picks: the Actuators' lifted pick, at least the interaction ranges and 3. */
+    private static double pickRange(Player p) {
+        return Math.max(Math.max(3, ActuatorReach.pickRange(TentacleRigItem.reach(p))), Math.max(p.blockInteractionRange(), p.entityInteractionRange()));
     }
 
     /**
@@ -502,7 +535,7 @@ public final class ActuatorRenderer {
      */
     private static double room(Level level, Vec3 s, Vec3 grip) {
         double len = grip.distanceTo(s);
-        if (len < 1.0E-3 || solid(level, s)) return 1;
+        if (len < 1.0E-3 || !ActuatorReach.segment(s, grip, "arm room clip") || solid(level, s)) return 1;
         BlockHitResult hit = level.clip(new ClipContext(s, grip, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, CollisionContext.empty()));
         if (hit.getType() == HitResult.Type.MISS) return 1;
         return Mth.clamp((hit.getLocation().distanceTo(s) - ROOM) / len, 0.15, 1);
@@ -510,7 +543,7 @@ public final class ActuatorRenderer {
 
     /** A carried item's axis tilted so its far end stays off the block face it would reach into ({@link ActuatorClearance#tilt}). */
     private static Vec3 itemClear(Level level, Vec3 grip, Vec3 axis, double len) {
-        if (axis.lengthSqr() < 1.0E-8 || solid(level, grip)) return axis;
+        if (axis.lengthSqr() < 1.0E-8 || !ActuatorReach.segment(grip, grip.add(axis), "item clearance clip") || solid(level, grip)) return axis;
         Vec3 a = axis.normalize();
         BlockHitResult hit = level.clip(new ClipContext(grip, grip.add(a.scale(len + ActuatorClearance.ITEM_CLEAR * 2)), ClipContext.Block.COLLIDER,
                 ClipContext.Fluid.NONE, CollisionContext.empty()));
@@ -529,7 +562,7 @@ public final class ActuatorRenderer {
     private static BlockHitResult surface(Player p, Vec3 target) {
         Vec3 eye = p.getEyePosition(), d = target.subtract(eye);
         double len = d.length();
-        if (len < 1.0E-6) return null;
+        if (len < 1.0E-6 || !ActuatorReach.segment(eye, target, "far target clip")) return null;
         BlockHitResult hit = p.level().clip(new ClipContext(eye, target.add(d.scale(0.05 / len)), ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, p));
         return hit.getType() == HitResult.Type.BLOCK ? hit : null;
     }
@@ -585,7 +618,7 @@ public final class ActuatorRenderer {
     }
 
     /** Every frame: the levels chase their goals, the acting arm's target follows the crosshair (own wearer) or the last known target. */
-    private static void update(Minecraft mc, Player p, Anim a, Body b, float time) {
+    private static void update(Minecraft mc, Player p, Anim a, Body b, float time, float pt) {
         double dt = time - a.time;
         if (dt == 0) return;
         boolean snap = !(dt > 0 && dt < 10);
@@ -593,6 +626,7 @@ public final class ActuatorRenderer {
         boolean own = p == mc.player;
         a.limpK = chase(a.limpK, a.limp ? 1 : 0, dt, ActuatorPose.IDLE_TAU, snap);
         Entity glance = a.glanceId >= 0 ? p.level().getEntity(a.glanceId) : null;
+        double range = pickRange(p);
         for (Arm arm : a.arms) {
             arm.carry = chase(arm.carry, arm.carries || arm.empty && b.first ? 1 : 0, dt, ActuatorPose.POSE_TAU, snap);
             arm.bare = chase(arm.bare, arm.carries ? 0 : 1, dt, ActuatorPose.POSE_TAU, snap);
@@ -607,26 +641,49 @@ public final class ActuatorRenderer {
             arm.act = chase(arm.act, goal, dt, goal > arm.act ? ActuatorPose.ACT_TAU : ActuatorPose.BACK_TAU, snap);
             arm.bend = snap ? arm.bendGoal : ActuatorClearance.turnToward(arm.bend, arm.bendGoal, ActuatorPose.chase(dt, ActuatorPose.AIM_TAU));
             arm.room = chase(arm.room, arm.roomGoal, dt, ActuatorPose.AIM_TAU, snap);
-            Vec3 to = arm.goal;
-            if (own && arm.acting) to = contact(mc, a, arm, b);
-            else if (to != null) to = offset(to, a, arm, b);
+            boolean aims = arm.acting || arm.lean > 0;
+            if (own && arm.acting) arm.target = crosshair(mc, p, b);
+            Target t = resolve(p, b, arm, range, pt, aims);
+            arm.goal = t == null ? null : t.at();
+            arm.face = t == null ? null : t.face();
+            Vec3 to = t == null ? null : offset(t.at(), a, arm, b);
+            if (arm.at != null && (!ActuatorReach.plausible(b.eye, arm.at, range) || aims && to != null && arm.at.distanceToSqr(to) > range * range))
+                arm.at = aims ? to : null;
             Vec3 face = arm.face != null ? arm.face : b.look.scale(-1);
             arm.n = snap || fresh ? face : ActuatorClearance.turnNormal(arm.n, face, ActuatorPose.chase(dt, ActuatorPose.AIM_TAU));
             arm.to = to;
-            if (to != null && (arm.acting || arm.lean > 0))
+            if (to != null && aims)
                 arm.at = arm.at == null || snap || fresh ? to : outside(b.level, arm.at.lerp(to, ActuatorPose.chase(dt, ActuatorPose.AIM_TAU)), arm.n);
             if (b.first) arm.world = arm.tipDistance > (arm.world ? WORLD_PASS_IN : WORLD_PASS_OUT);
             else arm.world = false;
         }
     }
 
-    /** Own wearer: where the acting arm's item meets the target this frame: the crosshair's pick, or a point in the air ahead. */
-    private static Vec3 contact(Minecraft mc, Anim a, Arm arm, Body b) {
+    /** Own wearer: what the acting arm works on this frame: the crosshair's pick, or a point in the air ahead. */
+    private static Target crosshair(Minecraft mc, Player p, Body b) {
         HitResult hit = mc.hitResult;
-        Vec3 at = hit != null && hit.getType() != HitResult.Type.MISS ? hit.getLocation() : b.eye.add(b.look.scale(AIR_DISTANCE));
-        arm.goal = at;
-        arm.face = face(hit);
-        return offset(at, a, arm, b);
+        return hit != null && hit.getType() != HitResult.Type.MISS ? Target.of(p.level(), hit) : Target.world(b.eye.add(b.look.scale(AIR_DISTANCE)), null);
+    }
+
+    /**
+     * The arm's target in the world this frame, or null for none. One whose Ship is not on this client, or that lies past what
+     * the hand can pick ({@link ActuatorReach#plausible}: a plot point taken for a world one, or the crosshair's last pick on the
+     * frame after a teleport), is none for an idle arm and is dropped for a point in the air ahead for one that {@code aims}; a
+     * Ship target or plot point dropped logs a warning.
+     */
+    private static @Nullable Target resolve(Player p, Body b, Arm arm, double range, float pt, boolean aims) {
+        if (arm.target == null) return null;
+        Target t = arm.target.inWorld(b.level, pt);
+        if (t != null && ActuatorReach.plausible(b.eye, t.at(), range)) return t;
+        if (!aims) return null;
+        boolean leak = t == null || arm.target.ship() != null || ShipFrames.get().isPlot(b.level, BlockPos.containing(arm.target.at()));
+        if (leak && System.currentTimeMillis() - lastTargetLog > 1000) {
+            lastTargetLog = System.currentTimeMillis();
+            LOG.warn("Actuator target of {} dropped: {} ship={} {}", p.getName().getString(), arm.target.at(), arm.target.ship(), t == null ? "has no Ship on this client"
+                    : "is " + (long) Math.min(Long.MAX_VALUE, t.at().distanceTo(b.eye)) + " blocks from the eye (max " + (long) (range + ActuatorReach.TARGET_SLACK) + ")");
+        }
+        arm.target = Target.world(b.eye.add(b.look.scale(AIR_DISTANCE)), null);
+        return arm.target;
     }
 
     /**
@@ -696,7 +753,7 @@ public final class ActuatorRenderer {
         } else {
             Matrix4f toTank = new Matrix4f(space.toCamera()).invert();
             Body b = Body.of(player, space, pt);
-            update(Minecraft.getInstance(), player, a, b, time);
+            update(Minecraft.getInstance(), player, a, b, time, pt);
             for (int i = 0; i < 2; i++) {
                 Arm arm = a.arms[i];
                 boolean inHand = hands && !arm.world;

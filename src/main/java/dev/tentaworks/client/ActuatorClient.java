@@ -360,6 +360,7 @@ public final class ActuatorClient {
         boolean main = player.getMainHandItem().isEmpty(), off = player.getOffhandItem().isEmpty();
         HitResult aim = target(player);
         if (aim instanceof EntityHitResult e) {
+            if (ShipFrames.get().isPlot(player.level(), e.getEntity().blockPosition())) return Affordance.NONE;
             affordanceAt = e.getEntity().getBoundingBox().getCenter();
             GrabRule.Verdict v = GrabRule.check(Grab.facts(player, e.getEntity(), heldByAnyone(e.getEntity())), Grab.rules(player));
             if (v == GrabRule.Verdict.GONE) return Affordance.NONE;
@@ -414,17 +415,17 @@ public final class ActuatorClient {
         Vec3 eye = player.getEyePosition();
         Vec3 look = player.getViewVector(1.0F);
         BlockHitResult block = player.level().clip(new ClipContext(eye, eye.add(look.scale(reach)), ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
-        double range = block.getType() == HitResult.Type.MISS ? reach : Math.min(reach, worldAt(player.level(), block).distanceTo(eye));
+        Vec3 at = block.getType() == HitResult.Type.MISS ? null : worldAt(player.level(), block);
+        double range = at == null ? reach : Math.min(reach, at.distanceTo(eye));
         Vec3 end = eye.add(look.scale(range));
         AABB sweep = player.getBoundingBox().expandTowards(look.scale(range)).inflate(1.0);
         EntityHitResult entity = ProjectileUtil.getEntityHitResult(player, eye, end, sweep, ActuatorClient::grabbable, range * range);
         return entity != null ? entity : block;
     }
 
-    /** Where a hit lies in the world: a Ship block's hit comes in its plot's coordinates. */
-    static Vec3 worldAt(Level level, HitResult hit) {
-        return hit instanceof BlockHitResult b && b.getType() == HitResult.Type.BLOCK ? ShipFrames.get().toWorld(level, b.getBlockPos(), b.getLocation())
-                : hit.getLocation();
+    /** Where a hit lies in the world ({@link ShipFrames#worldAt}), or null for a hit on a Ship this client does not have. */
+    static @Nullable Vec3 worldAt(Level level, HitResult hit) {
+        return ShipFrames.get().worldAt(level, hit);
     }
 
     private static boolean grabbable(Entity e) {
