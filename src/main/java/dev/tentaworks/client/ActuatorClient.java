@@ -84,25 +84,27 @@ public final class ActuatorClient {
      * {@code farTarget} where the {@code farHand} Actuator reaches for {@code farTtl} more ticks (null none), {@code refusal} the
      * last refused Grab's lang key (empty none), {@code arm} which Actuator(s) hold, {@code distance} the hold distance along the
      * look (blocks, 0 when nothing is held), {@code overhead} a held Ship is Overhead, {@code shipTangent} the direction along
-     * the held face the tips spread.
+     * the held face the tips took hold along, {@code left} and {@code right} the body-left and body-right tips on a held Ship,
+     * told at game time {@code tipsAt} (a reach goes on from there).
      */
     public record State(int heldId, boolean heavy, @Nullable BlockPos ship, Direction shipFace, @Nullable Vec3 farTarget, int farTtl,
-                        String refusal, HoldArm arm, float distance, InteractionHand farHand, boolean overhead, Direction shipTangent) {
+                        String refusal, HoldArm arm, float distance, InteractionHand farHand, boolean overhead, Direction shipTangent,
+                        ActuatorStatePacket.Tip left, ActuatorStatePacket.Tip right, long tipsAt) {
         public static final State NONE = new State(-1, false, null, Direction.UP, null, 0, "", HoldArm.NONE, 0, InteractionHand.MAIN_HAND, false,
-                Direction.NORTH);
+                Direction.NORTH, ActuatorStatePacket.Tip.NONE, ActuatorStatePacket.Tip.NONE, 0);
 
         public boolean holding() {
             return heldId >= 0 || ship != null;
         }
 
-        State held(ActuatorStatePacket p) {
+        State held(ActuatorStatePacket p, long now) {
             return new State(p.heldId(), p.heavy(), p.ship(), p.shipFace(), farTarget, farTtl, p.refusal(), p.arm(), p.distance(), farHand,
-                    p.overhead(), p.shipTangent());
+                    p.overhead(), p.shipTangent(), p.left(), p.right(), now);
         }
 
         State far(@Nullable Vec3 target, int ttl, InteractionHand hand) {
             return new State(heldId, heavy, ship, shipFace, ttl > 0 ? target : null, Math.max(0, ttl), refusal, arm, distance, hand, overhead,
-                    shipTangent);
+                    shipTangent, left, right, tipsAt);
         }
 
         boolean idle() {
@@ -225,7 +227,8 @@ public final class ActuatorClient {
         LocalPlayer player = Minecraft.getInstance().player;
         boolean own = player != null && packet.entityId() == player.getId();
         boolean was = own && get(player).holding();
-        put(packet.entityId(), STATES.getOrDefault(packet.entityId(), State.NONE).held(packet));
+        long now = Minecraft.getInstance().level == null ? 0 : Minecraft.getInstance().level.getGameTime();
+        put(packet.entityId(), STATES.getOrDefault(packet.entityId(), State.NONE).held(packet, now));
         if (!own) return;
         boolean holding = get(player).holding();
         if (!holding) throwSent = Integer.MIN_VALUE / 2;

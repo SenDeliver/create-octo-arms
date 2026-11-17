@@ -39,14 +39,17 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.Boat;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityTravelToDimensionEvent;
@@ -89,7 +92,9 @@ import java.util.function.Consumer;
  * {@value #SHIP_GAIN}/s of the error plus the target's own move, which also cancels gravity). Sable collides it on the way.
  * The wheel one notch past the farthest spot holds it Overhead ({@link Hold#shipWheel}, {@link Hold#shipOverhead}: its lowest
  * point above the eye, on the level of the wearer's yaw); TURN (the Grab key and use held, the mouse) turns it in the wearer's view
- * ({@link Hold#shipTurnInput}, at most {@value #TURNS_PER_TICK} packets a tick), about the held face, and the turn stays when it is let go.
+ * ({@link Hold#shipTurnInput}, at most {@value #TURNS_PER_TICK} packets a tick, banked and turned at most {@value Hold#TURN_RATE}° a
+ * tick), and the turn stays when it is let go. The two tips hold their own points on the hull and regrip hand over hand
+ * ({@link ShipHands}); the hold and the Turn pivot on their midpoint.
  * A Ship that is all that holds the wearer up is refused ({@link GrabRule#holdsUp}): one Grip off it is enough, the wearer's
  * Grips on it let go at the Grab ({@link RigServer#letGo}) and none hold on to it or hold the wearer up while it is held. A
  * held Ship the wearer comes to stand on is let go (underfoot).
@@ -151,6 +156,10 @@ public final class Grab {
         @Nullable Quaterniond lastWant;
         double mass = -1;
         Vec3 taken;
+        Vec3 grabLocal;
+        ShipHands hands;
+        Vec3 correction = Vec3.ZERO;
+        double[] bank = {0, 0};
 
         Held(@Nullable Entity target, boolean heavy, HoldArm arm) {
             this.target = target;
@@ -279,6 +288,36 @@ public final class Grab {
     public static @Nullable Direction shipTangent(ServerPlayer wearer) {
         Held h = HOLDS.get(wearer.getUUID());
         return h == null || h.ship == null ? null : h.tangent;
+    }
+
+    /** The held Ship's tips (dev trace), or null. */
+    public static @Nullable ShipHands shipHands(ServerPlayer wearer) {
+        Held h = HOLDS.get(wearer.getUUID());
+        return h == null ? null : h.hands;
+    }
+
+    /** Tip {@code i} of the held Ship in the world now, or null (dev trace). */
+    public static @Nullable Vec3 shipTip(ServerPlayer wearer, int i) {
+        Held h = HOLDS.get(wearer.getUUID());
+        return h == null || h.hands == null || !h.ship.alive() ? null : h.ship.frame().toWorld(h.hands.tip(i).at());
+    }
+
+    /** Tip {@code i} of the held Ship as the clients are told it, or null (dev trace). */
+    public static ActuatorStatePacket.@Nullable Tip shipTipTold(ServerPlayer wearer, int i) {
+        Held h = HOLDS.get(wearer.getUUID());
+        return h == null || h.hands == null ? null : tip(h, i);
+    }
+
+    /** The Turn banked and not yet turned (yaw, pitch degrees), the hold's correction (blocks) and the Ship body's aim, or null (dev trace). */
+    public static double @Nullable [] shipTurnBank(ServerPlayer wearer) {
+        Held h = HOLDS.get(wearer.getUUID());
+        return h == null || h.ship == null ? null : new double[] {h.bank[0], h.bank[1], h.correction.length()};
+    }
+
+    /** Where the hold drives the held Ship's body this tick, or null (dev trace). */
+    public static @Nullable Vec3 shipAim(ServerPlayer wearer) {
+        Held h = HOLDS.get(wearer.getUUID());
+        return h == null || h.ship == null ? null : h.lastAim;
     }
 
     /** Sable mass of the held Ship, -1 when none (dev trace). */
@@ -523,6 +562,9 @@ public final class Grab {
         h.orientation = new Quaterniond(frame.pose().orientation());
         h.tangent = Hold.faceTangent(face, frame.normalToLocal(Hold.basis(wearer.getViewVector(1.0F), h.yaw)[1]));
         h.taken = h.centre;
+        h.grabLocal = local;
+        Vec3 t = Vec3.atLowerCornerOf(h.tangent.getNormal()).scale(Hold.GRIP_SPREAD);
+        h.hands = new ShipHands(local.subtract(t), local.add(t), Vec3.atLowerCornerOf(face.getNormal()), h.user);
         HOLDS.put(wearer.getUUID(), h);
         heavySpeed(wearer, true);
         listener.accept(new Event(wearer, "start", null, "ship", 2, 0, mass));
@@ -615,7 +657,10 @@ public final class Grab {
         if (h.ship != null) {
             if (h.rel == null) return;
             Hold.ShipHold to = Hold.shipWheel(new Hold.ShipHold(h.rel, h.overhead), notches, Math.max(1.0, reach - SHIP_INSIDE));
-            if (to.overhead() != h.overhead) h.lastAim = null;
+            if (to.overhead() != h.overhead) {
+                h.lastAim = null;
+                h.correction = Vec3.ZERO;
+            }
             h.rel = to.rel();
             h.overhead = to.overhead();
         } else {
@@ -625,7 +670,10 @@ public final class Grab {
         changed(wearer);
     }
 
-    /** A Turn of the held Ship in the wearer's view, degrees; a Ship only, at most {@value #TURNS_PER_TICK} a tick, each clamped ({@link Hold#shipTurnInput}). */
+    /**
+     * A Turn of the held Ship in the wearer's view, degrees; a Ship only, at most {@value #TURNS_PER_TICK} a tick, each clamped, into
+     * the bank the hold turns from tick by tick ({@link Hold#turnBank}, {@link Hold#turnStep}).
+     */
     private static void turn(ServerPlayer wearer, double dYaw, double dPitch) {
         Held h = HOLDS.get(wearer.getUUID());
         if (h == null || h.ship == null || !Double.isFinite(dYaw) || !Double.isFinite(dPitch)) return;
@@ -635,7 +683,7 @@ public final class Grab {
             h.turns = 0;
         }
         if (++h.turns > TURNS_PER_TICK) return;
-        h.user = Hold.shipTurnInput(h.user, h.yaw, dYaw, dPitch).normalize();
+        h.bank = Hold.turnBank(h.bank, dYaw, dPitch);
     }
 
     /**
@@ -650,7 +698,7 @@ public final class Grab {
         if (h.ship != null) {
             if (h.ship.alive()) h.ship.velocity(velocity == null ? Vec3.ZERO : velocity.scale(20), Vec3.ZERO);
             if (velocity == null && h.ship.alive() && h.level == wearer.level())
-                RigEvents.fire(wearer, RigEvents.SHIP_GRAB, h.ship.frame().toWorld(h.local).distanceTo(h.taken));
+                RigEvents.fire(wearer, RigEvents.SHIP_GRAB, h.ship.frame().toWorld(h.grabLocal).distanceTo(h.taken));
         } else if (!h.target.isRemoved()) {
             Entity t = h.target;
             t.resetFallDistance();
@@ -712,7 +760,16 @@ public final class Grab {
         if (h == null) return ActuatorStatePacket.empty(wearer.getId(), refusal);
         h.told = (float) distance(wearer);
         return new ActuatorStatePacket(wearer.getId(), h.target == null ? -1 : h.target.getId(), h.heavy, h.ship == null ? null : h.block,
-                h.ship == null ? Direction.UP : h.face, refusal, h.arm, h.told, h.ship != null && h.overhead, h.tangent);
+                h.ship == null ? Direction.UP : h.face, refusal, h.arm, h.told, h.ship != null && h.overhead, h.tangent,
+                tip(h, ShipHands.LEFT), tip(h, ShipHands.RIGHT));
+    }
+
+    /** Tip {@code i} of a held Ship for the clients, relative to the held block; {@link ActuatorStatePacket.Tip#NONE} for a mob. */
+    private static ActuatorStatePacket.Tip tip(Held h, int i) {
+        if (h.hands == null) return ActuatorStatePacket.Tip.NONE;
+        ShipHands.Tip t = h.hands.tip(i);
+        Vec3 base = Vec3.atLowerCornerOf(h.block);
+        return new ActuatorStatePacket.Tip(t.at().subtract(base), t.from().subtract(base), t.reach());
     }
 
     /** To the wearer only: the current hold and a refusal key ("" none). */
@@ -791,17 +848,37 @@ public final class Grab {
     }
 
     /**
-     * Drives the held Ship so its held face sits where it was in the wearer's view (or Overhead), turned by the wearer's Turn and
-     * then by their yaw since the start.
+     * Drives the held Ship so its pivot (the midpoint of the tips, {@link ShipHands}) sits where the held face was in the wearer's
+     * view (or Overhead), turned by the wearer's Turn (from the bank, at half rate while a tip reaches) and then by their yaw since
+     * the start. When a tip takes hold the pivot moves: the hold's correction keeps the new pivot where it was this tick and settles
+     * back to the hold over a few ticks ({@link Hold#correction}, {@link Hold#settle}), so the Ship never jumps.
      */
     private static void holdShip(ServerPlayer wearer, Held h) {
         Frame f = h.ship.frame();
         float yaw = wearer.getYRot();
+        double[] step = Hold.turnStep(h.bank, h.hands.reaching());
+        if (step[0] != 0 || step[1] != 0) {
+            h.user = Hold.shipTurnInput(h.user, h.yaw, step[0], step[1]).normalize();
+            h.bank = new double[] {h.bank[0] - step[0], h.bank[1] - step[1]};
+        }
         Quaterniond want = Hold.shipWant(h.orientation, yaw - h.yaw, h.user);
-        Vec3 point = h.overhead ? overhead(wearer, h, want, yaw) : null;
-        if (point == null) point = Hold.shipPoint(wearer.getEyePosition(), wearer.getViewVector(1.0F), yaw, h.rel);
-        Vector3d arm = want.transform(new Vector3d(h.local.x - f.pose().pivot().x(), h.local.y - f.pose().pivot().y(), h.local.z - f.pose().pivot().z()));
-        Vec3 aim = point.subtract(arm.x, arm.y, arm.z);
+        double reach = TentacleRigItem.reach(wearer);
+        Vec3[] shoulders = {shoulder(wearer, ShipHands.LEFT), shoulder(wearer, ShipHands.RIGHT)};
+        ShipHands.Change change = h.hands.tick(f.pose(), h.user, shoulders, hullCentre(h, f), Hold.yawBasis(yaw)[1], hullRay(h), reach);
+        if (change == ShipHands.Change.LET_GO) {
+            for (int i = 0; i < 2; i++)
+                if (!h.hands.tip(i).holding()) listener.accept(new Event(wearer, "regrip", null, i == ShipHands.LEFT ? "left" : "right", 2, 0, h.mass));
+        }
+        if (change == ShipHands.Change.TOOK_HOLD) {
+            Vec3 local = h.hands.pivot();
+            Vec3 was = h.lastAim == null ? f.toWorld(local) : Hold.shipWorld(h.lastAim, h.lastWant, local, f.pose().pivot());
+            h.local = local;
+            h.correction = Hold.correction(holdBasis(wearer, h, yaw), base(wearer, h, want, yaw), was);
+        }
+        if (change != ShipHands.Change.NONE) changed(wearer);
+        Vec3 point = Hold.corrected(holdBasis(wearer, h, yaw), base(wearer, h, want, yaw), h.correction);
+        h.correction = Hold.settle(h.correction);
+        Vec3 aim = Hold.shipAim(point, want, h.local, f.pose().pivot());
         Vec3 feed = h.lastAim == null ? Vec3.ZERO : aim.subtract(h.lastAim).scale(20);
         Vec3 spin = h.lastWant == null ? Vec3.ZERO : rotation(new Quaterniond(want).mul(new Quaterniond(h.lastWant).conjugate())).scale(20);
         h.lastAim = aim;
@@ -811,7 +888,61 @@ public final class Grab {
         Vec3 err = rotation(new Quaterniond(want).mul(new Quaterniond(f.pose().orientation()).conjugate()));
         h.ship.velocity(v, err.scale(SHIP_GAIN).add(spin));
         h.centre = f.toWorld(h.local);
-        far(wearer, h, h.centre);
+        far(wearer, h, nearestTip(h, f, Grips.body(wearer)));
+    }
+
+    /** The held Ship is Overhead this tick: Overhead asked and its bounds known. */
+    private static boolean overheadNow(Held h) {
+        return h.overhead && h.ship.localBounds() != null;
+    }
+
+    /** The basis the hold's correction is kept in: the camera's in front, the level of the wearer's yaw Overhead. */
+    private static Vec3[] holdBasis(ServerPlayer wearer, Held h, float yaw) {
+        return overheadNow(h) ? Hold.yawBasis(yaw) : Hold.basis(wearer.getViewVector(1.0F), yaw);
+    }
+
+    /** Where the hold puts the pivot this tick, before its correction: in front of the eye ({@link Hold#shipPoint}) or Overhead. */
+    private static Vec3 base(ServerPlayer wearer, Held h, Quaterniondc want, float yaw) {
+        Vec3 point = h.overhead ? overhead(wearer, h, want, yaw) : null;
+        return point != null ? point : Hold.shipPoint(wearer.getEyePosition(), wearer.getViewVector(1.0F), yaw, h.rel);
+    }
+
+    /** Where the Actuator of tip {@code i} sits on the wearer ({@link Hold#shoulder}). */
+    private static Vec3 shoulder(ServerPlayer wearer, int i) {
+        return Hold.shoulder(wearer.position(), wearer.getYRot(), wearer.getBbHeight(), ShipHands.side(i));
+    }
+
+    /** The middle of the held Ship's blocks in the world, else its body's centre. */
+    private static Vec3 hullCentre(Held h, Frame f) {
+        AABB b = h.ship.localBounds();
+        return b == null ? vec(f.pose().position()) : f.toWorld(b.getCenter());
+    }
+
+    /** The holding tip nearest {@code body} (world): the far rule measures the hold there. */
+    private static Vec3 nearestTip(Held h, Frame f, Vec3 body) {
+        Vec3 best = null;
+        for (int i = 0; i < 2; i++) {
+            ShipHands.Tip t = h.hands.tip(i);
+            if (!t.holding()) continue;
+            Vec3 w = f.toWorld(t.at());
+            if (best == null || w.distanceToSqr(body) < best.distanceToSqr(body)) best = w;
+        }
+        return best == null ? h.centre : best;
+    }
+
+    /** The first block of the held Ship on a plot-space segment, in plot space only (no world block, no other Ship). */
+    private static ShipHands.Ray hullRay(Held h) {
+        Level level = h.level;
+        return (from, to) -> BlockGetter.traverseBlocks(from, to, (Void) null, (c, pos) -> {
+            if (!level.isLoaded(pos)) return null;
+            BlockState state = level.getBlockState(pos);
+            if (state.isAir()) return null;
+            VoxelShape shape = state.getCollisionShape(level, pos);
+            BlockHitResult hit = shape.isEmpty() ? null : shape.clip(from, to, pos);
+            if (hit == null) return null;
+            Frame on = ShipFrames.get().containing(level, pos);
+            return on == null || !on.id().equals(h.ship.id()) ? null : new ShipHands.Hit(hit.getLocation(), Vec3.atLowerCornerOf(hit.getDirection().getNormal()));
+        }, c -> null);
     }
 
     /**

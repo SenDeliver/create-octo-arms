@@ -7,18 +7,51 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Server → clients: what the Actuators of player {@code entityId} hold. {@code heldId} the held mob (-1 none), {@code heavy}
  * when both Actuators hold it, {@code ship} the Ship block held by {@code shipFace} (null none), {@code arm} which Actuator holds,
  * {@code distance} the hold distance along the look (blocks, 0 none), {@code overhead} a Ship held Overhead, {@code shipTangent} the
- * in-face direction of the held face the two tips grip along (its Frame, toward the wearer's right at the Grab). To the wearer after every
+ * in-face direction of the held face the two tips took hold along at the Grab (its Frame, toward the wearer's right), {@code left} and
+ * {@code right} the body-left and body-right tips on a held Ship ({@link Tip}). To the wearer after every
  * Grab request, with {@code refusal} the lang key of the action-bar line when it was refused (empty otherwise); to trackers on
  * every change and on start of tracking.
  */
 public record ActuatorStatePacket(int entityId, int heldId, boolean heavy, @Nullable BlockPos ship, Direction shipFace, String refusal,
-                                  HoldArm arm, float distance, boolean overhead, Direction shipTangent) implements CustomPacketPayload {
+                                  HoldArm arm, float distance, boolean overhead, Direction shipTangent, Tip left, Tip right) implements CustomPacketPayload {
+    /**
+     * One tip on a held Ship: where it holds ({@code at}) or reaches to, and where it reached from, both in the Ship's plot space
+     * relative to the held block (plot coordinates are too large for a float); {@code reach} ticks into a reach, −1 holding.
+     */
+    public record Tip(Vec3 at, Vec3 from, int reach) {
+        public static final Tip NONE = new Tip(Vec3.ZERO, Vec3.ZERO, -1);
+
+        public boolean holding() {
+            return reach < 0;
+        }
+
+        static void write(FriendlyByteBuf buf, Tip t) {
+            vec(buf, t.at);
+            buf.writeByte(Math.max(-1, Math.min(126, t.reach)));
+            if (t.reach >= 0) vec(buf, t.from);
+        }
+
+        static Tip read(FriendlyByteBuf buf) {
+            Vec3 at = new Vec3(buf.readFloat(), buf.readFloat(), buf.readFloat());
+            int reach = buf.readByte();
+            return new Tip(at, reach >= 0 ? new Vec3(buf.readFloat(), buf.readFloat(), buf.readFloat()) : at, reach);
+        }
+
+        private static void vec(FriendlyByteBuf buf, Vec3 v) {
+            buf.writeFloat((float) v.x);
+            buf.writeFloat((float) v.y);
+            buf.writeFloat((float) v.z);
+        }
+    }
+
+
     public static final Type<ActuatorStatePacket> TYPE = new Type<>(TentaworksIds.id("actuator_state"));
     private static final int MAX_REFUSAL = 256;
     public static final StreamCodec<FriendlyByteBuf, ActuatorStatePacket> STREAM_CODEC = StreamCodec.of(
@@ -34,6 +67,8 @@ public record ActuatorStatePacket(int entityId, int heldId, boolean heavy, @Null
                 buf.writeFloat(p.distance);
                 buf.writeBoolean(p.overhead);
                 buf.writeByte(p.shipTangent.get3DDataValue());
+                Tip.write(buf, p.left);
+                Tip.write(buf, p.right);
             },
             buf -> {
                 int entity = buf.readVarInt();
@@ -42,12 +77,15 @@ public record ActuatorStatePacket(int entityId, int heldId, boolean heavy, @Null
                 BlockPos ship = buf.readBoolean() ? buf.readBlockPos() : null;
                 Direction face = Direction.from3DDataValue(buf.readByte());
                 String refusal = buf.readUtf(MAX_REFUSAL);
-                return new ActuatorStatePacket(entity, held, heavy, ship, face, refusal, HoldArm.byId(buf.readByte()),
-                        buf.readFloat(), buf.readBoolean(), Direction.from3DDataValue(buf.readByte()));
+                HoldArm arm = HoldArm.byId(buf.readByte());
+                float distance = buf.readFloat();
+                boolean overhead = buf.readBoolean();
+                Direction tangent = Direction.from3DDataValue(buf.readByte());
+                return new ActuatorStatePacket(entity, held, heavy, ship, face, refusal, arm, distance, overhead, tangent, Tip.read(buf), Tip.read(buf));
             });
 
     public static ActuatorStatePacket empty(int entityId, String refusal) {
-        return new ActuatorStatePacket(entityId, -1, false, null, Direction.UP, refusal, HoldArm.NONE, 0, false, Direction.NORTH);
+        return new ActuatorStatePacket(entityId, -1, false, null, Direction.UP, refusal, HoldArm.NONE, 0, false, Direction.NORTH, Tip.NONE, Tip.NONE);
     }
 
     @Override

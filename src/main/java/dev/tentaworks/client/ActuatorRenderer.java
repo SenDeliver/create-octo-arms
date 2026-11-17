@@ -8,16 +8,18 @@ import com.simibubi.create.content.equipment.potatoCannon.PotatoCannonItem;
 import com.simibubi.create.content.equipment.zapper.ZapperItem;
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.compat.Frame;
+import dev.tentaworks.compat.Pose;
 import dev.tentaworks.compat.ShipFrames;
+import dev.tentaworks.network.ActuatorStatePacket;
 import dev.tentaworks.registry.TentaworksItems;
 import dev.tentaworks.rig.ActuatorReach;
 import dev.tentaworks.rig.Actuators;
 import dev.tentaworks.rig.FarUse;
-import dev.tentaworks.rig.Hold;
 import dev.tentaworks.rig.HoldArm;
 import dev.tentaworks.rig.RigAir;
 import dev.tentaworks.rig.RigSide;
 import dev.tentaworks.rig.RigTier;
+import dev.tentaworks.rig.ShipHands;
 import dev.tentaworks.rig.TentacleRigItem;
 import dev.tentaworks.rig.WornRig;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -97,6 +99,8 @@ public final class ActuatorRenderer {
             EMPTY_OPEN = 0.5F;
     /** How far an Actuator uncurls toward a grabbable mob, the throw follow-through, how far it uncurls toward a mob it glances at, blocks. */
     private static final double POINT_DISTANCE = 1.1, THROW_DISTANCE = 1.6, GLANCE_DISTANCE = 0.75;
+    /** Most a tip regripping on a held Ship lifts off the hull midway through its reach, blocks. */
+    private static final double REACH_LIFT = 0.45;
     /** How straight each pose's chain is (wrist distance / chain length). */
     private static final double POINT_STRAIGHT = 0.85, FAR_STRAIGHT = 0.88, HOLD_STRAIGHT = 0.9, HEAVY_STRAIGHT = 0.8, THROW_STRAIGHT = 0.97,
             LIMP_STRAIGHT = 0.88, CARRY_STRAIGHT = 0.8, FOLD_STRAIGHT = 0.5;
@@ -194,6 +198,8 @@ public final class ActuatorRenderer {
         int heldId = -1, glanceId = -1, glanceStart = Integer.MIN_VALUE / 2;
         BlockPos ship;
         Direction shipFace = Direction.UP, shipTangent = Direction.NORTH;
+        final ActuatorStatePacket.Tip[] tips = {ActuatorStatePacket.Tip.NONE, ActuatorStatePacket.Tip.NONE};
+        long tipsAt;
         double limpK, lowAir;
         float time = Float.NaN;
 
@@ -385,6 +391,9 @@ public final class ActuatorRenderer {
         a.ship = hold.holding() ? s.ship() : null;
         a.shipFace = s.shipFace();
         a.shipTangent = s.shipTangent();
+        a.tips[0] = s.left();
+        a.tips[1] = s.right();
+        a.tipsAt = s.tipsAt();
         a.lowAir = lowAir(p);
         if ((p.tickCount + p.getId()) % GLANCE_TICKS == 0) {
             int id = glance(mc, p, a);
@@ -823,7 +832,7 @@ public final class ActuatorRenderer {
             if (tip != null) {
                 double wind = ActuatorPose.windUp(time - a.grabStart);
                 if (wind > 0) tip = tip.lerp(s.add(b.up.scale(0.35)).add(b.out(side).scale(0.25)).subtract(b.forward.scale(0.15)), wind);
-                double regrip = ActuatorPose.bump(time, 64, 7, player.getId() + side);
+                double regrip = a.ship == null ? ActuatorPose.bump(time, 64, 7, player.getId() + side) : Math.sin(Math.PI * reachK(arm, a, player, pt));
                 Vec3 bulge = a.heavy ? b.up.add(b.out(side).scale(0.4)) : b.up.scale(0.6).add(b.out(side));
                 pose = pose.blend(free(s, tip, bulge, a.heavy ? HEAVY_STRAIGHT : HOLD_STRAIGHT, (float) (GRAB_OPEN + 0.22 * regrip), b), arm.hold);
             }
@@ -972,9 +981,17 @@ public final class ActuatorRenderer {
         return Math.max(0, ActuatorPose.dualMelee(time - m.swingStart - 1));
     }
 
+    /** How far into its reach the tip of {@code arm} on a held Ship is this frame (0 to 1), 0 while it holds. */
+    private static double reachK(Arm arm, Anim a, Player player, float pt) {
+        ActuatorStatePacket.Tip t = a.tips[arm.side < 0 ? 0 : 1];
+        if (a.ship == null || t.holding()) return 0;
+        return Mth.clamp((player.level().getGameTime() - a.tipsAt + t.reach() + pt) / ShipHands.REACH_TICKS, 0, 1);
+    }
+
     /**
-     * Where an Actuator takes hold this frame: the near side of a light target, either flank of a heavy one, the hull face of a
-     * Ship, the tips spread along the face (the direction the Grab picked nearest the wearer's right) so they turn with the hull.
+     * Where an Actuator takes hold this frame: the near side of a light target, either flank of a heavy one, its own point on the
+     * hull of a Ship through the Ship's render pose, so it turns with the hull; a tip regripping lets go, lifts off toward its
+     * shoulder and eases to its new point, which it clamps on.
      */
     private static Vec3 holdPoint(Arm arm, Anim a, Player player, Body b, Vec3 s, float pt) {
         Level level = player.level();
@@ -982,8 +999,17 @@ public final class ActuatorRenderer {
         if (a.ship != null) {
             Frame f = ShipFrames.get().containing(level, a.ship);
             if (f == null) return null;
-            Vec3 n = Vec3.atLowerCornerOf(a.shipFace.getNormal()), t = Vec3.atLowerCornerOf(a.shipTangent.getNormal());
-            return f.renderPose(pt).toWorld(Vec3.atCenterOf(a.ship).add(n.scale(0.5)).add(t.scale(Hold.GRIP_SPREAD * side)));
+            Pose pose = f.renderPose(pt);
+            Vec3 base = Vec3.atLowerCornerOf(a.ship);
+            ActuatorStatePacket.Tip tip = a.tips[side < 0 ? 0 : 1];
+            Vec3 to = pose.toWorld(base.add(tip.at()));
+            double k = reachK(arm, a, player, pt);
+            if (k <= 0 || k >= 1) return to;
+            Vec3 from = pose.toWorld(base.add(tip.from()));
+            Vec3 p = from.lerp(to, k * k * (3 - 2 * k));
+            Vec3 off = s.subtract(p);
+            Vec3 lift = off.lengthSqr() < 1.0E-6 ? b.up : off.normalize().add(b.up).normalize();
+            return p.add(lift.scale(Math.sin(Math.PI * k) * Math.min(REACH_LIFT, 0.15 + from.distanceTo(to) * 0.5)));
         }
         Entity t = a.heldId >= 0 ? level.getEntity(a.heldId) : null;
         if (t == null) return null;
