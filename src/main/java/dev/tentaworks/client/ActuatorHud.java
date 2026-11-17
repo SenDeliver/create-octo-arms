@@ -48,12 +48,15 @@ import org.jetbrains.annotations.Nullable;
  * is shut to a small solid pad tight against the crosshair ({@link #grips}), both for a two-Actuator hold; it snaps in when the
  * Grab lands ({@link #settle}) and goes pale over a spot the mob cannot be set down on (the in-world outline says where and
  * whether). While the Grab key is down with a hold a column of ticks beside that pad is the hold distance ({@link #gauge}): one
- * per notch of the wheel from the nearest hold up to Reach, the current one lit. Above the crosshair the Grab cue
+ * per notch of the wheel from the nearest hold up to Reach, the current one lit; for a Ship an up-chevron past the farthest tick
+ * is Overhead, lit while the Ship is held overhead. While the wearer Turns a Ship ({@link ShipTurn}) a rotate glyph sits above
+ * the crosshair and the gauge hides. Above the crosshair the Grab cue
  * ({@link ActuatorClient#affordance}): an open claw over a target a free Actuator can take, or a glyph for why not (two hands
  * needed, hands full, refused).
  * <p>
  * The keys are hints ({@link GrabHint}, client config {@code hud.hints}): the Grab key beside the open claw for the first second
- * of a look, and one action-bar line with the keys for Set Down, Throw and the hold distance when a Grab lands.
+ * of a look, and one action-bar line with the keys for Set Down, Throw and the hold distance (and Turn for a Ship) when a Grab
+ * lands.
  * <p>
  * Left of the hotbar: a small line with what they hold (mob name or Ship, heavy) and the Far Use mode glyph, or that they hang
  * limp for lack of Air; drawn smaller when it does not fit.
@@ -63,7 +66,8 @@ public final class ActuatorHud {
     private static final int GAP = 6, OFFHAND = 29, ICON = 18, EDGE = 2;
     private static final ResourceLocation MARK_LEFT = sprite("mark_left"), MARK_RIGHT = sprite("mark_right"), HOLLOW_LEFT = sprite("mark_left_hollow"),
             HOLLOW_RIGHT = sprite("mark_right_hollow"), GRIP_LEFT = sprite("grip_left"), GRIP_RIGHT = sprite("grip_right"), CLAW_OPEN = sprite("claw_open"),
-            TWO_HANDS = sprite("two_hands"), HANDS_FULL = sprite("hands_full"), REFUSED = sprite("refused");
+            TWO_HANDS = sprite("two_hands"), HANDS_FULL = sprite("hands_full"), REFUSED = sprite("refused"), TURN = sprite("turn"),
+            OVERHEAD = sprite("overhead");
     /** The mouse wheel in the hint line: the one glyph of the font {@code tentaworks:hud}. */
     private static final Component WHEEL = Component.literal("\uE000").withStyle(Style.EMPTY.withFont(TentaworksIds.id("hud")));
     /** Marks: size, gap to the crosshair's arms at rest and when the target is out of Reach. */
@@ -88,7 +92,9 @@ public final class ActuatorHud {
     public static final int GAUGE_DELAY = 3;
     static final float GAUGE_HOLD = 10, GAUGE_TICKS = 18;
     static final int GAUGE_ROOMY = 17;
-    private static final int COPPER = 0xF7A35C, NETHERITE = 0xC9A2F5, RED = 0xFF4A4A, WHITE = 0xFFFFFF, PALE = 0x9C9CA4;
+    private static final int COPPER = 0xF7A35C, NETHERITE = 0xC9A2F5, RED = 0xFF4A4A, WHITE = 0xFFFFFF, PALE = 0x9C9CA4, SKY = 0x7CD0FF;
+    /** The Overhead chevron: size, and the gap from the farthest tick. */
+    static final int OVERHEAD_W = 7, OVERHEAD_H = 5, OVERHEAD_GAP = 2;
     private static final GrabHint HINT = new GrabHint();
     private static @Nullable Component hintLine;
 
@@ -207,6 +213,18 @@ public final class ActuatorHud {
         return gaugeOf(player, state);
     }
 
+    /** The gauge's Overhead chevron as drawn now: "-" none (not a Ship, or no gauge), "dim", "lit" (dev trace). */
+    public static String overheadShown(LocalPlayer player) {
+        ActuatorClient.State state = ActuatorClient.get(player);
+        if (gaugeShown(player) == null || state.ship() == null) return "-";
+        return state.overhead() ? "lit" : "dim";
+    }
+
+    /** The rotate glyph shows above the crosshair now (dev trace). */
+    public static boolean turnShown() {
+        return marksShown() && ShipTurn.active();
+    }
+
     /** The Grab key shows beside the open claw now (dev trace). */
     public static boolean capShown(LocalPlayer player) {
         return marksShown() && ActuatorSight.cue().kind() == Affordance.Kind.GRAB && HINT.live(TentaworksClientConfig.hints())
@@ -229,7 +247,8 @@ public final class ActuatorHud {
         Minecraft mc = Minecraft.getInstance();
         if (!HINT.landed(mc.gui.getGuiTicks(), TentaworksClientConfig.hints(), actionBar() != null)) return;
         hintLine = hintLine(TentaworksKeys.GRAB.getTranslatedKeyMessage(), mc.options.keyAttack.getTranslatedKeyMessage(),
-                GrabRule.throwsOnAttack(player.getMainHandItem().isEmpty(), false));
+                GrabRule.throwsOnAttack(player.getMainHandItem().isEmpty(), false),
+                ActuatorClient.get(player).ship() != null ? mc.options.keyUse.getTranslatedKeyMessage() : null);
         mc.gui.setOverlayMessage(hintLine, false);
     }
 
@@ -294,8 +313,10 @@ public final class ActuatorHud {
                 int[] at = gaugeOf(player, state);
                 boolean right = !grips(hold, rightHanded, false);
                 int out = (int) GRIP_GAP + GRIP_W + 3;
-                gauge(g, right ? cx + 4 + out : cx - 5 - out, cy, right, at[0], at[1], tint, alpha);
+                int overhead = state.ship() == null ? -1 : state.overhead() ? 1 : 0;
+                gauge(g, right ? cx + 4 + out : cx - 5 - out, cy, right, at[0], at[1], tint, alpha, overhead);
             }
+            if (ShipTurn.active()) blit(g, TURN, cx - 5.5F, cy - 20, 11, 10, tint, 1);
         } else {
             Affordance cue = ActuatorSight.cue();
             float age = ActuatorSight.cueAge(player) + pt;
@@ -319,15 +340,21 @@ public final class ActuatorHud {
 
     /**
      * The hold distance gauge: a column of ticks, the nearest hold at the bottom, on the outer side of the pad at {@code x}
-     * (its edge toward the crosshair); the lit one is wider and in the tier's colour.
+     * (its edge toward the crosshair); the lit one is wider and in the tier's colour. {@code overhead}: -1 no Overhead (not a
+     * Ship), 0 the chevron dim over the column, 1 lit and no tick lit.
      */
-    private static void gauge(GuiGraphics g, int x, int cy, boolean right, int lit, int notches, int tint, float alpha) {
+    private static void gauge(GuiGraphics g, int x, int cy, boolean right, int lit, int notches, int tint, float alpha, int overhead) {
         int pitch = gaugePitch(notches), height = (notches - 1) * pitch + 1;
         int bottom = cy - 1 + (height - 1) / 2, x0 = right ? x : x - 2, a = Math.round(alpha * 255);
         g.fill(x0 - 1, bottom - height, x0 + 3, bottom + 2, Math.round(alpha * 110) << 24 | 0x101014);
         for (int i = 0; i < notches; i++) {
             if (i * pitch % 2 != 0) continue;
             g.fill(x0, bottom - i * pitch, x0 + 2, bottom - i * pitch + 1, Math.max(4, Math.round(alpha * 150)) << 24 | 0xE6E6E6);
+        }
+        if (overhead >= 0) {
+            float top = bottom - (notches - 1) * pitch - OVERHEAD_GAP - OVERHEAD_H;
+            blit(g, OVERHEAD, x0 + 1 - OVERHEAD_W / 2F, top, OVERHEAD_W, OVERHEAD_H, overhead > 0 ? SKY : PALE, alpha * (overhead > 0 ? 1 : 0.6F));
+            if (overhead > 0) return;
         }
         int y = bottom - lit * pitch;
         g.fill(x0 - 2, y - 1, x0 + 4, y + 2, Math.max(4, Math.round(alpha * 235)) << 24 | 0x121012);
@@ -359,11 +386,14 @@ public final class ActuatorHud {
 
     /**
      * The controls of a hold as one action-bar line: each key's bound name, then what it does; the wheel is a glyph.
-     * {@code plainAttackThrows}: {@link GrabRule#throwsOnAttack} with the Grab key up.
+     * {@code plainAttackThrows}: {@link GrabRule#throwsOnAttack} with the Grab key up; {@code turnUse} the use key for a Ship's
+     * Turn, null for a mob.
      */
-    static Component hintLine(Component grab, Component attack, boolean plainAttackThrows) {
-        return Component.empty().append(hint(grab, "set_down")).append("   ").append(hint(throwKeys(grab, attack, plainAttackThrows), "throw")).append("   ")
-                .append(hint(Component.empty().append(grab).append(" + ").append(WHEEL), "distance"));
+    static Component hintLine(Component grab, Component attack, boolean plainAttackThrows, @Nullable Component turnUse) {
+        MutableComponent line = Component.empty().append(hint(grab, "set_down")).append("   ").append(hint(throwKeys(grab, attack, plainAttackThrows), "throw"))
+                .append("   ").append(hint(Component.empty().append(grab).append(" + ").append(WHEEL), "distance"));
+        if (turnUse != null) line.append("   ").append(hint(Component.empty().append(grab).append(" + ").append(turnUse), "turn"));
+        return line;
     }
 
     private static Component hint(Component keys, String what) {

@@ -196,6 +196,7 @@
   "tentaworks.hud.set_down": "Déposer",
   "tentaworks.hud.ship": "Navire",
   "tentaworks.hud.throw": "Lancer",
+  "tentaworks.hud.turn": "Pivoter",
   "tentaworks.ponder.tag.tentacle_rigs": "Appareils à tentacules",
   "tentaworks.ponder.tag.tentacle_rigs.description": "Réservoirs dorsaux portés, munis de quatre tentacules pneumatiques qui vous transportent sur les sols, murs et plafonds",
   "tentaworks.ponder.tentacle_rig.header": "Appareil à tentacules",

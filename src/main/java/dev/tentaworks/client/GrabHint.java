@@ -1,8 +1,8 @@
 package dev.tentaworks.client;
 
 /**
- * The controls hint of a hold, once learned it stays away: the action-bar line with the keys for Set Down, Throw and the hold
- * distance goes up when a Grab lands, for the first {@value #HOLDS} holds of a game session, never over another action-bar line
+ * The controls hint of a hold, once learned it stays away: the action-bar line with the keys for Set Down, Throw, the hold
+ * distance and a Ship's Turn goes up when a Grab lands, for the first {@value #HOLDS} holds of a game session, never over another action-bar line
  * (a refusal), and is kept up for {@value #TICKS} ticks while the hold lasts and the line is still the one shown. Until then the
  * Grab key also shows beside the Grab cue. Client config {@code hud.hints} turns both off.
  */

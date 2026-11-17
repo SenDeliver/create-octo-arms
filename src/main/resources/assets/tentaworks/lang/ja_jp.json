@@ -196,6 +196,7 @@
   "tentaworks.hud.set_down": "置く",
   "tentaworks.hud.ship": "シップ",
   "tentaworks.hud.throw": "投げる",
+  "tentaworks.hud.turn": "回転",
   "tentaworks.ponder.tag.tentacle_rigs": "テンタクルリグ",
   "tentaworks.ponder.tag.tentacle_rigs.description": "4本の空気圧テンタクルで床・壁・天井を伝って移動できる、装備型のバックタンク",
   "tentaworks.ponder.tentacle_rig.header": "テンタクルリグ",

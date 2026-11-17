@@ -196,6 +196,7 @@
   "tentaworks.hud.set_down": "내려놓기",
   "tentaworks.hud.ship": "배",
   "tentaworks.hud.throw": "던지기",
+  "tentaworks.hud.turn": "회전",
   "tentaworks.ponder.tag.tentacle_rigs": "촉수 장비",
   "tentaworks.ponder.tag.tentacle_rigs.description": "공압식 촉수 네 개로 바닥, 벽, 천장을 타고 이동하게 해 주는 착용형 산소통입니다.",
   "tentaworks.ponder.tentacle_rig.header": "촉수 장비",

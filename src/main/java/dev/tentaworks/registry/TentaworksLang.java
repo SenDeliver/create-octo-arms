@@ -163,6 +163,7 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(hud + "set_down", "Set Down");
         REGISTRATE.addRawLang(hud + "throw", "Throw");
         REGISTRATE.addRawLang(hud + "distance", "Distance");
+        REGISTRATE.addRawLang(hud + "turn", "Turn");
 
         String cfg = TentaworksIds.MOD_ID + ".configuration.";
         REGISTRATE.addRawLang(cfg + "title", "Octo Arms: Config");

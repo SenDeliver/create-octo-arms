@@ -196,6 +196,7 @@
   "tentaworks.hud.set_down": "Odłóż",
   "tentaworks.hud.ship": "Statek",
   "tentaworks.hud.throw": "Rzuć",
+  "tentaworks.hud.turn": "Obróć",
   "tentaworks.ponder.tag.tentacle_rigs": "Zestawy macek",
   "tentaworks.ponder.tag.tentacle_rigs.description": "Zakładane zbiorniki z czterema pneumatycznymi mackami, które niosą cię po podłogach, ścianach i sufitach",
   "tentaworks.ponder.tentacle_rig.header": "Zestaw macek",

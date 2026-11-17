@@ -196,6 +196,7 @@
   "tentaworks.hud.set_down": "Soltar",
   "tentaworks.hud.ship": "Nave",
   "tentaworks.hud.throw": "Lanzar",
+  "tentaworks.hud.turn": "Girar",
   "tentaworks.ponder.tag.tentacle_rigs": "Equipos de tentáculos",
   "tentaworks.ponder.tag.tentacle_rigs.description": "Tanques traseros con cuatro tentáculos neumáticos que te llevan por suelos, paredes y techos",
   "tentaworks.ponder.tentacle_rig.header": "Equipo de tentáculos",

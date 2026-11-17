@@ -107,10 +107,12 @@ class ActuatorHudTest {
     @Test
     void theHintLineNamesEachKeyThenWhatItDoes() {
         Component grab = Component.literal("V"), attack = Component.literal("Left Button");
-        String empty = hintLine(grab, attack, true).getString(), tool = hintLine(grab, attack, false).getString();
+        String empty = hintLine(grab, attack, true, null).getString(), tool = hintLine(grab, attack, false, null).getString();
         assertTrue(empty.matches("V \\S+   Left Button \\S+   V \\+ \\S \\S+"), empty);
         assertTrue(tool.contains("   V + Left Button "), tool);
         assertTrue(empty.indexOf("set_down") < empty.indexOf("throw") && empty.indexOf("throw") < empty.indexOf("distance"), empty);
+        String ship = hintLine(grab, attack, true, Component.literal("Right Button")).getString();
+        assertTrue(ship.startsWith(empty) && ship.endsWith("   V + Right Button tentaworks.hud.turn"), ship);
     }
 
     @Test
