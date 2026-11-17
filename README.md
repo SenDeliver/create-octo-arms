@@ -241,6 +241,7 @@ Limits: Ships with a scale other than 1 are ignored. Other players on a fast Shi
 | **Engineer's Goggles** | On a Rig Block: Air, the fill rate (or "needs a turning shaft above"), Reach, Top Speed, and Air use when it is not 100 % |
 | **Create Display Link** | A Rig Block is a "Rig Air" source (number, percent or progress bar) for Display Boards and Nixie Tubes |
 | **JEI** (optional) | All recipes: Sequenced Assembly, Mechanical Crafting, Smithing and, for Fitting, Crafting |
+| **EMI** (optional) | Create on 1.21.1 ships only a JEI plugin, so EMI shows Create's recipes (Sequenced Assembly and Mechanical Crafting, the Tentacle, Rig and Actuator included) only with JEI or TMRV installed too |
 | **Sable / Create Aeronautics** (optional) | Grip, ride and Grab Ships. See [Ships](#ships-sable--create-aeronautics) |
 | **Curios** (optional) | The Rig fits the back slot, so a chestplate stays on |
 | **Claim and protection mods** | A Grab asks the loader's entity-interaction event first. Far Use goes through the vanilla block and entity events |

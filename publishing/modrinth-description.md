@@ -85,6 +85,7 @@ With Actuators fitted, **Ship Grab** takes a whole Ship in both Actuators: it fo
 - **Engineer's Goggles**: Air, fill rate, Reach and Top Speed on a placed Rig Block.
 - **Create Display Link**: a Rig Block is a "Rig Air" source for Display Boards and Nixie Tubes.
 - **JEI** (optional): all recipes in Create's own categories, in Smithing and in Crafting.
+- **EMI** (optional): Create on 1.21.1 ships only a JEI plugin, so EMI shows Create's recipes (Sequenced Assembly and Mechanical Crafting, the Tentacle, Rig and Actuator included) only with JEI or TMRV installed too.
 - **Sable** (optional): full Ship support and Ship Grab, Create Aeronautics compatible.
 - **Curios** (optional): the Rig fits the back slot, so a chestplate stays on. A Rig there is a Rig, not armor.
 - **Claim and protection mods**: Grab and Far Use go through the loader's interaction events, so they can refuse them.
