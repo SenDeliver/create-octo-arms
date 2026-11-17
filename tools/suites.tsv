@@ -78,7 +78,7 @@ curios		curios	0	76	scene-curios.txt	curios-client.txt	GRADLE_ARGS="$GRADLE_ARGS
 curiosoff	curios	0	34	scene-curios.txt	curiosoff-client.txt	GRADLE_ARGS="$GRADLE_ARGS -PwithCurios" TW_BACK_SLOT=false
 faruse		plain	0	180	scene-faruse.txt	faruse-client.txt	TW_REACH_COPPER=6 TIMELINE=$S/faruse-timeline.txt
 glint		plain	0	31	scene-glint.txt		glint-client.txt	TIMELINE=$S/glint-timeline.txt
-airhud		plain	0	59	scene-airhud.txt	airhud-client.txt	TIMELINE=$S/airhud-timeline.txt
+airhud		plain	0	62	scene-airhud.txt	airhud-client.txt	TIMELINE=$S/airhud-timeline.txt
 ownhand		plain	0	31	empty.txt		ownhand-client.txt	TW_DATAPACK=$S/ownhand-pack TIMELINE=$S/ownhand-timeline.txt
 fpview		plain	0	59	empty.txt		fpview-client.txt	TIMELINE=$S/fpview-timeline.txt
 grab		plain	0	140	scene-grab.txt		grab-client.txt		ANIMALS=true TIMELINE=$S/grab-timeline.txt SCRIPT2=$S/grab-watch.txt

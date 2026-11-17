@@ -34,9 +34,9 @@ class AirClockTest {
         assertEquals(MOVE, AirClock.smooth(-1, MOVE), 1e-12, "first tick shown: no ramp from zero");
         double r = MOVE;
         r = AirClock.smooth(r, CLIMB);
-        assertTrue(r > MOVE && r < MOVE + (CLIMB - MOVE) * 0.05, "one tick moves a little: " + r);
+        assertTrue(r > MOVE && r < MOVE + (CLIMB - MOVE) * 0.1, "one tick moves a little: " + r);
         for (int i = 1; i < 20; i++) r = AirClock.smooth(r, CLIMB);
-        assertTrue(r > MOVE + (CLIMB - MOVE) * 0.4 && r < MOVE + (CLIMB - MOVE) * 0.6, "one second: about half way: " + r);
+        assertTrue(r > MOVE + (CLIMB - MOVE) * 0.55 && r < MOVE + (CLIMB - MOVE) * 0.7, "one second: about two thirds of the way: " + r);
         for (int i = 0; i < 80; i++) r = AirClock.smooth(r, CLIMB);
         assertEquals(CLIMB, r, (CLIMB - MOVE) * 0.05, "after 5 seconds: there");
         double flicker = IDLE;

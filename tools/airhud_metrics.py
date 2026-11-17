@@ -37,7 +37,7 @@ case('A6b', 'a6b', 'a6be', False, 'Active in the water with the helmet: Create s
 case('A7', 'a7', 'a7e', False, 'out of the water: helmet breaths are not Rig drain')
 at = {int(m[0]): (int(m[1]), float(m[2])) for m in re.findall(r'TRACE t=\d+ gt=(\d+) .*? airt=(-?\d+) airr=(\S+)', c)}
 idle = 0.5 / 80
-w = [g for g in sorted(at) if 'a2' in mk and 'a2e' in mk and mk['a2'] <= g <= mk['a2e']]
+w = [g for g in sorted(at) if 'a2e' in mk and 'a2r' in mk and mk['a2e'] <= g <= mk['a2r']]
 last = at[w[-1]] if w else None
 check('A2r Active Idle: the time is the Air left at the Netherite Idle rate (air.idle 80, factor 0.5), not 1 Air a second',
       last and abs(last[1] - idle) <= 0.1 * idle and 1500 <= last[0] * last[1] <= 1801, f'airt {last and last[0]} airr {last and last[1]} (want {idle:.6f}), Air {last and last[0] * last[1]:.0f}')

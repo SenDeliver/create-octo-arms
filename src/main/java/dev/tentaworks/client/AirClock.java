@@ -7,7 +7,7 @@ package dev.tentaworks.client;
  * time jump.
  */
 public final class AirClock {
-    public static final double SMOOTH_TICKS = 30;
+    public static final double SMOOTH_TICKS = 20;
     /** Create's diving timer: 1 Air a second. */
     public static final double CREATE_RATE = 1.0 / 20;
     private static final double MIN_RATE = 1.0E-6;

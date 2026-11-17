@@ -15,6 +15,9 @@ mark a2
 wait 40
 shot airhud_active
 mark a2e
+# A2r still Idle: the time has eased from the climb into Active to the Idle rate
+wait 60
+mark a2r
 # A3 Set Down to Stowed: timer gone once the last Air drop is RECENT ticks old
 doublejump
 wait 80
