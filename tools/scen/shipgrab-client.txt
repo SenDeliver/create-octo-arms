@@ -176,7 +176,9 @@ signal o7done
 # to the farthest spot (V1, chevron dim), one more notch Overhead (V2, chevron lit, the hull bottom 0.75 over the eye, the wearer
 # not pushed); a pitched look leaves it (V3). The Grab key + use: the mouse turns it, the camera stays (V4 yaw 3 x 15, V5 pitch
 # 20 down, V6 back up); a screen gives the look back (VS); use up, the mouse turns the camera (V7). One notch nearer: in front at
-# the farthest spot (V8); the key up sets nothing down (V9); a tap lets go, the Turn stays (VR0..VR1).
+# the farthest spot (V8); the key up sets nothing down (V9). Turn by hand (VT0..VT2): the Grab key + wheel 8 nearer, then 12 moves
+# of 15 right with the Grab key + use, 14 ticks apart: the tips regrip hand over hand and end on the wearer's side of the hull.
+# A tap lets go, the Turn stays (VR0..VR1).
 await v
 wait 20
 hints on
@@ -241,6 +243,54 @@ holdkey key.tentaworks.grab off
 wait 10
 mark v9
 actuators v9
+holdkey key.tentaworks.grab on
+wait 5
+wheel -8
+wait 40
+mark vt0
+holdkey key.use on
+wait 3
+mouselook 100 0
+wait 14
+mouselook 100 0
+wait 14
+mouselook 100 0
+wait 14
+mouselook 100 0
+wait 14
+mouselook 100 0
+wait 14
+mouselook 100 0
+wait 4
+view third
+wait 2
+shot shipgrab_vt_mid
+view first
+wait 6
+mouselook 100 0
+wait 14
+mouselook 100 0
+wait 14
+mouselook 100 0
+wait 14
+mouselook 100 0
+wait 14
+mouselook 100 0
+wait 14
+mouselook 100 0
+wait 14
+wait 40
+mark vt1
+shot shipgrab_vt_end1
+view third
+wait 2
+shot shipgrab_vt_end
+view first
+holdkey key.use off
+wait 3
+holdkey key.tentaworks.grab off
+wait 10
+mark vt2
 key key.keyboard.v
 awaitheld off 20
 mark vr0

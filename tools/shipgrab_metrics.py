@@ -255,7 +255,7 @@ chud = {mm[1]: dict(gauge=mm[2], ocap=mm[3], turn=mm[4] == 'true')
         for mm in re.finditer(r'CHUD (v\S*) gt=\d+ .*? gauge=(\S+) cap=\w+ hints=\d+ bar="[^"]*" ocap=(\S+) turn=(\w+)', c)}
 cturn = [dict(gt=int(mm[1]), dx=float(mm[2]), dy=float(mm[3]), active=mm[4] == 'true', y0=float(mm[5]), p0=float(mm[6]), y1=float(mm[7]), p1=float(mm[8]))
          for mm in re.finditer(r'CTURN gt=(\d+) dx=(\S+) dy=(\S+) active=(\w+) yaw0=(\S+) pitch0=(\S+) yaw1=(\S+) pitch1=(\S+)', c)]
-need = ['v0', 'v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'vr0', 'vr1']
+need = ['v0', 'v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'vt0', 'vt1', 'vt2', 'vr0', 'vr1']
 if 'so' not in ships or any(k not in vx for k in need):
     check('V section ran', False, f"marks {sorted(vx)} ships {sorted(ships)}")
 else:
@@ -311,14 +311,73 @@ else:
     used = [g for g in rc if V['v3']['gt'] <= int(g) <= V['v7']['gt']]
     check('V use with the Grab key down never reaches the item or a block (no SFAR rclick while Turning)', not used, f'{len(used)} rclick lines')
     eye8 = V['v8']['pos'][1] + 1.62
-    check('V8 one notch nearer: back in front at the farthest spot, the Turn kept (45 from V3)', not V['v8']['over'] and abs(V['v8']['so']['pos'][1] - eye8) < 0.5
+    piv8 = spos.get('v8', {}).get('centre') or (0, -99, 0)
+    check('V8 one notch nearer: back in front at the farthest spot (the pivot between the tips at eye level, the hull across it), the Turn kept (45 from V3)',
+          not V['v8']['over'] and abs(piv8[1] - eye8) < 0.5 and abs(V['v8']['so']['pos'][1] - eye8) < 1.0
           and abs(V['v8']['dist'] - V['v1']['dist']) < 0.05 and abs(qrel(q3, V['v8']['so']['q']) - 45) < 5,
-          f"gdist {V['v8']['dist']:.2f}, ship y - eye {V['v8']['so']['pos'][1] - eye8:.3f}, turned {qrel(q3, V['v8']['so']['q']):.2f}")
+          f"gdist {V['v8']['dist']:.2f}, pivot y - eye {piv8[1] - eye8:.3f}, ship y - eye {V['v8']['so']['pos'][1] - eye8:.3f}, turned {qrel(q3, V['v8']['so']['q']):.2f}")
     check('V9 the Grab key up after a Turn sets nothing down', V['v9']['ship'] != '-', f"gship {V['v9']['ship']}")
     rv = [g for g in kind('release') if g['gt'] >= V['v9']['gt']]
     qa, qb = V['vr0']['so']['q'], V['vr1']['so']['q']
-    check('VR a tap lets go (why=release), the Ship keeps its Turn (within 5 over 30 ticks, 45 from the Grab)', rv and rv[0]['why'] == 'release' and V['vr0']['ship'] == '-'
-          and qrel(qa, qb) < 5 and abs(qrel(q3, qb) - 45) < 6, f"{rv[:1]} drift {qrel(qa, qb):.2f}, from V3 {qrel(q3, qb):.2f}")
+    check('VR a tap lets go (why=release), the Ship keeps its Turn (within 5 over 30 ticks, 45 + 180 from V3)', rv and rv[0]['why'] == 'release' and V['vr0']['ship'] == '-'
+          and qrel(qa, qb) < 5 and abs(qrel(q3, qb) - 135) < 6, f"{rv[:1]} drift {qrel(qa, qb):.2f}, from V3 {qrel(q3, qb):.2f}")
+    print('== VT Turn by hand (so, 12 x 15 right)')
+    tips = {int(mm[1]): dict(l=vec(mm[2]), r=vec(mm[3]), told=mm[4], rg=tuple(int(x) for x in mm[5].split(',')) if mm[5] != '-' else (0, 0),
+                             bank=vec(mm[6]), corr=None if mm[7] == '-' else float(mm[7]), aim=vec(mm[8]))
+            for mm in re.finditer(r'STRACE gt=(\d+) Dev .*? gtl=(\S+) gtr=(\S+) gtips=(\S+) gtrg=(\S+) gbank=(\S+) gcorr=(\S+) gaim=(\S+)', s)}
+    t0, t1, t2 = V['vt0']['gt'], V['vt1']['gt'], V['vt2']['gt']
+    w8 = [x for x in wheel if x['n'] == -8 and V['v9']['gt'] <= x['gt'] <= t0]
+    check('VT0 the Grab key + wheel 8 nearer: the hold 4 nearer, in front', w8 and abs(V['vt0']['dist'] - (V['v9']['dist'] - 4)) < 0.05 and not V['vt0']['over'],
+          f"gdist {V['v9']['dist']:.2f} -> {V['vt0']['dist']:.2f}")
+    turned = qrel(V['vt0']['so']['q'], V['vt1']['so']['q'])
+    uturn = qrel(V['vt0']['user'], V['vt1']['user'])
+    bank1 = tips.get(t1, {}).get('bank') or (9, 9)
+    tv = [x for x in cturn if t0 <= x['gt'] <= t1]
+    check('VT1 12 moves of 15 right: the Ship turns 180 (server Turn and Sable pose), nothing left in the bank, the camera still',
+          len(tv) == 12 and all(x['active'] and abs(x['y1'] - x['y0']) < 1e-3 for x in tv) and abs(uturn - 180) < 1 and abs(turned - 180) < 5 and max(map(abs, bank1)) < 1e-3,
+          f"{len(tv)} moves, guser {uturn:.2f}, ship {turned:.2f}, bank {bank1}")
+    regr = [g for g in kind('regrip') if t0 <= g['gt'] <= t1]
+    sides = {g['why'] for g in regr}
+    check('VT the tips regrip hand over hand: at least one regrip each side', 'left' in sides and 'right' in sides,
+          f"{len(regr)} regrips: {[(g['gt'], g['why']) for g in regr]}")
+    span = [g for g in range(t0, t2 + 1) if g in tips]
+    both = [g for g in span if tips[g]['told'].count('R:') == 2]
+    check('VT never both tips off at once (server)', len(span) > 150 and not both, f"{len(span)} ticks, both off at {both[:5]}")
+    eye_t = (V['vt1']['pos'][0], V['vt1']['pos'][1] + 1.62, V['vt1']['pos'][2])
+    hull = V['vt1']['so']['pos']
+    tl, trt = tips.get(t1, {}).get('l'), tips.get(t1, {}).get('r')
+    check('VT1 both tips end on the wearer\'s side: each nearer the eye than the hull centre',
+          tl and trt and math.dist(tl, eye_t) < math.dist(hull, eye_t) and math.dist(trt, eye_t) < math.dist(hull, eye_t),
+          f"left {math.dist(tl, eye_t) if tl else -1:.2f}, right {math.dist(trt, eye_t) if trt else -1:.2f}, hull centre {math.dist(hull, eye_t):.2f}")
+    sop = ships['so']
+    steps = [math.dist(sop[g]['pos'], sop[g - 1]['pos']) for g in range(t0 + 1, t2 + 1) if g in sop and g - 1 in sop]
+    took = [g for g in span if g - 1 in tips and tips[g - 1]['told'].count('R:') == 1 and tips[g]['told'].count('R:') == 0]
+    jump = [math.dist(tips[g]['aim'], tips[g - 1]['aim']) for g in took if tips[g]['aim'] and tips[g - 1]['aim']]
+    check('VT the hull never jumps: Sable pose step at most 0.6 a tick, the body aim on a tip taking hold at most 0.45',
+          steps and max(steps) <= 0.6 and took and max(jump, default=9) <= 0.45, f"pose step max {max(steps, default=-1):.3f}, {len(took)} take-holds, aim step max {max(jump, default=-1):.3f}")
+    def view(gtag):
+        p = V[gtag]['pos']
+        e = (p[0], p[1] + 1.62, p[2])
+        h = V[gtag]['so']['pos']
+        d = (h[0] - e[0], h[1] - e[1], h[2] - e[2])
+        return d[0], math.hypot(d[1], d[2])
+    a0, s0 = view('vt0')
+    a1, s1 = view('vt2')
+    check('VT2 the hull stays in front: ahead within 1 of where it was, off the look line less than half its width (it swings about the near side)',
+          abs(a1 - a0) < 1.0 and s1 < 1.5, f"ahead {a0:.2f} -> {a1:.2f}, off the line {s0:.2f} -> {s1:.2f}")
+    mv = max((math.dist(dev[g], V['vt0']['pos']) for g in range(t0, t2 + 1) if g in dev), default=9)
+    check('VT the wearer is never pushed (moved < 0.1, no damage)', mv < 0.1 and min(hp.get(g, 20) for g in range(t0, t2 + 1)) >= 20, f"moved max {mv:.3f}")
+    ct = {int(mm[1]): mm[2] for mm in re.finditer(r'TRACE t=\d+ gt=(\d+) .*? ctips=(\S+)', c)}
+    ob = {int(mm[1]): mm[2] for mm in re.finditer(r'RWALK gt=(\d+) name=Dev .*? rtips=(\S+)', c2)}
+    def agree(seen):
+        ok = [g for g in span if any(seen.get(g + k) == tips[g]['told'] for k in (-1, 0, 1, 2))]
+        return len(ok), sum(1 for g in span if g in seen)
+    wo, wn = agree(ct)
+    oo, on_ = agree(ob)
+    reach_seen = {i for g in span if g in ob for i, part in enumerate(ob[g].split('|')) if part.startswith('R:')}
+    check('VT the wearer\'s client and the watcher (Dev2) are told the same tips (90% of ticks within 2), the watcher sees each side reach',
+          wn > 150 and wo >= 0.9 * len(span) and on_ > 150 and oo >= 0.9 * len(span) and reach_seen == {0, 1},
+          f"wearer {wo}/{len(span)}, watcher {oo}/{len(span)} ({on_} lines), watcher saw reaches {sorted(reach_seen)}")
     tr = [mm for mm in re.finditer(r'TRACE t=\d+ gt=(\d+) .*? turn=(\w+) sover=(\w+) stan=(\S+)', c)]
     on = [m for m in tr if V['v4']['gt'] <= int(m[1]) < V['v6']['gt']]
     check('V the wearer\'s client agrees: Turning, Overhead, the grip tangent south (TRACE)', len(on) > 30 and all(m[2] == 'true' and m[3] == 'true' and m[4] == 'south' for m in on),

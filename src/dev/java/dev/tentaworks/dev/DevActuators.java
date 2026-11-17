@@ -5,6 +5,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.compat.ShipFrames;
 import dev.tentaworks.config.TentaworksConfig;
+import dev.tentaworks.network.ActuatorStatePacket;
 import dev.tentaworks.registry.TentaworksAttachments;
 import dev.tentaworks.registry.TentaworksDataComponents;
 import dev.tentaworks.rig.Actuators;
@@ -20,6 +21,7 @@ import dev.tentaworks.rig.RigHands;
 import dev.tentaworks.rig.RigSettings;
 import dev.tentaworks.rig.RigSide;
 import dev.tentaworks.rig.RigState;
+import dev.tentaworks.rig.ShipHands;
 import dev.tentaworks.rig.WorkSight;
 import dev.tentaworks.rig.WornRig;
 import net.minecraft.commands.CommandSourceStack;
@@ -353,7 +355,9 @@ public final class DevActuators {
     /**
      * STRACE fields (end of line): Far Use lift of the block and entity range, the Grab (held id, heavy, Ship block, hold point,
      * Ship mass), the Actuator Air debt not yet taken, the movement speed attribute, total XP, fitted, Deft, Far Use mode; then a held
-     * Ship's Overhead, the wearer's Turn (quaternion x,y,z,w), its lowest world point and the tips' grip tangent.
+     * Ship's Overhead, the wearer's Turn (quaternion x,y,z,w), its lowest world point and the tips' grip tangent; then the tips on a
+     * held Ship (Turn by hand): each tip's world point, the tips as told to the clients ({@link #tips}), the regrips of each, the
+     * Turn banked (yaw, pitch), the hold's correction and the body's aim.
      */
     static String fields(ServerPlayer p) {
         ItemStack rig = WornRig.of(p).stack();
@@ -367,7 +371,28 @@ public final class DevActuators {
                 rig.isEmpty() ? "-" : RigSettings.of(rig).farUse().getSerializedName(), Grab.arm(p), Grab.distance(p), Grab.placing(p), DualWield.on(p))
                 + String.format(Locale.ROOT, " gover=%b guser=%s gbot=%s gtan=%s", Grab.overhead(p), quat(Grab.shipUser(p)),
                 Double.isNaN(Grab.shipBottom(p)) ? "-" : String.format(Locale.ROOT, "%.3f", Grab.shipBottom(p)),
-                Grab.shipTangent(p) == null ? "-" : Grab.shipTangent(p).getSerializedName());
+                Grab.shipTangent(p) == null ? "-" : Grab.shipTangent(p).getSerializedName())
+                + shipTips(p);
+    }
+
+    private static String shipTips(ServerPlayer p) {
+        ShipHands hands = Grab.shipHands(p);
+        double[] bank = Grab.shipTurnBank(p);
+        if (hands == null || bank == null)
+            return " gtl=- gtr=- gtips=- gtrg=- gbank=- gcorr=- gaim=-";
+        return String.format(Locale.ROOT, " gtl=%s gtr=%s gtips=%s gtrg=%d,%d gbank=%.3f,%.3f gcorr=%.4f gaim=%s", vec(Grab.shipTip(p, ShipHands.LEFT)),
+                vec(Grab.shipTip(p, ShipHands.RIGHT)), tips(Grab.shipTipTold(p, ShipHands.LEFT), Grab.shipTipTold(p, ShipHands.RIGHT)),
+                hands.tip(ShipHands.LEFT).regrips(), hands.tip(ShipHands.RIGHT).regrips(), bank[0], bank[1], bank[2], vec(Grab.shipAim(p)));
+    }
+
+    /** The two tips on a held Ship as told to the clients: H (holding) or R (reaching) and the point relative to the held block, left|right; "-" none. */
+    public static String tips(ActuatorStatePacket.@Nullable Tip left, ActuatorStatePacket.@Nullable Tip right) {
+        if (left == null || right == null) return "-";
+        return tip(left) + "|" + tip(right);
+    }
+
+    private static String tip(ActuatorStatePacket.Tip t) {
+        return String.format(Locale.ROOT, "%s:%.2f,%.2f,%.2f", t.holding() ? "H" : "R", t.at().x, t.at().y, t.at().z);
     }
 
     private static String quat(org.joml.Quaterniondc q) {

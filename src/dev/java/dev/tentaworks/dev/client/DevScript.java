@@ -972,10 +972,10 @@ public final class DevScript {
             if (other == p) continue;
             RigVisuals.Visual v = RigVisuals.get(other);
             ActuatorClient.State s = ActuatorClient.get(other);
-            LOG.info("RWALK gt={} name={} state={} wa={} sneak={} crouch={} pose={} gheld={} gship={} hmob={} far={} rsgrips={}", mc.level.getGameTime(), other.getGameProfile().getName(),
+            LOG.info("RWALK gt={} name={} state={} wa={} sneak={} crouch={} pose={} gheld={} gship={} hmob={} far={} rsgrips={} rtips={}", mc.level.getGameTime(), other.getGameProfile().getName(),
                     v == null ? "-" : v.state(), String.format(Locale.ROOT, "%.4f", other.walkAnimation.speed()),
                     other.isShiftKeyDown(), other.isCrouching(), other.getPose(), s.heldId(), s.ship() == null ? "-" : s.ship().toShortString().replace(" ", ""),
-                    heldCentre(mc, s), s.farTtl(), shipGrips(mc, v));
+                    heldCentre(mc, s), s.farTtl(), shipGrips(mc, v), s.ship() == null ? "-" : dev.tentaworks.dev.DevActuators.tips(s.left(), s.right()));
         }
         if (!SABLE) return;
         List<String> poses = shipPoses != null ? shipPoses : DevShipsClient.poses(mc.level);
@@ -1025,13 +1025,14 @@ public final class DevScript {
         }
         Entity last = lastHeldId < 0 || clientTicks - lastHeldTick > 40 ? null : mc.level.getEntity(lastHeldId);
         String lmob = last == null ? "-" : fmt(last.getBoundingBox().getCenter()) + ";" + fmt(new Vec3(last.lerpTargetX(), last.lerpTargetY(), last.lerpTargetZ()));
-        return String.format(Locale.ROOT, " gheld=%d gheavy=%b gship=%s far=%d xh=%s hmob=%s hpt=%s xd=%s limp=%b opa=%.2f harm=%s hdist=%.2f spot=%s spotok=%b aff=%s affarm=%s dual=%b gkey=%b farhand=%s lmob=%s airhud=%b turn=%b sover=%b stan=%s",
+        return String.format(Locale.ROOT, " gheld=%d gheavy=%b gship=%s far=%d xh=%s hmob=%s hpt=%s xd=%s limp=%b opa=%.2f harm=%s hdist=%.2f spot=%s spotok=%b aff=%s affarm=%s dual=%b gkey=%b farhand=%s lmob=%s airhud=%b turn=%b sover=%b stan=%s ctips=%s",
                 s.heldId(), s.heavy(),
                 s.ship() == null ? "-" : s.ship().toShortString().replace(" ", ""), s.farTtl(), crosshair(mc), heldCentre(mc, s), point,
                 held == null ? "-" : String.format(Locale.ROOT, "%.3f", rayGap(p.getEyePosition(), p.getViewVector(1.0F), held.getBoundingBox())),
                 Actuators.limp(p), TentaworksClientConfig.limbOpacity(), s.arm(), s.distance(), spot == null ? "-" : fmt(spot.feet()), spot != null && spot.valid(),
                 aff.kind(), aff.arm(), ActuatorClient.dualWield(), ActuatorClient.grabKeyDown(), s.farHand() == net.minecraft.world.InteractionHand.OFF_HAND ? "off" : "main", lmob, dev.tentaworks.client.RigAirHud.shown(p),
-                dev.tentaworks.client.ShipTurn.active(), s.overhead(), s.shipTangent().getSerializedName());
+                dev.tentaworks.client.ShipTurn.active(), s.overhead(), s.shipTangent().getSerializedName(),
+                s.ship() == null ? "-" : dev.tentaworks.dev.DevActuators.tips(s.left(), s.right()));
     }
 
     private static double rayGap(Vec3 eye, Vec3 look, net.minecraft.world.phys.AABB box) {
