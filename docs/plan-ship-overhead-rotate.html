@@ -52,7 +52,7 @@
 <div class="card">
 <h3><span class="tag s">server</span> Turn</h3>
 <ul>
-<li>The Held gets a <code>user</code> quaternion. <code>want = rotY(−yawDelta) · user · start</code>. The pivot stays the held face (the existing <code>arm</code> transform), so the grip points don't slide.</li>
+<li>The Held gets a <code>user</code> quaternion. <code>want = rotY(−yawDelta) · user · start</code>. The pivot is the midpoint of the two tips (first the held face; see Turn by hand), so the tips don't slide.</li>
 <li>Each input delta is applied in the wearer's view frame: yaw premultiplied about world Y, pitch premultiplied about the horizontal right of the current yaw. This is what the Physics Staff does.</li>
 <li>Packet <code>RigGrabPacket.turn(dYaw, dPitch)</code> in degrees. The server clamps it to ±30° per packet and drops more than 2 packets a tick. Ships only, ignored for mobs.</li>
 <li>The turn stays after Set Down and Throw: the Ship is let go in its pose as it is.</li>
@@ -91,6 +91,52 @@
 </ul>
 </div>
 </div>
+
+<h2>Turn by hand</h2>
+<p class="sub">Owner feedback after the first build: the tips stayed where they took hold, so a big Ship turned half round left them reaching through the hull. Now the two Actuators turn it the way two hands would: each holds its own point, pushes and pulls during a stroke, and regrips hand over hand.</p>
+<div class="grid">
+<div class="card">
+<h3><span class="tag s">server</span> Tips and pivot (<code>rig/ShipHands</code>)</h3>
+<ul>
+<li>Each tip holds its own point on the hull in plot space; at the Grab the two sit 0.4 either side of the clicked face centre, as before.</li>
+<li>The hold and the Turn pivot on the <b>midpoint</b> of the tips (<code>h.local</code>), so during a stroke the tips stay on their points and visibly push and pull (yaw), lift and lower (roll), tilt (pitch).</li>
+<li><b>Stroke limit</b>: more than 45° of Turn since it took hold, its surface more than 60° away from its shoulder, more than 1 block farther from the shoulder than it was, or nearer than 0.35.</li>
+<li><b>Regrip</b>: the tip furthest past its limit lets go and reaches for 6 ticks to the first hull block on the line from its shoulder to the hull middle (0.4 to its own side first, then the middle), a plot-space ray against this Ship's blocks only. The new point must face its shoulder within 50° and be 0.25 away from the old one, else the tip keeps its point and rests 10 ticks. The other waits until it holds again: never both off.</li>
+</ul>
+</div>
+<div class="card">
+<h3><span class="tag s">server</span> No jump, no drift, rate</h3>
+<ul>
+<li>The pivot moves only when a tip takes hold. That tick the hold gets a <b>correction</b> that keeps the new pivot exactly where the last body aim had it, so the commanded pose is the same. The correction is kept in the hold's basis (camera in front, yaw basis Overhead).</li>
+<li>The correction <b>settles</b> back to the hold anchor: 70% kept each tick, at most 0.25 a tick. Without it every regrip would keep the swing of the stroke and the hull would roll round the wearer and close in. The wheel distance (<code>rel</code>) and the gauge stay put.</li>
+<li>Turn input goes into a <b>bank</b> (at most 90° each axis) drained at 9° a tick with both tips holding and 4.5° while one reaches, so a flick cannot spend both strokes in one tick and the Turn total is what the mouse asked.</li>
+<li>The far rule measures the nearest holding tip, never the moving midpoint.</li>
+</ul>
+</div>
+<div class="card">
+<h3><span class="tag c">client</span> Wire and drawing</h3>
+<ul>
+<li><code>ActuatorStatePacket</code> appends a <code>Tip</code> for the body-left and body-right Actuator: the point (and, while reaching, the old point) as floats relative to the held block, plus the reach ticks, −1 when holding. Sent on every let-go and take-hold, and on start of tracking. Registrar <b>13</b>.</li>
+<li>Holding: the tip sits on its point through the Ship's <code>renderPose(pt)</code>. Reaching: it eases from the old to the new point in ship space, lifts off toward its shoulder in a small arc, the gripper opens, then clamps on. Watching clients draw the same.</li>
+</ul>
+</div>
+<div class="card">
+<h3><span class="tag v">verify</span> Tests</h3>
+<ul>
+<li>JUnit <code>ShipHandsTest</code>: the stroke limit, regrip choice and order, no better point keeps the old one, the pivot change keeps the body aim exactly and settles back, the bank, and a 180° Turn of a 3×3×3 hull in plain math.</li>
+<li>Harness shipgrab <b>VT</b>: 12 moves of 15° right. The Turn totals 180°, each side regrips, never both off, both tips end nearer the eye than the hull centre, the pose never jumps, the hull stays in front, and the wearer and the watcher are told the same tips.</li>
+</ul>
+</div>
+</div>
+<pre class="mermaid">
+stateDiagram-v2
+  [*] --> Holding: Grab (face centre ± 0.4)
+  Holding --> Holding: stroke within limits (turns with the hull)
+  Holding --> Reaching: past the limit, the other tip holds, a better point hit
+  Holding --> Holding: no better point (rest 10 ticks)
+  Reaching --> Holding: 6 ticks, clamp on: pivot = new midpoint, correction keeps the pose
+  note right of Reaching: Turn at half rate
+</pre>
 
 <h2>Flow</h2>
 <pre class="mermaid">
