@@ -13,6 +13,7 @@ import dev.tentaworks.registry.TentaworksItems;
 import dev.tentaworks.rig.ActuatorReach;
 import dev.tentaworks.rig.Actuators;
 import dev.tentaworks.rig.FarUse;
+import dev.tentaworks.rig.Hold;
 import dev.tentaworks.rig.HoldArm;
 import dev.tentaworks.rig.RigAir;
 import dev.tentaworks.rig.RigSide;
@@ -192,7 +193,7 @@ public final class ActuatorRenderer {
         HoldArm hold = HoldArm.NONE;
         int heldId = -1, glanceId = -1, glanceStart = Integer.MIN_VALUE / 2;
         BlockPos ship;
-        Direction shipFace = Direction.UP;
+        Direction shipFace = Direction.UP, shipTangent = Direction.NORTH;
         double limpK, lowAir;
         float time = Float.NaN;
 
@@ -383,6 +384,7 @@ public final class ActuatorRenderer {
         a.heldId = hold.holding() ? s.heldId() : -1;
         a.ship = hold.holding() ? s.ship() : null;
         a.shipFace = s.shipFace();
+        a.shipTangent = s.shipTangent();
         a.lowAir = lowAir(p);
         if ((p.tickCount + p.getId()) % GLANCE_TICKS == 0) {
             int id = glance(mc, p, a);
@@ -970,15 +972,18 @@ public final class ActuatorRenderer {
         return Math.max(0, ActuatorPose.dualMelee(time - m.swingStart - 1));
     }
 
-    /** Where an Actuator takes hold this frame: the near side of a light target, either flank of a heavy one, the hull face of a Ship. */
+    /**
+     * Where an Actuator takes hold this frame: the near side of a light target, either flank of a heavy one, the hull face of a
+     * Ship, the tips spread along the face (the direction the Grab picked nearest the wearer's right) so they turn with the hull.
+     */
     private static Vec3 holdPoint(Arm arm, Anim a, Player player, Body b, Vec3 s, float pt) {
         Level level = player.level();
         int side = arm.side;
         if (a.ship != null) {
             Frame f = ShipFrames.get().containing(level, a.ship);
             if (f == null) return null;
-            Vec3 n = Vec3.atLowerCornerOf(a.shipFace.getNormal());
-            return f.renderPose(pt).toWorld(Vec3.atCenterOf(a.ship).add(n.scale(0.5))).add(b.out(side).scale(0.4));
+            Vec3 n = Vec3.atLowerCornerOf(a.shipFace.getNormal()), t = Vec3.atLowerCornerOf(a.shipTangent.getNormal());
+            return f.renderPose(pt).toWorld(Vec3.atCenterOf(a.ship).add(n.scale(0.5)).add(t.scale(Hold.GRIP_SPREAD * side)));
         }
         Entity t = a.heldId >= 0 ? level.getEntity(a.heldId) : null;
         if (t == null) return null;
