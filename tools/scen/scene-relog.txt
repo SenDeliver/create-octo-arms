@@ -1,0 +1,15 @@
+# relog suite (2.0): a Rig that carries at logout or at a dimension change is Active again after it. Flat world: ground top at y=-60.
+# Walls (z -3..3, top face y=-39): R1 at x=13500, R2 at x=13520 (its top is cut down to y=-53 while Dev is away); N: a wall at x=13540,
+# y 140..160 in the Nether, above its bedrock roof.
+gamerule doDaylightCycle false
+gamerule doWeatherCycle false
+time set noon
+forceload add 13490 -10 13550 10
+fill 13500 -60 -3 13500 -40 3 minecraft:stone
+fill 13520 -60 -3 13520 -40 3 minecraft:stone
+execute in minecraft:the_nether run forceload add 13530 -10 13550 10
+#sleep 2
+execute in minecraft:the_nether run fill 13540 140 -3 13540 160 3 minecraft:stone
+op Dev
+tentaworks trace on
+gamemode survival Dev

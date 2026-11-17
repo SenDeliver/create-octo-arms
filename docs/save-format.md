@@ -38,7 +38,7 @@ Phase 5: a Rig never breaks. Wear stops at max − 1 (damage 111 / 591); a store
 
 Not saved in worlds (safe to change): Ponder scene `tentaworks:tentacle_rig` and its schematic `assets/tentaworks/ponder/tentacle_rig.nbt`, Ponder tag `tentaworks:tentacle_rigs`, creative tab `tentaworks:main`, lang keys, models, textures, the transient attribute modifier `tentaworks:rig_float` (never saved: added with `addTransientModifier`), and from 2.0 the transient modifiers `tentaworks:far_use_reach`, `tentaworks:far_use_entity` and `tentaworks:actuator_heavy` (same rule).
 
-Entity attachments (2.0): `tentaworks:pinned` on a held or just set-down mob (holder UUID, calm-until game time) and `tentaworks:thrown` on a Thrown entity (thrower UUID, start, last speed, armed). Both are registered without a serializer, so they never reach NBT: a mob saved while held or Thrown loads as itself.
+Entity attachments (2.0): `tentaworks:pinned` on a held or just set-down mob (holder UUID, calm-until game time) and `tentaworks:thrown` on a Thrown entity (thrower UUID, start, last speed, armed). Both are registered without a serializer, so they never reach NBT: a mob saved while held or Thrown loads as itself. `tentaworks:rig_resume` (2.0, a boolean saved with the player) is set at logout when the Rig carried the wearer and removed at the next login, where it makes the Rig catch again.
 Key mappings `key.tentaworks.settings` and `key.tentaworks.toggle` (both unbound by default) and `key.tentaworks.grab` (2.0, default V), category `key.categories.tentaworks`, are saved in each player's `options.txt`: renaming one only loses that player's binding.
 
 ## Block states

@@ -1,5 +1,6 @@
 package dev.tentaworks.registry;
 
+import com.mojang.serialization.Codec;
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.rig.Pinned;
 import dev.tentaworks.rig.Thrown;
@@ -12,8 +13,9 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import java.util.function.Supplier;
 
 /**
- * Entity attachments of the Actuators. Neither has a serializer, so neither ever reaches NBT: a held or Thrown mob saved by a
+ * Entity attachments. The Actuators' two have no serializer, so neither ever reaches NBT: a held or Thrown mob saved by a
  * chunk unload or server stop loads as itself. Read them with {@code getExistingData}; there is no default value.
+ * {@link #RIG_RESUME} is saved with the player.
  */
 public final class TentaworksAttachments {
     private static final DeferredRegister<AttachmentType<?>> REGISTER = DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, TentaworksIds.MOD_ID);
@@ -24,6 +26,9 @@ public final class TentaworksAttachments {
     /** On a Thrown entity until its Impact is spent or it stops. */
     public static final DeferredHolder<AttachmentType<?>, AttachmentType<Thrown>> THROWN = REGISTER.register(TentaworksIds.THROWN,
             () -> AttachmentType.builder(TentaworksAttachments.<Thrown>noDefault(TentaworksIds.THROWN)).build());
+    /** On a player whose Rig carried them at logout: on the next login the Rig catches again ({@code RigServer}). */
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<Boolean>> RIG_RESUME = REGISTER.register(TentaworksIds.RIG_RESUME,
+            () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL).build());
 
     private TentaworksAttachments() {
     }

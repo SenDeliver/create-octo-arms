@@ -1,0 +1,9 @@
+op Dev
+tentaworks trace on
+#await r2go
+#sleep 1
+fill 13520 -52 -3 13520 -40 3 minecraft:air
+#await n
+execute in minecraft:the_nether run tp Dev 13541.5 150 0.5 90 0
+#sleep 3
+#signal ndone

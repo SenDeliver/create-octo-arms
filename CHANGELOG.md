@@ -46,6 +46,7 @@ Actuators: two more arms for the Rig, one for each hand. The four Tentacles carr
 - Copper Rig Reach 4 → 5 blocks. Its highest Standing Height is 5 too.
 - A Rig whose Speed was never set in the Rig Settings now runs at the server's top Speed (8 blocks/s by default) instead of 5.6. A Speed you saved stays.
 - Setting Down with no floor below (under a ceiling, over a pit) holds you at the lowest Held point instead of letting go. A Double Jump (or the toggle key) during Setting Down makes the Rig Active again, and starting Setting Down says so on the action bar. A worn-out Rig still lets go there.
+- Logging out while the Rig carries you: after the login it is Active again where you were. If its Grips are gone meanwhile (a Ship moved, a block broken), it catches you on the first surface in Reach, and you take no fall damage while the world loads. A dimension change works the same. A crashed server still loads you Stowed.
 - The speed check makes the Rig fall (it catches again where it can) instead of Stowing it, and only overspeed that lasts longer than a second counts: a lag backlog of moves arriving at once no longer trips it.
 - When the server makes the Rig fall or Stows it, the action bar says why: too fast, no Grips the server sees, moving against Crawl or Setting Down, a Ride.
 

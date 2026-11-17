@@ -25,6 +25,7 @@ public final class TentaworksIds {
     public static final String OWN_HAND = "own_hand";
     public static final String PINNED = "pinned";
     public static final String THROWN = "thrown";
+    public static final String RIG_RESUME = "rig_resume";
     public static final String FITTING = "fitting";
     public static final String RIG_EVENT = "rig_event";
     public static final String IMPACT = "impact";

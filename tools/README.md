@@ -25,7 +25,7 @@ RCON password: `$RCON_PASSWORD`, else the one already in `server.properties`, el
 | `scen/` | Scenes (`scene-*.txt`, RCON setup), timelines (`*-timeline.txt`, RCON during the run) and client scripts (`*-client.txt`, `*-watch.txt`) per suite. |
 | `lang_check.py` | Every lang file has every key of the generated `en_us.json` (release rule, `docs/RELEASE.md`). Exit 1 on a miss. |
 | `analyze.py <log prefix>` | Kick/warn counts and client vs server position drift for one run. |
-| `spike_metrics.py`, `p1_metrics.py` … `p9_metrics.py`, `p6fast_metrics.py`, `ride_metrics.py`, `rideaero_metrics.py`, `spec_metrics.py`, `dig_metrics.py`, `sculk_metrics.py`, `faruse_metrics.py`, `glint_metrics.py`, `airhud_metrics.py`, `ownhand_metrics.py`, `fpview_metrics.py`, `grab_metrics.py`, `look_metrics.py`, `shipgrab_metrics.py`, `lag_metrics.py`, `slider_metrics.py` | Per-suite checks on the logs; print PASS/FAIL lines and a last `RESULT` line. |
+| `spike_metrics.py`, `p1_metrics.py` … `p9_metrics.py`, `p6fast_metrics.py`, `ride_metrics.py`, `rideaero_metrics.py`, `spec_metrics.py`, `dig_metrics.py`, `sculk_metrics.py`, `faruse_metrics.py`, `glint_metrics.py`, `airhud_metrics.py`, `ownhand_metrics.py`, `fpview_metrics.py`, `grab_metrics.py`, `look_metrics.py`, `shipgrab_metrics.py`, `lag_metrics.py`, `slider_metrics.py`, `relog_metrics.py` | Per-suite checks on the logs; print PASS/FAIL lines and a last `RESULT` line. |
 
 Quick start: `tools/run_all.sh mytest` (one suite: `TW_DRY=1 tools/run_all.sh mytest` prints every suite's `run_split.sh` command, with `S=tools/scen` and `TAG=mytest`).
 
@@ -306,6 +306,17 @@ The speed check on a lagging server: a wearer at top Speed was Stowed with "move
 `TIMELINE=tools/scen/lag-timeline.txt tools/run_split.sh tools/scen/empty.txt tools/scen/lag-client.txt tools/logs/x-lag && python3 tools/lag_metrics.py tools/logs/x-lag`
 
 `TW_MINIMIZED=1` on `run_split.sh` opens the clients minimized (WSLg ignores the focus hints and stacks new windows on top). Not for suites that take screenshots.
+
+## Relog suite (relog)
+
+A Rig that carries at logout or at a dimension change is Active again after it (2.0). Scene `scene-relog.txt` (walls at x 13500 and 13520, a wall at y 140..160 in the Nether at x 13540); the client uses `rejoin`.
+
+- R1 logout while Active halfway up a wall: after the login Active at the same height, no damage, then Setting Down to the floor.
+- R2 logout while Active; the timeline cuts the wall down to y -53 meanwhile: Falling on login, caught on the rest of the wall, no damage.
+- R3 logout while Stowed on the floor: still Stowed. N a dimension change while Active (timeline `execute in minecraft:the_nether run tp`): caught on the Nether wall, no damage.
+- `relog_metrics.py <log prefix>`. STRACE carries the speed check at its end (`spsum spsteps sppk sptime spover sprefuse unheld`).
+
+`TIMELINE=tools/scen/relog-timeline.txt tools/run_split.sh tools/scen/scene-relog.txt tools/scen/relog-client.txt tools/logs/x-relog && python3 tools/relog_metrics.py tools/logs/x-relog`
 
 ## Slider suite (slider)
 

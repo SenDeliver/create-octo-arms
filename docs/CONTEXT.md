@@ -64,7 +64,7 @@ _Avoid_: tank block, charger, filler
 A worn Rig takes the Double Jump in creative too. Creative flight is reached by a third jump press while Active or by the fly key.
 
 **Falling**:
-What happens when a Held wearer loses Grips (blocks broken under them) and no new Grip is in Reach: vanilla gravity and fall damage return until a Grip is found again. The server forces it too, with an action-bar line saying why: Grips it does not see, a real move faster than top Speed for more than a second (carrying claims stay refused while it lasts), moving against Crawl. Taking the Rig off, logging out, changing dimension or starting a Ride Stows it at once.
+What happens when a Held wearer loses Grips (blocks broken under them) and no new Grip is in Reach: vanilla gravity and fall damage return until a Grip is found again. The server forces it too, with an action-bar line saying why: Grips it does not see, a real move faster than top Speed for more than a second (carrying claims stay refused while it lasts), moving against Crawl. Taking the Rig off or starting a Ride Stows it at once. Logging out or changing dimension while the Rig carries: on the login, or in the new dimension, the Rig is Falling and catches at the first Grip in Reach (the old spot, if its Grips are still there), with no fall damage until it carries, the wearer stands or about 5 s of play pass. A Rig that cannot carry then (no Air, worn out, taken off, a Ride) stays Stowed; a server crash skips the logout and loads the wearer Stowed.
 _Avoid_: drop, release
 
 **Crawl**:

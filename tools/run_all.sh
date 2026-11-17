@@ -184,6 +184,7 @@ python3 tools/lag_metrics.py tools/logs/$TAG-lag
 python3 tools/lag_metrics.py tools/logs/$TAG-lagneth
 python3 tools/lag_metrics.py tools/logs/$TAG-lagoff check-off
 python3 tools/slider_metrics.py tools/logs/$TAG-slider
+python3 tools/relog_metrics.py tools/logs/$TAG-relog
 python3 tools/p9_metrics.py tools/logs/$TAG-p9
 python3 tools/rideaero_metrics.py tools/logs/$TAG-rideaero
 python3 tools/shipgrab_metrics.py tools/logs/$TAG-shipgrab

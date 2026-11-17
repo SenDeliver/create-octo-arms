@@ -11,6 +11,7 @@ import dev.tentaworks.config.TentaworksConfig;
 import dev.tentaworks.mixin.ServerGamePacketListenerImplAccessor;
 import dev.tentaworks.network.RigMotionPacket;
 import dev.tentaworks.network.RigStatePacket;
+import dev.tentaworks.registry.TentaworksAttachments;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -28,6 +29,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.NeoForgeMod;
 import net.neoforged.neoforge.event.entity.EntityTeleportEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
@@ -69,11 +71,14 @@ public final class RigServer {
     private static final double REAL_STILL = 0.01;
     private static final double NANOS_PER_TICK = 50_000_000.0;
     private static final int LOG_QUIET_TICKS = 200;
+    private static final int RESUME_LIVE_TICKS = 100;
+    private static final int RESUME_MAX_TICKS = 1200;
     private static final Map<UUID, Wearer> WEARERS = new HashMap<>();
     private static final Map<UUID, Double> LAST_Y = new HashMap<>();
     private static final Map<UUID, RigMotionPacket> PENDING = new HashMap<>();
     private static final Map<UUID, Integer> BAD_PACKET_LOGGED = new HashMap<>();
     private static final Map<UUID, Integer> RIDE_REFUSED = new HashMap<>();
+    private static final Map<UUID, Resume> RESUMING = new HashMap<>();
     private static long processed;
     private static long relays;
     private static boolean floatFix = true;
@@ -118,6 +123,24 @@ public final class RigServer {
         }
     }
 
+    /**
+     * A wearer whose Rig carried them at logout or at a dimension change: they hear Falling (the client catches at the first
+     * Grip in Reach, as a mid-air activation does) until a carrying claim is accepted, they stand, or the Rig can no longer
+     * carry. {@code grace}: no fall damage meanwhile; ended early by a Stowed claim. {@code live} counts only the ticks in which
+     * the wearer moved, so a client still loading its chunks keeps both; {@code ticks} is a hard cap.
+     */
+    private static final class Resume {
+        boolean grace = true;
+        int live = RESUME_LIVE_TICKS;
+        int ticks = RESUME_MAX_TICKS;
+        int resendIn = 1;
+        Vec3 at;
+
+        Resume(Vec3 at) {
+            this.at = at;
+        }
+    }
+
     /** The carry Ship's pose when a reference position was taken: {@code block} is one of its Grip blocks (plot coords). */
     private record Anchor(BlockPos block, Object id, Pose pose) {
     }
@@ -129,6 +152,7 @@ public final class RigServer {
         NeoForge.EVENT_BUS.addListener((PlayerTickEvent.Post e) -> {
             if (e.getEntity() instanceof ServerPlayer p) {
                 fallGuard(p);
+                resume(p);
                 tick(p);
             }
         });
@@ -159,21 +183,44 @@ public final class RigServer {
         NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent e) -> {
             if (e.getEntity() instanceof ServerPlayer p) {
                 setFloat(p, false);
-                WEARERS.remove(p.getUUID());
+                Wearer w = WEARERS.remove(p.getUUID());
+                if (w != null && w.state.carries()) p.setData(TentaworksAttachments.RIG_RESUME, true);
                 LAST_Y.remove(p.getUUID());
                 PENDING.remove(p.getUUID());
                 BAD_PACKET_LOGGED.remove(p.getUUID());
                 RIDE_REFUSED.remove(p.getUUID());
+                RESUMING.remove(p.getUUID());
+            }
+        });
+        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent e) -> {
+            if (e.getEntity() instanceof ServerPlayer p && p.hasData(TentaworksAttachments.RIG_RESUME)) {
+                boolean carried = p.getData(TentaworksAttachments.RIG_RESUME);
+                p.removeData(TentaworksAttachments.RIG_RESUME);
+                if (carried) RESUMING.put(p.getUUID(), new Resume(p.position()));
             }
         });
         NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerChangedDimensionEvent e) -> {
-            if (e.getEntity() instanceof ServerPlayer p) stow(p, true);
+            if (!(e.getEntity() instanceof ServerPlayer p)) return;
+            Wearer w = WEARERS.get(p.getUUID());
+            boolean carried = w != null && w.state.carries();
+            stow(p, true);
+            if (carried) RESUMING.put(p.getUUID(), new Resume(p.position()));
         });
         NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerRespawnEvent e) -> {
-            if (e.getEntity() instanceof ServerPlayer p) stow(p, true);
+            if (e.getEntity() instanceof ServerPlayer p) {
+                RESUMING.remove(p.getUUID());
+                stow(p, true);
+            }
         });
         NeoForge.EVENT_BUS.addListener((LivingDeathEvent e) -> {
-            if (e.getEntity() instanceof ServerPlayer p) stow(p, true);
+            if (e.getEntity() instanceof ServerPlayer p) {
+                RESUMING.remove(p.getUUID());
+                stow(p, true);
+            }
+        });
+        NeoForge.EVENT_BUS.addListener((LivingFallEvent e) -> {
+            Resume r = RESUMING.get(e.getEntity().getUUID());
+            if (r != null && r.grace && e.getEntity() instanceof ServerPlayer) e.setCanceled(true);
         });
         NeoForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> {
             WEARERS.clear();
@@ -181,6 +228,7 @@ public final class RigServer {
             PENDING.clear();
             BAD_PACKET_LOGGED.clear();
             RIDE_REFUSED.clear();
+            RESUMING.clear();
         });
     }
 
@@ -236,6 +284,26 @@ public final class RigServer {
         RigState state = state(player);
         if (state.carries() || !RigAir.has(player) || TentacleRigItem.wornOut(RigAir.worn(player))) return;
         if (last - y > FALL_STEP) ((ServerGamePacketListenerImplAccessor) player.connection).tentaworks$setAboveGroundTickCount(0);
+    }
+
+    /** Sends Falling to a resuming wearer while no Wearer exists, every {@value #RESEND_TICKS} ticks (a Back Slot Rig may sync late). */
+    private static void resume(ServerPlayer player) {
+        Resume r = RESUMING.get(player.getUUID());
+        if (r == null) return;
+        boolean moved = !player.position().equals(r.at);
+        r.at = player.position();
+        if ((moved && --r.live <= 0) || --r.ticks <= 0 || player.onGround() || !canResume(player)) {
+            RESUMING.remove(player.getUUID());
+            return;
+        }
+        if (WEARERS.containsKey(player.getUUID()) || --r.resendIn > 0) return;
+        r.resendIn = RESEND_TICKS;
+        PacketDistributor.sendToPlayer(player, new RigStatePacket(player.getId(), RigState.FALLING, Tentacles.NONE));
+    }
+
+    private static boolean canResume(ServerPlayer player) {
+        return player.isAlive() && !player.isSpectator() && !riding(player) && TentacleRigItem.isWorn(player) && RigAir.has(player)
+                && !TentacleRigItem.wornOut(RigAir.worn(player));
     }
 
     public static double reach(ServerPlayer player) {
@@ -295,6 +363,8 @@ public final class RigServer {
         }
         if (packet.state() == RigState.STOWED) {
             PENDING.remove(player.getUUID());
+            Resume r = RESUMING.get(player.getUUID());
+            if (r != null) r.grace = false;
             stow(player, false);
             return;
         }
@@ -387,6 +457,7 @@ public final class RigServer {
             if (held) {
                 w.rejected = false;
                 w.unheldTicks = 0;
+                RESUMING.remove(player.getUUID());
             } else if (w.rejected) {
                 state = RigState.FALLING;
                 resendFalling(player, w, tentacles, packet, ghost);

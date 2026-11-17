@@ -1,0 +1,64 @@
+# relog suite (Dev). R1 logout while Active beside a wall: back Active where it was, no damage. R2 logout while Active, the wall top
+# cut meanwhile: Falling on login, caught on the rest of the wall, no damage. R3 logout while Stowed on the floor: still Stowed.
+# N dimension change while Active: caught on the Nether wall, no damage. TIMELINE relog-timeline.txt
+wait 40
+trace on
+hud off
+view third
+cmd item replace entity @s armor.chest with tentaworks:copper_tentacle_rig[create:banktank_air=900]
+wait 5
+rawsettings chest 1.5 8 double_jump
+# R1
+cmd tp @s 13501.5 -60 0.5 90 0
+wait 10
+doublejump
+wait 30
+hold jump on
+wait 25
+hold jump off
+wait 20
+mark r1a
+rejoin 60
+wait 40
+mark r1b
+doublejump
+wait 80
+mark r1c
+# R2
+cmd tp @s 13521.5 -60 0.5 90 0
+wait 10
+doublejump
+wait 30
+hold jump on
+wait 30
+hold jump off
+wait 20
+mark r2a
+signal r2go
+rejoin 80
+wait 60
+mark r2b
+doublejump
+wait 80
+mark r2c
+# R3
+mark r3a
+rejoin 40
+wait 40
+mark r3b
+# N
+cmd tp @s 13501.5 -60 0.5 90 0
+wait 10
+doublejump
+wait 30
+hold jump on
+wait 20
+hold jump off
+wait 20
+mark na
+signal n
+await ndone
+wait 20
+mark nb
+wait 20
+quit
