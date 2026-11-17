@@ -2,8 +2,8 @@ package dev.tentaworks.client;
 
 /**
  * The Grab key, tap against hold (CONTEXT: Grab). A press with nothing held asks for a Grab at once; that press never sets
- * down. A press while holding acts on its release: Set Down, unless the wheel moved the hold or a Throw went while the key was
- * down, then nothing. A press is the key going down, or a consumed click with the key up the tick before (a tap shorter than
+ * down. A press while holding acts on its release: Set Down, unless the wheel moved the hold, a Throw went or a Ship was Turned
+ * while the key was down, then nothing. A press is the key going down, or a consumed click with the key up the tick before (a tap shorter than
  * a tick is a press and its release in one tick); the key's own repeat clicks while held are no new press.
  */
 public final class GrabKeyState {
@@ -13,6 +13,7 @@ public final class GrabKeyState {
     private boolean pending;
     private boolean scrolled;
     private boolean threw;
+    private boolean turned;
 
     /** One client tick: {@code clicks} consumed this tick, {@code down} the key is held now, {@code holding} the Actuators hold something. */
     public Action tick(int clicks, boolean down, boolean holding) {
@@ -25,11 +26,12 @@ public final class GrabKeyState {
                 pending = true;
                 scrolled = false;
                 threw = false;
+                turned = false;
             }
         }
         if (pending && !down) {
             pending = false;
-            return scrolled || threw ? Action.NONE : Action.SET_DOWN;
+            return scrolled || threw || turned ? Action.NONE : Action.SET_DOWN;
         }
         return Action.NONE;
     }
@@ -44,12 +46,17 @@ public final class GrabKeyState {
         if (pending) threw = true;
     }
 
+    /** A held Ship was Turned (use) while the key was down. */
+    public void turned() {
+        if (pending) turned = true;
+    }
+
     /** A press while holding waits for its release. */
     public boolean pending() {
         return pending;
     }
 
     public void reset() {
-        wasDown = pending = scrolled = threw = false;
+        wasDown = pending = scrolled = threw = turned = false;
     }
 }

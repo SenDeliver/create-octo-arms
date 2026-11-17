@@ -1,5 +1,6 @@
 package dev.tentaworks.rig;
 
+import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
@@ -40,6 +41,12 @@ public final class Hold {
     public static final int MAX_NOTCHES = 10;
     /** Nearest a held Ship point comes along the look. */
     public static final double SHIP_MIN = 1.0;
+    /** Overhead: the held Ship's lowest point this far above the eye, its held face this far ahead of the eye on the level. */
+    public static final double OVERHEAD_CLEAR = 0.75, OVERHEAD_FORWARD = 0.5;
+    /** Most degrees one Turn packet turns a held Ship about each axis. */
+    public static final double TURN_MAX = 30;
+    /** Half the span between the two Actuator tips on a held Ship's face, along its face tangent. */
+    public static final double GRIP_SPREAD = 0.4;
     /** Camera side of a hold: left (+1) or right (−1). */
     public static final int LEFT_SIDE = 1, RIGHT_SIDE = -1;
 
@@ -132,6 +139,40 @@ public final class Hold {
         return new Vec3(Math.min(Math.max(SHIP_MIN, rel.x + delta), far), rel.y, rel.z);
     }
 
+    /** A held Ship's hold point: {@code rel} in front of the eye ({@link #shipRel}), or Overhead ({@link #shipOverhead}). */
+    public record ShipHold(Vec3 rel, boolean overhead) {
+    }
+
+    /**
+     * The wheel on a held Ship: {@code notches} along the look ({@link #shipAlong}, at most {@value #MAX_NOTCHES}). Farther with the
+     * point already at its farthest ({@code max} from the eye) goes Overhead; nearer from Overhead comes back to that farthest spot.
+     */
+    public static ShipHold shipWheel(ShipHold hold, int notches, double max) {
+        int n = Mth.clamp(notches, -MAX_NOTCHES, MAX_NOTCHES);
+        if (n == 0) return hold;
+        Vec3 far = shipAlong(hold.rel(), Double.MAX_VALUE / 4, max);
+        if (hold.overhead()) return n < 0 ? new ShipHold(far, false) : hold;
+        if (n > 0 && hold.rel().x >= far.x - 1.0E-6) return new ShipHold(far, true);
+        return new ShipHold(shipAlong(hold.rel(), n * NOTCH, max), false);
+    }
+
+    /**
+     * Where the held face goes Overhead: {@value #OVERHEAD_FORWARD} ahead of the eye on the level of the wearer's yaw (pitch does
+     * not move it) and high enough that the hull's lowest point, {@code aboveBottom} below the face, is {@value #OVERHEAD_CLEAR}
+     * above the eye; lower where that would be farther than {@code max} from {@code body}, never above it.
+     */
+    public static Vec3 shipOverhead(Vec3 eye, float yRot, double aboveBottom, Vec3 body, double max) {
+        float yaw = yRot * Mth.DEG_TO_RAD;
+        Vec3 ahead = eye.add(-Mth.sin(yaw) * OVERHEAD_FORWARD, 0, Mth.cos(yaw) * OVERHEAD_FORWARD);
+        double y = eye.y + OVERHEAD_CLEAR + Math.max(0, aboveBottom);
+        double dx = ahead.x - body.x, dz = ahead.z - body.z, h2 = dx * dx + dz * dz;
+        if (h2 >= max * max) {
+            double k = max / Math.sqrt(h2);
+            return new Vec3(body.x + dx * k, body.y, body.z + dz * k);
+        }
+        return new Vec3(ahead.x, Math.min(y, body.y + Math.sqrt(max * max - h2)), ahead.z);
+    }
+
     /** The camera basis for this look and yaw (degrees): look direction, right, up. */
     static Vec3[] basis(Vec3 look, float yRot) {
         double len = look.length();
@@ -161,7 +202,44 @@ public final class Hold {
 
     /** The held Ship's orientation after the wearer turned by {@code yawDelta} degrees since the start: yaw follows, pitch and roll stay. */
     public static Quaterniond shipTurn(Quaterniondc start, double yawDelta) {
-        return new Quaterniond().rotateY(-Math.toRadians(yawDelta)).mul(start);
+        return shipWant(start, yawDelta, new Quaterniond());
+    }
+
+    /** The held Ship's orientation: the wearer's Turn {@code user} on the start orientation, then the wearer's yaw since the start ({@link #shipTurn}). */
+    public static Quaterniond shipWant(Quaterniondc start, double yawDelta, Quaterniondc user) {
+        return new Quaterniond().rotateY(-Math.toRadians(yawDelta)).mul(user).mul(start);
+    }
+
+    /**
+     * A Turn input on the wearer's {@code user} rotation ({@link #shipWant}), degrees each clamped to {@value #TURN_MAX}: {@code dYaw}
+     * about world up (positive: the face toward the eye turns to the wearer's right), then {@code dPitch} about the wearer's horizontal
+     * right (positive, the mouse down: that face turns down). The pitch axis is taken at {@code startYaw}, the wearer's yaw at the
+     * start: once the yaw since the start is applied it is the horizontal right of the wearer's yaw now.
+     */
+    public static Quaterniond shipTurnInput(Quaterniondc user, float startYaw, double dYaw, double dPitch) {
+        double yaw = Math.toRadians(Mth.clamp(dYaw, -TURN_MAX, TURN_MAX)), pitch = Math.toRadians(Mth.clamp(dPitch, -TURN_MAX, TURN_MAX));
+        float s = startYaw * Mth.DEG_TO_RAD;
+        Quaterniond out = new Quaterniond().rotateY(yaw).mul(user);
+        return new Quaterniond().rotateAxis(pitch, -Mth.cos(s), 0, -Mth.sin(s)).mul(out);
+    }
+
+    /**
+     * The in-face direction of a held Ship's {@code face} (both in the Ship's Frame) closest to {@code right}, the wearer's right in
+     * that Frame: the two Actuator tips grip {@value #GRIP_SPREAD} to either side of the face centre along it. With {@code right}
+     * along the face normal, the face's first in-face direction.
+     */
+    public static Direction faceTangent(Direction face, Vec3 right) {
+        Direction best = null;
+        double most = -Double.MAX_VALUE;
+        for (Direction d : Direction.values()) {
+            if (d.getAxis() == face.getAxis()) continue;
+            double dot = d.getStepX() * right.x + d.getStepY() * right.y + d.getStepZ() * right.z;
+            if (best == null || dot > most + 1.0E-9) {
+                best = d;
+                most = dot;
+            }
+        }
+        return best;
     }
 
     /** The first feet height from {@code feetY} up, in steps of {@value #LIFT_STEP} up to {@code height}, where the box {@code fits}; NaN when none does. */

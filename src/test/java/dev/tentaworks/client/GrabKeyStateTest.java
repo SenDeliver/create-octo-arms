@@ -51,6 +51,9 @@ class GrabKeyStateTest {
         k.threw();
         assertEquals(Action.NONE, k.tick(0, false, true));
         k.tick(1, true, true);
+        k.turned();
+        assertEquals(Action.NONE, k.tick(0, false, true), "a Ship Turned with the key down");
+        k.tick(1, true, true);
         assertEquals(Action.SET_DOWN, k.tick(0, false, true), "a fresh press is unscrolled again");
     }
 

@@ -1,9 +1,12 @@
 package dev.tentaworks.rig;
 
+import dev.tentaworks.rig.Hold.ShipHold;
 import dev.tentaworks.rig.Hold.Status;
+import net.minecraft.core.Direction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaterniond;
+import org.joml.Quaterniondc;
 import org.joml.Vector3d;
 import org.junit.jupiter.api.Test;
 
@@ -198,5 +201,85 @@ class HoldTest {
         Vec3 out = Hold.shipAlong(rel, 10, 4.5);
         assertEquals(4.5, out.length(), 1.0E-9, "no farther than max from the eye");
         assertEquals(0.5, out.y, 1.0E-9);
+    }
+
+    @Test
+    void oneNotchPastTheFarthestGoesOverheadAndOneNearerComesBack() {
+        Vec3 rel = new Vec3(2.0, 0.5, -0.4);
+        double far = Hold.shipAlong(rel, 99, 4.5).x;
+        ShipHold h = Hold.shipWheel(new ShipHold(rel, false), 10, 4.5);
+        assertFalse(h.overhead(), "a big flick stops at the farthest spot");
+        assertEquals(far, h.rel().x, 1.0E-9);
+        ShipHold up = Hold.shipWheel(h, 1, 4.5);
+        assertTrue(up.overhead(), "one notch past the farthest");
+        assertEquals(far, up.rel().x, 1.0E-9);
+        assertEquals(up, Hold.shipWheel(up, 3, 4.5), "farther from Overhead: stays");
+        ShipHold back = Hold.shipWheel(up, -4, 4.5);
+        assertFalse(back.overhead(), "nearer from Overhead: in front again");
+        assertEquals(far, back.rel().x, 1.0E-9, "at the farthest spot, the extra notches dropped");
+        assertEquals(0.5, back.rel().y, 1.0E-9);
+        assertEquals(new ShipHold(new Vec3(2.5, 0.5, -0.4), false), Hold.shipWheel(new ShipHold(rel, false), 1, 4.5));
+        assertFalse(Hold.shipWheel(new ShipHold(new Vec3(far - 0.2, 0.5, -0.4), false), 1, 4.5).overhead(), "short of the farthest: only up to it");
+    }
+
+    @Test
+    void overheadTheHullClearsTheEyeAheadOnTheLevel() {
+        Vec3 body = EYE.subtract(0, 0.72, 0);
+        for (float yaw = -180; yaw < 180; yaw += 30) {
+            Vec3 p = Hold.shipOverhead(EYE, yaw, 1.5, body, 6.5);
+            assertEquals(EYE.y + Hold.OVERHEAD_CLEAR + 1.5, p.y, 1.0E-9, "the lowest point 0.75 above the eye");
+            Vec3 flat = Vec3.directionFromRotation(0, yaw);
+            assertEquals(Hold.OVERHEAD_FORWARD, p.subtract(EYE).dot(flat), 1.0E-4, "ahead on the level, yaw " + yaw);
+            assertEquals(0, p.subtract(EYE).multiply(1, 0, 1).subtract(flat.scale(Hold.OVERHEAD_FORWARD)).length(), 1.0E-4);
+        }
+        assertEquals(EYE.y + Hold.OVERHEAD_CLEAR, Hold.shipOverhead(EYE, 0, -1, body, 6.5).y, 1.0E-9, "a face at the bottom: the face clears");
+        Vec3 tall = Hold.shipOverhead(EYE, 0, 9, body, 6.5);
+        assertEquals(6.5, tall.distanceTo(body), 1.0E-9, "a hull too tall to clear goes as high as Reach allows");
+        assertTrue(tall.y < EYE.y + Hold.OVERHEAD_CLEAR + 9);
+        assertTrue(Hold.shipOverhead(EYE, 0, 1, EYE.add(20, 0, 0), 6.5).distanceTo(EYE.add(20, 0, 0)) <= 6.5 + 1.0E-9);
+    }
+
+    private static double angle(Quaterniondc a, Quaterniondc b) {
+        Quaterniond d = new Quaterniond(a).mul(new Quaterniond(b).conjugate());
+        return Math.toDegrees(2 * Math.acos(Math.min(1, Math.abs(d.w))));
+    }
+
+    @Test
+    void turningMovesTheFaceTowardTheEyeLikeADrag() {
+        Vector3d towardEye = new Vector3d(0, 0, -1);
+        Quaterniond yaw = Hold.shipTurnInput(new Quaterniond(), 0, 10, 0);
+        Vector3d n = yaw.transform(new Vector3d(towardEye));
+        assertTrue(n.x < -0.1 && Math.abs(n.y) < 1.0E-9, "facing +z the right is -x: the face turns right " + n);
+        Vector3d p = Hold.shipTurnInput(new Quaterniond(), 0, 0, 10).transform(new Vector3d(towardEye));
+        assertTrue(p.y < -0.1 && Math.abs(p.x) < 1.0E-9, "mouse down: the face turns down " + p);
+        assertEquals(Hold.TURN_MAX, angle(Hold.shipTurnInput(new Quaterniond(), 0, 500, 0), new Quaterniond()), 1.0E-4, "clamped");
+    }
+
+    @Test
+    void aTurnIsInTheWearersViewNowWhereverTheyTurnedSinceTheStart() {
+        Quaterniond start = new Quaterniond().rotateX(0.3).rotateZ(0.2);
+        float startYaw = -90;
+        Quaterniond user = new Quaterniond().rotateY(0.4).rotateX(-0.2);
+        for (double since : new double[] {0, 90, -135, 200}) {
+            Quaterniond before = Hold.shipWant(start, since, user);
+            Quaterniond after = Hold.shipWant(start, since, Hold.shipTurnInput(user, startYaw, 12, -7));
+            double yaw = Math.toRadians(startYaw + since);
+            Vec3 right = new Vec3(-Math.cos(yaw), 0, -Math.sin(yaw));
+            Quaterniond expect = new Quaterniond().rotateAxis(Math.toRadians(-7), right.x, right.y, right.z).mul(new Quaterniond().rotateY(Math.toRadians(12))).mul(before);
+            assertEquals(0, angle(after, expect), 1.0E-4, "yaw since the start " + since);
+        }
+        assertEquals(0, angle(Hold.shipWant(start, 33, new Quaterniond()), Hold.shipTurn(start, 33)), 1.0E-4, "no Turn: the yaw follow alone");
+    }
+
+    @Test
+    void theTipsGripAlongTheFaceDirectionClosestToTheWearersRight() {
+        assertEquals(Direction.WEST, Hold.faceTangent(Direction.NORTH, new Vec3(-1, 0, 0)));
+        assertEquals(Direction.EAST, Hold.faceTangent(Direction.SOUTH, new Vec3(0.9, 0.1, 0.4)));
+        assertEquals(Direction.SOUTH, Hold.faceTangent(Direction.UP, new Vec3(0.3, 0.9, 0.7)), "a top face: the level direction, up ignored");
+        assertEquals(Direction.DOWN, Hold.faceTangent(Direction.EAST, new Vec3(0.1, -0.8, 0)), "a Ship on its side: down");
+        for (Direction face : Direction.values()) {
+            Direction t = Hold.faceTangent(face, Vec3.atLowerCornerOf(face.getNormal()));
+            assertTrue(t != null && t.getAxis() != face.getAxis(), "right along the normal: still in the face " + face + " " + t);
+        }
     }
 }
