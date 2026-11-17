@@ -102,6 +102,8 @@ import java.util.function.Consumer;
  * all that holds the wearer up is refused ({@link GrabRule#holdsUp}): one Grip off it is enough, the wearer's Grips on it let go
  * at the Grab and whenever the build grows ({@link RigServer#letGo}) and none hold on to it or hold the wearer up while it is
  * held. A held build the wearer comes to stand on is let go (underfoot).
+ * The build's mass, read every tick, slows the hold, the wearer, the Turn and the Throw ({@link ShipWeight}); past the mass cap
+ * with its margin the build is let go (mass).
  * Every hold ends in {@link #release}: set down where it is (calm for {@value #CALM_TICKS} ticks, onto a seat, boat or minecart
  * when one is under the crosshair or the target) or thrown (awake at once, its Impact armed, {@link ActuatorFxPacket} THROW to
  * the clients). The automatic ends are
@@ -166,6 +168,8 @@ public final class Grab {
         double[] bank = {0, 0};
         List<ShipBody> parts = List.of();
         Set<Object> build = Set.of();
+        double buildMass = -1;
+        ShipWeight.Factors weight = ShipWeight.Factors.NONE;
 
         Held(@Nullable Entity target, boolean heavy, HoldArm arm) {
             this.target = target;
@@ -356,6 +360,37 @@ public final class Grab {
 
     public static double heavyFactor() {
         return TentaworksConfig.value(TentaworksConfig.GRAB_HEAVY_SPEED_FACTOR);
+    }
+
+    /**
+     * The wearer's walking and Rig Speed factor while holding: {@link #heavyFactor} for a heavy mob, times the Build's walk factor
+     * for a Ship ({@link ShipWeight}), 1 otherwise. The wearer's client gets the same number ({@link ActuatorStatePacket}).
+     */
+    public static double speedFactor(Player wearer) {
+        Held h = HOLDS.get(wearer.getUUID());
+        return speedFactor(h);
+    }
+
+    private static double speedFactor(@Nullable Held h) {
+        return h == null || !h.heavy ? 1.0 : heavyFactor() * h.weight.walk();
+    }
+
+    /** Sable mass of the held Ship's Build, -1 when none (dev trace). */
+    public static double shipBuildMass(ServerPlayer wearer) {
+        Held h = HOLDS.get(wearer.getUUID());
+        return h == null || h.ship == null ? -1 : h.buildMass;
+    }
+
+    /** The held Ship's weight factors ({@link ShipWeight}), NONE when none (dev trace). */
+    public static ShipWeight.Factors shipWeight(ServerPlayer wearer) {
+        Held h = HOLDS.get(wearer.getUUID());
+        return h == null || h.ship == null ? ShipWeight.Factors.NONE : h.weight;
+    }
+
+    private static ShipWeight.Curve weightCurve() {
+        return new ShipWeight.Curve(TentaworksConfig.value(TentaworksConfig.GRAB_MASS_KNEE), TentaworksConfig.value(TentaworksConfig.GRAB_MASS_FLOOR_SERVO),
+                TentaworksConfig.value(TentaworksConfig.GRAB_MASS_FLOOR_WALK), TentaworksConfig.value(TentaworksConfig.GRAB_MASS_FLOOR_TURN),
+                TentaworksConfig.value(TentaworksConfig.GRAB_MASS_FLOOR_THROW));
     }
 
     public static void logout(ServerPlayer wearer) {
@@ -557,14 +592,16 @@ public final class Grab {
         if (why == null && shipHeldByAnyone(ship.id())) why = "held";
         List<ShipBody> parts = why == null ? parts(level, ship) : List.of();
         if (why == null && own(wearer, parts)) why = key(GrabRule.Verdict.OWN);
-        if (why == null && !(mass >= 0 && mass <= TentacleRigItem.wornTier(wearer).massCap())) why = "mass";
+        double total = why == null ? mass(parts) : -1;
+        double cap = TentacleRigItem.wornTier(wearer).massCap();
+        if (why == null && !(mass >= 0 && total <= cap)) why = "mass";
         if (why == null && body.distanceTo(frame.toWorld(local)) > TentacleRigItem.reach(wearer) + GrabRule.SLACK) why = "too_far";
         if (why == null && !Grips.visible(level, frame.toLocal(body), local, face, true)) why = "no_sight";
         if (why == null && crewed(wearer, frame)) why = "crewed";
         if (why == null && arm(wearer, 2) == HoldArm.NONE) why = key(GrabRule.hands(2));
         if (why == null && claimed(wearer, block, face, frame.toWorld(Vec3.atCenterOf(block)))) why = "claimed";
         if (why != null) {
-            refuse(wearer, null, why, mass);
+            refuse(wearer, null, why, "mass".equals(why) && mass >= 0 ? total : mass);
             return;
         }
         Held h = new Held(null, true, HoldArm.BOTH);
@@ -586,6 +623,8 @@ public final class Grab {
         h.hands = new ShipHands(local.subtract(t), local.add(t), Vec3.atLowerCornerOf(face.getNormal()), h.user);
         h.parts = parts;
         h.build = ids(parts);
+        h.buildMass = total;
+        h.weight = ShipWeight.of(total, cap, weightCurve());
         HOLDS.put(wearer.getUUID(), h);
         heavySpeed(wearer, true);
         listener.accept(new Event(wearer, "start", null, "ship", 2, 0, mass));
@@ -645,6 +684,16 @@ public final class Grab {
         return out;
     }
 
+    /** Sable mass of the Ships of a build, those still there; an unknown one counts nothing. */
+    private static double mass(List<ShipBody> parts) {
+        double m = 0;
+        for (ShipBody b : parts) {
+            double bm = b.alive() ? b.mass() : -1;
+            if (bm > 0) m += bm;
+        }
+        return m;
+    }
+
     private static List<Frame> frames(List<ShipBody> parts) {
         List<Frame> out = new ArrayList<>(parts.size());
         for (ShipBody b : parts) if (b.alive()) out.add(b.frame());
@@ -652,18 +701,35 @@ public final class Grab {
     }
 
     /**
-     * Each tick of a Ship hold, before anything else: the build is found again. When it grew the wearer's Grips on the new Ships let
-     * go ({@link RigServer#letGo}); any change is told to the clients, which drop their Grips on it too.
+     * Each tick of a Ship hold, before anything else: the build is found again and weighed. Past the mass cap
+     * ({@link ShipWeight#over}) it is let go ("mass", with the refusal line), false. When it grew the wearer's Grips on the new Ships
+     * let go ({@link RigServer#letGo}); the weight factors follow its mass ({@link ShipWeight}); any change is told to the clients,
+     * which drop their Grips on it too and take the new speed factor.
      */
-    private static void reweigh(ServerPlayer wearer, Held h) {
+    private static boolean reweigh(ServerPlayer wearer, Held h) {
         List<ShipBody> parts = parts(h.level, h.ship);
         Set<Object> build = ids(parts);
         boolean grew = !h.build.containsAll(build);
         boolean changed = !build.equals(h.build);
+        double total = mass(parts);
+        double cap = TentacleRigItem.wornTier(wearer).massCap();
         h.parts = parts;
         h.build = build;
+        h.buildMass = total;
+        if (ShipWeight.over(total, cap)) {
+            release(wearer, "mass", null);
+            reply(wearer, TentaworksLang.refusalKey(TentaworksLang.GRAB, "mass"));
+            return false;
+        }
+        ShipWeight.Factors weight = ShipWeight.of(total, cap, weightCurve());
+        boolean walk = weight.walk() != h.weight.walk();
+        boolean slower = weight.walk() < h.weight.walk();
+        h.weight = weight;
         if (grew) RigServer.letGo(wearer);
-        if (changed) changed(wearer);
+        if (slower) RigServer.resetSpeedWindow(wearer);
+        if (walk) speedModifier(wearer, true);
+        if (changed || walk) changed(wearer);
+        return true;
     }
 
     private static Vec3 vec(Vector3dc v) {
@@ -681,7 +747,8 @@ public final class Grab {
             return;
         }
         if (!Double.isFinite(look.x) || !Double.isFinite(look.y) || !Double.isFinite(look.z) || look.lengthSqr() < 1.0E-6) look = wearer.getViewVector(1.0F);
-        double speed = Actuators.throwSpeed(RigAir.worn(wearer));
+        Held h = HOLDS.get(wearer.getUUID());
+        double speed = Actuators.throwSpeed(RigAir.worn(wearer)) * (h.ship != null ? h.weight.hurl() : 1.0);
         Vec3 velocity = look.normalize().scale(speed);
         RigAir.pay(wearer, Actuators.throwCost(wearer));
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(wearer, ActuatorFxPacket.thrown(wearer.getId(), velocity));
@@ -818,13 +885,17 @@ public final class Grab {
         return target.isPassenger();
     }
 
-    /** Walking and Rig Speed at {@code grab.heavySpeedFactor} while a heavy target is held (a transient modifier, never saved). */
+    /** Walking and Rig Speed at {@link #speedFactor} while a heavy target or a Ship is held (a transient modifier, never saved). */
     private static void heavySpeed(ServerPlayer wearer, boolean on) {
         RigServer.resetSpeedWindow(wearer);
+        speedModifier(wearer, on);
+    }
+
+    private static void speedModifier(ServerPlayer wearer, boolean on) {
         AttributeInstance speed = wearer.getAttribute(Attributes.MOVEMENT_SPEED);
         if (speed == null) return;
         speed.removeModifier(HEAVY_ID);
-        if (on) speed.addTransientModifier(new AttributeModifier(HEAVY_ID, heavyFactor() - 1, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+        if (on) speed.addTransientModifier(new AttributeModifier(HEAVY_ID, speedFactor(wearer) - 1, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
     }
 
     private static ActuatorStatePacket state(ServerPlayer wearer, String refusal) {
@@ -835,7 +906,7 @@ public final class Grab {
         for (Object id : h.build) if (id instanceof UUID u) build.add(u);
         return new ActuatorStatePacket(wearer.getId(), h.target == null ? -1 : h.target.getId(), h.heavy, h.ship == null ? null : h.block,
                 h.ship == null ? Direction.UP : h.face, refusal, h.arm, h.told, h.ship != null && h.overhead, h.tangent,
-                tip(h, ShipHands.LEFT), tip(h, ShipHands.RIGHT), List.copyOf(build));
+                tip(h, ShipHands.LEFT), tip(h, ShipHands.RIGHT), List.copyOf(build), speedFactor(h));
     }
 
     /** Tip {@code i} of a held Ship for the clients, relative to the held block; {@link ActuatorStatePacket.Tip#NONE} for a mob. */
@@ -867,7 +938,7 @@ public final class Grab {
                 if (h.ship != null && h.ship.alive()) h.ship.velocity(Vec3.ZERO, Vec3.ZERO);
                 continue;
             }
-            if (h.ship != null && h.ship.alive()) reweigh(wearer, h);
+            if (h.ship != null && h.ship.alive() && !reweigh(wearer, h)) continue;
             String why = Hold.ends(status(wearer, h));
             if (why != null) {
                 release(wearer, why, null);
@@ -887,7 +958,7 @@ public final class Grab {
                 || h.arm.uses(InteractionHand.OFF_HAND) && !wearer.getOffhandItem().isEmpty();
         boolean underfoot = h.ship != null && !gone && level == wearer.level() && holdsUp(wearer, frames(h.parts), RigServer.state(wearer).carries(), RigServer.grips(wearer));
         return new Hold.Status(wearer.isAlive(), Actuators.fitted(wearer), RigAir.has(wearer), RigServer.state(wearer) == RigState.CRAWL, gone,
-                level == wearer.level(), h.far, full, underfoot);
+                level == wearer.level(), h.far, full, underfoot, h.ship != null ? ShipWeight.farTicks(Hold.FAR_TICKS, h.weight.servo()) : Hold.FAR_TICKS);
     }
 
     private static void holdMob(ServerPlayer wearer, Held h) {
@@ -931,7 +1002,7 @@ public final class Grab {
     private static void holdShip(ServerPlayer wearer, Held h) {
         Frame f = h.ship.frame();
         float yaw = wearer.getYRot();
-        double[] step = Hold.turnStep(h.bank, h.hands.reaching());
+        double[] step = Hold.turnStep(h.bank, h.hands.reaching(), Hold.TURN_RATE * h.weight.turn());
         if (step[0] != 0 || step[1] != 0) {
             h.user = Hold.shipTurnInput(h.user, h.yaw, step[0], step[1]).normalize();
             h.bank = new double[] {h.bank[0] - step[0], h.bank[1] - step[1]};
@@ -958,10 +1029,11 @@ public final class Grab {
         Vec3 spin = h.lastWant == null ? Vec3.ZERO : rotation(new Quaterniond(want).mul(new Quaterniond(h.lastWant).conjugate())).scale(20);
         h.lastAim = aim;
         h.lastWant = want;
-        Vec3 v = feed.add(aim.subtract(vec(f.pose().position())).scale(SHIP_GAIN));
-        if (v.length() > SHIP_MAX_SPEED) v = v.normalize().scale(SHIP_MAX_SPEED);
+        double servo = h.weight.servo();
+        Vec3 v = feed.add(aim.subtract(vec(f.pose().position())).scale(SHIP_GAIN * servo));
+        if (v.length() > SHIP_MAX_SPEED * servo) v = v.normalize().scale(SHIP_MAX_SPEED * servo);
         Vec3 err = rotation(new Quaterniond(want).mul(new Quaterniond(f.pose().orientation()).conjugate()));
-        h.ship.velocity(v, err.scale(SHIP_GAIN).add(spin));
+        h.ship.velocity(v, err.scale(SHIP_GAIN * servo).add(spin));
         h.centre = f.toWorld(h.local);
         far(wearer, h, nearestTip(h, f, Grips.body(wearer)));
     }

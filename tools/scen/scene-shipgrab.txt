@@ -1,8 +1,10 @@
-# Ship Grab scenes (x 11400..11510). Needs GRADLE_ARGS=-PwithSable TW_PREBOOT=0. Flat world: ground top at y=-60.
+# Ship Grab scenes (x 11400..11600). Needs GRADLE_ARGS=-PwithSable TW_PREBOOT=0. Flat world: ground top at y=-60.
 # sg: solid 3x3x3 stone cube (Sable mass 54: stone weighs 2); sh: hollow 5x5x5 (mass 196), refused once grab.massCap.netherite is 100; sc: solid 3x3x3 with Dev2 on board.
 # sd: a 9x1x9 stone deck (mass 162) whose west edge rests against a world wall (x 11465, 3 blocks above the deck): O own Ship.
 # so: solid 3x3x3 stone cube: V Overhead and Turn.
 # sx: solid 3x3x3 stone cube: X Actuators working on a Ship.
+# se: a 9x1x9 stone deck (mass 162) with the 3x3x3 crate sa resting on it (one Build) and the crate sb on the ground 1 east of its edge (separate): S.
+# sw: solid 6x6x6 stone (mass 432): H heavy Ship.
 gamerule doDaylightCycle false
 gamerule doWeatherCycle false
 gamerule doImmediateRespawn true
@@ -32,11 +34,27 @@ fill 11506 -60 -1 11508 -58 1 minecraft:stone
 sable assemble area 11506 -60 -1 11508 -58 1
 execute positioned 11507.5 -58.5 0.5 run sable name set @n so
 sable forceload add @e[name=so]
-forceload add 11521 -20 11540 20
+forceload add 11521 -20 11600 20
 fill 11526 -60 -1 11528 -58 1 minecraft:stone
 sable assemble area 11526 -60 -1 11528 -58 1
 execute positioned 11527.5 -58.5 0.5 run sable name set @n sx
 sable forceload add @e[name=sx]
+fill 11586 -60 -4 11594 -60 4 minecraft:stone
+sable assemble area 11586 -60 -4 11594 -60 4
+execute positioned 11590.5 -59.5 0.5 run sable name set @n se
+sable forceload add @e[name=se]
+fill 11591 -59 -1 11593 -57 1 minecraft:stone
+sable assemble area 11591 -59 -1 11593 -57 1
+execute positioned 11592.5 -57.5 0.5 run sable name set @n sa
+sable forceload add @e[name=sa]
+fill 11596 -60 -1 11598 -58 1 minecraft:stone
+sable assemble area 11596 -60 -1 11598 -58 1
+execute positioned 11597.5 -58.5 0.5 run sable name set @n sb
+sable forceload add @e[name=sb]
+fill 11560 -60 -2 11565 -55 3 minecraft:stone
+sable assemble area 11560 -60 -2 11565 -55 3
+execute positioned 11563.0 -57.0 1.0 run sable name set @n sw
+sable forceload add @e[name=sw]
 op Dev
 op Dev2
 tentaworks trace on

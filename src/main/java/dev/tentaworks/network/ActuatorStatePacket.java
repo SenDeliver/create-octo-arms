@@ -21,12 +21,15 @@ import java.util.UUID;
  * {@code distance} the hold distance along the look (blocks, 0 none), {@code overhead} a Ship held Overhead, {@code shipTangent} the
  * in-face direction of the held face the two tips took hold along at the Grab (its Frame, toward the wearer's right), {@code left} and
  * {@code right} the body-left and body-right tips on a held Ship ({@link Tip}), {@code build} the ids of the held Ship's build
- * (the held Ship first, then the Ships touching it: no Grip on them holds the wearer up, {@code ShipBuild}; empty for a mob). To the wearer after every
+ * (the held Ship first, then the Ships touching it: no Grip on them holds the wearer up, {@code ShipBuild}; empty for a mob), {@code speed}
+ * the wearer's walking and Rig Speed factor while holding ({@code grab.heavySpeedFactor} for a heavy mob, times the Build's
+ * {@code ShipWeight} walk factor for a Ship; 1 for a light mob or nothing). To the wearer after every
  * Grab request, with {@code refusal} the lang key of the action-bar line when it was refused (empty otherwise); to trackers on
  * every change and on start of tracking.
  */
 public record ActuatorStatePacket(int entityId, int heldId, boolean heavy, @Nullable BlockPos ship, Direction shipFace, String refusal,
-                                  HoldArm arm, float distance, boolean overhead, Direction shipTangent, Tip left, Tip right, List<UUID> build)
+                                  HoldArm arm, float distance, boolean overhead, Direction shipTangent, Tip left, Tip right, List<UUID> build,
+                                  double speed)
         implements CustomPacketPayload {
     /**
      * One tip on a held Ship: where it holds ({@code at}) or reaches to, and where it reached from, both in the Ship's plot space
@@ -79,6 +82,7 @@ public record ActuatorStatePacket(int entityId, int heldId, boolean heavy, @Null
                 Tip.write(buf, p.right);
                 buf.writeVarInt(Math.min(p.build.size(), MAX_BUILD));
                 for (int i = 0; i < Math.min(p.build.size(), MAX_BUILD); i++) buf.writeUUID(p.build.get(i));
+                buf.writeDouble(p.speed);
             },
             buf -> {
                 int entity = buf.readVarInt();
@@ -96,11 +100,13 @@ public record ActuatorStatePacket(int entityId, int heldId, boolean heavy, @Null
                 if (n < 0 || n > MAX_BUILD) throw new IllegalArgumentException("Ship build of " + n);
                 List<UUID> build = new ArrayList<>(n);
                 for (int i = 0; i < n; i++) build.add(buf.readUUID());
-                return new ActuatorStatePacket(entity, held, heavy, ship, face, refusal, arm, distance, overhead, tangent, left, right, List.copyOf(build));
+                double speed = buf.readDouble();
+                if (!(speed > 0 && speed <= 1)) throw new IllegalArgumentException("speed factor " + speed);
+                return new ActuatorStatePacket(entity, held, heavy, ship, face, refusal, arm, distance, overhead, tangent, left, right, List.copyOf(build), speed);
             });
 
     public static ActuatorStatePacket empty(int entityId, String refusal) {
-        return new ActuatorStatePacket(entityId, -1, false, null, Direction.UP, refusal, HoldArm.NONE, 0, false, Direction.NORTH, Tip.NONE, Tip.NONE, List.of());
+        return new ActuatorStatePacket(entityId, -1, false, null, Direction.UP, refusal, HoldArm.NONE, 0, false, Direction.NORTH, Tip.NONE, Tip.NONE, List.of(), 1);
     }
 
     @Override

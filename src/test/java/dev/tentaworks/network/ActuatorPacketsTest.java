@@ -37,21 +37,22 @@ class ActuatorPacketsTest {
     void actuatorStateCarriesTheArmAndDistance() {
         for (HoldArm arm : HoldArm.values()) {
             ActuatorStatePacket p = new ActuatorStatePacket(3, 12, arm == HoldArm.BOTH, null, Direction.UP, "", arm, 2.55F, false, Direction.NORTH,
-                    ActuatorStatePacket.Tip.NONE, ActuatorStatePacket.Tip.NONE, List.of());
+                    ActuatorStatePacket.Tip.NONE, ActuatorStatePacket.Tip.NONE, List.of(), arm == HoldArm.BOTH ? 0.6 : 1);
             assertEquals(p, trip(ActuatorStatePacket.STREAM_CODEC, p));
         }
         ActuatorStatePacket ship = new ActuatorStatePacket(3, -1, true, new BlockPos(5, -59, 2), Direction.WEST, "", HoldArm.BOTH, 1.5F, false, Direction.SOUTH,
                 new ActuatorStatePacket.Tip(new Vec3(0.5, 0.5, -0.25), new Vec3(0.5, 0.5, -0.25), -1),
                 new ActuatorStatePacket.Tip(new Vec3(1.0, 1.75, 0.5), new Vec3(0.5, 0.5, 0.75), 3),
-                List.of(new UUID(1, 2), new UUID(-3, 4), new UUID(5, -6)));
+                List.of(new UUID(1, 2), new UUID(-3, 4), new UUID(5, -6)), 0.6 * 0.76);
         assertEquals(ship, trip(ActuatorStatePacket.STREAM_CODEC, ship));
         ActuatorStatePacket overhead = new ActuatorStatePacket(3, -1, true, new BlockPos(5, -59, 2), Direction.UP, "", HoldArm.BOTH, 6.5F, true, Direction.EAST,
-                new ActuatorStatePacket.Tip(new Vec3(-0.5, 0, 0.5), new Vec3(0.5, 0, 0.5), 0), ActuatorStatePacket.Tip.NONE, List.of(new UUID(7, 8)));
+                new ActuatorStatePacket.Tip(new Vec3(-0.5, 0, 0.5), new Vec3(0.5, 0, 0.5), 0), ActuatorStatePacket.Tip.NONE, List.of(new UUID(7, 8)), 0.15);
         assertEquals(overhead, trip(ActuatorStatePacket.STREAM_CODEC, overhead));
         ActuatorStatePacket.Tip back = trip(ActuatorStatePacket.STREAM_CODEC, ship).right();
         assertEquals(3, back.reach(), "the right tip reaching, 3 ticks in");
         assertEquals(new Vec3(0.5, 0.5, 0.75), back.from(), "from where it held");
         assertEquals(List.of(new UUID(1, 2), new UUID(-3, 4), new UUID(5, -6)), trip(ActuatorStatePacket.STREAM_CODEC, ship).build(), "the build, held Ship first");
+        assertEquals(0.6 * 0.76, trip(ActuatorStatePacket.STREAM_CODEC, ship).speed(), "the speed factor, exact");
     }
 
     @Test

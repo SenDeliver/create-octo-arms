@@ -34,6 +34,22 @@ overlay = [(int(g), t) for g, t in re.findall(r'OVERLAY gt=(\d+) text="([^"]*)"'
 wearer = {int(g): sh for g, sh in re.findall(r'TRACE t=\d+ gt=(\d+) .*? gship=(\S+) far=', c)}
 seen = {int(g): sh for g, sh in re.findall(r'RWALK gt=(\d+) name=Dev .*? gship=(\S+) hmob=', c2)}
 
+def weigh(m, cap, knee=20.0, floors=(0.1, 0.25, 0.15, 0.1)):
+    x = 0.0 if m <= 0 else 1.0 if cap <= 0 else max(0.0, min(1.0, math.log1p(m / knee) / math.log1p(cap / knee)))
+    return tuple(max(0.01, math.floor((1 - (1 - f) * x) / 0.01 + 0.5) * 0.01) for f in floors)
+
+WRE = r'gbuild=(\d+) gbmass=(\S+) gservo=(\S+) gwalk=(\S+) gturn=(\S+) gthrow=(\S+)'
+def wfields(mm, i):
+    return dict(build=int(mm[i]), bmass=float(mm[i + 1]), servo=float(mm[i + 2]), walk=float(mm[i + 3]), turn=float(mm[i + 4]), hurl=float(mm[i + 5]))
+wtick = {int(mm[1]): wfields(mm, 2) for mm in re.finditer(r'STRACE gt=(\d+) Dev .*? ' + WRE, s)}
+wmark = {mm[1]: dict(wfields(mm, 3), gt=int(mm[2])) for mm in re.finditer(r'SPOS (\S+) gt=(\d+) Dev .*? ' + WRE, s)}
+W54 = weigh(54, 6000)
+peak_so = 0.0
+bk = {int(g): tuple(map(float, b.split(','))) for g, b in re.findall(r'STRACE gt=(\d+) Dev .*? gbank=(\S+,\S+) gcorr', s)}
+
+def turn_steps(a, b):
+    return [bk[g - 1][0] - bk[g][0] for g in range(a + 1, b + 1) if g in bk and g - 1 in bk and bk[g - 1][0] - bk[g][0] > 1e-6]
+
 def at(name, gt):
     t = ships.get(name, {})
     g = min(t, key=lambda k: abs(k - gt), default=None)
@@ -63,8 +79,12 @@ pf = re.findall(r'SFAR gt=(\d+) Dev kind=rclick at=\S+ .*? far=(\w+) sight=\w+ a
 pf = [x for x in pf if st and int(x[0]) == st[0]['gt']]
 check('K1 the Ship block click is left to Sable (PLOT, not cancelled), claim probe asks', pf and pf[0][1] == 'PLOT' and pf[0][2] == 'true' and pf[0][3] == 'false', f'{pf}')
 ca = cact.get('k1', {})
-check('K1 heavy hold: speed x0.6, HUD line', k1['heavy'] and abs(k1['mspd'] - 0.06) < 1e-4 and ca.get('heavy') and abs(ca.get('speed', 0) - 0.6) < 1e-3
-      and ca.get('hud') == 'Holding Ship heavy', f"mspd {k1['mspd']} {ca}")
+w1 = wmark.get('k1', {})
+check('K1 the Build is sg alone (mass 54), its weight factors as the curve says (servo 0.79, walk 0.83, Turn 0.81, Throw 0.79)',
+      w1.get('build') == 1 and abs(w1.get('bmass', 0) - 54) < 0.5 and all(abs(a - b) < 1e-9 for a, b in zip(W54, (0.79, 0.83, 0.81, 0.79)))
+      and all(abs(w1.get(k, 0) - v) < 1e-3 for k, v in (('servo', W54[0]), ('turn', W54[2]), ('hurl', W54[3]))) and abs(w1.get('walk', 0) - 0.6 * W54[1]) < 1e-3, f'{w1} curve {W54}')
+check('K1 heavy hold: speed x0.6 x0.83 = 0.498 (server attribute, client factor), HUD line', k1['heavy'] and abs(k1['mspd'] - 0.1 * 0.6 * W54[1]) < 1e-4 and ca.get('heavy')
+      and abs(ca.get('speed', 0) - 0.6 * W54[1]) < 6e-3 and ca.get('hud') == 'Holding Ship heavy', f"mspd {k1['mspd']} {ca}")
 def rot(q, v):
     x, y, z, w = q
     t = (2 * (y * v[2] - z * v[1]), 2 * (z * v[0] - x * v[2]), 2 * (x * v[1] - y * v[0]))
@@ -101,7 +121,7 @@ th = kind('throw')
 t0, t1 = at('sg', spos['kt0']['gt']), at('sg', spos['kt1']['gt'])
 fly = [at('sg', g) for g in range(th[0]['gt'] + 1, th[0]['gt'] + 6)] if th else []
 v0 = max((math.hypot(*f['v']) / 20 for f in fly if f), default=0)
-check('K4 Throw: 1.2 b/t, the Ship flies', th and abs(th[0]['speed'] - 1.2) < 1e-3 and v0 >= 0.96 and math.dist(t0['pos'], t1['pos']) > 2,
+check('K4 Throw: 1.2 x0.79 = 0.948 b/t, the Ship flies', th and abs(th[0]['speed'] - 1.2 * W54[3]) < 1e-3 and v0 >= 0.8 * 1.2 * W54[3] and math.dist(t0['pos'], t1['pos']) > 2,
       f"{th[:1]} peak {v0:.3f} b/t, moved {math.dist(t0['pos'], t1['pos']):.2f}")
 held = [g for g, sh in wearer.items() if sh == k1['ship']]
 same = [g for g in held if seen.get(g) == k1['ship']]
@@ -270,6 +290,9 @@ else:
     check('V1 the Grab key + wheel 10: the farthest spot in front, not Overhead, the gauge chevron dim', w10 and w10[0]['canceled'] and not V['v1']['over']
           and V['v1']['dist'] > V['v0']['dist'] + 1 and abs(V['v1']['so']['pos'][1] - eye1) < 0.5 and chud.get('v1', {}).get('ocap') == 'dim',
           f"gdist {V['v0']['dist']:.2f} -> {V['v1']['dist']:.2f}, ship y - eye {V['v1']['so']['pos'][1] - eye1:.3f}, hud {chud.get('v1')}")
+    sop = ships['so']
+    peak_so = max((math.dist(sop[g]['pos'], sop[g - 1]['pos']) for g in range(V['v0']['gt'] + 1, V['v1']['gt'] + 1) if g in sop and g - 1 in sop), default=0)
+    check('V1 the wheel step of the light so: its top speed at the servo cap (30 x0.79 b/s = 1.185 b/t)', 1.0 < peak_so <= 1.5 * W54[0] * 1.05 + 0.02, f'peak {peak_so:.3f} b/t')
     eye2 = V['v2']['pos'][1] + 1.62
     clear = (V['v2']['bot'] if V['v2']['bot'] is not None else -99) - eye2
     hull = V['v2']['so']['pos'][1] - 1.5 - eye2
@@ -285,6 +308,9 @@ else:
     check('V4 the Grab key + use: every mouse move turns the Ship, the camera stays (yaw and pitch unchanged), the rotate glyph shows, the gauge hides',
           len(tu) == 5 and all(x['active'] for x in tu) and still < 1e-3 and chud.get('v4a', {}).get('turn') and chud['v4a']['gauge'] == '-',
           f"{len(tu)} moves, active {[x['active'] for x in tu]}, camera change max {still:.4f}, hud {chud.get('v4a')}")
+    ts4 = turn_steps(V['v3']['gt'], V['v4']['gt'])
+    check('V4 the light so turns at most 9 x0.81 = 7.29 degrees a tick, and that fast once', ts4 and max(ts4) <= 9 * W54[2] + 0.01 and max(ts4) >= 9 * W54[2] - 0.05,
+          f'steps {[round(x, 2) for x in ts4]}')
     q3, q4, q5, q6 = (V[k]['so']['q'] for k in ('v3', 'v4', 'v5', 'v6'))
     r4 = qmul(q4, qinv(q3))
     u4 = V['v4']['user']
@@ -410,6 +436,76 @@ else:
         gap2 = max((x[1] for x in tr2 if g0 <= x[0] <= g1), default=-1)
         check(f'{what}: no frozen tick (TRACE tms < {X_GAP} ms) on the wearer\'s client and on Dev2\'s', 0 <= gap < X_GAP and 0 <= gap2 < X_GAP,
               f"wearer max {gap} ms, Dev2 max {gap2} ms")
+print('== S touching and separate Ships (Copper Rig on the deck se)')
+if 'se' not in ships or 's1' not in mk:
+    check('S section ran', False, f"marks {sorted(mk)} ships {sorted(ships)}")
+else:
+    r1 = after('s1', 'refuse')
+    check('S1 Stowed on the deck, Grab the crate sa resting on it: refused (own, the deck is in its Build), cue REFUSED',
+          mk['s1']['state'] == 'STOWED' and r1 and r1[0][1] < mk.get('s2', {}).get('gt', 1 << 60) and r1[0][3] == 'own' and noted(OWN, r1[0][1]) and aff('s1') == 'REFUSED',
+          f"state {mk['s1']['state']} {r1[:1]} cue {aff('s1')}")
+    s2 = mk.get('s2', {})
+    r2 = after('s2', 'refuse')
+    st2 = [x for x in after('s2', 'start') if x[1] < mk.get('s3', {}).get('gt', 1 << 60)]
+    check('S2 Active, every Grip on the deck or sa: refused (own), a Grip on a Ship touching the held one does not hold the wearer up',
+          s2.get('state') == 'ACTIVE' and s2.get('grips', 0) >= 2 and s2.get('sgrips') == s2.get('grips') and r2 and r2[0][3] == 'own' and not st2,
+          f"{s2} {r2[:1]} starts {st2[:1]}")
+    st3 = after('s3', 'start')
+    s3 = mk.get('s3', {})
+    if st3:
+        g3 = st3[0][1]
+        e3 = mk.get('s3e', {}).get('gt', g3)
+        ws3 = [wtick[g] for g in range(g3 + 1, e3 + 1) if g in wtick]
+        rl3 = [x for x in after('s3', 'release') if x[1] <= e3 + 5]
+    check('S3 Stowed on the deck, Grab sb (on the ground 1 off its edge): Grabbed, its Build sb alone (54), held to the tap (no underfoot)',
+          s3.get('state') == 'STOWED' and st3 and abs(st3[0][4] - 54) < 0.5 and len(ws3) > 30 and all(w['build'] == 1 and abs(w['bmass'] - 54) < 0.5 for w in ws3)
+          and rl3 and rl3[0][3] == 'release', f"{s3.get('state')} start {st3[:1]} build {sorted({w['build'] for w in ws3}) if st3 else '-'} release {rl3[:1] if st3 else '-'}")
+    st4 = after('s4', 'start')
+    s4 = mk.get('s4', {})
+    if st4:
+        g4 = st4[0][1]
+        e4 = mk.get('s4e', {}).get('gt', g4)
+        sw4 = [srv[g] for g in range(g4 + 2, e4 + 1) if g in srv]
+    check('S4 Active on the deck, Grab sb: Grabbed, the deck Grips kept (sgrips >= 1 every tick), still Active',
+          s4.get('state') == 'ACTIVE' and s4.get('sgrips', 0) >= 1 and st4 and len(sw4) > 30 and all(x['state'] == 'ACTIVE' and x['sgrips'] >= 1 for x in sw4),
+          f"{s4} start {st4[:1]} sgrips min {min((x['sgrips'] for x in sw4), default=-1) if st4 else '-'}")
+
+print('== H heavy Ship sw (Netherite)')
+if 'sw' not in ships or 'h1' not in mk:
+    check('H section ran', False, f"marks {sorted(mk)} ships {sorted(ships)}")
+else:
+    sth = [x for x in sgl if x[2] == 'start' and x[1] <= mk['h1']['gt']][-1:]
+    mw = sth[0][4] if sth else -1
+    WH = weigh(mw, 6000)
+    w = wmark.get('h1', {})
+    h1 = spos.get('h1', {})
+    ch = cact.get('h1', {})
+    check('H1 sw Grabbed alone, heavier than sg: every factor as the curve says and lower than sg\'s', sth and mw > 300 and w.get('build') == 1 and abs(w.get('bmass', 0) - mw) < 0.5
+          and abs(w.get('servo', 0) - WH[0]) < 1e-3 and abs(w.get('walk', 0) - 0.6 * WH[1]) < 1e-3 and abs(w.get('turn', 0) - WH[2]) < 1e-3 and abs(w.get('hurl', 0) - WH[3]) < 1e-3
+          and all(a < b for a, b in zip(WH, W54)), f'mass {mw} {w} curve {WH}')
+    check('H1 the wearer is slower than with sg: speed 0.6 x walk (server attribute, client factor)', abs(h1.get('mspd', 0) - 0.1 * 0.6 * WH[1]) < 1e-4
+          and abs(ch.get('speed', 0) - 0.6 * WH[1]) < 6e-3 and h1.get('mspd', 1) < k1['mspd'] - 0.005, f"mspd {h1.get('mspd')} vs sg {k1['mspd']}, client {ch.get('speed')}")
+    tsh = turn_steps(mk['h1']['gt'], mk['h2']['gt']) if 'h2' in mk else []
+    qh1, qh2 = at('sw', mk['h1']['gt']), at('sw', mk.get('h2', {}).get('gt', 0))
+    check('H2 the Turn: at most 9 x turn degrees a tick (slower than so), the 45 done in 30 ticks', tsh and max(tsh) <= 9 * WH[2] + 0.01 and max(tsh) >= 9 * WH[2] - 0.05
+          and max(tsh) < 9 * W54[2] - 1 and qh1 and qh2 and abs(qrel(qh1['q'], qh2['q']) - 45) < 5,
+          f"steps max {max(tsh, default=0):.3f}, turned {qrel(qh1['q'], qh2['q']) if qh1 and qh2 else -1:.2f}")
+    swp = ships['sw']
+    a3, b3 = mk.get('h2', {}).get('gt', 0), mk.get('h3', {}).get('gt', 0)
+    peak = max((math.dist(swp[g]['pos'], swp[g - 1]['pos']) for g in range(a3 + 1, b3 + 1) if g in swp and g - 1 in swp), default=9)
+    moved = math.dist(swp[b3]['pos'], swp[a3]['pos']) if a3 in swp and b3 in swp else 0
+    check('H3 the wheel step: sw moves, its top speed at most 30 x servo b/s and below so\'s', moved > 1 and peak <= 1.5 * WH[0] * 1.05 + 0.02 and peak < peak_so - 0.2,
+          f'moved {moved:.2f}, peak {peak:.3f} b/t vs so {peak_so:.3f}')
+    h4, h5 = spos.get('h4', {}), spos.get('h5', {})
+    rm = [x for x in sgl if x[2] == 'release' and x[3] == 'mass']
+    check('H4 the cap 420 under the Build\'s 432: still held (within 1.05 x the cap), at the floors', h4.get('ship', '-') != '-' and wmark.get('h4', {}).get('servo') == 0.1,
+          f"gship {h4.get('ship')} {wmark.get('h4')}")
+    check('H5 the cap 400: let go (why=mass) with the refusal line', rm and h4.get('gt', 0) < rm[0][1] <= h5.get('gt', 0) and h5.get('ship') == '-' and noted('Too heavy for this Rig', rm[0][1]),
+          f"{rm[:1]} gship {h5.get('ship')}")
+    tw = [x for x in sgl if x[2] == 'throw' and x[1] >= h5.get('gt', 1 << 60)]
+    tsp = [g for g in grab if g['kind'] == 'throw' and tw and g['gt'] == tw[0][1]]
+    check('H6 the Throw of sw: 1.2 x throw b/t, slower than sg\'s', tsp and abs(tsp[0]['speed'] - 1.2 * WH[3]) < 1e-3 and tsp[0]['speed'] < 1.2 * W54[3] - 0.1,
+          f'{tsp[:1]}')
 
 exc = [l for l in (c + c2 + s).splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'authlib' not in l and 'neoforge-client.new.tmp.toml' not in l
        and 'Error loading class: net/irisshaders/' not in l and 'org.gradle.' not in l and 'MessageIOException' not in l

@@ -90,13 +90,13 @@ public final class ActuatorClient {
      * look (blocks, 0 when nothing is held), {@code overhead} a held Ship is Overhead, {@code shipTangent} the direction along
      * the held face the tips took hold along, {@code left} and {@code right} the body-left and body-right tips on a held Ship,
      * told at game time {@code tipsAt} (a reach goes on from there), {@code build} the ids of the held Ship's build (the held Ship
-     * first, empty for a mob).
+     * first, empty for a mob), {@code speed} the wearer's walking and Rig Speed factor while holding (the server's).
      */
     public record State(int heldId, boolean heavy, @Nullable BlockPos ship, Direction shipFace, @Nullable Vec3 farTarget, int farTtl,
                         String refusal, HoldArm arm, float distance, InteractionHand farHand, boolean overhead, Direction shipTangent,
-                        ActuatorStatePacket.Tip left, ActuatorStatePacket.Tip right, long tipsAt, List<UUID> build) {
+                        ActuatorStatePacket.Tip left, ActuatorStatePacket.Tip right, long tipsAt, List<UUID> build, double speed) {
         public static final State NONE = new State(-1, false, null, Direction.UP, null, 0, "", HoldArm.NONE, 0, InteractionHand.MAIN_HAND, false,
-                Direction.NORTH, ActuatorStatePacket.Tip.NONE, ActuatorStatePacket.Tip.NONE, 0, List.of());
+                Direction.NORTH, ActuatorStatePacket.Tip.NONE, ActuatorStatePacket.Tip.NONE, 0, List.of(), 1);
 
         public boolean holding() {
             return heldId >= 0 || ship != null;
@@ -104,12 +104,12 @@ public final class ActuatorClient {
 
         State held(ActuatorStatePacket p, long now) {
             return new State(p.heldId(), p.heavy(), p.ship(), p.shipFace(), farTarget, farTtl, p.refusal(), p.arm(), p.distance(), farHand,
-                    p.overhead(), p.shipTangent(), p.left(), p.right(), now, p.build());
+                    p.overhead(), p.shipTangent(), p.left(), p.right(), now, p.build(), p.speed());
         }
 
         State far(@Nullable Vec3 target, int ttl, InteractionHand hand) {
             return new State(heldId, heavy, ship, shipFace, ttl > 0 ? target : null, Math.max(0, ttl), refusal, arm, distance, hand, overhead,
-                    shipTangent, left, right, tipsAt, build);
+                    shipTangent, left, right, tipsAt, build, speed);
         }
 
         boolean idle() {
@@ -216,9 +216,9 @@ public final class ActuatorClient {
         return player == null ? State.NONE : get(player);
     }
 
-    /** The wearer's Rig Speed factor: {@code grab.heavySpeedFactor} while both Actuators hold a heavy target (the server checks the same). */
+    /** The wearer's walking and Rig Speed factor while holding, as the server last said ({@link Grab#speedFactor}: the server checks the same). */
     public static double speedFactor() {
-        return local().heavy() ? Grab.heavyFactor() : 1.0;
+        return local().speed();
     }
 
     /** The ids of the held Ship's build, as the server last said (no Grip on them holds the wearer up); empty when no Ship is held. */

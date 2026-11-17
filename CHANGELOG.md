@@ -49,6 +49,7 @@ Actuators: two more arms for the Rig, one for each hand. The four Tentacles carr
 - Logging out while the Rig carries you: after the login it is Active again where you were. If its Grips are gone meanwhile (a Ship moved, a block broken), it catches you on the first surface in Reach, and you take no fall damage while the world loads. A dimension change works the same. A crashed server still loads you Stowed.
 - The speed check makes the Rig fall (it catches again where it can) instead of Stowing it, and only overspeed that lasts longer than a second counts: a lag backlog of moves arriving at once no longer trips it.
 - When the server makes the Rig fall or Stows it, the action bar says why: too fast, no Grips the server sees, moving against Crawl or Setting Down, a Ride.
+- **1.21.1 only:** 2.0 beta: Ship Grab: heavy Ships are slow to move. The heavier the held Ship (with every Ship touching it), the slower the Actuators move and Turn it, the slower you walk and the softer the Throw; a light crate is almost free, one at the tier's mass cap moves at a tenth of the speed, Turns at 15 %, Throws at 10 %, and you walk at a quarter of the heavy-hold speed. A Ship that grows past the mass cap while held (5 % margin) is let go: "Too heavy for this Rig". Server config `grab.massKnee` (20) and `grab.massFloor` (`servo` 0.1, `walk` 0.25, `turn` 0.15, `throw` 0.1) tune it.
 
 ### Fixed
 
@@ -68,7 +69,7 @@ Actuators: two more arms for the Rig, one for each hand. The four Tentacles carr
 
 ### Compatibility
 
-- Network changed (registrar "14"). 1.8.0 and 2.0.0 clients and servers cannot join each other, nor 2.0.0 beta.128 or older betas: update both.
+- Network changed (registrar "15"). 1.8.0 and 2.0.0 clients and servers cannot join each other, nor 2.0.0 beta.128 or older betas: update both.
 - Existing Rigs keep working and stay unfitted. Fit Actuators whenever you like; nothing on the Rig is lost.
 - Existing Rigs keep their Air while the cap doubles, so the Air bar shows half until the Rig is refilled once.
 - A server config file written by an older version keeps `reach.copper = 4.0`. Set it to 5.0 by hand to get the new default.

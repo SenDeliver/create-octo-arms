@@ -22,6 +22,7 @@ import dev.tentaworks.rig.RigSettings;
 import dev.tentaworks.rig.RigSide;
 import dev.tentaworks.rig.RigState;
 import dev.tentaworks.rig.ShipHands;
+import dev.tentaworks.rig.ShipWeight;
 import dev.tentaworks.rig.WorkSight;
 import dev.tentaworks.rig.WornRig;
 import net.minecraft.commands.CommandSourceStack;
@@ -372,7 +373,13 @@ public final class DevActuators {
                 + String.format(Locale.ROOT, " gover=%b guser=%s gbot=%s gtan=%s", Grab.overhead(p), quat(Grab.shipUser(p)),
                 Double.isNaN(Grab.shipBottom(p)) ? "-" : String.format(Locale.ROOT, "%.3f", Grab.shipBottom(p)),
                 Grab.shipTangent(p) == null ? "-" : Grab.shipTangent(p).getSerializedName())
-                + shipTips(p) + " gbuild=" + Grab.shipBuild(p);
+                + shipTips(p) + " gbuild=" + Grab.shipBuild(p) + weight(p);
+    }
+
+    private static String weight(ServerPlayer p) {
+        ShipWeight.Factors w = Grab.shipWeight(p);
+        return String.format(Locale.ROOT, " gbmass=%.1f gservo=%.2f gwalk=%.4f gturn=%.2f gthrow=%.2f", Grab.shipBuildMass(p), w.servo(), Grab.speedFactor(p),
+                w.turn(), w.hurl());
     }
 
     private static String shipTips(ServerPlayer p) {

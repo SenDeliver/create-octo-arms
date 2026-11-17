@@ -220,6 +220,12 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(cfg + "grab.throwSpeed.copper", "Copper Throw speed");
         REGISTRATE.addRawLang(cfg + "grab.throwSpeed.netherite", "Netherite Throw speed");
         REGISTRATE.addRawLang(cfg + "grab.heavySpeedFactor", "Speed while holding heavy");
+        REGISTRATE.addRawLang(cfg + "grab.massKnee", "Ship mass knee");
+        REGISTRATE.addRawLang(cfg + "grab.massFloor", "Heavy Ship floors");
+        REGISTRATE.addRawLang(cfg + "grab.massFloor.servo", "Hold speed floor");
+        REGISTRATE.addRawLang(cfg + "grab.massFloor.walk", "Walking floor");
+        REGISTRATE.addRawLang(cfg + "grab.massFloor.turn", "Turn floor");
+        REGISTRATE.addRawLang(cfg + "grab.massFloor.throw", "Throw floor");
         REGISTRATE.addRawLang(cfg + "impact", "Impact");
         REGISTRATE.addRawLang(cfg + "impact.damagePerSpeed", "Damage per speed");
         REGISTRATE.addRawLang(cfg + "impact.minSpeed", "Minimum speed");
@@ -260,6 +266,11 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang(cfg + "grab.throwSpeed.copper.tooltip", "Throw speed of a Copper Rig, blocks per tick");
         REGISTRATE.addRawLang(cfg + "grab.throwSpeed.netherite.tooltip", "Throw speed of a Netherite Rig, blocks per tick");
         REGISTRATE.addRawLang(cfg + "grab.heavySpeedFactor.tooltip", "Walking and Rig Speed while both Actuators hold a heavy target, relative to normal");
+        REGISTRATE.addRawLang(cfg + "grab.massKnee.tooltip", "Held Ship mass where the slow-down curve bends: lighter Ships are almost free, heavier ones near the mass cap run at the floors, Sable mass");
+        REGISTRATE.addRawLang(cfg + "grab.massFloor.servo.tooltip", "How fast the Actuators move a held Ship at the mass cap, relative to a light one");
+        REGISTRATE.addRawLang(cfg + "grab.massFloor.walk.tooltip", "Walking and Rig Speed holding a Ship at the mass cap, relative to holding a light one");
+        REGISTRATE.addRawLang(cfg + "grab.massFloor.turn.tooltip", "Turn rate of a held Ship at the mass cap, relative to a light one");
+        REGISTRATE.addRawLang(cfg + "grab.massFloor.throw.tooltip", "Throw speed of a Ship at the mass cap, relative to a light one");
         REGISTRATE.addRawLang(cfg + "impact.damagePerSpeed.tooltip", "Impact damage per block per tick of speed above the minimum, dealt once per Throw");
         REGISTRATE.addRawLang(cfg + "impact.minSpeed.tooltip", "Slowest Thrown speed that deals Impact damage, blocks per tick");
         REGISTRATE.addRawLang(cfg + "impact.cap.tooltip", "Most Impact damage one Throw can deal");

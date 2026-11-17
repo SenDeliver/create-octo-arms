@@ -13,7 +13,7 @@ public final class TentaworksNetwork {
     }
 
     public static void register(RegisterPayloadHandlersEvent event) {
-        PayloadRegistrar registrar = event.registrar("14");
+        PayloadRegistrar registrar = event.registrar("15");
         registrar.playToServer(RigMotionPacket.TYPE, RigMotionPacket.STREAM_CODEC,
                 (p, ctx) -> RigServer.onMotion((ServerPlayer) ctx.player(), p));
         registrar.playToServer(RigSettingsPacket.TYPE, RigSettingsPacket.STREAM_CODEC,

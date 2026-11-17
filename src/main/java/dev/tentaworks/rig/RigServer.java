@@ -559,10 +559,9 @@ public final class RigServer {
         }
     }
 
-    /** Top Speed per tick with slack; while both Actuators hold a heavy target, at {@code grab.heavySpeedFactor}. */
+    /** Top Speed per tick with slack; while holding a heavy target or a Ship, at {@link Grab#speedFactor}. */
     private static double maxStep(ServerPlayer player) {
-        double heavy = Grab.heavy(player) ? Grab.heavyFactor() : 1.0;
-        return TentacleRigItem.topSpeed(RigAir.worn(player)) * heavy / 20.0 * 1.05;
+        return TentacleRigItem.topSpeed(RigAir.worn(player)) * Grab.speedFactor(player) / 20.0 * 1.05;
     }
 
     /**

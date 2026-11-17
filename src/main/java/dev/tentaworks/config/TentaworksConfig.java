@@ -32,6 +32,11 @@ public final class TentaworksConfig {
     public static final ModConfigSpec.DoubleValue GRAB_THROW_SPEED_COPPER;
     public static final ModConfigSpec.DoubleValue GRAB_THROW_SPEED_NETHERITE;
     public static final ModConfigSpec.DoubleValue GRAB_HEAVY_SPEED_FACTOR;
+    public static final ModConfigSpec.DoubleValue GRAB_MASS_KNEE;
+    public static final ModConfigSpec.DoubleValue GRAB_MASS_FLOOR_SERVO;
+    public static final ModConfigSpec.DoubleValue GRAB_MASS_FLOOR_WALK;
+    public static final ModConfigSpec.DoubleValue GRAB_MASS_FLOOR_TURN;
+    public static final ModConfigSpec.DoubleValue GRAB_MASS_FLOOR_THROW;
     public static final ModConfigSpec.DoubleValue IMPACT_DAMAGE_PER_SPEED;
     public static final ModConfigSpec.DoubleValue IMPACT_MIN_SPEED;
     public static final ModConfigSpec.DoubleValue IMPACT_CAP;
@@ -86,6 +91,13 @@ public final class TentaworksConfig {
         GRAB_THROW_SPEED_NETHERITE = b.comment("Throw speed of a Netherite Rig, blocks per tick").translation(t + "grab.throwSpeed.netherite").defineInRange("netherite", 1.2, 0.1, 5.0);
         b.pop();
         GRAB_HEAVY_SPEED_FACTOR = b.comment("Walking and Rig Speed while both Actuators hold a heavy target, relative to normal").translation(t + "grab.heavySpeedFactor").defineInRange("heavySpeedFactor", 0.6, 0.1, 1.0);
+        GRAB_MASS_KNEE = b.comment("Held Ship mass where the slow-down curve bends: lighter Ships are almost free, heavier ones near the mass cap run at the floors, Sable mass").translation(t + "grab.massKnee").defineInRange("massKnee", 20.0, 0.1, 1.0E6);
+        b.translation(t + "grab.massFloor").push("massFloor");
+        GRAB_MASS_FLOOR_SERVO = b.comment("How fast the Actuators move a held Ship at the mass cap, relative to a light one").translation(t + "grab.massFloor.servo").defineInRange("servo", 0.1, 0.01, 1.0);
+        GRAB_MASS_FLOOR_WALK = b.comment("Walking and Rig Speed holding a Ship at the mass cap, relative to holding a light one").translation(t + "grab.massFloor.walk").defineInRange("walk", 0.25, 0.01, 1.0);
+        GRAB_MASS_FLOOR_TURN = b.comment("Turn rate of a held Ship at the mass cap, relative to a light one").translation(t + "grab.massFloor.turn").defineInRange("turn", 0.15, 0.01, 1.0);
+        GRAB_MASS_FLOOR_THROW = b.comment("Throw speed of a Ship at the mass cap, relative to a light one").translation(t + "grab.massFloor.throw").defineInRange("throw", 0.1, 0.01, 1.0);
+        b.pop();
         b.pop();
         b.translation(t + "impact").push("impact");
         IMPACT_DAMAGE_PER_SPEED = b.comment("Impact damage per block per tick of speed above the minimum, dealt once per Throw").translation(t + "impact.damagePerSpeed").defineInRange("damagePerSpeed", 12.0, 0.0, 100.0);

@@ -139,6 +139,8 @@ class ShipHandsTest {
         assertEquals(-40, bank[1], 1.0E-9);
         assertEquals(9, Hold.turnStep(bank, false)[0], 1.0E-9);
         assertEquals(-4.5, Hold.turnStep(bank, true)[1], 1.0E-9);
+        assertEquals(1.35, Hold.turnStep(bank, false, 1.35)[0], 1.0E-9, "a Ship at the mass cap");
+        assertEquals(-0.675, Hold.turnStep(bank, true, 1.35)[1], 1.0E-9);
         assertEquals(30, Hold.turnBank(new double[] {0, 0}, 500, 0)[0], 1.0E-9, "one input clamped");
     }
 

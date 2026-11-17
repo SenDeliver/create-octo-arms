@@ -333,6 +333,102 @@ key key.mouse.right
 wait 40
 mark x3e
 signal xdone
+# S Copper Rig on the deck se: S1 Stowed, Grab the crate sa resting on it: refused (own: the deck is in its Build); S2 Active, every
+# Grip on the deck (or sa): refused (own); S3 Stowed near the east edge, Grab sb on the ground 1 off the deck: held 40 ticks, the
+# deck is not in its Build; S4 the same Active: Grabbed, the deck Grips kept
+await s
+wait 20
+lookat 11592.5 -57.5 0.5
+wait 3
+mark s1
+key key.keyboard.v
+wait 10
+doublejump
+wait 40
+lookat 11592.5 -57.5 0.5
+wait 3
+mark s2
+key key.keyboard.v
+wait 10
+doublejump
+wait 40
+signal s2done
+await s3
+wait 20
+lookat 11597.5 -58.5 0.5
+wait 3
+mark s3
+key key.keyboard.v
+awaitheld on 20
+wait 40
+mark s3e
+key key.keyboard.v
+awaitheld off 20
+wait 10
+doublejump
+wait 40
+lookat 11597.5 -58.5 0.5
+wait 3
+mark s4
+key key.keyboard.v
+awaitheld on 20
+wait 40
+mark s4e
+key key.keyboard.v
+awaitheld off 20
+wait 5
+doublejump
+wait 40
+signal sdone
+# H heavy Ship sw (mass 432), Netherite: H1 held (factors, wearer speed); H2 a 45 degree Turn at the heavy rate; H3 the Grab key + wheel 4
+# (slower than so at V1); H4 the cap 420: kept (within 5 %); H5 the cap 400: let go (mass); H6 grabbed again and Thrown east, slower
+await h
+wait 20
+lookat 11563 -57 1
+wait 3
+key key.keyboard.v
+awaitheld on 20
+look -90 0
+wait 20
+mark h1
+actuators h1
+holdkey key.tentaworks.grab on
+wait 3
+holdkey key.use on
+wait 3
+mouselook 100 0
+wait 1
+mouselook 100 0
+wait 1
+mouselook 100 0
+wait 30
+mark h2
+holdkey key.use off
+wait 3
+wheel 4
+wait 40
+mark h3
+holdkey key.tentaworks.grab off
+wait 10
+signal hheld
+await h4
+mark h4
+signal h4done
+await h5
+mark h5
+wait 30
+lookship
+wait 3
+key key.keyboard.v
+awaitheld on 20
+look -90 -25
+wait 30
+mark ht0
+key key.mouse.left
+awaitheld off 20
+wait 40
+mark ht1
+signal hdone
 await end
 wait 10
 quit

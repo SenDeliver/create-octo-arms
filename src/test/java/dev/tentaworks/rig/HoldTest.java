@@ -101,20 +101,21 @@ class HoldTest {
 
     @Test
     void releaseConditions() {
-        Status ok = new Status(true, true, true, false, false, true, 0, false, false);
+        Status ok = new Status(true, true, true, false, false, true, 0, false, false, Hold.FAR_TICKS);
         assertNull(Hold.ends(ok), "Stowed, Setting Down, a Ride, a glide or Falling are not in the status: the hold goes on");
-        assertEquals("death", Hold.ends(new Status(false, true, true, false, false, true, 0, false, false)));
-        assertEquals("rig_off", Hold.ends(new Status(true, false, true, false, false, true, 0, false, false)));
-        assertEquals("crawl", Hold.ends(new Status(true, true, false, true, false, true, 0, false, false)));
-        assertEquals("air", Hold.ends(new Status(true, true, false, false, false, true, 0, false, false)));
-        assertEquals("gone", Hold.ends(new Status(true, true, true, false, true, true, 0, false, false)));
-        assertEquals("dimension", Hold.ends(new Status(true, true, true, false, false, false, 0, false, false)));
-        assertNull(Hold.ends(new Status(true, true, true, false, false, true, Hold.FAR_TICKS - 1, false, false)));
-        assertEquals("far", Hold.ends(new Status(true, true, true, false, false, true, Hold.FAR_TICKS, false, false)));
-        assertEquals("hand", Hold.ends(new Status(true, true, true, false, false, true, 0, true, false)), "an item landed in a holding Actuator's hand");
-        assertEquals("underfoot", Hold.ends(new Status(true, true, true, false, false, true, 0, false, true)), "the wearer stands on the Ship they hold");
-        assertEquals("far", Hold.ends(new Status(true, true, true, false, false, true, Hold.FAR_TICKS, true, false)));
-        assertEquals("death", Hold.ends(new Status(false, false, false, true, true, false, 9, true, false)), "the first reason wins");
+        assertEquals("death", Hold.ends(new Status(false, true, true, false, false, true, 0, false, false, Hold.FAR_TICKS)));
+        assertEquals("rig_off", Hold.ends(new Status(true, false, true, false, false, true, 0, false, false, Hold.FAR_TICKS)));
+        assertEquals("crawl", Hold.ends(new Status(true, true, false, true, false, true, 0, false, false, Hold.FAR_TICKS)));
+        assertEquals("air", Hold.ends(new Status(true, true, false, false, false, true, 0, false, false, Hold.FAR_TICKS)));
+        assertEquals("gone", Hold.ends(new Status(true, true, true, false, true, true, 0, false, false, Hold.FAR_TICKS)));
+        assertEquals("dimension", Hold.ends(new Status(true, true, true, false, false, false, 0, false, false, Hold.FAR_TICKS)));
+        assertNull(Hold.ends(new Status(true, true, true, false, false, true, Hold.FAR_TICKS - 1, false, false, Hold.FAR_TICKS)));
+        assertEquals("far", Hold.ends(new Status(true, true, true, false, false, true, Hold.FAR_TICKS, false, false, Hold.FAR_TICKS)));
+        assertNull(Hold.ends(new Status(true, true, true, false, false, true, Hold.FAR_TICKS, false, false, 2 * Hold.FAR_TICKS)), "a heavy Ship may lag longer");
+        assertEquals("hand", Hold.ends(new Status(true, true, true, false, false, true, 0, true, false, Hold.FAR_TICKS)), "an item landed in a holding Actuator's hand");
+        assertEquals("underfoot", Hold.ends(new Status(true, true, true, false, false, true, 0, false, true, Hold.FAR_TICKS)), "the wearer stands on the Ship they hold");
+        assertEquals("far", Hold.ends(new Status(true, true, true, false, false, true, Hold.FAR_TICKS, true, false, Hold.FAR_TICKS)));
+        assertEquals("death", Hold.ends(new Status(false, false, false, true, true, false, 9, true, false, Hold.FAR_TICKS)), "the first reason wins");
     }
     @Test
     void aHeldShipPointStaysWhereItWasInTheView() {

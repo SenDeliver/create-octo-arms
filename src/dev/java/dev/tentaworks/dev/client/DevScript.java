@@ -1033,7 +1033,7 @@ public final class DevScript {
         }
         Entity last = lastHeldId < 0 || clientTicks - lastHeldTick > 40 ? null : mc.level.getEntity(lastHeldId);
         String lmob = last == null ? "-" : fmt(last.getBoundingBox().getCenter()) + ";" + fmt(new Vec3(last.lerpTargetX(), last.lerpTargetY(), last.lerpTargetZ()));
-        return String.format(Locale.ROOT, " gheld=%d gheavy=%b gship=%s far=%d xh=%s hmob=%s hpt=%s xd=%s limp=%b opa=%.2f harm=%s hdist=%.2f spot=%s spotok=%b aff=%s affarm=%s dual=%b gkey=%b farhand=%s lmob=%s airhud=%b turn=%b sover=%b stan=%s ctips=%s airt=%d airr=%.6f atip=%.2f tms=%d cbuild=%d",
+        return String.format(Locale.ROOT, " gheld=%d gheavy=%b gship=%s far=%d xh=%s hmob=%s hpt=%s xd=%s limp=%b opa=%.2f harm=%s hdist=%.2f spot=%s spotok=%b aff=%s affarm=%s dual=%b gkey=%b farhand=%s lmob=%s airhud=%b turn=%b sover=%b stan=%s ctips=%s airt=%d airr=%.6f atip=%.2f tms=%d cbuild=%d cspd=%.4f",
                 s.heldId(), s.heavy(),
                 s.ship() == null ? "-" : s.ship().toShortString().replace(" ", ""), s.farTtl(), crosshair(mc), heldCentre(mc, s), point,
                 held == null ? "-" : String.format(Locale.ROOT, "%.3f", rayGap(p.getEyePosition(), p.getViewVector(1.0F), held.getBoundingBox())),
@@ -1041,7 +1041,7 @@ public final class DevScript {
                 aff.kind(), aff.arm(), ActuatorClient.dualWield(), ActuatorClient.grabKeyDown(), s.farHand() == net.minecraft.world.InteractionHand.OFF_HAND ? "off" : "main", lmob, dev.tentaworks.client.RigAirHud.shown(p),
                 dev.tentaworks.client.ShipTurn.active(), s.overhead(), s.shipTangent().getSerializedName(),
                 s.ship() == null ? "-" : dev.tentaworks.dev.DevActuators.tips(s.left(), s.right()),
-                dev.tentaworks.client.RigAirHud.shownTicks(), dev.tentaworks.client.RigAirHud.rate(), ActuatorRenderer.tipDistance(p), traceGapMs, s.ship() == null ? 0 : s.build().size());
+                dev.tentaworks.client.RigAirHud.shownTicks(), dev.tentaworks.client.RigAirHud.rate(), ActuatorRenderer.tipDistance(p), traceGapMs, s.ship() == null ? 0 : s.build().size(), s.speed());
     }
 
     private static double rayGap(Vec3 eye, Vec3 look, net.minecraft.world.phys.AABB box) {

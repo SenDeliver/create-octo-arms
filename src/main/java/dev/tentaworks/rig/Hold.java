@@ -27,7 +27,7 @@ import java.util.function.DoublePredicate;
  * where its box does not fit it is lifted in steps of {@value #LIFT_STEP} up to its own height (a tall mob held by a wearer on
  * the floor), else it stays where it is. Nor through one: it is swept from where it is toward that point and stops at the first
  * block in the way. A hold ends ({@link #ends}) on Crawl, the wearer's death, the Rig off or unfitted, no Air, the target gone or
- * in another level, or farther than Reach + {@value #FAR_SLACK} from the body for {@value #FAR_TICKS} ticks.
+ * in another level, or farther than Reach + {@value #FAR_SLACK} from the body for {@value #FAR_TICKS} ticks (longer for a heavy Ship).
  */
 public final class Hold {
     public static final double AHEAD = 1.1;
@@ -63,8 +63,9 @@ public final class Hold {
      * {@code handFull} an item is in the hand of a holding Actuator, {@code underfoot} the held Ship is all that holds the wearer up
      * ({@link GrabRule#holdsUp}: their feet rest on it).
      */
+    /** {@code farLimit}: ticks in a row beyond the far limit that end the hold ({@value #FAR_TICKS}, more for a heavy Ship, {@link ShipWeight#farTicks}). */
     public record Status(boolean wearerAlive, boolean fitted, boolean air, boolean crawl, boolean targetGone, boolean sameLevel, int farTicks,
-                         boolean handFull, boolean underfoot) {
+                         boolean handFull, boolean underfoot, int farLimit) {
     }
 
     private Hold() {
@@ -251,8 +252,13 @@ public final class Hold {
 
     /** This tick's share of the {@code bank} (yaw, pitch): at most {@value #TURN_RATE} each, half while a tip reaches. */
     public static double[] turnStep(double[] bank, boolean reaching) {
-        double rate = reaching ? TURN_RATE / 2 : TURN_RATE;
-        return new double[] {Mth.clamp(bank[0], -rate, rate), Mth.clamp(bank[1], -rate, rate)};
+        return turnStep(bank, reaching, TURN_RATE);
+    }
+
+    /** {@link #turnStep(double[], boolean)} at {@code rate} degrees a tick (a heavy Ship turns slower, {@link ShipWeight}). */
+    public static double[] turnStep(double[] bank, boolean reaching, double rate) {
+        double r = reaching ? rate / 2 : rate;
+        return new double[] {Mth.clamp(bank[0], -r, r), Mth.clamp(bank[1], -r, r)};
     }
 
     /**
@@ -375,7 +381,7 @@ public final class Hold {
         if (!s.air()) return "air";
         if (s.targetGone()) return "gone";
         if (!s.sameLevel()) return "dimension";
-        if (s.farTicks() >= FAR_TICKS) return "far";
+        if (s.farTicks() >= s.farLimit()) return "far";
         if (s.handFull()) return "hand";
         if (s.underfoot()) return "underfoot";
         return null;
