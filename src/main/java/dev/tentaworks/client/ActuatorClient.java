@@ -348,6 +348,8 @@ public final class ActuatorClient {
         } else if (Actuators.ready(player) && aim(player, ActuatorReach.pickRange(TentacleRigItem.reach(player)) + ActuatorSight.MISS_PAST) instanceof EntityHitResult e
                 && e.getEntity() instanceof LivingEntity && !(e.getEntity() instanceof Player)) {
             refused(player, Grab.refusalKey(GrabRule.Verdict.TOO_FAR));
+        } else if (Actuators.furled(player)) {
+            refused(player, Grab.FURLED);
         }
     }
 

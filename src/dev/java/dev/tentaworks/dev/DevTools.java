@@ -11,6 +11,7 @@ import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.compat.Frame;
 import dev.tentaworks.compat.ShipFrames;
 import dev.tentaworks.network.RigMotionPacket;
+import dev.tentaworks.rig.Actuators;
 import dev.tentaworks.rig.Grip;
 import dev.tentaworks.rig.TentacleGait;
 import dev.tentaworks.rig.Tentacles;
@@ -344,7 +345,7 @@ public final class DevTools {
         Entity vehicle = p.getVehicle();
         double[] c = RigServer.checks(p);
         return String.format("gt=%d %s pos=%.3f,%.3f,%.3f v=%.3f,%.3f,%.3f state=%s grips=%d cf=%.0f flying=%b fall=%.2f hp=%.1f ground=%b air=%d mv=%.3f,%.3f,%.3f%s sneak=%b pose=%s veh=%s ride=%s vrot=%s armor=%d rigslot=%s rigdmg=%d ff=%b%s"
-                        + " spsum=%.2f spsteps=%.1f sppk=%.0f sptime=%.1f spover=%.0f sprefuse=%.0f unheld=%.0f",
+                        + " spsum=%.2f spsteps=%.1f sppk=%.0f sptime=%.1f spover=%.0f sprefuse=%.0f unheld=%.0f furled=%b",
                 p.level().getGameTime(), p.getName().getString(), p.getX(), p.getY(), p.getZ(),
                 p.getDeltaMovement().x, p.getDeltaMovement().y, p.getDeltaMovement().z,
                 RigServer.state(p), RigServer.grips(p).size(), flight == null ? -1 : flight.getValue(),
@@ -354,7 +355,7 @@ public final class DevTools {
                 ServerChainConveyorHandler.hangingPlayers.containsKey(p.getUUID()) ? "chain" : "-",
                 vehicle == null ? "-" : String.format(Locale.ROOT, "%.1f", vehicle.getYRot()),
                 p.getArmorValue(), worn.worn() ? worn.slot().getName() : "-", worn.stack().getDamageValue(), p.isFallFlying(), DevActuators.fields(p),
-                c[0], c[1], c[2], c[3], c[4], c[5], c[6]);
+                c[0], c[1], c[2], c[3], c[4], c[5], c[6], Actuators.furled(worn.stack()));
     }
 
     /** {@code sgrips}: valid Grips on a Ship; {@code carry}: the Ship holding most of them (at least {@link Grips#HELD}), as RigServer picks it. */

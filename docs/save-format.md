@@ -55,10 +55,13 @@ A Rig item stores its Air in Create's `create:banktank_air` (int, Create's own t
 |---|---|---|
 | `tentaworks:rig_settings` | compound: `standing_height` float (blocks, default 1.5), `speed` float (blocks/s, default: the server's `speed.max`; 5.6 before 2.0), `activation` string `double_jump` \| `key` (default `double_jump`), `far_use` string `always` \| `rig_out` \| `off` (2.0, default `always`) | phase 3 |
 | `tentaworks:actuators` | unit (empty compound `{}`) | 2.0 |
+| `tentaworks:actuators_furled` | unit (empty compound `{}`) | 2.0 |
 
 Every `rig_settings` field is optional (missing = default), so a Rig without the component behaves exactly like phase 2. A missing `speed` is never written back: it reads as the current `speed.max` (so a Rig whose Speed was never set gets the new default in 2.0; a saved Speed stays). Values are clamped on write and on read: `standing_height` 0 … the Rig's Reach, `speed` min(4.3, `speed.max`) … `speed.max`, both rounded to 0.1. The field names and the two `activation` strings are frozen.
 The component is network-synced (stream codec: float, float, UTF-8 string, then from 2.0 the `far_use` UTF-8 string; an unset Speed is sent as NaN). A placed Rig Block keeps it in Create's `Components` patch, so place/pick up keeps the settings.
 `tentaworks:actuators` present = the Rig is fitted (Fitting is permanent). Persistent and network-synced. It rides every copy of the Rig stack: Create's `Components` patch on a placed Rig Block, smithing to Netherite, anvil repair, the Fitting result.
+
+`tentaworks:actuators_furled` present = the fitted Actuators are Furled (off until the Furl key unfurls them; ignored on a Rig without `tentaworks:actuators`). Persistent and network-synced, set and removed in place on the worn Rig by the server, so it survives a relog and every watcher sees it. A Rig that differs from the worn one only by it is the same worn Rig (no Stow on a toggle).
 
 ## Block entity NBT (Create `BacktankBlockEntity`, keys owned by Create)
 
@@ -72,7 +75,7 @@ The component is network-synced (stream codec: float, float, UTF-8 string, then 
 
 Phase 7 adds no keys: a placed Rig Block only syncs this NBT to clients more often (every 10 ticks while its Air changes) so goggles show Air rising. The network protocol is unchanged (registrar stays `6`).
 
-## Network (play phase, registrar version `15`)
+## Network (play phase, registrar version `16`)
 
 | Payload | Direction | Fields |
 |---|---|---|
@@ -82,6 +85,7 @@ Phase 7 adds no keys: a placed Rig Block only syncs this NBT to clients more oft
 | `tentaworks:rig_grab` | client → server | kind enum ordinal (`START, SHIP, RELEASE, THROW, PLACE, DISTANCE`), entity id + 1 var-int, block pos, face byte (3D data value), look `Vec3`, notches var-int. START names the mob, SHIP the plot block and face, THROW the look; PLACE carries the feet of the set-down spot in the look field, DISTANCE the wheel notches (0.5 block each, positive farther). 2.0 |
 | `tentaworks:actuator_state` | server → client | entity id var-int, held entity id + 1 var-int (0 = none), heavy bool, Ship present bool [+ block pos], Ship face byte, refusal lang key UTF-8 (≤ 256, empty = none), holding Actuator byte (`0` none, `1` main hand, `2` off hand, `3` both), hold distance float (blocks along the look, 0 = nothing held), Overhead bool, grip tangent byte (3D data value), left tip and right tip (each: at 3 floats relative to the held block, reach ticks byte (−1 holding) [+ from 3 floats while reaching]), Build count var-int (≤ 16) + that many Ship UUIDs (the held Ship first; 0 for a mob), speed factor double (walking and Rig Speed while holding, 0 < x ≤ 1: `grab.heavySpeedFactor` for a heavy mob, times the Build's walk factor for a Ship, 1 otherwise; the server's speed check uses the same). 2.0 |
 | `tentaworks:far_use` | server → client | entity id var-int, target `Vec3`, kind byte (`0` block, `1` entity), ttl ticks var-int, off hand bool (which hand's Actuator acted). 2.0 |
+| `tentaworks:furl` | client → server | Furled bool. The server Furls (setting a held target down first) or unfurls the fitted Actuators of the worn Rig; anything else is ignored. 2.0 |
 | `tentaworks:actuator_fx` | server → client | kind byte (`0` THROW, `1` IMPACT), entity id var-int, at `Vec3`, speed float. THROW: the wearer, at = throw velocity (blocks per tick); IMPACT: the Thrown entity, at = its box centre, speed blocks per tick. 2.0 |
 
 `RigState` order is part of the wire format: `STOWED, ACTIVE, SETTING_DOWN, FALLING, CRAWL`. A change needs a registrar version bump.
@@ -93,7 +97,7 @@ Phase 6 changed both Rig payloads to the fixed 4-slot Tentacles with a Step phas
 Phase 8 kept every payload as is but bumped the registrar to `7` (server packet handling changed); 1.0.0 shipped with `7`.
 1.1.0 keeps every payload byte-identical but bumps the registrar to `8`: a Grip point and block may now be in a Ship's plot coords, and the `rig_motion` motion is the Rig's own move without the carry Ship's. 1.0 clients cannot join a 1.1 server, and the other way round.
 1.8.0 bumps the registrar to `9`: `rig_settings` can name the Back Slot (`3`).
-2.0.0 bumps the registrar to `11`: `rig_settings` carries `far_use` at the end, and `rig_grab`, `actuator_state`, `far_use` and `actuator_fx` are new (`10` was a 2.0.0 test build without the holding Actuator, the hold distance, PLACE, DISTANCE and the Far Use hand; it never shipped). 2.0.0 betas went on to `13` (Overhead, Turn, the tips) `14` (the held Ship's Build in `actuator_state`) and `15` (the speed factor in `actuator_state`).
+2.0.0 bumps the registrar to `11`: `rig_settings` carries `far_use` at the end, and `rig_grab`, `actuator_state`, `far_use` and `actuator_fx` are new (`10` was a 2.0.0 test build without the holding Actuator, the hold distance, PLACE, DISTANCE and the Far Use hand; it never shipped). 2.0.0 betas went on to `13` (Overhead, Turn, the tips) `14` (the held Ship's Build in `actuator_state`) `15` (the speed factor in `actuator_state`) and `16` (`furl`).
 
 ## Server Config (`tentaworks-server.toml`, per world in `serverconfig/`)
 

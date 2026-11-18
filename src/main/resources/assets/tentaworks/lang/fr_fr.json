@@ -271,5 +271,10 @@
   "tentaworks.stats.reach": "Portée :",
   "tentaworks.stats.reach.value": "%s blocs",
   "tentaworks.stats.top_speed": "Vitesse max. :",
-  "tentaworks.stats.top_speed.value": "%s blocs/s"
+  "tentaworks.stats.top_speed.value": "%s blocs/s",
+  "key.tentaworks.furl": "Replier les actionneurs (oui/non)",
+  "tentaworks.actuators.furled": "Actionneurs repliés : %s les déploie",
+  "tentaworks.actuators.unfurled": "Actionneurs déployés",
+  "tentaworks.refusal.grab.furled": "Actionneurs repliés : déploie-les pour saisir",
+  "tentaworks.stats.actuators_furled": "Repliés : éteints jusqu'à leur déploiement"
 }

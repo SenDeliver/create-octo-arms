@@ -977,11 +977,11 @@ public final class DevScript {
             if (other == p) continue;
             RigVisuals.Visual v = RigVisuals.get(other);
             ActuatorClient.State s = ActuatorClient.get(other);
-            LOG.info("RWALK gt={} name={} state={} wa={} sneak={} crouch={} pose={} gheld={} gship={} hmob={} far={} rsgrips={} rtips={} rtip={}", mc.level.getGameTime(), other.getGameProfile().getName(),
+            LOG.info("RWALK gt={} name={} state={} wa={} sneak={} crouch={} pose={} gheld={} gship={} hmob={} far={} rsgrips={} rtips={} rtip={} furled={}", mc.level.getGameTime(), other.getGameProfile().getName(),
                     v == null ? "-" : v.state(), String.format(Locale.ROOT, "%.4f", other.walkAnimation.speed()),
                     other.isShiftKeyDown(), other.isCrouching(), other.getPose(), s.heldId(), s.ship() == null ? "-" : s.ship().toShortString().replace(" ", ""),
                     heldCentre(mc, s), s.farTtl(), shipGrips(mc, v), s.ship() == null ? "-" : dev.tentaworks.dev.DevActuators.tips(s.left(), s.right()),
-                    String.format(Locale.ROOT, "%.2f", ActuatorRenderer.tipDistance(other)));
+                    String.format(Locale.ROOT, "%.2f", ActuatorRenderer.tipDistance(other)), Actuators.furled(other));
         }
         if (!SABLE) return;
         List<String> poses = shipPoses != null ? shipPoses : DevShipsClient.poses(mc.level);
@@ -1012,7 +1012,7 @@ public final class DevScript {
      * held box within 6 blocks, limp, the first-person Limb opacity; last: the last held mob's box centre and lerp target up to 40 ticks after the hold (lmob); last: the Rig Air timer shown (airhud);
      * then the Ship Turn active (turn), the held Ship Overhead (sover) and its grip tangent (stan) as the client has them; the held
      * Ship's tips (ctips), the Air timer's time and rate (airt, airr), the farthest drawn Actuator grip from the eye (atip) and the
-     * wall-clock ms since the last traced tick (tms).
+     * wall-clock ms since the last traced tick (tms); last: the Actuators Furled.
      */
     private static String actuatorFields(Minecraft mc, LocalPlayer p) {
         ActuatorClient.State s = ActuatorClient.get(p);
@@ -1033,7 +1033,7 @@ public final class DevScript {
         }
         Entity last = lastHeldId < 0 || clientTicks - lastHeldTick > 40 ? null : mc.level.getEntity(lastHeldId);
         String lmob = last == null ? "-" : fmt(last.getBoundingBox().getCenter()) + ";" + fmt(new Vec3(last.lerpTargetX(), last.lerpTargetY(), last.lerpTargetZ()));
-        return String.format(Locale.ROOT, " gheld=%d gheavy=%b gship=%s far=%d xh=%s hmob=%s hpt=%s xd=%s limp=%b opa=%.2f harm=%s hdist=%.2f spot=%s spotok=%b aff=%s affarm=%s dual=%b gkey=%b farhand=%s lmob=%s airhud=%b turn=%b sover=%b stan=%s ctips=%s airt=%d airr=%.6f atip=%.2f tms=%d cbuild=%d cspd=%.4f",
+        return String.format(Locale.ROOT, " gheld=%d gheavy=%b gship=%s far=%d xh=%s hmob=%s hpt=%s xd=%s limp=%b opa=%.2f harm=%s hdist=%.2f spot=%s spotok=%b aff=%s affarm=%s dual=%b gkey=%b farhand=%s lmob=%s airhud=%b turn=%b sover=%b stan=%s ctips=%s airt=%d airr=%.6f atip=%.2f tms=%d cbuild=%d cspd=%.4f furled=%b",
                 s.heldId(), s.heavy(),
                 s.ship() == null ? "-" : s.ship().toShortString().replace(" ", ""), s.farTtl(), crosshair(mc), heldCentre(mc, s), point,
                 held == null ? "-" : String.format(Locale.ROOT, "%.3f", rayGap(p.getEyePosition(), p.getViewVector(1.0F), held.getBoundingBox())),
@@ -1041,7 +1041,7 @@ public final class DevScript {
                 aff.kind(), aff.arm(), ActuatorClient.dualWield(), ActuatorClient.grabKeyDown(), s.farHand() == net.minecraft.world.InteractionHand.OFF_HAND ? "off" : "main", lmob, dev.tentaworks.client.RigAirHud.shown(p),
                 dev.tentaworks.client.ShipTurn.active(), s.overhead(), s.shipTangent().getSerializedName(),
                 s.ship() == null ? "-" : dev.tentaworks.dev.DevActuators.tips(s.left(), s.right()),
-                dev.tentaworks.client.RigAirHud.shownTicks(), dev.tentaworks.client.RigAirHud.rate(), ActuatorRenderer.tipDistance(p), traceGapMs, s.ship() == null ? 0 : s.build().size(), s.speed());
+                dev.tentaworks.client.RigAirHud.shownTicks(), dev.tentaworks.client.RigAirHud.rate(), ActuatorRenderer.tipDistance(p), traceGapMs, s.ship() == null ? 0 : s.build().size(), s.speed(), Actuators.furled(p));
     }
 
     private static double rayGap(Vec3 eye, Vec3 look, net.minecraft.world.phys.AABB box) {
@@ -1068,9 +1068,9 @@ public final class DevScript {
         } catch (ReflectiveOperationException e) {
             hud = "?";
         }
-        return String.format(Locale.ROOT, "held=%d heavy=%b ship=%s far=%d refusal=%s hud=\"%s\" fitted=%b limp=%b brange=%.2f erange=%.2f speed=%.2f opa=%.2f",
+        return String.format(Locale.ROOT, "held=%d heavy=%b ship=%s far=%d refusal=%s hud=\"%s\" fitted=%b limp=%b brange=%.2f erange=%.2f speed=%.2f opa=%.2f furled=%b",
                 s.heldId(), s.heavy(), s.ship() == null ? "-" : s.ship().toShortString().replace(" ", ""), s.farTtl(), s.refusal().isEmpty() ? "-" : s.refusal(), hud,
-                Actuators.fitted(p), Actuators.limp(p), p.blockInteractionRange(), p.entityInteractionRange(), ActuatorClient.speedFactor(), TentaworksClientConfig.limbOpacity());
+                Actuators.fitted(p), Actuators.limp(p), p.blockInteractionRange(), p.entityInteractionRange(), ActuatorClient.speedFactor(), TentaworksClientConfig.limbOpacity(), Actuators.furled(p));
     }
 
     /** Simulated's active hold interaction (steering wheel, handle, throttle lever...) by class name, or "-"; reflection: Simulated is runtime only. */

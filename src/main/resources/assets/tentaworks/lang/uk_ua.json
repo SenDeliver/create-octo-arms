@@ -271,5 +271,10 @@
   "tentaworks.stats.reach": "Дальність:",
   "tentaworks.stats.reach.value": "%s бл.",
   "tentaworks.stats.top_speed": "Макс. швидкість:",
-  "tentaworks.stats.top_speed.value": "%s бл/с"
+  "tentaworks.stats.top_speed.value": "%s бл/с",
+  "key.tentaworks.furl": "Згорнути маніпулятори (увімк./вимк.)",
+  "tentaworks.actuators.furled": "Маніпулятори згорнуто: %s розгортає їх",
+  "tentaworks.actuators.unfurled": "Маніпулятори розгорнуто",
+  "tentaworks.refusal.grab.furled": "Маніпулятори згорнуто: розгорніть їх, щоб схопити",
+  "tentaworks.stats.actuators_furled": "Згорнуто: вимкнено до розгортання"
 }

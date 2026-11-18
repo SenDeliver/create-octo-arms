@@ -37,6 +37,7 @@ Actuators: two more arms for the Rig, one for each hand. The four Tentacles carr
 - Client config: `firstPerson.limbOpacity` (how solid Tentacles and Actuators are drawn in first person, 1.0 down to 0.1), `hud.crosshair` and `hud.hints` (turn the marks and the key hints off).
 - Server config `speed.check` (default on): off, the server never stops a Rig for moving faster than its top Speed.
 - Create's remaining-Air timer beside the hotbar now shows for the Rig whenever it uses Air (Active, Setting Down, holding a Grab unless Deft, during Far Use, and for 2 seconds after the Rig's Air goes down, as with Dual Wield, a Throw or a Create tool drawing on it), not only with a Diving Helmet under water. Never drawn twice: under water with a helmet Create's own timer shows. The time is how long the Air lasts at the rate the Rig uses it now (Idle, moving or climbing, the tier, Thrift, a Grab), eased over about a second, not Create's 1 Air a second; after a sip it follows the Air seen going. Client only (issue #36). Thanks @snipernumber3.
+- **Furl** key (unbound by default, in Controls under Octo Arms): turns the Actuators off and on again. Furled they tuck in low behind the shoulders, let go of what they hold, give no Far Use reach, carry no items (your own hands come back), show no crosshair marks and use no Air. The Tentacles keep working. Saved on the Rig, so it lasts through a relog, and other players see it.
 - Item tag `tentaworks:own_hand`: items in it stay in the wearer's own hand like a Potato Cannon or a map, so a mod that draws and animates them itself keeps its first-person view. TACZ guns are in it by default (issue #34). The tag is server data: the server needs this version for the default entry. Thanks @snipernumber3.
 
 ### Changed
@@ -69,7 +70,7 @@ Actuators: two more arms for the Rig, one for each hand. The four Tentacles carr
 
 ### Compatibility
 
-- Network changed (registrar "15"). 1.8.0 and 2.0.0 clients and servers cannot join each other, nor 2.0.0 beta.128 or older betas: update both.
+- Network changed (registrar "16"). 1.8.0 and 2.0.0 clients and servers cannot join each other, nor 2.0.0 beta.128 or older betas: update both.
 - Existing Rigs keep working and stay unfitted. Fit Actuators whenever you like; nothing on the Rig is lost.
 - Existing Rigs keep their Air while the cap doubles, so the Air bar shows half until the Rig is refilled once.
 - A server config file written by an older version keeps `reach.copper = 4.0`. Set it to 5.0 by hand to get the new default.

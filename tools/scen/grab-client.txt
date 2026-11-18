@@ -391,6 +391,51 @@ mark g9sclosed
 key key.keyboard.v
 awaitheld off 20
 signal g9sdone
+# GF Furl key: a held pig is set down, Grab and a cheat attack past vanilla's range refused, no lift, kept over a rejoin; unfurled: the lift, a hit and a Grab again
+await gf
+bind key.tentaworks.furl key.keyboard.k
+lookate minecraft:pig
+wait 3
+key key.keyboard.v
+awaitheld on 20
+mark gfheld
+key key.keyboard.k
+wait 30
+mark gfoff
+actuators gfoff
+view third
+wait 5
+shot grab_furled_third
+view first
+wait 5
+shot grab_furled_fp
+lookate minecraft:pig
+wait 3
+key key.keyboard.v
+wait 10
+actuators gfgrab
+attack minecraft:cow
+wait 10
+mark gfattack
+rejoin 40
+wait 60
+mark gfback
+actuators gfback
+key key.keyboard.k
+wait 30
+mark gfon
+actuators gfon
+attack minecraft:cow
+wait 10
+mark gfhit
+lookate minecraft:pig
+wait 3
+key key.keyboard.v
+awaitheld on 20
+mark gfheld2
+key key.keyboard.v
+awaitheld off 20
+signal gfdone
 await end
 wait 10
 quit

@@ -20,6 +20,10 @@ public final class TentaworksDataComponents {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Unit>> ACTUATORS = REGISTER.register(TentaworksIds.ACTUATORS,
             () -> DataComponentType.<Unit>builder().persistent(Unit.CODEC).networkSynchronized(StreamCodec.unit(Unit.INSTANCE)).build());
 
+    /** Present = the fitted Actuators are Furled: still on the Rig, fully off until the wearer unfurls them. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Unit>> ACTUATORS_FURLED = REGISTER.register(TentaworksIds.ACTUATORS_FURLED,
+            () -> DataComponentType.<Unit>builder().persistent(Unit.CODEC).networkSynchronized(StreamCodec.unit(Unit.INSTANCE)).build());
+
     private TentaworksDataComponents() {
     }
 

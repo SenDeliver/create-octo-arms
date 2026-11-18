@@ -108,9 +108,10 @@ check('G1 hold summary on the release line: ticks held, Air paid', hs and rl and
 pr = far[0] if far else None
 p0 = strace.get(st[0]['gt'] - 1) if st else None
 p1 = strace.get(st[0]['gt'] + 1) if st else None
+g1ctr = [t for g, t in ctr.items() if g <= spos.get('g1down', {}).get('gt', 0)]
 probe_paid = (p0['air'] - p1['air']) + (p1['debt'] - p0['debt']) if p0 and p1 else 99
 check('G1 claim probe (Far, 3.56 away) asks, charges no Far Use Air', pr and pr['asking'] and pr['far'] == 'FAR' and probe_paid < 0.1 and all(f['asking'] for f in far)
-      and not any(t['far'] for t in ctr.values()), f"{pr} paid over the claim {probe_paid:.4f}, client far ttl max {max(t['far'] for t in ctr.values())}")
+      and not any(t['far'] for t in g1ctr), f"{pr} paid over the claim {probe_paid:.4f}, client far ttl max {max((t['far'] for t in g1ctr), default=0)}")
 
 print('== G2 Throw')
 p1i = ids['p1']
@@ -282,6 +283,41 @@ check('[guard] G9s survival: the inventory key opens the survival inventory; Act
       any(x.endswith('.InventoryScreen') for x in screens) and sw and all(x['state'] == 'ACTIVE' and x['held'] == int(w9) for x in sw)
       and cw and all(x == 'ACTIVE' for x in cw) and rl and rl[0]['gt'] > end and rl[0]['why'] == 'release',
       f"screens {screens}, server {sorted(set(x['state'] for x in sw))}, client {sorted(set(cw))}, release {rl[:1]} after {end}")
+
+print('== GF Furl key')
+pf, wf = mob(11203.5, 154.5), mob(11206.5, 154.5)
+fspos = {m[0]: dict(gt=int(m[1]), lift=(float(m[2]), float(m[3])), held=int(m[4]), furled=m[5] == 'true')
+         for m in re.findall(r'SPOS (gf\w+) gt=(\d+) Dev .*? lift=(\S+),(\S+) gheld=(-?\d+) .* furled=(\w+)$', s, re.M)}
+fcact = {m[0]: dict(held=int(m[1]), erange=float(m[2]), furled=m[3] == 'true')
+         for m in re.findall(r'CACT (gf\w+) gt=\d+ held=(-?\d+) .*? erange=(\S+) .* furled=(\w+)$', c, re.M)}
+fwalk = {int(g): f == 'true' for g, f in re.findall(r'RWALK gt=(\d+) name=Dev .* furled=(\w+)$', c2, re.M)}
+gt = lambda tag: fspos.get(tag, {}).get('gt', -1)
+rl = [g for g in grabs('release', pf) if gt('gfheld') <= g['gt'] <= gt('gfoff')] if pf else []
+check('GF Furl key: the held pig is set down by the normal release (why=furled), no Actuator hold, Furled on the Rig',
+      pf and fspos.get('gfheld', {}).get('held') == int(pf) and rl and rl[0]['why'] == 'furled'
+      and fspos.get('gfoff', {}).get('held') == -1 and fspos.get('gfoff', {}).get('furled') and fcact.get('gfoff', {}).get('furled'),
+      f"pig {pf}, held {fspos.get('gfheld', {}).get('held')} -> {fspos.get('gfoff', {}).get('held')}, release {rl[:1]}, SPOS {fspos.get('gfoff')}, CACT {fcact.get('gfoff')}")
+check('GF Furled: no Far Use lift on the server and the client',
+      fspos.get('gfheld', {}).get('lift', (0, 0))[1] > 0 and fspos.get('gfoff', {}).get('lift') == (0.0, 0.0) and abs(fcact.get('gfoff', {}).get('erange', 0) - 3.0) < 0.01,
+      f"lift {fspos.get('gfheld', {}).get('lift')} -> {fspos.get('gfoff', {}).get('lift')}, client entity range {fcact.get('gfoff', {}).get('erange')}")
+rf = [g for g in grab if g['kind'] == 'refuse' and gt('gfoff') <= g['gt'] <= gt('gfattack')]
+hoff = [h for h in hurt if h['id'] == wf and gt('gfoff') <= h['gt'] <= gt('gfback')] if wf else []
+check('GF Furled: the server refuses a Grab (why=furled) and a cheat attack past vanilla range (no damage)',
+      rf and all(g['why'] == 'furled' for g in rf) and fcact.get('gfgrab', {}).get('held') == -1 and wf and not hoff,
+      f"refusals {[(g['target'], g['why']) for g in rf]}, held {fcact.get('gfgrab', {}).get('held')}, cow {wf} hurt {hoff}")
+check('GF Furled survives a rejoin (server and client)', fspos.get('gfback', {}).get('furled') and fcact.get('gfback', {}).get('furled'),
+      f"SPOS {fspos.get('gfback')}, CACT {fcact.get('gfback')}")
+won = [v for g, v in fwalk.items() if gt('gfoff') <= g <= gt('gfattack')]
+wbefore = [v for g, v in fwalk.items() if gt('gfheld') - 20 <= g < gt('gfheld')]
+check('GF Dev2 sees the Furled state', won and all(won) and wbefore and not any(wbefore), f"Dev2 furled while off {sorted(set(won))} over {len(won)}, before {sorted(set(wbefore))}")
+hon = [h for h in hurt if h['id'] == wf and gt('gfon') <= h['gt'] <= gt('gfhit')] if wf else []
+check('GF unfurled: the lift, a far hit and a Grab again',
+      fspos.get('gfon', {}).get('furled') is False and fspos.get('gfon', {}).get('lift', (0, 0))[1] > 0 and fcact.get('gfon', {}).get('erange', 0) > 3.01
+      and hon and fspos.get('gfheld2', {}).get('held') == int(pf or -2),
+      f"SPOS {fspos.get('gfon')}, CACT {fcact.get('gfon')}, hit {[h['amount'] for h in hon]}, held {fspos.get('gfheld2', {}).get('held')}")
+ov = [t for g, t in overlay if gt('gfheld') <= g <= gt('gfhit')]
+check('GF action-bar line on each toggle', any(t.startswith('Actuators Furled:') and ' K ' in t for t in ov) and any(t == 'Actuators unfurled' for t in ov),
+      f"overlay {ov}")
 
 exc = [l for l in (c + c2 + s).splitlines() if 'Exception' in l and 'ApiStatus' not in l and 'authlib' not in l and 'neoforge-client.new.tmp.toml' not in l
        and 'Error loading class: net/irisshaders/' not in l and 'org.gradle.' not in l and 'MessageIOException' not in l

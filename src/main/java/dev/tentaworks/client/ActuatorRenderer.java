@@ -87,7 +87,7 @@ import static dev.tentaworks.client.TentacleRenderer.PX;
  * tool strikes the target in step with the vanilla swing, anything else thrusts at it, a held use takes its pose by
  * {@link UseAnim}; with Dual Wield both strike in turn. At rest they curl above the shoulders, breathing; they lean toward a far
  * target under the crosshair, point at a grabbable one, hold a Grab ({@link ActuatorClient#holdArm}), follow a Throw through, and
- * hang limp without Air. In first person they enter from the frame's sides; an arm working near the eye is drawn in the hand
+ * hang limp without Air. Furled they lie folded down the back of the tank, off. In first person they enter from the frame's sides; an arm working near the eye is drawn in the hand
  * pass in place of the vanilla hand, one reaching into the world in the world pass.
  * <p>
  * Inputs change once per tick ({@link #tick}); every pose level chases its goal every frame ({@link #update}), and the own
@@ -104,7 +104,7 @@ public final class ActuatorRenderer {
     private static final double REACH_LIFT = 0.45;
     /** How straight each pose's chain is (wrist distance / chain length). */
     private static final double POINT_STRAIGHT = 0.85, FAR_STRAIGHT = 0.88, HOLD_STRAIGHT = 0.9, HEAVY_STRAIGHT = 0.8, THROW_STRAIGHT = 0.97,
-            LIMP_STRAIGHT = 0.88, CARRY_STRAIGHT = 0.8, FOLD_STRAIGHT = 0.5;
+            LIMP_STRAIGHT = 0.88, CARRY_STRAIGHT = 0.8, FOLD_STRAIGHT = 0.5, FURL_STRAIGHT = 0.55;
     /** Third person: a carried item follows the head's pitch up to this far up or down, degrees (an arm does not reach behind the head). */
     private static final float CARRY_PITCH = 50;
     /** First person: a carried item's size at the eye against the third-person one, its size at the end of a far reach, and the tip distances between. */
@@ -218,7 +218,7 @@ public final class ActuatorRenderer {
 
     /** One player's Actuators. */
     static final class Anim {
-        boolean fitted, limp, rightHanded = true, heavy;
+        boolean fitted, limp, furled, rightHanded = true, heavy;
         int flexStart = Integer.MIN_VALUE / 2, grabStart = Integer.MIN_VALUE / 2, throwStart = Integer.MIN_VALUE / 2, hissTick = Integer.MIN_VALUE / 2;
         final Arm[] arms = {new Arm(LEFT), new Arm(RIGHT)};
         final boolean[] throwArm = new boolean[2];
@@ -229,7 +229,7 @@ public final class ActuatorRenderer {
         Direction shipFace = Direction.UP, shipTangent = Direction.NORTH;
         final ActuatorStatePacket.Tip[] tips = {ActuatorStatePacket.Tip.NONE, ActuatorStatePacket.Tip.NONE};
         long tipsAt;
-        double limpK, lowAir;
+        double limpK, furlK, lowAir;
         float time = Float.NaN;
 
         Anim(boolean fitted) {
@@ -289,7 +289,7 @@ public final class ActuatorRenderer {
 
     /**
      * The hand's Actuator stands in for it, so the vanilla hand, arm and item of that hand are not drawn and the body's arm
-     * stays still: Actuators ready (fitted, with Air), no Extendo Grip in either hand (Create lifts the reach itself), and not an
+     * stays still: Actuators ready (fitted, not Furled, with Air), no Extendo Grip in either hand (Create lifts the reach itself), and not an
      * item Create or vanilla draws in first person in its own way (Potato Cannon, Worldshaper, a map).
      */
     public static boolean standsIn(LivingEntity entity, InteractionHand hand) {
@@ -412,11 +412,12 @@ public final class ActuatorRenderer {
             a.hold = HoldArm.NONE;
             a.heldId = a.glanceId = -1;
             a.ship = null;
-            a.limpK = 0;
+            a.limpK = a.furlK = 0;
             return;
         }
         boolean own = p == mc.player, ready = Actuators.ready(p), extendo = FarUse.extendo(p);
-        a.limp = !ready;
+        a.furled = Actuators.furled(p);
+        a.limp = !ready && !a.furled;
         a.rightHanded = p.getMainArm() == HumanoidArm.RIGHT;
         ActuatorClient.State s = ActuatorClient.get(p);
         HoldArm hold = ready && s.holding() ? s.arm() : HoldArm.NONE;
@@ -591,7 +592,7 @@ public final class ActuatorRenderer {
 
     /** The mob an idle Actuator glances at: the nearest living one within {@link #GLANCE_RANGE} (wearers near the camera only), or -1. */
     private static int glance(Minecraft mc, Player p, Anim a) {
-        if (a.limp || p.distanceToSqr(mc.gameRenderer.getMainCamera().getPosition()) > 32 * 32) return -1;
+        if (a.limp || a.furled || p.distanceToSqr(mc.gameRenderer.getMainCamera().getPosition()) > 32 * 32) return -1;
         Entity best = null;
         double bestD = GLANCE_RANGE * GLANCE_RANGE;
         for (Mob m : p.level().getEntitiesOfClass(Mob.class, p.getBoundingBox().inflate(GLANCE_RANGE), e -> e.isAlive() && e.getId() != a.heldId)) {
@@ -625,6 +626,7 @@ public final class ActuatorRenderer {
         a.time = time;
         boolean own = p == mc.player;
         a.limpK = chase(a.limpK, a.limp ? 1 : 0, dt, ActuatorPose.IDLE_TAU, snap);
+        a.furlK = chase(a.furlK, a.furled ? 1 : 0, dt, ActuatorPose.FURL_TAU, snap);
         Entity glance = a.glanceId >= 0 ? p.level().getEntity(a.glanceId) : null;
         double range = pickRange(p);
         for (Arm arm : a.arms) {
@@ -789,7 +791,7 @@ public final class ActuatorRenderer {
                 if (space.firstPerson())
                     SEEN[arm.main ? 0 : 1] = new Seen(chain.joints(), aim.grip(), arm.carry < REST_LEVEL && arm.act < REST_LEVEL && arm.hold < REST_LEVEL
                             && arm.point < REST_LEVEL, pass == Pass.WORLD);
-                arms[i] = toTank(toTank, space, chain, aim, d, arm.side);
+                arms[i] = space.firstPerson() && a.furlK > 1 - REST_LEVEL ? null : toTank(toTank, space, chain, aim, d, arm.side);
             }
         }
         boolean[] tip = new boolean[2];
@@ -912,6 +914,7 @@ public final class ActuatorRenderer {
             }
         }
         if (a.limpK > 0) pose = pose.blend(limpPose(side, s, b, space), a.limpK);
+        if (a.furlK > 0) pose = pose.blend(furledPose(side, s, b, space), ActuatorPose.smooth(a.furlK));
         return pose;
     }
 
@@ -1105,6 +1108,13 @@ public final class ActuatorRenderer {
     private static Aim limpPose(int side, Vec3 s, Body b, TentacleRenderer.Space space) {
         Vec3 sh = ActuatorPose.shoulder(side);
         return free(s, b.held(space, sh.add(side * 0.3, -0.62, -0.02)), b.heldDir(space, new Vec3(side, 0.25, 0.35)), LIMP_STRAIGHT, LIMP_OPEN, b);
+    }
+
+    /** Furled: folded down the back of the tank beside the Tentacles, gripper shut, out of every first-person view. */
+    private static Aim furledPose(int side, Vec3 s, Body b, TentacleRenderer.Space space) {
+        Vec3 sh = ActuatorPose.shoulder(side);
+        return free(s, b.held(space, sh.add(side * ActuatorPose.FURL_OUT, -ActuatorPose.FURL_DOWN, ActuatorPose.FURL_BACK)),
+                b.heldDir(space, new Vec3(side * 0.5, 0.6, 1)), FURL_STRAIGHT, 0, b);
     }
 
     /** Rest Pose straight in tank space, for the inventory preview (no world). */

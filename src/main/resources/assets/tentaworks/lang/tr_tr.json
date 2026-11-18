@@ -271,5 +271,10 @@
   "tentaworks.stats.reach": "Erişim:",
   "tentaworks.stats.reach.value": "%s blok",
   "tentaworks.stats.top_speed": "Azami Hız:",
-  "tentaworks.stats.top_speed.value": "%s blok/sn"
+  "tentaworks.stats.top_speed.value": "%s blok/sn",
+  "key.tentaworks.furl": "Aktüatörleri katla (aç/kapat)",
+  "tentaworks.actuators.furled": "Aktüatörler katlandı: %s onları açar",
+  "tentaworks.actuators.unfurled": "Aktüatörler açıldı",
+  "tentaworks.refusal.grab.furled": "Aktüatörler katlı: yakalamak için onları aç",
+  "tentaworks.stats.actuators_furled": "Katlı: açılana kadar kapalı"
 }

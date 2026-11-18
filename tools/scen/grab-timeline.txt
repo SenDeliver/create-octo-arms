@@ -165,4 +165,10 @@ gamemode survival Dev
 #sleep 0.5
 #signal g9s
 #await g9sdone
+# GF Furl key: Dev2 watches from the south
+tp Dev 11200.5 -60 154.5 -90 0
+tp Dev2 11203.5 -60 160.5 180 0
+#sleep 0.5
+#signal gf
+#await gfdone
 #signal end

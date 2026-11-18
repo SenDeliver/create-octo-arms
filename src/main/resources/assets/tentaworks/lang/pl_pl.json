@@ -271,5 +271,10 @@
   "tentaworks.stats.reach": "Zasięg:",
   "tentaworks.stats.reach.value": "%s bl.",
   "tentaworks.stats.top_speed": "Maks. prędkość:",
-  "tentaworks.stats.top_speed.value": "%s bl./s"
+  "tentaworks.stats.top_speed.value": "%s bl./s",
+  "key.tentaworks.furl": "Zwiń siłowniki (wł./wył.)",
+  "tentaworks.actuators.furled": "Siłowniki zwinięte: %s je rozwija",
+  "tentaworks.actuators.unfurled": "Siłowniki rozwinięte",
+  "tentaworks.refusal.grab.furled": "Siłowniki zwinięte: rozwiń je, aby złapać",
+  "tentaworks.stats.actuators_furled": "Zwinięte: wyłączone do rozwinięcia"
 }

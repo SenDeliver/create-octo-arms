@@ -271,5 +271,10 @@
   "tentaworks.stats.reach": "臂展：",
   "tentaworks.stats.reach.value": "%s格",
   "tentaworks.stats.top_speed": "最高速度：",
-  "tentaworks.stats.top_speed.value": "%s格/秒"
+  "tentaworks.stats.top_speed.value": "%s格/秒",
+  "key.tentaworks.furl": "收起执行臂（开/关）",
+  "tentaworks.actuators.furled": "执行臂已收起：按 %s 展开",
+  "tentaworks.actuators.unfurled": "执行臂已展开",
+  "tentaworks.refusal.grab.furled": "执行臂已收起：展开后才能抓取",
+  "tentaworks.stats.actuators_furled": "已收起：展开前停用"
 }

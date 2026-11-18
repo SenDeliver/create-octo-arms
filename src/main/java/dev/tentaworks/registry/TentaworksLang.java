@@ -98,6 +98,9 @@ public final class TentaworksLang {
         refusal(GRAB, "own", "You stand on that Ship and nothing else holds you");
         refusal(GRAB, "mass", "Too heavy for this Rig");
         refusal(GRAB, "crewed", "Someone is on board");
+        refusal(GRAB, "furled", "Actuators Furled: unfurl them to Grab");
+        REGISTRATE.addRawLang("tentaworks.actuators.furled", "Actuators Furled: %s unfurls them");
+        REGISTRATE.addRawLang("tentaworks.actuators.unfurled", "Actuators unfurled");
         REGISTRATE.addRawLang("tentaworks.rig.deft_idle", "Deft does nothing until Actuators are fitted");
         REGISTRATE.addRawLang("death.attack.tentaworks.impact", "%1$s was hit by an Impact from %2$s");
         REGISTRATE.addRawLang("death.attack.tentaworks.impact.player", "%1$s was hit by an Impact while fighting %2$s");
@@ -123,6 +126,7 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang("key.tentaworks.settings", "Rig Settings (worn Rig)");
         REGISTRATE.addRawLang("key.tentaworks.toggle", "Toggle Tentacle Rig (key-only mode)");
         REGISTRATE.addRawLang("key.tentaworks.grab", "Grab (Actuators)");
+        REGISTRATE.addRawLang("key.tentaworks.furl", "Furl Actuators (on/off)");
 
         REGISTRATE.addRawLang("tentaworks.stats.air", "Air:");
         REGISTRATE.addRawLang("tentaworks.stats.air.value", "%s / %s");
@@ -133,6 +137,7 @@ public final class TentaworksLang {
         REGISTRATE.addRawLang("tentaworks.stats.air_use", "Air use:");
         REGISTRATE.addRawLang("tentaworks.stats.air_use.value", "%s%%");
         REGISTRATE.addRawLang("tentaworks.stats.actuators", "Actuators fitted");
+        REGISTRATE.addRawLang("tentaworks.stats.actuators_furled", "Furled: off until unfurled");
         REGISTRATE.addRawLang("tentaworks.goggles.rig_block", "Tentacle Rig");
         REGISTRATE.addRawLang("tentaworks.goggles.percent", "(%s%%)");
         REGISTRATE.addRawLang("tentaworks.goggles.full", "Full");

@@ -117,6 +117,8 @@ public final class Grab {
     static final double SHIP_GAIN = 10.0;
     static final double SHIP_MAX_SPEED = 30.0;
     public static final double SHIP_INSIDE = 0.5;
+    /** The lang key of the refusal while the Actuators are Furled. */
+    public static final String FURLED = TentaworksLang.refusalKey(TentaworksLang.GRAB, "furled");
     static final int TURNS_PER_TICK = 2;
     private static final ResourceLocation HEAVY_ID = TentaworksIds.id(TentaworksIds.ACTUATOR_HEAVY);
     private static final Map<UUID, Held> HOLDS = new HashMap<>();
@@ -467,6 +469,7 @@ public final class Grab {
     /** Why this wearer cannot Grab now ("" silently), or null. */
     private static @Nullable String wearerRefusal(ServerPlayer wearer) {
         if (holding(wearer) || wearer.isSpectator() || !wearer.isAlive() || !Actuators.fitted(wearer) || !rated(wearer)) return "";
+        if (Actuators.furled(wearer)) return "furled";
         return RigAir.has(wearer) ? null : "no_air";
     }
 
@@ -742,7 +745,7 @@ public final class Grab {
     }
 
     private static void throwAlong(ServerPlayer wearer, Vec3 look) {
-        if (!holding(wearer)) {
+        if (!holding(wearer) || !Actuators.on(wearer)) {
             reply(wearer, "");
             return;
         }
@@ -957,7 +960,7 @@ public final class Grab {
         boolean full = h.arm.uses(InteractionHand.MAIN_HAND) && !wearer.getMainHandItem().isEmpty()
                 || h.arm.uses(InteractionHand.OFF_HAND) && !wearer.getOffhandItem().isEmpty();
         boolean underfoot = h.ship != null && !gone && level == wearer.level() && holdsUp(wearer, frames(h.parts), RigServer.state(wearer).carries(), RigServer.grips(wearer));
-        return new Hold.Status(wearer.isAlive(), Actuators.fitted(wearer), RigAir.has(wearer), RigServer.state(wearer) == RigState.CRAWL, gone,
+        return new Hold.Status(wearer.isAlive(), Actuators.on(wearer), RigAir.has(wearer), RigServer.state(wearer) == RigState.CRAWL, gone,
                 level == wearer.level(), h.far, full, underfoot, h.ship != null ? ShipWeight.farTicks(Hold.FAR_TICKS, h.weight.servo()) : Hold.FAR_TICKS);
     }
 

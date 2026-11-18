@@ -271,5 +271,10 @@
   "tentaworks.stats.reach": "도달 거리:",
   "tentaworks.stats.reach.value": "%s블록",
   "tentaworks.stats.top_speed": "최고 속도:",
-  "tentaworks.stats.top_speed.value": "%s블록/초"
+  "tentaworks.stats.top_speed.value": "%s블록/초",
+  "key.tentaworks.furl": "액추에이터 접기 (켜기/끄기)",
+  "tentaworks.actuators.furled": "액추에이터를 접었습니다: %s 키로 폅니다",
+  "tentaworks.actuators.unfurled": "액추에이터를 폈습니다",
+  "tentaworks.refusal.grab.furled": "액추에이터가 접혀 있습니다: 움켜쥐려면 펴세요",
+  "tentaworks.stats.actuators_furled": "접힘: 펼 때까지 꺼짐"
 }

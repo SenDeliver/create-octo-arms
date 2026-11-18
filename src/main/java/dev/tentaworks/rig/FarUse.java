@@ -175,7 +175,7 @@ public final class FarUse {
     /** {@link #lifts} for this wearer now. "Rig out" is any state but Stowed ({@link RigSide#deployed}). */
     public static boolean lifting(ServerPlayer player) {
         ItemStack rig = WornRig.of(player).stack();
-        return lifts(Actuators.fitted(rig), RigSettings.of(rig).farUse(), RigSide.deployed(player), extendo(player), Grab.heavy(player),
+        return lifts(Actuators.on(rig), RigSettings.of(rig).farUse(), RigSide.deployed(player), extendo(player), Grab.heavy(player),
                 Actuators.limp(player));
     }
 
@@ -184,7 +184,7 @@ public final class FarUse {
         return AllItems.EXTENDO_GRIP.isIn(player.getMainHandItem()) || AllItems.EXTENDO_GRIP.isIn(player.getOffhandItem());
     }
 
-    static void tick(ServerPlayer player) {
+    public static void tick(ServerPlayer player) {
         boolean on = lifting(player);
         double reach = on ? ActuatorReach.pickRange(TentacleRigItem.reach(player)) : 0;
         lift(player.getAttribute(Attributes.BLOCK_INTERACTION_RANGE), REACH_ID, reach);

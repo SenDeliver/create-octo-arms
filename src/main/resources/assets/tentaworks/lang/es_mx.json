@@ -271,5 +271,10 @@
   "tentaworks.stats.reach": "Alcance:",
   "tentaworks.stats.reach.value": "%s bloques",
   "tentaworks.stats.top_speed": "Vel. máxima:",
-  "tentaworks.stats.top_speed.value": "%s bl/s"
+  "tentaworks.stats.top_speed.value": "%s bl/s",
+  "key.tentaworks.furl": "Recoger actuadores (sí/no)",
+  "tentaworks.actuators.furled": "Actuadores recogidos: %s los despliega",
+  "tentaworks.actuators.unfurled": "Actuadores desplegados",
+  "tentaworks.refusal.grab.furled": "Actuadores recogidos: despliégalos para atrapar",
+  "tentaworks.stats.actuators_furled": "Recogidos: apagados hasta desplegarlos"
 }

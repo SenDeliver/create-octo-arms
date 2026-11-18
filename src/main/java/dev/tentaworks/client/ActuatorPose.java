@@ -42,6 +42,10 @@ public final class ActuatorPose {
      * ticks, the rest within {@link #RETARGET_TICKS}.
      */
     public static final double ACT_TAU = 0.5, BACK_TAU = 1.1, AIM_TAU = 0.5, POSE_TAU = 1.0, IDLE_TAU = 2.2;
+    /** Furling and unfurling: about a second each way, slower than any other change of pose. */
+    public static final double FURL_TAU = 5;
+    /** Furled wrist from the shoulder (tank space): a little out, down the tank and behind it. */
+    public static final double FURL_OUT = 0.1, FURL_DOWN = 0.5, FURL_BACK = 0.14;
     /** A new target counts as reached this many ticks after the crosshair moved to it: at most {@link #RETARGET_LEFT} of the way is left. */
     public static final double RETARGET_TICKS = 3, RETARGET_LEFT = 0.01;
     /** Swing progress (0..1, vanilla's attack animation) at the end of the wind-up, at the impact and at the end of the rebound. */

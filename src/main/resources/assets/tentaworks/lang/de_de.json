@@ -271,5 +271,10 @@
   "tentaworks.stats.reach": "Reichweite:",
   "tentaworks.stats.reach.value": "%s Blöcke",
   "tentaworks.stats.top_speed": "Höchsttempo:",
-  "tentaworks.stats.top_speed.value": "%s Bl./s"
+  "tentaworks.stats.top_speed.value": "%s Bl./s",
+  "key.tentaworks.furl": "Aktuatoren einrollen (an/aus)",
+  "tentaworks.actuators.furled": "Aktuatoren eingerollt: %s rollt sie aus",
+  "tentaworks.actuators.unfurled": "Aktuatoren ausgerollt",
+  "tentaworks.refusal.grab.furled": "Aktuatoren eingerollt: Rolle sie aus, um zu packen",
+  "tentaworks.stats.actuators_furled": "Eingerollt: aus, bis sie ausgerollt werden"
 }

@@ -271,5 +271,10 @@
   "tentaworks.stats.reach": "Tầm với:",
   "tentaworks.stats.reach.value": "%s khối",
   "tentaworks.stats.top_speed": "Tốc độ tối đa:",
-  "tentaworks.stats.top_speed.value": "%s khối/giây"
+  "tentaworks.stats.top_speed.value": "%s khối/giây",
+  "key.tentaworks.furl": "Thu gọn Tay máy (bật/tắt)",
+  "tentaworks.actuators.furled": "Đã thu gọn Tay máy: %s để mở ra",
+  "tentaworks.actuators.unfurled": "Đã mở Tay máy",
+  "tentaworks.refusal.grab.furled": "Tay máy đang thu gọn: hãy mở ra để Tóm",
+  "tentaworks.stats.actuators_furled": "Thu gọn: tắt cho đến khi mở ra"
 }

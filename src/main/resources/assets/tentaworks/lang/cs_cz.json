@@ -271,5 +271,10 @@
   "tentaworks.stats.reach": "Dosah:",
   "tentaworks.stats.reach.value": "%s bl.",
   "tentaworks.stats.top_speed": "Max. rychlost:",
-  "tentaworks.stats.top_speed.value": "%s bl./s"
+  "tentaworks.stats.top_speed.value": "%s bl./s",
+  "key.tentaworks.furl": "Svinout aktuátory (zap/vyp)",
+  "tentaworks.actuators.furled": "Aktuátory svinuté: %s je rozvine",
+  "tentaworks.actuators.unfurled": "Aktuátory rozvinuté",
+  "tentaworks.refusal.grab.furled": "Aktuátory svinuté: rozviň je, abys mohl uchopit",
+  "tentaworks.stats.actuators_furled": "Svinuté: vypnuté, dokud se nerozvinou"
 }

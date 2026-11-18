@@ -151,7 +151,7 @@ public final class ActuatorSight {
         mark = Mark.NONE;
         cue = Affordance.NONE;
         far = beyond = false;
-        if (player == null || mc.level == null || player.isSpectator() || !Actuators.fitted(player)) return;
+        if (player == null || mc.level == null || player.isSpectator() || !Actuators.on(player)) return;
         cue = shown(ActuatorClient.affordance());
         if (cue.kind() != cueWas.kind() || cue.arm() != cueWas.arm()) cueSince = player.tickCount;
         double reach = TentacleRigItem.reach(player);

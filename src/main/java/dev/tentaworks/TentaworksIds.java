@@ -20,6 +20,8 @@ public final class TentaworksIds {
     public static final String ACTUATOR = "actuator";
     public static final String INCOMPLETE_ACTUATOR = "incomplete_actuator";
     public static final String ACTUATORS = "actuators";
+    public static final String ACTUATORS_FURLED = "actuators_furled";
+    public static final String FURL = "furl";
     public static final String DEFT = "deft";
     public static final String BOSSES = "bosses";
     public static final String OWN_HAND = "own_hand";

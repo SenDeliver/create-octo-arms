@@ -65,6 +65,7 @@ public final class RigStats {
         if (use != 100) out.add(line(indent, "air_use", use));
         if (!Actuators.fitted(rig)) return;
         out.add(Component.literal(indent).append(Component.translatable("tentaworks.stats.actuators").withStyle(ChatFormatting.GOLD)));
+        if (Actuators.furled(rig)) out.add(Component.literal(indent).append(Component.translatable("tentaworks.stats.actuators_furled").withStyle(ChatFormatting.GRAY)));
     }
 
     private static MutableComponent line(String indent, String key, Object value) {

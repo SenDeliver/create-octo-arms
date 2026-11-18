@@ -131,12 +131,13 @@ Put a tool in each hand and both Actuators work at once. Two pickaxes mine at th
 | Tap `V` | Holding | Set Down where you look |
 | Hold `V` + mouse wheel | Holding | Move it nearer or farther |
 | Attack | Holding | Throw. With an item in the main hand: hold `V` + attack |
+| **Furl Actuators** (unbound) | Octo Rig | Turns the Actuators off (tucked in, your own hands back) and on again |
 | Sneak + Use the Rig item, not aimed at a block | Rig in hand | Opens the **Rig Settings** |
 | Use the Rig item on a block | Rig in hand | Places it as a **Rig Block** |
 | Use with an empty hand | On a Rig Block | Picks it up, with its Air and settings |
 | Hold `W` | Mouse over a Rig or Tentacle in the inventory | Ponder |
 
-Key binds (Controls > Octo Arms): **Grab (Actuators)** is `V`. **Rig Settings (worn Rig)** and **Toggle Tentacle Rig (key-only mode)** are unbound by default. With Curios installed its own key stays on `G`.
+Key binds (Controls > Octo Arms): **Grab (Actuators)** is `V`. **Rig Settings (worn Rig)**, **Toggle Tentacle Rig (key-only mode)** and **Furl Actuators (on/off)** are unbound by default. With Curios installed its own key stays on `G`.
 
 **Rig Settings**: Standing Height (0 to Reach, default 1.5 blocks), Speed, Activation Mode (Double Jump or key only) and, on an Octo Rig, Far Use.
 

@@ -8,7 +8,8 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * The Actuators of a Rig (component {@code tentaworks:actuators}, adr/0007): present means fitted. They work Stowed or Active,
- * wherever the wearer's hands work, from the Rig's Air; limp when it has none.
+ * wherever the wearer's hands work, from the Rig's Air; limp when it has none. Furled ({@code tentaworks:actuators_furled}) they
+ * stay fitted but are off: no Grab, no Far Use, no carried item, no Air.
  */
 public final class Actuators {
     private Actuators() {
@@ -23,6 +24,32 @@ public final class Actuators {
         return fitted(WornRig.of(entity).stack());
     }
 
+    /** Fitted and Furled: the wearer turned the Actuators off. */
+    public static boolean furled(ItemStack rig) {
+        return fitted(rig) && rig.has(TentaworksDataComponents.ACTUATORS_FURLED.get());
+    }
+
+    public static boolean furled(LivingEntity entity) {
+        return furled(WornRig.of(entity).stack());
+    }
+
+    /** Fitted and not Furled: the Actuators are in use (limp or not). */
+    public static boolean on(ItemStack rig) {
+        return fitted(rig) && !rig.has(TentaworksDataComponents.ACTUATORS_FURLED.get());
+    }
+
+    public static boolean on(LivingEntity entity) {
+        return on(WornRig.of(entity).stack());
+    }
+
+    /** Furls ({@code furled}) or unfurls the Actuators of {@code rig} in place; false when it has none. */
+    public static boolean furl(ItemStack rig, boolean furled) {
+        if (!fitted(rig)) return false;
+        if (furled) rig.set(TentaworksDataComponents.ACTUATORS_FURLED.get(), Unit.INSTANCE);
+        else rig.remove(TentaworksDataComponents.ACTUATORS_FURLED.get());
+        return true;
+    }
+
     /** A copy of {@code rig} with Actuators fitted; everything else on it stays. */
     public static ItemStack fit(ItemStack rig) {
         ItemStack out = rig.copyWithCount(1);
@@ -35,14 +62,14 @@ public final class Actuators {
         return rig.getItem() instanceof TentacleRigItem item ? item.tier().throwSpeed() : 0;
     }
 
-    /** Fitted, but the Rig has no Air left (creative players never run out): the Actuators hang limp and act on nothing. */
+    /** {@link #on}, but the Rig has no Air left (creative players never run out): the Actuators hang limp and act on nothing. */
     public static boolean limp(Player player) {
-        return fitted(player) && !RigAir.has(player);
+        return on(player) && !RigAir.has(player);
     }
 
-    /** Fitted and not limp: the Actuators may act. */
+    /** {@link #on} and not limp: the Actuators may act. */
     public static boolean ready(Player player) {
-        return fitted(player) && RigAir.has(player);
+        return on(player) && RigAir.has(player);
     }
 
     public static double farUseCost(Player player) {

@@ -271,5 +271,10 @@
   "tentaworks.stats.reach": "Portata:",
   "tentaworks.stats.reach.value": "%s blocchi",
   "tentaworks.stats.top_speed": "Velocità max:",
-  "tentaworks.stats.top_speed.value": "%s bl/s"
+  "tentaworks.stats.top_speed.value": "%s bl/s",
+  "key.tentaworks.furl": "Ritira gli attuatori (sì/no)",
+  "tentaworks.actuators.furled": "Attuatori ritirati: %s li estende",
+  "tentaworks.actuators.unfurled": "Attuatori estesi",
+  "tentaworks.refusal.grab.furled": "Attuatori ritirati: estendili per afferrare",
+  "tentaworks.stats.actuators_furled": "Ritirati: spenti finché non vengono estesi"
 }

@@ -271,5 +271,10 @@
   "tentaworks.stats.reach": "リーチ：",
   "tentaworks.stats.reach.value": "%sブロック",
   "tentaworks.stats.top_speed": "最高速度：",
-  "tentaworks.stats.top_speed.value": "%sブロック/秒"
+  "tentaworks.stats.top_speed.value": "%sブロック/秒",
+  "key.tentaworks.furl": "アクチュエーターを畳む（オン/オフ）",
+  "tentaworks.actuators.furled": "アクチュエーターを畳みました：%s で広げます",
+  "tentaworks.actuators.unfurled": "アクチュエーターを広げました",
+  "tentaworks.refusal.grab.furled": "アクチュエーターが畳まれています：つかむには広げてください",
+  "tentaworks.stats.actuators_furled": "畳み中：広げるまで停止"
 }

@@ -190,7 +190,7 @@ public final class ActuatorHud {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         return player != null && !mc.options.hideGui && mc.screen == null && !player.isSpectator() && mc.options.getCameraType().isFirstPerson()
-                && TentaworksClientConfig.crosshair() && Actuators.fitted(player);
+                && TentaworksClientConfig.crosshair() && Actuators.on(player);
     }
 
     /** The out-of-Reach flash is showing (a click just landed on nothing because its target was out of Reach). */
@@ -412,7 +412,7 @@ public final class ActuatorHud {
     private static void render(GuiGraphics g, DeltaTracker delta) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
-        if (player == null || mc.options.hideGui || player.isSpectator() || !Actuators.fitted(player)) return;
+        if (player == null || mc.options.hideGui || player.isSpectator() || !Actuators.on(player)) return;
         Component line = line(mc, player);
         if (line == null) return;
         int right = g.guiWidth() / 2 - 91 - GAP;
