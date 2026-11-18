@@ -88,6 +88,7 @@ With Actuators fitted, **Ship Grab** takes a whole Ship in both Actuators: it fo
 - **EMI** (optional): Create on 1.21.1 ships only a JEI plugin, so EMI shows Create's recipes (Sequenced Assembly and Mechanical Crafting, the Tentacle, Rig and Actuator included) only with JEI or TMRV installed too.
 - **Sable** (optional): full Ship support and Ship Grab, Create Aeronautics compatible.
 - **Curios** (optional): the Rig fits the back slot, so a chestplate stays on. A Rig there is a Rig, not armor.
+- **Better Combat** (optional, 1.21.1): a Better Combat weapon stays in your own hand and Better Combat owns its swing, hit and range. The Actuators still show in first person.
 - **Claim and protection mods**: Grab and Far Use go through the loader's interaction events, so they can refuse them.
 
 ![Engineer's Goggles on a Rig Block under a spinning motor: Air, fill rate, Reach and Top Speed](https://raw.githubusercontent.com/SenDeliver/create-octo-arms/1.21.1/docs/images/goggles-rig-block.png)

@@ -4,18 +4,16 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import com.simibubi.create.content.equipment.armor.BacktankUtil;
-import com.simibubi.create.content.equipment.potatoCannon.PotatoCannonItem;
-import com.simibubi.create.content.equipment.zapper.ZapperItem;
 import dev.tentaworks.TentaworksIds;
 import dev.tentaworks.compat.Frame;
 import dev.tentaworks.compat.Pose;
 import dev.tentaworks.compat.ShipFrames;
 import dev.tentaworks.network.ActuatorStatePacket;
-import dev.tentaworks.registry.TentaworksItems;
 import dev.tentaworks.rig.ActuatorReach;
 import dev.tentaworks.rig.Actuators;
 import dev.tentaworks.rig.FarUse;
 import dev.tentaworks.rig.HoldArm;
+import dev.tentaworks.rig.OwnHand;
 import dev.tentaworks.rig.RigAir;
 import dev.tentaworks.rig.RigSide;
 import dev.tentaworks.rig.RigTier;
@@ -48,7 +46,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.MaceItem;
-import net.minecraft.world.item.MapItem;
 import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.item.TridentItem;
 import net.minecraft.world.item.UseAnim;
@@ -290,7 +287,7 @@ public final class ActuatorRenderer {
     /**
      * The hand's Actuator stands in for it, so the vanilla hand, arm and item of that hand are not drawn and the body's arm
      * stays still: Actuators ready (fitted, not Furled, with Air), no Extendo Grip in either hand (Create lifts the reach itself), and not an
-     * item Create or vanilla draws in first person in its own way (Potato Cannon, Worldshaper, a map).
+     * item kept in the own hand ({@link OwnHand#keeps}: Potato Cannon, Worldshaper, a map, the own_hand tag, a Better Combat weapon).
      */
     public static boolean standsIn(LivingEntity entity, InteractionHand hand) {
         Anim a = entity instanceof Player ? ANIMS.get(entity.getId()) : null;
@@ -320,11 +317,6 @@ public final class ActuatorRenderer {
         Anim a = ANIMS.get(player.getId());
         if (a == null || !a.fitted) return -1;
         return Math.max(a.arms[0].tipDistance, a.arms[1].tipDistance);
-    }
-
-    private static boolean excluded(ItemStack stack) {
-        return stack.getItem() instanceof MapItem || stack.getItem() instanceof PotatoCannonItem || stack.getItem() instanceof ZapperItem
-                || stack.is(TentaworksItems.OWN_HAND);
     }
 
     /** A tool or weapon strikes; anything else, and an empty gripper, thrusts. */
@@ -445,7 +437,7 @@ public final class ActuatorRenderer {
             Arm arm = a.arm(main);
             ItemStack stack = p.getItemInHand(h);
             arm.main = main;
-            arm.hand = ready && !extendo && !excluded(stack);
+            arm.hand = ready && !extendo && !OwnHand.keeps(stack);
             arm.holding = hold.uses(h);
             arm.carries = arm.hand && !stack.isEmpty() && !arm.holding;
             arm.empty = own && main && arm.hand && stack.isEmpty() && !arm.holding;
@@ -710,36 +702,54 @@ public final class ActuatorRenderer {
     }
 
     /**
-     * First person, once per frame at the first hand vanilla is about to draw: the Actuators that work near the eye, in the hand
-     * pass (no wall clips them, F1 hides them like a hand). The hand pass has its own field of view; the world-to-camera
-     * transform is scaled so an arm lands on screen exactly where the world pass would draw it. A hand its Actuator stands in
-     * for is not drawn by vanilla at all.
+     * First person, once per frame just before vanilla's hands ({@code GameRendererHandsMixin}), so a mod that takes over the
+     * hands (Better Combat) does not take the Actuators with it: the Actuators that work near the eye, in the hand pass (no wall
+     * clips them, F1 hides them like a hand), under the same view sway vanilla gives its hands, flushed before vanilla draws.
+     */
+    public static void beforeHands(float pt, PoseStack ps, MultiBufferSource.BufferSource buffers, LocalPlayer player) {
+        if (player == null || Minecraft.getInstance().getCameraEntity() != player || handFrame == frame) return;
+        handFrame = frame;
+        ps.pushPose();
+        ps.mulPose(Axis.XP.rotationDegrees((player.getViewXRot(pt) - Mth.lerp(pt, player.xBobO, player.xBob)) * 0.1F));
+        ps.mulPose(Axis.YP.rotationDegrees((player.getViewYRot(pt) - Mth.lerp(pt, player.yBobO, player.yBob)) * 0.1F));
+        drawHands(ps, buffers, player, pt);
+        ps.popPose();
+        buffers.endBatch();
+    }
+
+    /**
+     * A hand its Actuator stands in for is not drawn by vanilla at all. The Actuators are drawn here at the first hand only when
+     * {@link #beforeHands} did not run this frame (a renderer that skips it).
      */
     @SubscribeEvent(priority = EventPriority.HIGH, receiveCanceled = true)
     static void onRenderHand(RenderHandEvent event) {
-        Minecraft mc = Minecraft.getInstance();
-        LocalPlayer player = mc.player;
-        if (player == null || mc.getCameraEntity() != player) return;
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null || Minecraft.getInstance().getCameraEntity() != player) return;
         if (handFrame != frame) {
             handFrame = frame;
-            if (handPass(player) && Actuators.fitted(player) && WornRig.of(player).item() instanceof TentacleRigItem rig) {
-                float pt = event.getPartialTick();
-                Camera cam = mc.gameRenderer.getMainCamera();
-                Vec3 c = cam.getPosition();
-                PoseStack world = new PoseStack();
-                TentacleLayer.firstPersonTank(world, player, pt, c);
-                TentacleRenderer.Space space = new TentacleRenderer.Space(new Matrix4f(world.last().pose()), c, true, true, 0xF000F0, 0);
-                PoseStack ps = event.getPoseStack();
-                ps.pushPose();
-                float k = (float) handScale();
-                ps.scale(k, k, 1);
-                ps.mulPose(cam.rotation().conjugate(new Quaternionf()));
-                TentacleLayer.firstPersonTank(ps, player, pt, c);
-                TentacleRenderer.timed(() -> draw(ps, event.getMultiBufferSource(), player, rig.tier(), pt, space, Pass.HAND));
-                ps.popPose();
-            }
+            drawHands(event.getPoseStack(), event.getMultiBufferSource(), player, event.getPartialTick());
         }
         if (standsIn(player, event.getHand())) event.setCanceled(true);
+    }
+
+    /**
+     * The hand pass has its own field of view; the world-to-camera transform is scaled so an arm lands on screen exactly where
+     * the world pass would draw it.
+     */
+    private static void drawHands(PoseStack ps, MultiBufferSource buffers, LocalPlayer player, float pt) {
+        if (!handPass(player) || !Actuators.fitted(player) || !(WornRig.of(player).item() instanceof TentacleRigItem rig)) return;
+        Camera cam = Minecraft.getInstance().gameRenderer.getMainCamera();
+        Vec3 c = cam.getPosition();
+        PoseStack world = new PoseStack();
+        TentacleLayer.firstPersonTank(world, player, pt, c);
+        TentacleRenderer.Space space = new TentacleRenderer.Space(new Matrix4f(world.last().pose()), c, true, true, 0xF000F0, 0);
+        ps.pushPose();
+        float k = (float) handScale();
+        ps.scale(k, k, 1);
+        ps.mulPose(cam.rotation().conjugate(new Quaternionf()));
+        TentacleLayer.firstPersonTank(ps, player, pt, c);
+        TentacleRenderer.timed(() -> draw(ps, buffers, player, rig.tier(), pt, space, Pass.HAND));
+        ps.popPose();
     }
 
     /** Draws a fitted Rig's Actuators of {@code pass}, and the items they carry. */

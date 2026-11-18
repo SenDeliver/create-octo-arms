@@ -1,5 +1,6 @@
 package dev.tentaworks.rig;
 
+import dev.tentaworks.compat.BetterCombat;
 import dev.tentaworks.config.TentaworksConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
@@ -69,6 +70,11 @@ public final class DualWield {
     public static boolean on(Player player) {
         return allows(TentaworksConfig.value(TentaworksConfig.DUAL_WIELD), Actuators.fitted(player), Actuators.ready(player), arm(player),
                 player.getOffhandItem().isEmpty());
+    }
+
+    /** Dual Wield adds to a hit: {@link #on}, and no Better Combat weapon in either hand (Better Combat owns the swing and the hit). */
+    public static boolean melee(Player player) {
+        return on(player) && !BetterCombat.weapon(player.getMainHandItem()) && !BetterCombat.weapon(player.getOffhandItem());
     }
 
     /** A tool of this base speed on a block is effective there: it beats a bare hand (vanilla adds Efficiency only then). */
@@ -160,14 +166,14 @@ public final class DualWield {
 
     /** The off-hand item would add to a hit on {@code target} (client and server: no level needed). */
     public static boolean helps(Player player, Entity target) {
-        if (!targets(target) || !on(player)) return false;
+        if (!targets(target) || !melee(player)) return false;
         ItemStack off = player.getOffhandItem();
         return attackBonus(off) > 0 || EnchantmentHelper.has(off, EnchantmentEffectComponents.DAMAGE);
     }
 
     /** The melee bonus for this hit on {@code target}, 0 when Dual Wield adds nothing. */
     public static float hitBonus(ServerPlayer player, Entity target, DamageSource source) {
-        if (!targets(target) || !on(player)) return 0;
+        if (!targets(target) || !melee(player)) return 0;
         ItemStack off = player.getOffhandItem();
         double item = Math.max(0, attackBonus(off));
         double enchant = player.level() instanceof ServerLevel sl ? Math.max(0, EnchantmentHelper.modifyDamage(sl, off, target, source, 0.0F)) : 0;

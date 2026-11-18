@@ -245,6 +245,7 @@ Limits: Ships with a scale other than 1 are ignored. Other players on a fast Shi
 | **EMI** (optional) | Create on 1.21.1 ships only a JEI plugin, so EMI shows Create's recipes (Sequenced Assembly and Mechanical Crafting, the Tentacle, Rig and Actuator included) only with JEI or TMRV installed too |
 | **Sable / Create Aeronautics** (optional) | Grip, ride and Grab Ships. See [Ships](#ships-sable--create-aeronautics) |
 | **Curios** (optional) | The Rig fits the back slot, so a chestplate stays on |
+| **Better Combat** (optional, 1.21.1) | A Better Combat weapon stays in your own hand: Better Combat owns its swing, hit and range (no Far Use reach for it, no Dual Wield bonus on its hits). The Actuators still show in first person. With one in the main hand there is no Throw (its swing can hit the held mob): Throw with an empty main hand or another item |
 | **Claim and protection mods** | A Grab asks the loader's entity-interaction event first. Far Use goes through the vanilla block and entity events |
 
 Tested together with Elytra Slot, Sophisticated Backpacks and Carry On. Jade: no special support.

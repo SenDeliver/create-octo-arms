@@ -201,6 +201,13 @@ dependencies {
     compileOnly("top.theillusivec4.curios:curios-neoforge:${curios_version}:api")
     if (project.hasProperty('withCurios')) runtimeOnly("top.theillusivec4.curios:curios-neoforge:${curios_version}")
 
+    compileOnly("maven.modrinth:better-combat:${bettercombat_version}") { transitive = false }
+    if (project.hasProperty('withBetterCombat')) {
+        runtimeOnly "maven.modrinth:better-combat:${bettercombat_version}"
+        runtimeOnly "maven.modrinth:playeranimator:${playeranimator_version}"
+        runtimeOnly "maven.modrinth:cloth-config:${clothconfig_version}"
+    }
+
     compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
     compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
     if (!project.hasProperty('noJei')) devRuntimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")

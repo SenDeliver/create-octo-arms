@@ -2,6 +2,7 @@ package dev.tentaworks.rig;
 
 import com.simibubi.create.AllItems;
 import dev.tentaworks.TentaworksIds;
+import dev.tentaworks.compat.BetterCombat;
 import dev.tentaworks.compat.ShipFrames;
 import dev.tentaworks.config.TentaworksConfig;
 import dev.tentaworks.network.FarUsePacket;
@@ -188,8 +189,13 @@ public final class FarUse {
         boolean on = lifting(player);
         double reach = on ? ActuatorReach.pickRange(TentacleRigItem.reach(player)) : 0;
         lift(player.getAttribute(Attributes.BLOCK_INTERACTION_RANGE), REACH_ID, reach);
-        lift(player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE), ENTITY_ID, reach);
+        lift(player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE), ENTITY_ID, liftsEntities(on, BetterCombat.weapon(player.getMainHandItem())) ? reach : 0);
         keepMining(player, on);
+    }
+
+    /** The entity range is lifted with the block range, but not for a Better Combat weapon in the main hand: Better Combat owns its range. */
+    public static boolean liftsEntities(boolean lifting, boolean betterCombatWeapon) {
+        return lifting && !betterCombatWeapon;
     }
 
     /** While a far block is mined the main-hand Actuator stays at it: the {@link FarUsePacket} is told again before its ttl runs out. */
